@@ -4,7 +4,7 @@
       "${config.xdg.userDirs.extraConfig.XDG_PROJECTS_DIR}/stellar-sanctum";
     # Start nvim with a custom class so our WM can move it to the correct workspace
     obsidiantui = pkgs.writeShellScriptBin "obsidiantui" ''
-      kitty --cwd ${vaultDir} nvim
+      kitty -d ${vaultDir} nvim
     '';
   in [ obsidiantui pkgs.obsidian ];
 

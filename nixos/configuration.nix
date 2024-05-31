@@ -146,7 +146,7 @@
     };
   };
 
-  fonts.packages = with pkgs;
+  fonts.packages = with inputs.nixpkgs-unstable.legacyPackages.x86_64-linux;
     [ (nerdfonts.override { fonts = [ "Recursive" ]; }) ];
 
   # flatpak
@@ -190,6 +190,7 @@
     waybar
     tofi
     rofi
+    hyprland
   ];
 
   environment.sessionVariables = { NIXOS_OZONE_WL = "1"; };
