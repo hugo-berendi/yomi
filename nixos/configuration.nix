@@ -153,6 +153,7 @@
   services.flatpak = { enable = true; };
   xdg.portal = {
     enable = true;
+    configPackages = [ pkgs.xdg-desktop-portal-hyprland ];
     extraPortals = [ pkgs.xdg-desktop-portal-hyprland ];
   };
 
@@ -191,6 +192,7 @@
     tofi
     rofi
     hyprland
+    ugrep
   ];
 
   environment.sessionVariables = { NIXOS_OZONE_WL = "1"; };
