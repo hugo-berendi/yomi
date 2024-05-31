@@ -96,6 +96,14 @@ in {
   # Nicely reload system units when changing configs
   systemd.user.startServices = "sd-switch";
 
+  satellite = {
+    monitors = [{
+      name = "eDP-1";
+      width = 1920;
+      height = 1080;
+    }];
+  };
+
   # TODO: Put styling somewhere else
   # Stylix styling
 
