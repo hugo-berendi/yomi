@@ -3,16 +3,18 @@
 { inputs, outputs, lib, config, pkgs, ... }: {
   # You can import other home-manager modules here
   imports = [
+    outputs.homeManagerModules.discord
+
     ./features/desktop/zathura.nix
     ./features/desktop/spotify.nix
     ./features/desktop/obsidian.nix
     ./features/desktop/firefox
     ./features/desktop/discord
-    ./features/cli/productivity
-    ./features/cli/pass.nix
-    ./features/cli/nix-index.nix
-    ./features/cli/catgirl.nix
-    ./features/cli/lazygit.nix
+    # ./features/cli/productivity
+    # ./features/cli/pass.nix
+    # ./features/cli/nix-index.nix
+    # ./features/cli/catgirl.nix
+    # ./features/cli/lazygit.nix
     ./features/wayland/hyprland
     ./features/desktop/kitty
   ];
