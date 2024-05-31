@@ -120,10 +120,18 @@ in {
           type = "packages";
         };
 
-        "Nix options" = mkNixPackagesEngine {
+        "Nix Options" = mkNixPackagesEngine {
           aliases = [ "@no" "@nix-options" ];
           type = "options";
         };
+
+        "Home-Manager Options" = mkBasicSearchEngine {
+                url = "https://home-manager-options.extranix.com/";
+                param = "query";
+                aliases = [ "@hmo" "@home-manager-options" ];
+                icon = "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake.svg";
+
+            };
 
         "Wikipedia" = mkBasicSearchEngine {
           url = "https://en.wikipedia.org/wiki/Special:Search";
