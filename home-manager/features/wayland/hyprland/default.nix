@@ -36,7 +36,7 @@
       #    "${toString m.x}x${toString m.y}"
       #    "1"
       #  ]
-      );
+      #);
 
       # Map monitors to workspaces
       workspace = lib.lists.concatMap
