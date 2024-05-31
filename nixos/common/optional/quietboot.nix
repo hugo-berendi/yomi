@@ -16,6 +16,8 @@
     kernelParams = [
       "quiet"
       "loglevel=3"
+      "nowatchdog"
+      "splash"
       "systemd.show_status=auto"
       "udev.log_level=3"
       "rd.udev.log_level=3"

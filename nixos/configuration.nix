@@ -134,6 +134,13 @@
         };
         installPhase = "  cp -r ./src/catppuccin-mocha-grub-theme $out\n";
       };
+      extraConfig = ''
+        nowatchdog
+        nvme_load=YES
+        loglevel=3 
+        qiet 
+        splash
+      '';
     };
   };
 
