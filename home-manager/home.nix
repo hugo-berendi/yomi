@@ -30,7 +30,6 @@ let
     ./features/desktop/spotify.nix
     ./features/desktop/obsidian.nix
     ./features/desktop/zathura.nix
-    ./features/desktop/
     ./features/desktop
   ];
 in {
