@@ -197,7 +197,7 @@
     nh
   ];
 
-  environment.sessionVariables = { NIXOS_OZONE_WL = "1"; FLAKE = "/home/hugob/.config/nix-config"};
+  environment.sessionVariables = { NIXOS_OZONE_WL = "1"; FLAKE = "/home/hugob/.config/nix-config"; };
 
   programs.fish.enable = true;
 
