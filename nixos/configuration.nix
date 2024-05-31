@@ -141,14 +141,11 @@
   programs.hyprland.enable = true;
 
   # Enable the sddm.
-  services.xserver = {
-    enable = true;
-    displayManager.sddm = {
+  services.displayManager.sddm = {
       enable = true;
       theme = "rose-pine";
       wayland = { enable = true; };
     };
-  };
 
   fonts.packages = with inputs.nixpkgs-unstable.legacyPackages.x86_64-linux;
     [ (nerdfonts.override { fonts = [ "Recursive" ]; }) ];
