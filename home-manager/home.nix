@@ -65,7 +65,7 @@ in {
       "23.11"; # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
     file = { };
     sessionVariables = { EDITOR = "nvim"; };
-    packages = with pkgs; [
+    packages = with inputs.nixpkgs-unstable.legacyPackages.x86_64-linux; [
       kitty
       neovide
       zoxide
