@@ -102,10 +102,8 @@
     in {
       # Your custom packages
       # Accessible through 'nix build', 'nix shell', etc
-      packages = forAllSystems (system:
-        let pkgs = nixpkgs.legacyPackages.${system};
-        in import ./pkgs { inherit pkgs; }
-      );
+      packages =
+        forAllSystems (system: import ./pkgs nixpkgs.legacyPackages.${system});
       # Formatter for your nix files, available through 'nix fmt'
       # Other options beside 'alejandra' include 'nixpkgs-fmt'
       formatter =
@@ -119,8 +117,7 @@
       nixosModules = import ./modules/nixos // import ./modules/common;
 
       # Reusable home-manager modules
-      homeManagerModules = import ./modules/home-manager
-        // import ./modules/common;
+      homeManagerModules = import ./modules/home-manager // import ./modules/common;
 
       # NixOS configuration entrypoint
       # Available through 'nixos-rebuild --flake .#your-hostname'
