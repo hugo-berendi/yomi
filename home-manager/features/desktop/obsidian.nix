@@ -1,6 +1,4 @@
 { config, pkgs, ... }: {
-    config.xdg.userDirs.extraConfig.XDG_PROJECTS_DIR = "/home/hugob/Documents";
-
   home.packages = let
     vaultDir =
       "${config.xdg.userDirs.extraConfig.XDG_PROJECTS_DIR}/stellar-sanctum";

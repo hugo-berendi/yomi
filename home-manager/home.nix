@@ -98,6 +98,8 @@ in {
   # Nicely reload system units when changing configs
   systemd.user.startServices = "sd-switch";
 
+  xdg.userDirs.extraConfig.XDG_PROJECTS_DIR = "/home/hugob/Documents";
+
   satellite = {
     monitors = [{
       name = "eDP-1";
