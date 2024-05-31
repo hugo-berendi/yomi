@@ -86,6 +86,9 @@ in {
       pkgs.mpv
       inputs.nixpkgs-unstable.legacyPackages.x86_64-linux.neovim
       inputs.nixpkgs-unstable.legacyPackages.x86_64-linux.neovide
+      inputs.nixpkgs-unstable.legacyPackages.x86_64-linux.nh
+    inputs.nixpkgs-unstable.legacyPackages.x86_64-linux.nix-output-monitor
+    inputs.nixpkgs-unstable.legacyPackages.x86_64-linux.nvd
     ];
   };
 

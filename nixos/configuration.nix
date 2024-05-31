@@ -157,7 +157,7 @@
   xdg.portal = {
     enable = true;
     configPackages = [ pkgs.xdg-desktop-portal-hyprland ];
-    extraPortals = [ pkgs.xdg-desktop-portal-hyprland ];
+    extraPortals = [ pkgs.xdg-desktop-portal-hyprland pkgs.xdg-desktop-portal-gtk ];
   };
 
   # List packages installed in system profile. To search, run:
@@ -194,10 +194,7 @@
     tofi
     rofi
     hyprland
-    ugrep
-    nh
-    nix-output-monitor
-    nvd
+    ugrep 
   ];
 
   environment.sessionVariables = { NIXOS_OZONE_WL = "1"; FLAKE = "/home/hugob/.config/nix-config"; };
