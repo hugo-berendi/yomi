@@ -137,6 +137,7 @@
   };
 
   # TODO: Remove in the future:
+  programs.hyprland.enable = true;
 
   # Enable the sddm.
   services.xserver = {
@@ -190,7 +191,6 @@
     dunst
     dunst
     libnotify
-    waybar
     tofi
     rofi
     hyprland

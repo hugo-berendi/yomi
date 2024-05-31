@@ -6,5 +6,5 @@
     systemd.target = "hyprland-session.target";
   };
 
-  stylix.targets.waybar = { enable = true; };
+  stylix.targets.waybar = { enable = false; };
 }
