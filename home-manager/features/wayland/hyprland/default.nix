@@ -10,32 +10,32 @@
 
     settings = {
       # {{{ Decoration
-      decoration = {
-        rounding = config.satellite.theming.rounding.radius;
-        active_opacity = 1;
-        inactive_opacity = 1;
+      #decoration = {
+      #  rounding = config.satellite.theming.rounding.radius;
+      #  active_opacity = 1;
+      #  inactive_opacity = 1;
 
-        blur = {
-          enabled = config.satellite.theming.blur.enable;
-          ignore_opacity = true;
-          xray = true;
-          size = config.satellite.theming.blur.size;
-          passes = config.satellite.theming.blur.passes;
-          contrast = config.satellite.theming.blur.contrast;
-          brightness = config.satellite.theming.blur.brightness;
-          noise = 0.05;
-        };
-      };
+      #  blur = {
+      #    enabled = config.satellite.theming.blur.enable;
+      #    ignore_opacity = true;
+      #    xray = true;
+      #    size = config.satellite.theming.blur.size;
+      #    passes = config.satellite.theming.blur.passes;
+      #    contrast = config.satellite.theming.blur.contrast;
+      #    brightness = config.satellite.theming.blur.brightness;
+      #    noise = 0.05;
+      #  };
+      #};
       # }}}
       # {{{ Monitors
       # Configure monitor properties
-      monitor = lib.forEach config.satellite.monitors (m:
-        lib.concatStringsSep "," [
-          m.name
-          "${toString m.width}x${toString m.height}@${toString m.refreshRate}"
-          "${toString m.x}x${toString m.y}"
-          "1"
-        ]
+      #monitor = lib.forEach config.satellite.monitors (m:
+      #  lib.concatStringsSep "," [
+      #    m.name
+      #    "${toString m.width}x${toString m.height}@${toString m.refreshRate}"
+      #    "${toString m.x}x${toString m.y}"
+      #    "1"
+      #  ]
       );
 
       # Map monitors to workspaces
