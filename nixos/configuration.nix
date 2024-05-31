@@ -174,6 +174,7 @@
     unzip
     starship
     tmux
+    fd
     btop
     yazi
     fishPlugins.done
