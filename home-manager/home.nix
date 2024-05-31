@@ -1,13 +1,24 @@
 # This is your home-manager configuration file
 # Use this to configure your home environment (it replaces ~/.config/nixpkgs/home.nix)
-{ inputs, outputs, lib, config, pkgs, ... }: {
-  # You can import other home-manager modules here
+{ inputs, outputs, lib, config, pkgs, ... }:
+let
   imports = [
-    outputs.homeManagerModules.discord
+    # {{{ flake inputs
+    inputs.stylix.homeManagerModules.stylix
+    inputs.impermanence.nixosModules.home-manager.impermanence
+    inputs.spicetify-nix.homeManagerModules.spicetify
+    inputs.anyrun.homeManagerModules.default
+    inputs.nix-index-database.hmModules.nix-index
+    inputs.sops-nix.homeManagerModules.sops
 
-    ./features/desktop/zathura.nix
-    ./features/desktop/spotify.nix
-    ./features/desktop/obsidian.nix
+    # {{{ self management
+    # NOTE: using `pkgs.system` before `module.options` is evaluated
+    # leads to infinite recursion!
+    inputs.intray.homeManagerModules.x86_64-linux.default
+    inputs.smos.homeManagerModules.x86_64-linux.default
+    # }}}
+    # }}}
+
     ./features/desktop/firefox
     ./features/desktop/discord
     # ./features/cli/productivity
@@ -18,6 +29,9 @@
     ./features/wayland/hyprland
     ./features/desktop/kitty
   ];
+in {
+  # Import all modules defined in modules/home-manager
+  imports = builtins.attrValues outputs.homeManagerModules ++ imports;
 
   nixpkgs = {
     # You can add overlays here
