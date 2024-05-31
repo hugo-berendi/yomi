@@ -27,7 +27,11 @@ let
     # ./features/cli/catgirl.nix
     # ./features/cli/lazygit.nix
     ./features/wayland/hyprland
-    ./features/desktop/kitty
+    ./features/desktop/spotify.nix
+    ./features/desktop/obsidian.nix
+    ./features/desktop/zathura.nix
+    ./features/desktop/
+    ./features/desktop
   ];
 in {
   # Import all modules defined in modules/home-manager
