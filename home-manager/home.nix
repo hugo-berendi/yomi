@@ -75,7 +75,6 @@ in {
       thefuck
       eza
       nodejs
-      nixfmt-classic
       zathura
       sxiv
       mpv
