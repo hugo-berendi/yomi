@@ -4,8 +4,8 @@
   # example = import ./example.nix;
 
   # Modules not yet added to the stable branch
-  bemenu = import ./compat/bemenu.nix;
-  hyprpaper = import ./compat/hyprpaper.nix;
+  # bemenu = import ./compat/bemenu.nix;
+  # hyprpaper = import ./compat/hyprpaper.nix;
   # k9s = import ./compat/k9s.nix;
 
   # Personal things
