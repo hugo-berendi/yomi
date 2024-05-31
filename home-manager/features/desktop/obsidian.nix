@@ -1,5 +1,5 @@
 { config, pkgs, ... }: {
-    home.sessionVariables.XDG_PROJECTS_DIR = "/home/hugob/Documents";
+    config.xdg.userDirs.extraConfig.XDG_PROJECTS_DIR = "/home/hugob/Documents";
 
   home.packages = let
     vaultDir =
