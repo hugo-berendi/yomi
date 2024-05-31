@@ -100,6 +100,10 @@
         upkgs = inputs.nixpkgs-unstable.legacyPackages.${system};
       };
     in {
+        nixpkgs.config.permittedInsecurePackages = [
+        "electron-25.9.0"
+        ];
+
       # Your custom packages
       # Accessible through 'nix build', 'nix shell', etc
       packages =
