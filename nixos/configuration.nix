@@ -137,10 +137,13 @@
   # TODO: Remove in the future:
 
   # Enable the sddm.
-  services.displayManager.sddm = {
+  services.xserver = {
     enable = true;
-    theme = "rose-pine";
-    wayland = { enable = true; };
+    displayManager.sddm = {
+      enable = true;
+      theme = "rose-pine";
+      wayland = { enable = true; };
+    };
   };
 
   fonts.packages = with pkgs;
@@ -148,6 +151,10 @@
 
   # flatpak
   services.flatpak = { enable = true; };
+  xdg.portal = {
+    enable = true;
+    extraPortals = [ pkgs.xdg-desktop-portal-hyprland ];
+  };
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget

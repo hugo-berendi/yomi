@@ -27,9 +27,6 @@ in {
   programs.spicetify = {
     enable = true;
 
-    theme = config.satellite.theming.get themeMap;
-    colorScheme = config.satellite.theming.get colorschemeMap;
-
     enabledExtensions = with spicePkgs.extensions; [
       fullAppDisplayMod
       shuffle # Working shuffle
