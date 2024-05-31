@@ -96,4 +96,14 @@ in {
   # Nicely reload system units when changing configs
   systemd.user.startServices = "sd-switch";
 
+  # TODO: Put styling somewhere else
+  # Stylix styling
+
+  stylix = {
+    base16Scheme = "${pkgs.base16-schemes}/share/themes/rose-pine-moon.yaml";
+    image = "../common/thmmes/wallpapers/something-beautiful-in-nature.jpg";
+  };
+
 }
+
+# RecMonoLinear Nerd Font
