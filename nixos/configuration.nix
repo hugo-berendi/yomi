@@ -60,6 +60,8 @@
     nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
   };
 
+  programs.dconf.enable = true;
+
   # FIXME: Add the rest of your current configuration
 
   networking.hostName = "amaterasu";
