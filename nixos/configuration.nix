@@ -160,9 +160,8 @@
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
-  environment.systemPackages = with inputs.nixpkgs-unstable.legacyPackages.x86_64-linux; [
+  environment.systemPackages = with pkgs; [
     vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-    neovim
     wget
     git
     gcc
@@ -195,6 +194,8 @@
     hyprland
     ugrep
     nh
+    nix-output-monitor
+    nvd
   ];
 
   environment.sessionVariables = { NIXOS_OZONE_WL = "1"; FLAKE = "/home/hugob/.config/nix-config"; };

@@ -73,19 +73,19 @@ in {
       "24.05"; # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
     file = { };
     sessionVariables = { EDITOR = "nvim"; };
-    packages = with inputs.nixpkgs-unstable.legacyPackages.x86_64-linux; [
-      kitty
-      neovide
-      zoxide
-      nwg-bar
-      nwg-look
-      thunderbird
-      thefuck
-      eza
-      nodejs
-      zathura
-      sxiv
-      mpv
+    packages = [
+      pkgs.zoxide
+      pkgs.znwg-bar
+      pkgs.znwg-look
+      pkgs.thunderbird
+      pkgs.thefuck
+      pkgs.eza
+      pkgs.nodejs
+      pkgs.zathura
+      pkgs.sxiv
+      pkgs.mpv
+      inputs.nixpkgs-unstable.legacyPackages.x86_64-linux.neovim
+      inputs.nixpkgs-unstable.legacyPackages.x86_64-linux.neovide
     ];
   };
 
