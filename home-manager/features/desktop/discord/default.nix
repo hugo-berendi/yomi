@@ -20,8 +20,7 @@ in {
   };
 
   home.packages = [ discocss ];
-  xdg.configFile."discocss/custom.css".source =
-    config.satellite.theming.get themeMap;
+  #xdg.configFile."discocss/custom.css".source = config.satellite.theming.get themeMap;
 
   # {{{ Storage
   # Clean cache older than 10 days
