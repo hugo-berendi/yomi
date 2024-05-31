@@ -108,7 +108,7 @@ in {
 
   stylix = {
     base16Scheme = "${pkgs.base16-schemes}/share/themes/rose-pine-moon.yaml";
-    image = ../common/thmmes/wallpapers/something-beautiful-in-nature.jpg;
+    image = ../common/themes/wallpapers/something-beautiful-in-nature.jpg;
   };
 
 }
