@@ -198,6 +198,10 @@
     ugrep
   ];
 
+  nixpkgs.config.permittedInsecurePackages = [
+    "electron-25.9.0"
+  ];
+
   environment.sessionVariables = { NIXOS_OZONE_WL = "1"; };
 
   programs.fish.enable = true;
