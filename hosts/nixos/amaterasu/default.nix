@@ -6,6 +6,7 @@
   lib,
   config,
   pkgs,
+  upkgs,
   ...
 }: {
   # You can import other NixOS modules here
@@ -127,7 +128,7 @@
       # Remove if you want to SSH using passwords
       PasswordAuthentication = false;
     };
-  }; 
+  };
 
   # TODO: Remove in the future:
   programs.hyprland.enable = true;
@@ -142,7 +143,7 @@
     };
   };
 
-  fonts.packages = with inputs.nixpkgs-unstable.legacyPackages.x86_64-linux; [ maple-mono-NF (nerdfonts.override {fonts = ["Recursive"];}) ];
+  fonts.packages = with upkgs; [maple-mono-NF (nerdfonts.override {fonts = ["Recursive"];})];
 
   # flatpak
   services.flatpak = {enable = true;};

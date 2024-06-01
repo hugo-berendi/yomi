@@ -1,10 +1,9 @@
 # sddm-rose-pine.nix
-
-{ stdenvNoCC
-, fetchFromGitHub
-, libsForQt5
+{
+  stdenvNoCC,
+  fetchFromGitHub,
+  libsForQt5,
 }:
-
 stdenvNoCC.mkDerivation rec {
   pname = "sddm-rose-pine-theme";
   version = "1.2";

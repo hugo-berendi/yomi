@@ -1,5 +1,9 @@
-{ inputs, pkgs, ... }: {
-        # Bootloader.
+{
+  inputs,
+  pkgs,
+  ...
+}: {
+  # Bootloader.
   boot.loader = {
     efi = {
       canTouchEfiVariables = true;
@@ -28,4 +32,4 @@
       '';
     };
   };
-    }
+}

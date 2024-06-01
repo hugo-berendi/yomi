@@ -6,6 +6,7 @@
   lib,
   config,
   pkgs,
+  upkgs,
   ...
 }: let
   imports = [
@@ -90,11 +91,11 @@ in {
       pkgs.sxiv
       pkgs.mpv
       pkgs.unityhub
-      inputs.nixpkgs-unstable.legacyPackages.x86_64-linux.neovim
-      inputs.nixpkgs-unstable.legacyPackages.x86_64-linux.neovide
-      inputs.nixpkgs-unstable.legacyPackages.x86_64-linux.nh
-      inputs.nixpkgs-unstable.legacyPackages.x86_64-linux.nix-output-monitor
-      inputs.nixpkgs-unstable.legacyPackages.x86_64-linux.nvd
+      upkgs.neovim
+      upkgs.neovide
+      upkgs.nh
+      upkgs.nix-output-monitor
+      upkgs.nvd
     ];
   };
 
