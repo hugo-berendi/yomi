@@ -83,7 +83,7 @@
     ...
   } @ inputs: let
     # Main username
-    pilot = "amaterasu";
+    pilot = "hugob";
 
     inherit (self) outputs;
     # Supported systems for your flake packages, shell, etc.
