@@ -59,6 +59,13 @@
     # Opinionated: make flake registry and nix path match flake inputs
     registry = lib.mapAttrs (_: flake: { inherit flake; }) flakeInputs;
     nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
+
+    # garbage collection
+    gc = {
+      automatic = true;
+      options = "--max-freed 1G --delete-older-than 7d";
+    };
+
   };
 
   programs.dconf.enable = true;
