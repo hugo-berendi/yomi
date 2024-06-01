@@ -84,11 +84,13 @@ in {
       pkgs.zathura
       pkgs.sxiv
       pkgs.mpv
+      pkgs.unityhub
+      pkgs.unity3d
       inputs.nixpkgs-unstable.legacyPackages.x86_64-linux.neovim
       inputs.nixpkgs-unstable.legacyPackages.x86_64-linux.neovide
       inputs.nixpkgs-unstable.legacyPackages.x86_64-linux.nh
-    inputs.nixpkgs-unstable.legacyPackages.x86_64-linux.nix-output-monitor
-    inputs.nixpkgs-unstable.legacyPackages.x86_64-linux.nvd
+      inputs.nixpkgs-unstable.legacyPackages.x86_64-linux.nix-output-monitor
+      inputs.nixpkgs-unstable.legacyPackages.x86_64-linux.nvd
     ];
   };
 
@@ -100,6 +102,16 @@ in {
       userName = "hugo-berendi";
       userEmail = "hugo.berendi@outlook.de";
       aliases = { rp = "pull --rebase"; };
+    };
+    nix-ld = {
+        enable = true;
+        
+        # Sets up all the libraries to load
+        libraries = with pkgs; [
+            stdenv.cc.cc # commonly needed
+            zlib # commonly needed
+            openssl # commonly needed
+        ];
     };
   };
 
