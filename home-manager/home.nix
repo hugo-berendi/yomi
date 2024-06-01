@@ -85,7 +85,6 @@ in {
       pkgs.sxiv
       pkgs.mpv
       pkgs.unityhub
-      pkgs.unity3d
       inputs.nixpkgs-unstable.legacyPackages.x86_64-linux.neovim
       inputs.nixpkgs-unstable.legacyPackages.x86_64-linux.neovide
       inputs.nixpkgs-unstable.legacyPackages.x86_64-linux.nh
