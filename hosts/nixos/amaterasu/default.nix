@@ -142,7 +142,7 @@
     };
   };
 
-  fonts.packages = with inputs.nixpkgs-unstable.legacyPackages.x86_64-linux; [(nerdfonts.override {fonts = ["Recursive"];}) ];
+  fonts.packages = with inputs.nixpkgs-unstable.legacyPackages.x86_64-linux; [ maple-mono-NF (nerdfonts.override {fonts = ["Recursive"];}) ];
 
   # flatpak
   services.flatpak = {enable = true;};
