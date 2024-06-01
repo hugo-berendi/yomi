@@ -10,7 +10,7 @@
 
   # Personal things
   # dev = import ./dev.nix;
-  firefox = import ./firefox;
+  # firefox = import ./firefox;
   monitors = import ./monitors.nix;
   # satellite-persistence = import ./persistence.nix;
 
