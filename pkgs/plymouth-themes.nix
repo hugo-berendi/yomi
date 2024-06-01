@@ -30,8 +30,8 @@ let
       '';
     };
 in {
-  cuts_alt = mkTheme {
-    themeName = "cuts_alt";
-    pack = "1";
+  lone = mkTheme {
+    themeName = "lone";
+    pack = "3";
   };
 }

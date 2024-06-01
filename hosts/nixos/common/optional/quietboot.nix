@@ -1,8 +1,8 @@
 {pkgs, ...}: {
   boot.plymouth = {
     enable = true;
-    themePackages = [pkgs.plymouthThemeCutsAlt];
-    theme = "cuts_alt";
+    themePackages = [pkgs.plymouthThemeLone];
+    theme = "lone";
   };
 
   console = {

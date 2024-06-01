@@ -7,5 +7,5 @@ in {
   # vimclip = pkgs.callPackage (import ./vimclip.nix) { };
   # homer = pkgs.callPackage (import ./homer.nix) { };
 
-  plymouthThemeCutsAlt = plymouthThemes.cuts_alt;
+  plymouthThemeLone = plymouthThemes.lone;
 }
