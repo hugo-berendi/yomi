@@ -25,7 +25,6 @@
         nvme_load=YES
         loglevel=3
         qiet
-        splash
       '';
     };
   };
