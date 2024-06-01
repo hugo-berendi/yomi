@@ -103,16 +103,7 @@ in {
       userEmail = "hugo.berendi@outlook.de";
       aliases = { rp = "pull --rebase"; };
     };
-    nix-ld = {
-        enable = true;
-        
-        # Sets up all the libraries to load
-        libraries = with pkgs; [
-            stdenv.cc.cc # commonly needed
-            zlib # commonly needed
-            openssl # commonly needed
-        ];
-    };
+ 
   };
 
   # Nicely reload system units when changing configs

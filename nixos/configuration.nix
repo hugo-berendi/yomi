@@ -213,7 +213,19 @@
 
   environment.sessionVariables = { NIXOS_OZONE_WL = "1"; FLAKE = "/home/hugob/.config/nix-config"; };
 
-  programs.fish.enable = true;
+  programs = {
+    fish.enable = true;
+     nix-ld = {
+        enable = true;
+        
+        # Sets up all the libraries to load
+        libraries = with pkgs; [
+            stdenv.cc.cc # commonly needed
+            zlib # commonly needed
+            openssl # commonly needed
+        ];
+    };
+  };
 
   hardware = { opengl.enable = true; };
 
