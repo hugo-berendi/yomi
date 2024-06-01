@@ -12,7 +12,7 @@
 
       window_padding_width 6
 
-      font_family      RecMonoLinear Nerd Font
+      font_family      ${config.stylix.fonts.monospace.name}
       bold_font        auto
       italic_font      auto
       bold_italic_font auto

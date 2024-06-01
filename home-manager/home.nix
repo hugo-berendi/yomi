@@ -37,6 +37,8 @@
     ./features/desktop/obsidian.nix
     ./features/desktop/zathura.nix
     ./features/desktop
+
+    ../common/fonts.nix
   ];
 in {
   # Import all modules defined in modules/home-manager
