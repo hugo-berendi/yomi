@@ -1,7 +1,13 @@
 # This is your home-manager configuration file
 # Use this to configure your home environment (it replaces ~/.config/nixpkgs/home.nix)
-{ inputs, outputs, lib, config, pkgs, ... }:
-let
+{
+  inputs,
+  outputs,
+  lib,
+  config,
+  pkgs,
+  ...
+}: let
   imports = [
     # {{{ flake inputs
     inputs.stylix.homeManagerModules.stylix
@@ -61,18 +67,15 @@ in {
       permittedInsecurePackages = [
         "electron-25.9.0"
       ];
-
-
     };
   };
 
   home = {
     username = "hugob";
     homeDirectory = "/home/hugob";
-    stateVersion =
-      "23.11"; # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
-    file = { };
-    sessionVariables = { EDITOR = "nvim"; };
+    stateVersion = "23.11"; # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
+    file = {};
+    sessionVariables = {EDITOR = "nvim";};
     packages = [
       pkgs.zoxide
       pkgs.nwg-bar
@@ -100,9 +103,8 @@ in {
       enable = true;
       userName = "hugo-berendi";
       userEmail = "hugo.berendi@outlook.de";
-      aliases = { rp = "pull --rebase"; };
+      aliases = {rp = "pull --rebase";};
     };
- 
   };
 
   # Nicely reload system units when changing configs
@@ -111,11 +113,13 @@ in {
   xdg.userDirs.extraConfig.XDG_PROJECTS_DIR = "/home/hugob/Documents";
 
   satellite = {
-    monitors = [{
-      name = "eDP-1";
-      width = 1920;
-      height = 1080;
-    }];
+    monitors = [
+      {
+        name = "eDP-1";
+        width = 1920;
+        height = 1080;
+      }
+    ];
   };
 
   # TODO: Put styling somewhere else
@@ -125,7 +129,6 @@ in {
     base16Scheme = "${pkgs.base16-schemes}/share/themes/rose-pine-moon.yaml";
     image = ../common/themes/wallpapers/something-beautiful-in-nature.jpg;
   };
-
 }
-
 # RecMonoLinear Nerd Font
+

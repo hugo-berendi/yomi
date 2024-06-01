@@ -1,5 +1,10 @@
-{ config, lib, pkgs, inputs, ... }:
-let
+{
+  config,
+  lib,
+  pkgs,
+  inputs,
+  ...
+}: let
   # {{{ Global extensions
   extensions = with inputs.firefox-addons.packages.${pkgs.system}; [
     buster-captcha-solver
@@ -66,7 +71,7 @@ in {
       # }}}
       # {{{ Extensions
       extensions = with inputs.firefox-addons.packages.${pkgs.system};
-        with lib.lists;
+      with lib.lists;
         flatten [
           extensions
           # List of profile-specific extensions
@@ -91,64 +96,79 @@ in {
       # {{{ Search engines
       search.engines = let
         # {{{ Search engine creation helpers
-        mkBasicSearchEngine = { aliases, url, param, icon ? null }:
+        mkBasicSearchEngine = {
+          aliases,
+          url,
+          param,
+          icon ? null,
+        }:
           {
-            urls = [{
-              template = url;
-              params = [{
-                name = param;
-                value = "{searchTerms}";
-              }];
-            }];
+            urls = [
+              {
+                template = url;
+                params = [
+                  {
+                    name = param;
+                    value = "{searchTerms}";
+                  }
+                ];
+              }
+            ];
 
             definedAliases = aliases;
-          } // (if icon == null then { } else { inherit icon; });
+          }
+          // (
+            if icon == null
+            then {}
+            else {inherit icon;}
+          );
 
-        mkNixPackagesEngine = { aliases, type }:
+        mkNixPackagesEngine = {
+          aliases,
+          type,
+        }:
           mkBasicSearchEngine {
             aliases = aliases;
             url = "https://search.nixos.org/${type}";
             param = "query";
-            icon =
-              "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake.svg";
+            icon = "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake.svg";
           };
         # }}}
         # {{{ Engine declarations
       in {
         "Nix Packages" = mkNixPackagesEngine {
-          aliases = [ "@np" "@nix-packages" ];
+          aliases = ["@np" "@nix-packages"];
           type = "packages";
         };
 
         "Nix Options" = mkNixPackagesEngine {
-          aliases = [ "@no" "@nix-options" ];
+          aliases = ["@no" "@nix-options"];
           type = "options";
         };
 
         "Home-Manager Options" = mkBasicSearchEngine {
-                url = "https://home-manager-options.extranix.com/";
-                param = "query";
-                aliases = [ "@hmo" "@home-manager-options" ];
-                icon = "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake.svg";
-
-            };
+          url = "https://home-manager-options.extranix.com/";
+          param = "query";
+          aliases = ["@hmo" "@home-manager-options"];
+          icon = "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake.svg";
+        };
 
         "Wikipedia" = mkBasicSearchEngine {
           url = "https://en.wikipedia.org/wiki/Special:Search";
           param = "search";
-          aliases = [ "@wk" "@wikipedia" ];
+          aliases = ["@wk" "@wikipedia"];
         };
 
         "Github" = mkBasicSearchEngine {
           url = "https://github.com/search";
           param = "q";
-          aliases = [ "@gh" "@github" ];
+          aliases = ["@gh" "@github"];
         };
 
         "Startpage" = mkBasicSearchEngine {
           url = "https://www.startpage.com/sp/search";
           param = "query";
-          aliases = [ "@sp" "@startpage" ];
+          aliases = ["@sp" "@startpage"];
         };
       };
       # }}}
@@ -176,16 +196,14 @@ in {
         "media.ffmpeg.vaapi.enabled" = true;
         "widget.dmabuf.force-enabled" = true; # Required in recent Firefoxes
         # }}}
-        # {{{ New tab page 
+        # {{{ New tab page
         "browser.newtabpage.activity-stream.asrouter.userprefs.cfr.addons" =
           false;
         "browser.newtabpage.activity-stream.asrouter.userprefs.cfr.features" =
           false;
         "browser.newtabpage.activity-stream.feeds.snippets" = false;
-        "browser.newtabpage.activity-stream.improvesearch.topSiteSearchShortcuts.havePinned" =
-          "";
-        "browser.newtabpage.activity-stream.improvesearch.topSiteSearchShortcuts.searchEngines" =
-          "";
+        "browser.newtabpage.activity-stream.improvesearch.topSiteSearchShortcuts.havePinned" = "";
+        "browser.newtabpage.activity-stream.improvesearch.topSiteSearchShortcuts.searchEngines" = "";
         "browser.newtabpage.activity-stream.section.highlights.includePocket" =
           false;
         "browser.newtabpage.activity-stream.showSponsored" = false;
@@ -236,10 +254,10 @@ in {
   # {{{ Make firefox the default
   # Use firefox as the default browser to open stuff.
   xdg.mimeApps.defaultApplications = {
-    "text/html" = [ "firefox.desktop" ];
-    "text/xml" = [ "firefox.desktop" ];
-    "x-scheme-handler/http" = [ "firefox.desktop" ];
-    "x-scheme-handler/https" = [ "firefox.desktop" ];
+    "text/html" = ["firefox.desktop"];
+    "text/xml" = ["firefox.desktop"];
+    "x-scheme-handler/http" = ["firefox.desktop"];
+    "x-scheme-handler/https" = ["firefox.desktop"];
   };
 
   # Tell apps firefox is the default browser using an env var.

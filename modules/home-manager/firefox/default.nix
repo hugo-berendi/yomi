@@ -1,20 +1,24 @@
 # Allows installing web apps as desktop apps
-{ lib, config, ... }:
-let cfg = config.programs.firefox.apps;
-in
 {
+  lib,
+  config,
+  ...
+}: let
+  cfg = config.programs.firefox.apps;
+in {
   options.programs.firefox.apps = {
     extensions = lib.mkOption {
       type = lib.types.listOf lib.types.package;
       description = "Extensions to install for all apps";
-      default = [ ];
+      default = [];
     };
 
     app = lib.mkOption {
-      default = { };
+      default = {};
       description = "Attr set of firefox web apps to install as desktop apps";
-      type = lib.types.attrsOf
-        (lib.types.submodule ({ name, ... }: {
+      type =
+        lib.types.attrsOf
+        (lib.types.submodule ({name, ...}: {
           options = {
             name = lib.mkOption {
               type = lib.types.str;
@@ -48,40 +52,38 @@ in
             extensions = lib.mkOption {
               type = lib.types.listOf lib.types.package;
               description = "Extensions to install for this app";
-              default = [ ];
+              default = [];
             };
           };
         }));
     };
   };
 
-  config =
-    let
-      mkProfile = app: {
-        settings = {
-          # Customize css
-          "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
+  config = let
+    mkProfile = app: {
+      settings = {
+        # Customize css
+        "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
 
-          # Set language to english
-          "general.useragent.locale" = "en-US";
-        };
-
-        userChrome = builtins.readFile ./theme.css;
-        extensions = cfg.extensions ++ app.extensions;
-        isDefault = false;
-        id = app.id;
+        # Set language to english
+        "general.useragent.locale" = "en-US";
       };
 
-      mkDesktopEntry = app: {
-        terminal = false;
-        name = app.displayName;
-        type = "Application";
-        exec = "firefox --name=${app.displayName} --no-remote --kiosk -P \"${app.name}\" \"${app.url}\"";
-        icon = app.icon;
-      };
-    in
-    {
-      programs.firefox.profiles = lib.mapAttrs (_: mkProfile) cfg.app;
-      xdg.desktopEntries = lib.mapAttrs (_: mkDesktopEntry) cfg.app;
+      userChrome = builtins.readFile ./theme.css;
+      extensions = cfg.extensions ++ app.extensions;
+      isDefault = false;
+      id = app.id;
     };
+
+    mkDesktopEntry = app: {
+      terminal = false;
+      name = app.displayName;
+      type = "Application";
+      exec = "firefox --name=${app.displayName} --no-remote --kiosk -P \"${app.name}\" \"${app.url}\"";
+      icon = app.icon;
+    };
+  in {
+    programs.firefox.profiles = lib.mapAttrs (_: mkProfile) cfg.app;
+    xdg.desktopEntries = lib.mapAttrs (_: mkDesktopEntry) cfg.app;
+  };
 }

@@ -1,5 +1,10 @@
-{ inputs, pkgs, config, lib, ... }:
-let
+{
+  inputs,
+  pkgs,
+  config,
+  lib,
+  ...
+}: let
   spicePkgs = inputs.spicetify-nix.packages.${pkgs.system}.default;
   themeMap = lib.fix (self: {
     "Catppuccin Mocha" = spicePkgs.themes.Comfy;
@@ -21,8 +26,8 @@ let
     default.dark = self."Catppuccin Macchiato";
   });
 in {
-  imports = [ ./audio.nix ];
-  home.packages = [ pkgs.spot ];
+  imports = [./audio.nix];
+  home.packages = [pkgs.spot];
 
   programs.spicetify = {
     enable = true;

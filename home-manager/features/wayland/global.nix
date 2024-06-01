@@ -1,6 +1,10 @@
 # Common wayland stuff
-{ lib, pkgs, ... }: {
-  imports = [ ./waybar.nix ../desktop ];
+{
+  lib,
+  pkgs,
+  ...
+}: {
+  imports = [./waybar.nix ../desktop];
 
   home.sessionVariables.NIXOS_OZONES_WL = "1";
   services.swayosd.enable = true;
@@ -31,12 +35,13 @@
       } "Scanned qr code on area with output \"$(${wl-paste})\""
     '';
     # }}}
-  in with pkgs; [
-    libnotify # Send notifications
-    wl-ocr # Custom ocr script
-    wl-qr # Custom qr scanner script
-    wl-clipboard # Clipboard manager
-    hyprpicker # Color picker
-    grimblast # Screenshot tool
-  ];
+  in
+    with pkgs; [
+      libnotify # Send notifications
+      wl-ocr # Custom ocr script
+      wl-qr # Custom qr scanner script
+      wl-clipboard # Clipboard manager
+      hyprpicker # Color picker
+      grimblast # Screenshot tool
+    ];
 }

@@ -1,5 +1,5 @@
 # Zathura is the pdf reader I am using.
-{ config, ... }: {
+{config, ...}: {
   programs.zathura = {
     enable = true;
     extraConfig = with config.lib.stylix.scheme.withHashtag; ''
@@ -86,5 +86,4 @@
   };
 
   home.shellAliases.pdf = "zathura --fork";
-
 }

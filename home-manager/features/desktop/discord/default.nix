@@ -1,6 +1,9 @@
-{ config, pkgs, ... }:
-let
-  themeMap = pkgs.callPackage (import ./themes.nix) { };
+{
+  config,
+  pkgs,
+  ...
+}: let
+  themeMap = pkgs.callPackage (import ./themes.nix) {};
 
   # REASON: newer discord versions don't work with the one in nixpkgs
   discocss = pkgs.discocss.overrideAttrs (old: rec {
@@ -19,11 +22,10 @@ in {
     enableDevtools = true;
   };
 
-  home.packages = [ discocss ];
+  home.packages = [discocss];
   #xdg.configFile."discocss/custom.css".source = config.satellite.theming.get themeMap;
 
   # {{{ Storage
   # Clean cache older than 10 days
-  systemd.user.tmpfiles.rules =
-    [ "d ${config.xdg.configHome}/discord/Cache/Cache_Data - - - 10d" ];
+  systemd.user.tmpfiles.rules = ["d ${config.xdg.configHome}/discord/Cache/Cache_Data - - - 10d"];
 }

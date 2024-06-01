@@ -1,6 +1,13 @@
 # This is your system's configuration file.
 # Use this to configure your system environment (it replaces /etc/nixos/configuration.nix)
-{ inputs, outputs, lib, config, pkgs, ... }: {
+{
+  inputs,
+  outputs,
+  lib,
+  config,
+  pkgs,
+  ...
+}: {
   # You can import other NixOS modules here
   imports = [
     # If you want to use modules your own flake exports (from modules/nixos):
@@ -12,10 +19,11 @@
 
     # You can also split up your configuration and import pieces of it here:
     # ./users.nix
-    ./common/optional/quietboot.nix
+    ../common/optional/quietboot.nix
 
     # Import your generated (nixos-generate-config) hardware configuration
-    ./hardware-configuration.nix
+    ./hardware
+    ./boot.nix
   ];
 
   nixpkgs = {
@@ -43,7 +51,8 @@
     };
   };
 
-  nix = let flakeInputs = lib.filterAttrs (_: lib.isType "flake") inputs;
+  nix = let
+    flakeInputs = lib.filterAttrs (_: lib.isType "flake") inputs;
   in {
     settings = {
       # Enable flakes and new 'nix' command
@@ -57,7 +66,7 @@
     channel.enable = false;
 
     # Opinionated: make flake registry and nix path match flake inputs
-    registry = lib.mapAttrs (_: flake: { inherit flake; }) flakeInputs;
+    registry = lib.mapAttrs (_: flake: {inherit flake;}) flakeInputs;
     nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
 
     # garbage collection
@@ -65,7 +74,6 @@
       automatic = true;
       options = "--max-freed 1G --delete-older-than 7d";
     };
-
   };
 
   programs.dconf.enable = true;
@@ -102,7 +110,7 @@
       openssh.authorizedKeys.keys = [
         # TODO: Add your SSH public key(s) here, if you plan on using SSH to connect
       ];
-      extraGroups = [ "wheel" "networkmanager" ];
+      extraGroups = ["wheel" "networkmanager"];
       shell = pkgs.fish;
     };
   };
@@ -118,38 +126,7 @@
       # Remove if you want to SSH using passwords
       PasswordAuthentication = false;
     };
-  };
-
-  # Bootloader.
-  boot.loader = {
-    efi = {
-      canTouchEfiVariables = true;
-      efiSysMountPoint = "/boot/efi";
-    };
-    grub = {
-      enable = true;
-      efiSupport = true;
-      device = "nodev";
-      useOSProber = true;
-      theme = pkgs.stdenv.mkDerivation {
-        pname = "grub-catppuccin";
-        version = "1.0";
-        src = pkgs.fetchgit {
-          url = "https://github.com/catppuccin/grub";
-          deepClone = true;
-          hash = "sha256-Kvz9yPXyU8O0Hilu/z5j2zZlCJcWeXl9TtMXfwAGJ1k=";
-        };
-        installPhase = "  cp -r ./src/catppuccin-mocha-grub-theme $out\n";
-      };
-      extraConfig = ''
-        nowatchdog
-        nvme_load=YES
-        loglevel=3 
-        qiet 
-        splash
-      '';
-    };
-  };
+  }; 
 
   # TODO: Remove in the future:
   programs.hyprland.enable = true;
@@ -160,18 +137,18 @@
     displayManager.sddm = {
       enable = true;
       theme = "rose-pine";
-      wayland = { enable = true; };
-    };};
+      wayland = {enable = true;};
+    };
+  };
 
-  fonts.packages = with inputs.nixpkgs-unstable.legacyPackages.x86_64-linux;
-    [ (nerdfonts.override { fonts = [ "Recursive" ]; }) ];
+  fonts.packages = with inputs.nixpkgs-unstable.legacyPackages.x86_64-linux; [(nerdfonts.override {fonts = ["Recursive"];})];
 
   # flatpak
-  services.flatpak = { enable = true; };
+  services.flatpak = {enable = true;};
   xdg.portal = {
     enable = true;
-    configPackages = [ pkgs.xdg-desktop-portal-hyprland ];
-    extraPortals = [ pkgs.xdg-desktop-portal-hyprland pkgs.xdg-desktop-portal-gtk ];
+    configPackages = [pkgs.xdg-desktop-portal-hyprland];
+    extraPortals = [pkgs.xdg-desktop-portal-hyprland pkgs.xdg-desktop-portal-gtk];
   };
 
   # List packages installed in system profile. To search, run:
@@ -199,8 +176,8 @@
     fzf
     fishPlugins.grc
     grc
-    (callPackage ./sddm-rose-pine.nix { })
-    (callPackage ./fonts.nix { })
+    (callPackage ./sddm-rose-pine.nix {})
+    (callPackage ./fonts.nix {})
     home-manager
     dunst
     dunst
@@ -208,26 +185,29 @@
     tofi
     rofi
     hyprland
-    ugrep 
+    ugrep
   ];
 
-  environment.sessionVariables = { NIXOS_OZONE_WL = "1"; FLAKE = "/home/hugob/.config/nix-config"; };
+  environment.sessionVariables = {
+    NIXOS_OZONE_WL = "1";
+    FLAKE = "/home/hugob/.config/nix-config";
+  };
 
   programs = {
     fish.enable = true;
-     nix-ld = {
-        enable = true;
-        
-        # Sets up all the libraries to load
-        libraries = with pkgs; [
-            stdenv.cc.cc # commonly needed
-            zlib # commonly needed
-            openssl # commonly needed
-        ];
+    nix-ld = {
+      enable = true;
+
+      # Sets up all the libraries to load
+      libraries = with pkgs; [
+        stdenv.cc.cc # commonly needed
+        zlib # commonly needed
+        openssl # commonly needed
+      ];
     };
   };
 
-  hardware = { opengl.enable = true; };
+  hardware = {opengl.enable = true;};
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
   system.stateVersion = "23.11";

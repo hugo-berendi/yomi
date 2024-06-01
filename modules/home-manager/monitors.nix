@@ -1,7 +1,6 @@
 # Taken from [misterio's config](https://github.com/Misterio77/nix-config/blob/main/modules/home-manager/monitors.nix)
 # This is meant to provide a wm-independent way of specifying the monitor configuration of each machine.
-{ lib, ... }:
-{
+{lib, ...}: {
   options.satellite.monitors = lib.mkOption {
     type = lib.types.listOf (lib.types.submodule {
       options = {

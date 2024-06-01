@@ -1,4 +1,4 @@
-{ ... }: {
+{...}: {
   programs.waybar = {
     enable = true;
 
@@ -6,5 +6,5 @@
     systemd.target = "hyprland-session.target";
   };
 
-  stylix.targets.waybar = { enable = false; };
+  stylix.targets.waybar = {enable = false;};
 }

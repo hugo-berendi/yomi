@@ -1,7 +1,11 @@
-{ config, lib, pkgs, ... }:
-let cfg = config.programs.discord;
-in
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
+  cfg = config.programs.discord;
+in {
   options.programs.discord = {
     enable = lib.mkEnableOption "Discord";
     disableUpdateCheck = lib.mkEnableOption "update skipping";
@@ -15,13 +19,11 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    home.packages = [ cfg.package ];
+    home.packages = [cfg.package];
 
-    xdg.configFile."discord/settings.json".text =
-      builtins.toJSON {
-        SKIP_HOST_UPDATE = cfg.disableUpdateCheck;
-        DANGEROUS_ENABLE_DEVTOOLS_ONLY_ENABLE_IF_YOU_KNOW_WHAT_YOURE_DOING = cfg.enableDevtools;
-      };
+    xdg.configFile."discord/settings.json".text = builtins.toJSON {
+      SKIP_HOST_UPDATE = cfg.disableUpdateCheck;
+      DANGEROUS_ENABLE_DEVTOOLS_ONLY_ENABLE_IF_YOU_KNOW_WHAT_YOURE_DOING = cfg.enableDevtools;
+    };
   };
 }
-

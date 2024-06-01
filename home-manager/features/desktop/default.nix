@@ -1,4 +1,4 @@
-{ pkgs, ... }: {
+{pkgs, ...}: {
   imports = [
     ./kitty # terminal
     ./dunst.nix # notifaction handler

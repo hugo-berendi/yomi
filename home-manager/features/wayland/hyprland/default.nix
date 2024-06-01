@@ -1,6 +1,10 @@
-{ pkgs, lib, config, ... }:
 {
-  imports = [ ../global.nix ./hyprpaper.nix ];
+  pkgs,
+  lib,
+  config,
+  ...
+}: {
+  imports = [../global.nix ./hyprpaper.nix];
 
   stylix.targets.hyprland.enable = true;
   wayland.windowManager.hyprland = {
@@ -39,11 +43,11 @@
       #);
 
       # Map monitors to workspaces
-      workspace = lib.lists.concatMap
+      workspace =
+        lib.lists.concatMap
         (m: lib.lists.optional (m.workspace != null) "${m.name},${m.workspace}")
         config.satellite.monitors;
       # }}}
     };
   };
 }
-

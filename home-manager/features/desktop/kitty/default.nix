@@ -1,4 +1,9 @@
-{ inputs, upkgs, config, ... }: {
+{
+  inputs,
+  upkgs,
+  config,
+  ...
+}: {
   programs.kitty = {
     enable = true;
 
@@ -7,7 +12,7 @@
 
       window_padding_width 6
 
-      font_family      RecMonoLinear Nerd Font 
+      font_family      RecMonoLinear Nerd Font
       bold_font        auto
       italic_font      auto
       bold_italic_font auto
