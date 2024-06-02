@@ -192,7 +192,7 @@
 
   environment.sessionVariables = {
     NIXOS_OZONE_WL = "1";
-    FLAKE = "/home/hugob/.config/nix-config";
+    FLAKE = "/home/hugob/dotfiles/nix-config";
   };
 
   programs = {
