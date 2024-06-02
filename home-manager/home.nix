@@ -41,7 +41,8 @@
     ./features/desktop/zathura.nix
     ./features/desktop
 
-    ../common/fonts.nix
+    ./features/persistence.nix
+    ../common
   ];
 in {
   # Import all modules defined in modules/home-manager
@@ -110,7 +111,27 @@ in {
   # Nicely reload system units when changing configs
   systemd.user.startServices = "sd-switch";
 
-  xdg.userDirs.extraConfig.XDG_PROJECTS_DIR = "/home/hugob/Documents";
+  # {{{ Xdg user directories
+  # Set the xdg env vars
+  xdg.enable = true;
+
+  xdg.userDirs = {
+    enable = lib.mkDefault true;
+    createDirectories = lib.mkDefault false;
+
+    desktop = null;
+    templates = null;
+    download = "${config.home.homeDirectory}/Downloads";
+    publicShare = "${config.home.homeDirectory}/Public";
+    music = "${config.home.homeDirectory}/Music";
+    pictures = "${config.home.homeDirectory}/Pictures";
+    videos = "${config.home.homeDirectory}/Videos";
+    documents = "${config.home.homeDirectory}/Documents";
+
+    extraConfig.XDG_SCREENSHOTS_DIR = "${config.xdg.userDirs.pictures}/Screenshots";
+    extraConfig.XDG_PROJECTS_DIR = "${config.home.homeDirectory}/Projects";
+  };
+  # }}}
 
   satellite = {
     monitors = [
@@ -120,19 +141,6 @@ in {
         height = 1080;
       }
     ];
-  };
-
-  # TODO: Put styling somewhere else
-  # Stylix styling
-
-  stylix = {
-    base16Scheme = "${pkgs.base16-schemes}/share/themes/rose-pine-moon.yaml";
-    image = ../common/themes/wallpapers/something-beautiful-in-nature.jpg;
-
-    cursor = {
-      package = upkgs.rose-pine-cursor;
-      name = "BreezeX-RoséPine";
-    };
   };
 }
 # RecMonoLinear Nerd Font

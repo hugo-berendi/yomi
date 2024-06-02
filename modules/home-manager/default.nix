@@ -8,10 +8,10 @@
   k9s = import ./compat/k9s.nix;
 
   # Personal things
-  # dev = import ./dev.nix;
-  # firefox = import ./firefox;
+  dev = import ./dev.nix;
+  firefox = import ./firefox;
   monitors = import ./monitors.nix;
-  # satellite-persistence = import ./persistence.nix;
+  satellite-persistence = import ./persistence.nix;
 
   # Should upstream
   discord = import ./discord.nix;
