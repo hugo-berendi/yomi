@@ -128,6 +128,11 @@ in {
   stylix = {
     base16Scheme = "${pkgs.base16-schemes}/share/themes/rose-pine-moon.yaml";
     image = ../common/themes/wallpapers/something-beautiful-in-nature.jpg;
+
+    cursor = {
+      package = upkgs.rose-pine-cursor;
+      name = "BreezeX-RoséPine";
+    };
   };
 }
 # RecMonoLinear Nerd Font

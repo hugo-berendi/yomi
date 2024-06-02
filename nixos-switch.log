@@ -1,21 +1,21 @@
 [32m>[39m Building NixOS configuration
 [?25l[35;1mwarning:[0m Git tree '/home/hugob/dotfiles/nix-config' is dirty
-[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2Kthese 3 derivations will be built:
-  /nix/store/5klbrsaj4wm08ar8j50xibfyv8khc4wb-etc-nix-registry.json.drv
-  /nix/store/rvm608rz62rxnx3hzyx0g7awb1rm63l1-etc.drv
-  /nix/store/n433pzywq0kk8w0isz85fwmsm1vp3wqb-nixos-system-amaterasu-23.11.20240529.25cf937.drv
+[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2Kthese 3 derivations will be built:
+  /nix/store/f0qza4h09a061pjmd5xka8yc08gadhcv-etc-nix-registry.json.drv
+  /nix/store/d55gfsmn63yyg9lk29q97bs6cl7iwn22-etc.drv
+  /nix/store/nvcrbiqmv1x9fg250px2x49578p53zrg-nixos-system-amaterasu-23.11.20240529.25cf937.drv
 ┏━ [1mDependency Graph[0m:
 ┃    [34m┌─ [0m[34m⏸ etc-nix-registry.json[0m
 ┃ [34m┌─ [0m[34m⏸ etc[0m
 ┃ [34m⏸ nixos-system-amaterasu-23.11.20240529.25cf937[0m[0m
 ┣━━━ [1mBuilds         [0m
-┗━ ∑ [33m⏵ 0[0m │ [32m✔ 0[0m │ [34m⏸ [1m3[0m[0m │ [1m⏱ 5s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[0m[34metc-nix-registry.json> [0mbuilding '/nix/store/5klbrsaj4wm08ar8j50xibfyv8khc4wb-etc-nix-registry.json.drv'
+┗━ ∑ [33m⏵ 0[0m │ [32m✔ 0[0m │ [34m⏸ [1m3[0m[0m │ [1m⏱ 5s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[0m[34metc-nix-registry.json> [0mbuilding '/nix/store/f0qza4h09a061pjmd5xka8yc08gadhcv-etc-nix-registry.json.drv'
 ┏━ [1mDependency Graph[0m:
 ┃    [34m┌─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
 ┃ [34m┌─ [0m[34m⏸ etc[0m
 ┃ [34m⏸ nixos-system-amaterasu-23.11.20240529.25cf937[0m[0m
 ┣━━━ [1mBuilds         [0m
-┗━ ∑ [33m⏵ 0[0m │ [32m✔ [1m1[0m[0m │ [34m⏸ [1m2[0m[0m │ [1m⏱ 6s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[0m[34metc> [0mbuilding '/nix/store/rvm608rz62rxnx3hzyx0g7awb1rm63l1-etc.drv'
+┗━ ∑ [33m⏵ 0[0m │ [32m✔ [1m1[0m[0m │ [34m⏸ [1m2[0m[0m │ [1m⏱ 6s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[0m[34metc> [0mbuilding '/nix/store/d55gfsmn63yyg9lk29q97bs6cl7iwn22-etc.drv'
 ┏━ [1mDependency Graph[0m:
 ┃    [34m┌─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
 ┃ [34m┌─ [0m[33m[1m⏵ etc[0m[0m
@@ -31,7 +31,7 @@
 ┃ [34m┌─ [0m[32m✔ etc[0m [90m[0m
 ┃ [34m⏸ nixos-system-amaterasu-23.11.20240529.25cf937[0m[0m
 ┣━━━ [1mBuilds         [0m
-┗━ ∑ [33m⏵ 0[0m │ [32m✔ [1m2[0m[0m │ [34m⏸ [1m1[0m[0m │ [1m⏱ 6s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[0m[34mnixos-system-amaterasu-23.11.20240529.25cf> [0mbuilding '/nix/store/n433pzywq0kk8w0isz85fwmsm1vp3wqb-nixos-system-amaterasu-23.11.20240529.25cf937.drv'
+┗━ ∑ [33m⏵ 0[0m │ [32m✔ [1m2[0m[0m │ [34m⏸ [1m1[0m[0m │ [1m⏱ 6s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[0m[34mnixos-system-amaterasu-23.11.20240529.25cf> [0mbuilding '/nix/store/nvcrbiqmv1x9fg250px2x49578p53zrg-nixos-system-amaterasu-23.11.20240529.25cf937.drv'
 ┏━ [1mDependency Graph[0m:
 ┃    [34m┌─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
 ┃ [34m┌─ [0m[32m✔ etc[0m [90m[0m
@@ -52,12 +52,12 @@
 ┃ [34m┌─ [0m[32m✔ etc[0m [90m[0m
 ┃ [32m✔ nixos-system-amaterasu-23.11.20240529.25cf937[0m [90m[0m[0m
 ┣━━━ [1mBuilds         [0m
-┗━ ∑ [33m⏵ 0[0m │ [32m✔ [1m3[0m[0m │ [34m⏸ 0[0m │ [1m[32mFinished at 21:29:45 after 7s[0m[0m[?25h
+┗━ ∑ [33m⏵ 0[0m │ [32m✔ [1m3[0m[0m │ [34m⏸ 0[0m │ [1m[32mFinished at 21:41:16 after 7s[0m[0m[?25h
 [32m>[39m Comparing changes
 <<< /run/current-system
->>> /tmp/nh-os-rXJ47A/result
+>>> /tmp/nh-os-Fi6HBb/result
 No version or selection state changes.
-Closure size: 1758 -> 1758 (4 paths added, 4 paths removed, delta +0, disk usage +400B).
+Closure size: 1758 -> 1758 (4 paths added, 4 paths removed, delta +0, disk usage +4.6KiB).
 [32m>[39m Activating configuration
 activating the configuration...
 setting up /etc...
