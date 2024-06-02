@@ -33,6 +33,8 @@
     # ./features/cli/nix-index.nix
     # ./features/cli/catgirl.nix
     # ./features/cli/lazygit.nix
+    ./features/cli/git.nix
+    ./features/cli/ssh.nix
     ./features/wayland/hyprland
     ./features/desktop/spotify.nix
     ./features/desktop/obsidian.nix
@@ -103,12 +105,6 @@ in {
   # Enable home-manager and git
   programs = {
     home-manager.enable = true;
-    git = {
-      enable = true;
-      userName = "hugo-berendi";
-      userEmail = "hugo.berendi@outlook.de";
-      aliases = {rp = "pull --rebase";};
-    };
   };
 
   # Nicely reload system units when changing configs
