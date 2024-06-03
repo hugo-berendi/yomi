@@ -1,17 +1,26 @@
 warning: Git tree '/home/hugob/dotfiles/nix-config' is dirty
-these 4 derivations will be built:
-  /nix/store/mbiydw2d2ia2jwi8xqwr938cb3pbv1g9-hm_kittykitty.conf.drv
-  /nix/store/7dmn59r2si9g6i4gd50ydb2xgl2mahgg-activation-script.drv
-  /nix/store/k6i81magyalhbyvj65w58pngiqk14h2h-home-manager-files.drv
-  /nix/store/m4k71dps8c93cd376lxc6rhkfwgv6li3-home-manager-generation.drv
-building '/nix/store/mbiydw2d2ia2jwi8xqwr938cb3pbv1g9-hm_kittykitty.conf.drv'...
-building '/nix/store/7dmn59r2si9g6i4gd50ydb2xgl2mahgg-activation-script.drv'...
-building '/nix/store/k6i81magyalhbyvj65w58pngiqk14h2h-home-manager-files.drv'...
-building '/nix/store/m4k71dps8c93cd376lxc6rhkfwgv6li3-home-manager-generation.drv'...
 Starting Home Manager activation
 Activating checkFilesChanged
 Activating cleanEmptyLinkTargets
 Activating checkLinkTargets
 Activating unmountPersistentStoragePaths
 Activating createAndMountPersistentStoragePaths
-mkdir: cannot stat ‘/home/hugob/.tmux’: Transport endpoint is not connected
+Activating createTargetFileDirectories
+Activating writeBoundary
+Activating installPackages
+replacing old 'home-manager-path'
+installing 'home-manager-path'
+Activating dconfSettings
+Activating linkGeneration
+Cleaning up orphan links from /home/hugob
+Creating profile generation 43
+Creating home file links in /home/hugob
+Activating onFilesChange
+Activating runUnmountPersistentStoragePaths
+Activating reloadSystemd
+Starting units: hyprland-session.target
+warning: Git tree '/home/hugob/dotfiles/nix-config' is dirty
+
+There are 128 unread and relevant news items.
+Read them by running the command "home-manager news".
+

@@ -1,68 +1,86 @@
 [32m>[39m Building NixOS configuration
 [?25l[35;1mwarning:[0m Git tree '/home/hugob/dotfiles/nix-config' is dirty
-[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2Kthese 3 derivations will be built:
-  /nix/store/rlykqz5sfbmbnzkymvwk9vmr43vz97a2-etc-nix-registry.json.drv
-  /nix/store/72x1nq9x7maqqdz8dmj6lxif90702ql9-etc.drv
-  /nix/store/zx5c8r5ifm8lzrysbyna48wbkz06b1xh-nixos-system-amaterasu-23.11.20240531.a62e6ed.drv
+[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 7s[0m[1G[2K[1m⏱ 7s[0m[1G[2K[1m⏱ 7s[0m[1G[2Kthese 4 derivations will be built:
+  /nix/store/1n70i884px2n16v7z86pasp3nnnw4fvr-etc-nix-registry.json.drv
+  /nix/store/a4h9p7rpdhhw41n7224gzfaa4670r9i3-boot.json.drv
+  /nix/store/yxjsgcg1dmmh55ncy8ay8pf3mlck2fpn-etc.drv
+  /nix/store/ax46s2w1w4571p5wr8rvf1ialgb61wb1-nixos-system-amaterasu-23.11.20240531.a62e6ed.drv
 ┏━ [1mDependency Graph[0m:
 ┃    [34m┌─ [0m[34m⏸ etc-nix-registry.json[0m
 ┃ [34m┌─ [0m[34m⏸ etc[0m
+┃ [34m├─ [0m[34m⏸ boot.json[0m
 ┃ [34m⏸ nixos-system-amaterasu-23.11.20240531.a62e6ed[0m[0m
 ┣━━━ [1mBuilds         [0m
-┗━ ∑ [33m⏵ 0[0m │ [32m✔ 0[0m │ [34m⏸ [1m3[0m[0m │ [1m⏱ 6s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[0m[34metc-nix-registry.json> [0mbuilding '/nix/store/rlykqz5sfbmbnzkymvwk9vmr43vz97a2-etc-nix-registry.json.drv'
+┗━ ∑ [33m⏵ 0[0m │ [32m✔ 0[0m │ [34m⏸ [1m4[0m[0m │ [1m⏱ 7s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[0m[34mboot.json> [0mbuilding '/nix/store/a4h9p7rpdhhw41n7224gzfaa4670r9i3-boot.json.drv'
+[0m[34metc-nix-registry.json> [0mbuilding '/nix/store/1n70i884px2n16v7z86pasp3nnnw4fvr-etc-nix-registry.json.drv'
 ┏━ [1mDependency Graph[0m:
-┃    [34m┌─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┃    [34m┌─ [0m[33m[1m⏵ etc-nix-registry.json[0m[0m
 ┃ [34m┌─ [0m[34m⏸ etc[0m
+┃ [34m├─ [0m[32m✔ boot.json[0m [90m[0m
 ┃ [34m⏸ nixos-system-amaterasu-23.11.20240531.a62e6ed[0m[0m
 ┣━━━ [1mBuilds         [0m
-┗━ ∑ [33m⏵ 0[0m │ [32m✔ [1m1[0m[0m │ [34m⏸ [1m2[0m[0m │ [1m⏱ 7s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[0m[34metc> [0mbuilding '/nix/store/72x1nq9x7maqqdz8dmj6lxif90702ql9-etc.drv'
+┗━ ∑ [33m⏵ [1m1[0m[0m │ [32m✔ [1m1[0m[0m │ [34m⏸ [1m2[0m[0m │ [1m⏱ 8s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K┏━ [1mDependency Graph[0m:
+┃ [34m┌─ [0m[32m✔ boot.json[0m [90m[0m
+┃ [34m│  [0m[34m┌─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┃ [34m├─ [0m[34m⏸ etc[0m
+┃ [34m⏸ nixos-system-amaterasu-23.11.20240531.a62e6ed[0m[0m
+┣━━━ [1mBuilds         [0m
+┗━ ∑ [33m⏵ 0[0m │ [32m✔ [1m2[0m[0m │ [34m⏸ [1m2[0m[0m │ [1m⏱ 8s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[0m[34metc> [0mbuilding '/nix/store/yxjsgcg1dmmh55ncy8ay8pf3mlck2fpn-etc.drv'
 ┏━ [1mDependency Graph[0m:
-┃    [34m┌─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
-┃ [34m┌─ [0m[33m[1m⏵ etc[0m[0m
+┃ [34m┌─ [0m[32m✔ boot.json[0m [90m[0m
+┃ [34m│  [0m[34m┌─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┃ [34m├─ [0m[33m[1m⏵ etc[0m[0m
 ┃ [34m⏸ nixos-system-amaterasu-23.11.20240531.a62e6ed[0m[0m
 ┣━━━ [1mBuilds         [0m
-┗━ ∑ [33m⏵ [1m1[0m[0m │ [32m✔ [1m1[0m[0m │ [34m⏸ [1m1[0m[0m │ [1m⏱ 7s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K┏━ [1mDependency Graph[0m:
-┃    [34m┌─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
-┃ [34m┌─ [0m[33m[1m⏵ etc[0m[0m
+┗━ ∑ [33m⏵ [1m1[0m[0m │ [32m✔ [1m2[0m[0m │ [34m⏸ [1m1[0m[0m │ [1m⏱ 8s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K┏━ [1mDependency Graph[0m:
+┃ [34m┌─ [0m[32m✔ boot.json[0m [90m[0m
+┃ [34m│  [0m[34m┌─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┃ [34m├─ [0m[33m[1m⏵ etc[0m[0m
 ┃ [34m⏸ nixos-system-amaterasu-23.11.20240531.a62e6ed[0m[0m
 ┣━━━ [1mBuilds         [0m
-┗━ ∑ [33m⏵ [1m1[0m[0m │ [32m✔ [1m1[0m[0m │ [34m⏸ [1m1[0m[0m │ [1m⏱ 7s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K┏━ [1mDependency Graph[0m:
-┃    [34m┌─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
-┃ [34m┌─ [0m[32m✔ etc[0m [90m[0m
+┗━ ∑ [33m⏵ [1m1[0m[0m │ [32m✔ [1m2[0m[0m │ [34m⏸ [1m1[0m[0m │ [1m⏱ 9s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K┏━ [1mDependency Graph[0m:
+┃ [34m┌─ [0m[32m✔ boot.json[0m [90m[0m
+┃ [34m│  [0m[34m┌─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┃ [34m├─ [0m[32m✔ etc[0m [90m[0m
 ┃ [34m⏸ nixos-system-amaterasu-23.11.20240531.a62e6ed[0m[0m
 ┣━━━ [1mBuilds         [0m
-┗━ ∑ [33m⏵ 0[0m │ [32m✔ [1m2[0m[0m │ [34m⏸ [1m1[0m[0m │ [1m⏱ 8s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[0m[34mnixos-system-amaterasu-23.11.20240531.a62e6ed> [0mbuilding '/nix/store/zx5c8r5ifm8lzrysbyna48wbkz06b1xh-nixos-system-amaterasu-23.11.20240531.a62e6ed.drv'
+┗━ ∑ [33m⏵ 0[0m │ [32m✔ [1m3[0m[0m │ [34m⏸ [1m1[0m[0m │ [1m⏱ 9s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[0m[34mnixos-system-amaterasu-23.11.20240531.a62e6ed> [0mbuilding '/nix/store/ax46s2w1w4571p5wr8rvf1ialgb61wb1-nixos-system-amaterasu-23.11.20240531.a62e6ed.drv'
 ┏━ [1mDependency Graph[0m:
-┃    [34m┌─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
-┃ [34m┌─ [0m[32m✔ etc[0m [90m[0m
+┃ [34m┌─ [0m[32m✔ boot.json[0m [90m[0m
+┃ [34m│  [0m[34m┌─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┃ [34m├─ [0m[32m✔ etc[0m [90m[0m
 ┃ [33m[1m⏵ nixos-system-amaterasu-23.11.20240531.a62e6ed[0m[0m[0m
 ┣━━━ [1mBuilds         [0m
-┗━ ∑ [33m⏵ [1m1[0m[0m │ [32m✔ [1m2[0m[0m │ [34m⏸ 0[0m │ [1m⏱ 8s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K┏━ [1mDependency Graph[0m:
-┃    [34m┌─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
-┃ [34m┌─ [0m[32m✔ etc[0m [90m[0m
+┗━ ∑ [33m⏵ [1m1[0m[0m │ [32m✔ [1m3[0m[0m │ [34m⏸ 0[0m │ [1m⏱ 9s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K┏━ [1mDependency Graph[0m:
+┃ [34m┌─ [0m[32m✔ boot.json[0m [90m[0m
+┃ [34m│  [0m[34m┌─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┃ [34m├─ [0m[32m✔ etc[0m [90m[0m
 ┃ [33m[1m⏵ nixos-system-amaterasu-23.11.20240531.a62e6ed[0m[0m[0m
 ┣━━━ [1mBuilds         [0m
-┗━ ∑ [33m⏵ [1m1[0m[0m │ [32m✔ [1m2[0m[0m │ [34m⏸ 0[0m │ [1m⏱ 8s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K┏━ [1mDependency Graph[0m:
-┃    [34m┌─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
-┃ [34m┌─ [0m[32m✔ etc[0m [90m[0m
+┗━ ∑ [33m⏵ [1m1[0m[0m │ [32m✔ [1m3[0m[0m │ [34m⏸ 0[0m │ [1m⏱ 9s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K┏━ [1mDependency Graph[0m:
+┃ [34m┌─ [0m[32m✔ boot.json[0m [90m[0m
+┃ [34m│  [0m[34m┌─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┃ [34m├─ [0m[32m✔ etc[0m [90m[0m
 ┃ [32m✔ nixos-system-amaterasu-23.11.20240531.a62e6ed[0m [90m[0m[0m
 ┣━━━ [1mBuilds         [0m
-┗━ ∑ [33m⏵ 0[0m │ [32m✔ [1m3[0m[0m │ [34m⏸ 0[0m │ [1m⏱ 8s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K┏━ [1mDependency Graph[0m:
-┃    [34m┌─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
-┃ [34m┌─ [0m[32m✔ etc[0m [90m[0m
+┗━ ∑ [33m⏵ 0[0m │ [32m✔ [1m4[0m[0m │ [34m⏸ 0[0m │ [1m⏱ 9s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K┏━ [1mDependency Graph[0m:
+┃ [34m┌─ [0m[32m✔ boot.json[0m [90m[0m
+┃ [34m│  [0m[34m┌─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┃ [34m├─ [0m[32m✔ etc[0m [90m[0m
 ┃ [32m✔ nixos-system-amaterasu-23.11.20240531.a62e6ed[0m [90m[0m[0m
 ┣━━━ [1mBuilds         [0m
-┗━ ∑ [33m⏵ 0[0m │ [32m✔ [1m3[0m[0m │ [34m⏸ 0[0m │ [1m[32mFinished at 15:46:51 after 8s[0m[0m[?25h
+┗━ ∑ [33m⏵ 0[0m │ [32m✔ [1m4[0m[0m │ [34m⏸ 0[0m │ [1m[32mFinished at 15:50:44 after 9s[0m[0m[?25h
 [32m>[39m Comparing changes
 <<< /run/current-system
->>> /tmp/nh-os-AlsjDK/result
+>>> /tmp/nh-os-uRJioy/result
 No version or selection state changes.
-Closure size: 1758 -> 1758 (4 paths added, 4 paths removed, delta +0, disk usage -5.7KiB).
+Closure size: 1758 -> 1758 (6 paths added, 6 paths removed, delta +0, disk usage -4.1KiB).
 [32m>[39m Activating configuration
 activating the configuration...
 setting up /etc...
 reloading user units for hugob...
 setting up tmpfiles
+the following new units were started: systemd-ask-password-console.path
 [32m>[39m Adding configuration to bootloader
 updating GRUB 2 menu...
 Warning: os-prober will be executed to detect other bootable partitions.

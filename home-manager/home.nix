@@ -80,7 +80,7 @@ in {
   home = {
     username = "hugob";
     homeDirectory = "/home/hugob";
-    stateVersion = "23.11"; # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
+    stateVersion = "24.05"; # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
     file = {};
     sessionVariables = {EDITOR = "nvim";};
     packages = [
