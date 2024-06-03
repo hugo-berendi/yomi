@@ -1,15 +1,17 @@
 warning: Git tree '/home/hugob/dotfiles/nix-config' is dirty
-these 5 derivations will be built:
-  /nix/store/rf574b6gssmablq5ka9vwcm1c86f834w-home-manager-path.drv
-  /nix/store/7j8iq85jvbyf61ply2d04dzsihhdvhm6-hm_fontconfigconf.d10hmfonts.conf.drv
-  /nix/store/jn1yi94y4mqzfifpf4m954v7jxlq261l-activation-script.drv
-  /nix/store/w3al092gm1ajgha6hhvjba3brhzc62g3-home-manager-files.drv
-  /nix/store/98hvjyqmq080wr4xyjd7msk4c86m1j28-home-manager-generation.drv
-building '/nix/store/rf574b6gssmablq5ka9vwcm1c86f834w-home-manager-path.drv'...
-building '/nix/store/jn1yi94y4mqzfifpf4m954v7jxlq261l-activation-script.drv'...
-building '/nix/store/7j8iq85jvbyf61ply2d04dzsihhdvhm6-hm_fontconfigconf.d10hmfonts.conf.drv'...
-building '/nix/store/w3al092gm1ajgha6hhvjba3brhzc62g3-home-manager-files.drv'...
-building '/nix/store/98hvjyqmq080wr4xyjd7msk4c86m1j28-home-manager-generation.drv'...
+these 6 derivations will be built:
+  /nix/store/2rnybfws8hy33p7jas0zfyf1dkx5r1h0-home-manager-path.drv
+  /nix/store/gxnxgjzvr7qx9mbi9y5cx4ai0g287msc-hm_fontconfigconf.d10hmfonts.conf.drv
+  /nix/store/xxmargilza6ikw4gii2azf6mr8fpf6gf-waybar.service.drv
+  /nix/store/fnq477y4fmh0mn5zxda5ggb9ybxn6p16-home-manager-files.drv
+  /nix/store/y6jlms7yv75wl1lhj3fya51ikd3l4g8h-activation-script.drv
+  /nix/store/nrg85md3h3hlkbkhprq25nn7xfkdypzm-home-manager-generation.drv
+building '/nix/store/2rnybfws8hy33p7jas0zfyf1dkx5r1h0-home-manager-path.drv'...
+building '/nix/store/xxmargilza6ikw4gii2azf6mr8fpf6gf-waybar.service.drv'...
+building '/nix/store/y6jlms7yv75wl1lhj3fya51ikd3l4g8h-activation-script.drv'...
+building '/nix/store/gxnxgjzvr7qx9mbi9y5cx4ai0g287msc-hm_fontconfigconf.d10hmfonts.conf.drv'...
+building '/nix/store/fnq477y4fmh0mn5zxda5ggb9ybxn6p16-home-manager-files.drv'...
+building '/nix/store/nrg85md3h3hlkbkhprq25nn7xfkdypzm-home-manager-generation.drv'...
 Starting Home Manager activation
 Activating checkFilesChanged
 Activating cleanEmptyLinkTargets
@@ -21,19 +23,20 @@ Activating writeBoundary
 Activating installPackages
 replacing old 'home-manager-path'
 installing 'home-manager-path'
-building '/nix/store/yf2rn8sj5cdpijan1xkxyjkjdvsxawnz-user-environment.drv'...
+building '/nix/store/ph7zzjfacp5b89pc7zw4qsr9bkb1kkzx-user-environment.drv'...
 Activating dconfSettings
 Activating migrateGhAccounts
 Activating linkGeneration
 Cleaning up orphan links from /home/hugob
-Creating profile generation 45
+Creating profile generation 46
 Creating home file links in /home/hugob
 Activating onFilesChange
 Activating runUnmountPersistentStoragePaths
 Activating reloadSystemd
 Starting units: hyprland-session.target
+Started waybar.service - active
 warning: Git tree '/home/hugob/dotfiles/nix-config' is dirty
 
-There are 162 unread and relevant news items.
+There are 163 unread and relevant news items.
 Read them by running the command "home-manager news".
 
