@@ -11,9 +11,10 @@ Activating installPackages
 replacing old 'home-manager-path'
 installing 'home-manager-path'
 Activating dconfSettings
+Activating migrateGhAccounts
 Activating linkGeneration
 Cleaning up orphan links from /home/hugob
-Creating profile generation 43
+No change so reusing latest profile generation 44
 Creating home file links in /home/hugob
 Activating onFilesChange
 Activating runUnmountPersistentStoragePaths
@@ -21,6 +22,6 @@ Activating reloadSystemd
 Starting units: hyprland-session.target
 warning: Git tree '/home/hugob/dotfiles/nix-config' is dirty
 
-There are 128 unread and relevant news items.
+There are 163 unread and relevant news items.
 Read them by running the command "home-manager news".
 
