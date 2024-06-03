@@ -1,7 +1,6 @@
-{upkgs, ...}: {
+{...}: {
   programs.waybar = {
-    enable = true;
-    package = upkgs.waybar;
+    enable = false;
 
     systemd.enable = true;
     systemd.target = "hyprland-session.target";

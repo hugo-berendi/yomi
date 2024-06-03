@@ -86,4 +86,10 @@
   };
 
   home.shellAliases.pdf = "zathura --fork";
+
+  # {{{ Persistence
+  satellite.persistence.at.state.apps.zathura.directories = [
+    "${config.xdg.dataHome}/zathura"
+  ];
+  # }}}
 }

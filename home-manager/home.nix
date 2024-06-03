@@ -95,6 +95,7 @@ in {
       pkgs.sxiv
       pkgs.mpv
       pkgs.unityhub
+      pkgs.waybar
       upkgs.nerdfetch # for displaying pc/laptop stats
       upkgs.alejandra # nix formatter
       upkgs.neovim

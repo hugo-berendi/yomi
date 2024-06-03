@@ -265,4 +265,14 @@ in {
   # Tell apps firefox is the default browser using an env var.
   home.sessionVariables.BROWSER = "firefox";
   # }}}
+
+  # {{{ Persistence
+  satellite.persistence.at.state.apps.firefox.directories = [
+    ".mozilla/firefox" # More important stuff
+  ];
+
+  satellite.persistence.at.cache.apps.firefox.directories = [
+    "${config.xdg.cacheHome}/mozilla/firefox" # Non important cache
+  ];
+  # }}}
 }

@@ -1,13 +1,18 @@
 warning: Git tree '/home/hugob/dotfiles/nix-config' is dirty
-these 4 derivations will be built:
-  /nix/store/3rbi0qbx6fq6kqcsib8yq8yn1zjzvz59-hm_dunstdunstrc.drv
-  /nix/store/q2x1297dvr9bkz2w8kmdisgr9isw9g6z-home-manager-files.drv
-  /nix/store/ygqhgxv7q94cpf5mrsak4wi8py9600lh-activation-script.drv
-  /nix/store/hgxan16za23klkr38l7yp442b9qkrv5f-home-manager-generation.drv
-building '/nix/store/3rbi0qbx6fq6kqcsib8yq8yn1zjzvz59-hm_dunstdunstrc.drv'...
-building '/nix/store/ygqhgxv7q94cpf5mrsak4wi8py9600lh-activation-script.drv'...
-building '/nix/store/q2x1297dvr9bkz2w8kmdisgr9isw9g6z-home-manager-files.drv'...
-building '/nix/store/hgxan16za23klkr38l7yp442b9qkrv5f-home-manager-generation.drv'...
+these 5 derivations will be built:
+  /nix/store/fwz8zzbra3xxabdzgxsr3k95qghqqiw5-home-manager-path.drv
+  /nix/store/76pzs0px218218ja6qdxgykmbx2x5vb9-activation-script.drv
+  /nix/store/nl55gwymv1x2vl5c4ak1r2660qs8xzj7-hm_fontconfigconf.d10hmfonts.conf.drv
+  /nix/store/7aih9nv3ic6yrmq41k3zck126m489ann-home-manager-files.drv
+  /nix/store/03r48w3xr8xsxjsz413vifx1b4hdzr71-home-manager-generation.drv
+this path will be fetched (0.00 MiB download, 0.01 MiB unpacked):
+  /nix/store/jyw57az2jpkhz9xsrs8nk1dd80cjm02z-nerdfetch-8.1.1
+copying path '/nix/store/jyw57az2jpkhz9xsrs8nk1dd80cjm02z-nerdfetch-8.1.1' from 'https://cache.nixos.org'...
+building '/nix/store/fwz8zzbra3xxabdzgxsr3k95qghqqiw5-home-manager-path.drv'...
+building '/nix/store/76pzs0px218218ja6qdxgykmbx2x5vb9-activation-script.drv'...
+building '/nix/store/nl55gwymv1x2vl5c4ak1r2660qs8xzj7-hm_fontconfigconf.d10hmfonts.conf.drv'...
+building '/nix/store/7aih9nv3ic6yrmq41k3zck126m489ann-home-manager-files.drv'...
+building '/nix/store/03r48w3xr8xsxjsz413vifx1b4hdzr71-home-manager-generation.drv'...
 Starting Home Manager activation
 Activating checkFilesChanged
 Activating cleanEmptyLinkTargets
@@ -19,11 +24,12 @@ Activating writeBoundary
 Activating installPackages
 replacing old 'home-manager-path'
 installing 'home-manager-path'
+building '/nix/store/8742mqykzs569a887dglyqkjk40znm9s-user-environment.drv'...
 Activating dconfSettings
 Activating migrateGhAccounts
 Activating linkGeneration
 Cleaning up orphan links from /home/hugob
-Creating profile generation 47
+Creating profile generation 48
 Creating home file links in /home/hugob
 Activating onFilesChange
 Activating runUnmountPersistentStoragePaths
