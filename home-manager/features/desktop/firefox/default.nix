@@ -33,6 +33,8 @@ in {
   programs.firefox = {
     enable = true;
 
+    package = pkgs.firefox;
+
     policies = {
       DisableAppUpdate = true;
       DisableBuiltinPDFViewer = true;

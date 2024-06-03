@@ -25,26 +25,26 @@
   ];
   # }}}
   # {{{ OpenTabletDriver
-  satellite.persistence.at.state.apps.open-tablet-driver.directories = [
-    "${config.xdg.configHome}/OpenTabletDriver"
-  ];
+  # satellite.persistence.at.state.apps.open-tablet-driver.directories = [
+  #   "${config.xdg.configHome}/OpenTabletDriver"
+  # ];
   # }}}
   # {{{ Programming tooling
   # {{{ Elm
-  satellite.persistence.at.cache.apps.elm.directories = [".elm"];
+  # satellite.persistence.at.cache.apps.elm.directories = [".elm"];
   # }}}
   # {{{ Fly.io
-  satellite.persistence.at.state.apps.fly-io.directories = [".fly"];
+  # satellite.persistence.at.state.apps.fly-io.directories = [".fly"];
   # }}}
   # {{{ Haskell
-  satellite.persistence.at.cache.apps.haskell.directories = [
-    ".ghc"
-    ".stack"
-    ".local/state/cabal"
-    "${config.xdg.cacheHome}/stack"
-    "${config.xdg.cacheHome}/ghcide"
-    "${config.xdg.cacheHome}/cabal"
-  ];
+  # satellite.persistence.at.cache.apps.haskell.directories = [
+  #   ".ghc"
+  #   ".stack"
+  #   ".local/state/cabal"
+  #   "${config.xdg.cacheHome}/stack"
+  #   "${config.xdg.cacheHome}/ghcide"
+  #   "${config.xdg.cacheHome}/cabal"
+  # ];
   # }}}
   # {{{ Nodejs
   satellite.persistence.at.cache.apps.nodejs = {

@@ -32,11 +32,11 @@ alejandra . &>/dev/null ||
 		echo "formatting failed!" && exit 1
 	)
 
-# Shows your changes
-git diff -U0
-
 # add all changes for commit
 git add .
+
+# Shows your changes
+git diff -U0
 
 echo "NixOS Rebuilding..."
 notify-send -e "NixOS Rebuilding..." --icon=software-update-available

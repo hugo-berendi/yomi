@@ -26,6 +26,9 @@
     # Import your generated (nixos-generate-config) hardware configuration
     ./hardware
     ./boot.nix
+    # {{{ disk formatting using disko (only enable on new install)
+    # ./filesystems
+    # }}}
   ];
 
   nixpkgs = {
@@ -194,6 +197,11 @@
     NIXOS_OZONE_WL = "1";
     FLAKE = "/home/hugob/dotfiles/nix-config";
   };
+
+  environment.etc."fuse.conf".text = lib.mkForce ''
+    user_allow_other
+    mount_max = 1000
+  '';
 
   programs = {
     fish.enable = true;

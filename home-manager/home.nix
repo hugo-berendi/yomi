@@ -143,5 +143,3 @@ in {
     ];
   };
 }
-# RecMonoLinear Nerd Font
-
