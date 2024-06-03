@@ -1,87 +1,17 @@
 warning: Git tree '/home/hugob/dotfiles/nix-config' is dirty
+these 4 derivations will be built:
+  /nix/store/mbiydw2d2ia2jwi8xqwr938cb3pbv1g9-hm_kittykitty.conf.drv
+  /nix/store/7dmn59r2si9g6i4gd50ydb2xgl2mahgg-activation-script.drv
+  /nix/store/k6i81magyalhbyvj65w58pngiqk14h2h-home-manager-files.drv
+  /nix/store/m4k71dps8c93cd376lxc6rhkfwgv6li3-home-manager-generation.drv
+building '/nix/store/mbiydw2d2ia2jwi8xqwr938cb3pbv1g9-hm_kittykitty.conf.drv'...
+building '/nix/store/7dmn59r2si9g6i4gd50ydb2xgl2mahgg-activation-script.drv'...
+building '/nix/store/k6i81magyalhbyvj65w58pngiqk14h2h-home-manager-files.drv'...
+building '/nix/store/m4k71dps8c93cd376lxc6rhkfwgv6li3-home-manager-generation.drv'...
 Starting Home Manager activation
 Activating checkFilesChanged
 Activating cleanEmptyLinkTargets
 Activating checkLinkTargets
-Existing file '/home/hugob/.python_history' is in the way of '/nix/store/a6cv9nf6chzb971r48ip9xxwrqp34clb-home-manager-files/.python_history', will be moved to '/home/hugob/.python_history.backup'
-Existing file '/home/hugob/.local/share/Steam' is in the way of '/nix/store/a6cv9nf6chzb971r48ip9xxwrqp34clb-home-manager-files/.local/share/Steam', will be moved to '/home/hugob/.local/share/Steam.backup'
-Existing file '/home/hugob/.config/user-dirs.dirs' is in the way of '/nix/store/a6cv9nf6chzb971r48ip9xxwrqp34clb-home-manager-files/.config/user-dirs.dirs', will be moved to '/home/hugob/.config/user-dirs.dirs.backup'
 Activating unmountPersistentStoragePaths
 Activating createAndMountPersistentStoragePaths
-Activating createTargetFileDirectories
-Activating writeBoundary
-Activating installPackages
-replacing old 'home-manager-path'
-installing 'home-manager-path'
-building '/nix/store/m16796r5bsrvlc5ylqmhmxlmb882z00a-user-environment.drv'...
-Activating dconfSettings
-Activating linkGeneration
-Cleaning up orphan links from /home/hugob
-Creating profile generation 40
-Creating home file links in /home/hugob
-Activating onFilesChange
-Couldn't connect to /tmp/hypr/v0.32.3_1717015734/.socket.sock. (3)
-Couldn't connect to /tmp/hypr/v0.32.3_1717020115/.socket.sock. (3)
-Couldn't connect to /tmp/hypr/v0.32.3_1717020601/.socket.sock. (3)
-Couldn't connect to /tmp/hypr/v0.32.3_1717020601.lock/.socket.sock. (3)
-Couldn't connect to /tmp/hypr/v0.32.3_1717028290/.socket.sock. (3)
-Couldn't connect to /tmp/hypr/v0.32.3_1717181398/.socket.sock. (3)
-Couldn't connect to /tmp/hypr/v0.32.3_1717181891/.socket.sock. (3)
-Couldn't connect to /tmp/hypr/v0.32.3_1717183302/.socket.sock. (3)
-Couldn't connect to /tmp/hypr/v0.32.3_1717184147/.socket.sock. (3)
-Couldn't connect to /tmp/hypr/v0.32.3_1717191618/.socket.sock. (3)
-Couldn't connect to /tmp/hypr/v0.32.3_1717199405/.socket.sock. (3)
-Couldn't connect to /tmp/hypr/v0.32.3_1717200794/.socket.sock. (3)
-Couldn't connect to /tmp/hypr/v0.32.3_1717203997/.socket.sock. (3)
-Couldn't connect to /tmp/hypr/v0.32.3_1717203997.lock/.socket.sock. (3)
-Couldn't connect to /tmp/hypr/v0.32.3_1717233427/.socket.sock. (3)
-Couldn't connect to /tmp/hypr/v0.32.3_1717235272/.socket.sock. (3)
-Couldn't connect to /tmp/hypr/v0.32.3_1717235272.lock/.socket.sock. (3)
-Couldn't connect to /tmp/hypr/v0.32.3_1717235725/.socket.sock. (3)
-Couldn't connect to /tmp/hypr/v0.32.3_1717236128/.socket.sock. (3)
-Couldn't connect to /tmp/hypr/v0.32.3_1717236128.lock/.socket.sock. (3)
-Couldn't connect to /tmp/hypr/v0.32.3_1717281592/.socket.sock. (3)
-Couldn't connect to /tmp/hypr/v0.32.3_1717281592.lock/.socket.sock. (3)
-Couldn't connect to /tmp/hypr/v0.32.3_1717284429/.socket.sock. (3)
-Couldn't connect to /tmp/hypr/v0.32.3_1717285030/.socket.sock. (3)
-Couldn't connect to /tmp/hypr/v0.32.3_1717327982/.socket.sock. (3)
-Couldn't connect to /tmp/hypr/v0.32.3_1717360662/.socket.sock. (3)
-ok
-Couldn't connect to /tmp/hypr/v0.32.3_1717412107.lock/.socket.sock. (3)
-Activating runUnmountPersistentStoragePaths
-Activating reloadSystemd
-Starting units: hyprland-session.target
-Started bindMount--persist-local-cache-home-hugob-nodejs-local-share-pnpm-.service - active
-Started bindMount--persist-local-cache-home-hugob-python-cache-pip-.service - active
-Started bindMount--persist-state-home-hugob-signal-config-Signal-.service - active
-Started bindMount--persist-data-home-hugob-Projects-.service - active
-Started bindMount--persist-state-home-hugob-lutris-config-lutris-.service - active
-Started bindMount--persist-state-home-hugob-steam-factorio-.service - active
-Started bindMount--persist-data-home-hugob-Music-.service - active
-Started bindMount--persist-state-home-hugob-wine-wine-.service - active
-Started bindMount--persist-local-cache-home-hugob-rust-cargo-.service - active
-Started bindMount--persist-state-home-hugob-lutris-cache-lutris-coverart-.service - active
-Started bindMount--persist-local-cache-home-hugob-purescript-local-share-purescript-.service - active
-Started bindMount--persist-local-cache-home-hugob-nodejs-cache-yarn-.service - active
-Started bindMount--persist-state-home-hugob-lutris-cache-lutris-banners-.service - active
-Started bindMount--persist-data-home-hugob-Pictures-.service - active
-Started bindMount--persist-local-cache-home-hugob-purescript-cache-spago-.service - active
-Started bindMount--persist-state-home-hugob-qbittorrent-config-qBittorrent-.service - active
-Started bindMount--persist-data-home-hugob-Documents-.service - active
-Started bindMount--persist-state-home-hugob-sops-config-sops-age-.service - active
-Started bindMount--persist-local-cache-home-hugob-qbittorrent-local-share-qBittorrent-.service - active
-Started bindMount--persist-local-cache-home-hugob-nodejs-local-state-pnpm-.service - active
-Started bindMount--persist-local-cache-home-hugob-python-jupyter-.service - active
-Started bindMount--persist-local-cache-home-hugob-rust-rustup-.service - active
-Started bindMount--persist-state-home-hugob-element-config-Element-.service - active
-Started bindMount--persist-local-cache-home-hugob-python-ipython-.service - active
-Started bindMount--persist-local-cache-home-hugob-nodejs-cache-pnpm-.service - active
-Started bindMount--persist-data-home-hugob-Videos-.service - active
-Started bindMount--persist-local-cache-home-hugob-nodejs-cache-node-gyp-.service - active
-Started bindMount--persist-local-cache-home-hugob-nodejs-npm-.service - active
-Started bindMount--persist-local-cache-home-hugob-python-local-share-jupyter-.service - active
-warning: Git tree '/home/hugob/dotfiles/nix-config' is dirty
-
-There are 128 unread and relevant news items.
-Read them by running the command "home-manager news".
-
+mkdir: cannot stat ‘/home/hugob/.tmux’: Transport endpoint is not connected
