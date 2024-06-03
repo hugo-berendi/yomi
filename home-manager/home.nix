@@ -35,6 +35,7 @@
     # ./features/cli/lazygit.nix
     ./features/cli/git.nix
     ./features/cli/ssh.nix
+    ./features/cli/tmux
     ./features/wayland/hyprland
     ./features/desktop/spotify.nix
     ./features/desktop/obsidian.nix
