@@ -95,7 +95,6 @@ in {
       pkgs.sxiv
       pkgs.mpv
       pkgs.unityhub
-      upkgs.waybar
       upkgs.alejandra # nix formatter
       upkgs.neovim
       upkgs.neovide
