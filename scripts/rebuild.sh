@@ -43,6 +43,7 @@ notify-send -e "NixOS Rebuilding..." --icon=software-update-available
 
 # Enable insecure packages
 export NIXPKGS_ALLOW_INSECURE=1
+export NIXPKGS_ALLOW_UNFREE=1
 
 # Rebuild, output simplified errors, log trackebacks
 nh os switch &>nixos-switch.log || (cat nixos-switch.log | grep --color error && git reset && exit 1)

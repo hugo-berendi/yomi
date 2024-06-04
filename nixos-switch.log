@@ -1,68 +1,7 @@
-[32m>[39m Building NixOS configuration
-[?25l[35;1mwarning:[0m Git tree '/home/hugob/dotfiles/nix-config' is dirty
-[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[31;1merror:[0m
-       … while calling the '[35;1mseq[0m' builtin
+error: unexpected argument '--impure' found
 
-         [34;1mat [35;1m/nix/store/i1aw9jjgxcvyd642s12kw3iasmarwd42-source/lib/modules.nix:322:18[0m:
+  tip: to pass '--impure' as a value, use '-- --impure'
 
-          321|         options = checked options;
-          322|         config = checked (removeAttrs config [ "_module" ]);
-             |                  [31;1m^[0m
-          323|         _module = checked (config._module);
+Usage: nh os switch [OPTIONS] <FLAKEREF> [-- <EXTRA_ARGS>...]
 
-       … while calling the '[35;1mthrow[0m' builtin
-
-         [34;1mat [35;1m/nix/store/i1aw9jjgxcvyd642s12kw3iasmarwd42-source/lib/modules.nix:298:18[0m:
-
-          297|                     ''
-          298|             else throw baseMsg
-             |                  [31;1m^[0m
-          299|         else null;
-
-       [35;1m(stack trace truncated; use '--show-trace' to show the full trace)[0m
-
-       [31;1merror:[0m function '[35;1manonymous lambda[0m' called with unexpected argument '[35;1msslSupport[0m'
-
-       [34;1mat [35;1m/nix/store/i1aw9jjgxcvyd642s12kw3iasmarwd42-source/pkgs/tools/networking/curl/default.nix:1:1[0m:
-
-            1| { lib, stdenv, fetchurl, darwin, pkg-config, perl, nixosTests
-             | [31;1m^[0m
-            2| , brotliSupport ? false, brotli
-       Did you mean one of [35;1mpslSupport[0m, [35;1mgsaslSupport[0m, [35;1mgssSupport[0m or [35;1mscpSupport[0m?
-┏━[1;31m 1 Errors: [0m
-┃ [31;1merror:[0m
-┃        … while calling the '[35;1mseq[0m' builtin
-┃ 
-┃          [34;1mat [35;1m/nix/store/i1aw9jjgxcvyd642s12kw3iasmarwd42-source/lib/modules.nix:322:18[0m:
-┃ 
-┃           321|         options = checked options;
-┃           322|         config = checked (removeAttrs config [ "_module" ]);
-┃              |                  [31;1m^[0m
-┃           323|         _module = checked (config._module);
-┃ 
-┃        … while calling the '[35;1mthrow[0m' builtin
-┃ 
-┃          [34;1mat [35;1m/nix/store/i1aw9jjgxcvyd642s12kw3iasmarwd42-source/lib/modules.nix:298:18[0m:
-┃ 
-┃           297|                     ''
-┃           298|             else throw baseMsg
-┃              |                  [31;1m^[0m
-┃           299|         else null;
-┃ 
-┃        [35;1m(stack trace truncated; use '--show-trace' to show the full trace)[0m
-┃ 
-┃        [31;1merror:[0m function '[35;1manonymous lambda[0m' called with unexpected argument '[35;1msslSupport[0m'
-┃ 
-┃        [34;1mat [35;1m/nix/store/i1aw9jjgxcvyd642s12kw3iasmarwd42-source/pkgs/tools/networking/curl/default.nix:1:1[0m:
-┃ 
-┃             1| { lib, stdenv, fetchurl, darwin, pkg-config, perl, nixosTests
-┃              | [31;1m^[0m
-┃             2| , brotliSupport ? false, brotli
-┃        Did you mean one of [35;1mpslSupport[0m, [35;1mgsaslSupport[0m, [35;1mgssSupport[0m or [35;1mscpSupport[0m?[0m
-┣━━━                                                            
-┗━ ∑ [1m[31m⚠ Exited with 1 errors reported by nix at 22:32:33 after 0s[0m[0m[?25h
-Error: 
-   0: [91mCommand exited with status Exited(1)[0m
-
-Location:
-   [35msrc/commands.rs[0m:[35m151[0m
+For more information, try '--help'.

@@ -1,6 +1,7 @@
 {
   inputs,
   pkgs,
+  upkgs,
   config,
   lib,
   ...
@@ -29,8 +30,16 @@ in {
   imports = [./audio.nix];
   home.packages = [pkgs.spot];
 
+  # allow spotify to be installed if you don't have unfree enabled already
+  nixpkgs.config.allowUnfreePredicate = pkg:
+    builtins.elem (lib.getName pkg) [
+      "spotify-1.2.31.1205.g4d59ad7c"
+    ];
+
   programs.spicetify = {
     enable = true;
+
+    spotifyPackage = upkgs.spotify;
 
     enabledExtensions = with spicePkgs.extensions; [
       fullAppDisplayMod
