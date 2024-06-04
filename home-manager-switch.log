@@ -1,2 +1,38 @@
 warning: Git tree '/home/hugob/dotfiles/nix-config' is dirty
-error: interrupted by the user
+copying path '/nix/store/4p1i5wi39mvzh8n4cnfis1f36p5831l5-mirrors-list' from 'https://cache.nixos.org'...
+copying path '/nix/store/1dkffxv48i8w75dl72rd5bm88p16kvyd-libkrb5-1.21.2' from 'https://cache.nixos.org'...
+copying path '/nix/store/8zmxdjd25x8w494plgb61byxrn3n3wbp-nghttp2-1.61.0' from 'https://cache.nixos.org'...
+copying path '/nix/store/6kqw9f22a7z3c9822cn3rvhlrddfs4ld-libssh2-1.11.0-dev' from 'https://cache.nixos.org'...
+copying path '/nix/store/rksy2w3fz3rcb20s7nml6pv8nwsslc7r-nghttp2-1.61.0-lib' from 'https://cache.nixos.org'...
+copying path '/nix/store/z6i13v50c8z5p9y2zr0nhnls2jd5pini-nghttp2-1.61.0-dev' from 'https://cache.nixos.org'...
+copying path '/nix/store/m3b3ajx30wkc21n4m9xf2ldl7v78aa5s-curl-8.7.1' from 'https://cache.nixos.org'...
+copying path '/nix/store/1i242sq11fh63l6xw15xi9bihik9xg25-libkrb5-1.21.2-dev' from 'https://cache.nixos.org'...
+copying path '/nix/store/wz4m1wx040hikbvpm57b32i0ixi5h4ap-curl-8.7.1-bin' from 'https://cache.nixos.org'...
+copying path '/nix/store/bvh660f0s4sbl10m58fkz8iqp71iqf7r-curl-8.7.1-dev' from 'https://cache.nixos.org'...
+building '/nix/store/la063q63iydq01qhgmfq34vgca56hv9k-source.drv'...
+Starting Home Manager activation
+Activating checkFilesChanged
+Activating cleanEmptyLinkTargets
+Activating checkLinkTargets
+Activating unmountPersistentStoragePaths
+Activating createAndMountPersistentStoragePaths
+Activating createTargetFileDirectories
+Activating writeBoundary
+Activating installPackages
+replacing old 'home-manager-path'
+installing 'home-manager-path'
+Activating dconfSettings
+Activating migrateGhAccounts
+Activating linkGeneration
+Cleaning up orphan links from /home/hugob
+No change so reusing latest profile generation 49
+Creating home file links in /home/hugob
+Activating onFilesChange
+Activating runUnmountPersistentStoragePaths
+Activating reloadSystemd
+Starting units: hyprland-session.target
+warning: Git tree '/home/hugob/dotfiles/nix-config' is dirty
+
+There are 162 unread and relevant news items.
+Read them by running the command "home-manager news".
+
