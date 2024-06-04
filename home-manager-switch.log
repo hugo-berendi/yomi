@@ -1,43 +1,27 @@
 warning: Git tree '/home/hugob/dotfiles/nix-config' is dirty
-error:
-       … while calling the 'derivationStrict' builtin
+Starting Home Manager activation
+Activating checkFilesChanged
+Activating cleanEmptyLinkTargets
+Activating checkLinkTargets
+Activating unmountPersistentStoragePaths
+Activating createAndMountPersistentStoragePaths
+Activating createTargetFileDirectories
+Activating writeBoundary
+Activating installPackages
+replacing old 'home-manager-path'
+installing 'home-manager-path'
+Activating dconfSettings
+Activating migrateGhAccounts
+Activating linkGeneration
+Cleaning up orphan links from /home/hugob
+No change so reusing latest profile generation 49
+Creating home file links in /home/hugob
+Activating onFilesChange
+Activating runUnmountPersistentStoragePaths
+Activating reloadSystemd
+Starting units: hyprland-session.target
+warning: Git tree '/home/hugob/dotfiles/nix-config' is dirty
 
-         at /builtin/derivation.nix:9:12: (source not available)
+There are 162 unread and relevant news items.
+Read them by running the command "home-manager news".
 
-       … while evaluating derivation 'home-manager-generation'
-         whose name attribute is located at /nix/store/i1aw9jjgxcvyd642s12kw3iasmarwd42-source/pkgs/stdenv/generic/make-derivation.nix:331:7
-
-       … while evaluating attribute 'buildCommand' of derivation 'home-manager-generation'
-
-         at /nix/store/i1aw9jjgxcvyd642s12kw3iasmarwd42-source/pkgs/build-support/trivial-builders/default.nix:68:16:
-
-           67|         enableParallelBuilding = true;
-           68|         inherit buildCommand name;
-             |                ^
-           69|         passAsFile = [ "buildCommand" ]
-
-       (stack trace truncated; use '--show-trace' to show the full trace)
-
-       error: Package ‘spotify-1.2.31.1205.g4d59ad7c’ in /nix/store/5jgh89kgmrb687c254wxdac4cj5hqjw8-source/pkgs/applications/audio/spotify/default.nix:14 has an unfree license (‘unfree’), refusing to evaluate.
-
-       a) To temporarily allow unfree packages, you can use an environment variable
-          for a single invocation of the nix tools.
-
-            $ export NIXPKGS_ALLOW_UNFREE=1
-
-          Note: When using `nix shell`, `nix build`, `nix develop`, etc with a flake,
-                then pass `--impure` in order to allow use of environment variables.
-
-       b) For `nixos-rebuild` you can set
-         { nixpkgs.config.allowUnfree = true; }
-       in configuration.nix to override this.
-
-       Alternatively you can configure a predicate to allow specific packages:
-         { nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
-             "spotify"
-           ];
-         }
-
-       c) For `nix-env`, `nix-build`, `nix-shell` or any other Nix command you can add
-         { allowUnfree = true; }
-       to ~/.config/nixpkgs/config.nix.

@@ -5,6 +5,7 @@
   inputs = {
     # Nixpkgs
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05";
+    nixpkgs-old.url = "github:nixos/nixpkgs/nixos-23.11";
     # You can access packages and modules from different nixpkgs revs
     # at the same time. Here's an working example:
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
@@ -103,6 +104,7 @@
       inherit inputs outputs;
 
       upkgs = inputs.nixpkgs-unstable.legacyPackages.${system};
+      opkgs = inputs.nixpkgs-old.legacyPackages.${system};
     };
   in {
     nixpkgs.config.permittedInsecurePackages = [

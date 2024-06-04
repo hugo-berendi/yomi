@@ -1,7 +1,68 @@
-error: unexpected argument '--impure' found
-
-  tip: to pass '--impure' as a value, use '-- --impure'
-
-Usage: nh os switch [OPTIONS] <FLAKEREF> [-- <EXTRA_ARGS>...]
-
-For more information, try '--help'.
+[32m>[39m Building NixOS configuration
+[?25l[35;1mwarning:[0m Git tree '/home/hugob/dotfiles/nix-config' is dirty
+[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 7s[0m[1G[2Kthese 3 derivations will be built:
+  /nix/store/2kls3g5x9h0bq5bmb3falb7r2x3my3bk-etc-nix-registry.json.drv
+  /nix/store/2a86gvj8yx2min54q3kd54pc4l3xqdwp-etc.drv
+  /nix/store/nxy63d577rf9s1525782yqxn1vcl5xp9-nixos-system-amaterasu-24.05.20240531.805a384.drv
+┏━ [1mDependency Graph[0m:
+┃    [34m┌─ [0m[34m⏸ etc-nix-registry.json[0m
+┃ [34m┌─ [0m[34m⏸ etc[0m
+┃ [34m⏸ nixos-system-amaterasu-24.05.20240531.805a384[0m[0m
+┣━━━ [1mBuilds         [0m
+┗━ ∑ [33m⏵ 0[0m │ [32m✔ 0[0m │ [34m⏸ [1m3[0m[0m │ [1m⏱ 7s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[0m[34metc-nix-registry.json> [0mbuilding '/nix/store/2kls3g5x9h0bq5bmb3falb7r2x3my3bk-etc-nix-registry.json.drv'
+┏━ [1mDependency Graph[0m:
+┃    [34m┌─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┃ [34m┌─ [0m[34m⏸ etc[0m
+┃ [34m⏸ nixos-system-amaterasu-24.05.20240531.805a384[0m[0m
+┣━━━ [1mBuilds         [0m
+┗━ ∑ [33m⏵ 0[0m │ [32m✔ [1m1[0m[0m │ [34m⏸ [1m2[0m[0m │ [1m⏱ 7s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[0m[34metc> [0mbuilding '/nix/store/2a86gvj8yx2min54q3kd54pc4l3xqdwp-etc.drv'
+┏━ [1mDependency Graph[0m:
+┃    [34m┌─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┃ [34m┌─ [0m[33m[1m⏵ etc[0m[0m
+┃ [34m⏸ nixos-system-amaterasu-24.05.20240531.805a384[0m[0m
+┣━━━ [1mBuilds         [0m
+┗━ ∑ [33m⏵ [1m1[0m[0m │ [32m✔ [1m1[0m[0m │ [34m⏸ [1m1[0m[0m │ [1m⏱ 7s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K┏━ [1mDependency Graph[0m:
+┃    [34m┌─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┃ [34m┌─ [0m[33m[1m⏵ etc[0m[0m
+┃ [34m⏸ nixos-system-amaterasu-24.05.20240531.805a384[0m[0m
+┣━━━ [1mBuilds         [0m
+┗━ ∑ [33m⏵ [1m1[0m[0m │ [32m✔ [1m1[0m[0m │ [34m⏸ [1m1[0m[0m │ [1m⏱ 8s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K┏━ [1mDependency Graph[0m:
+┃    [34m┌─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┃ [34m┌─ [0m[32m✔ etc[0m [90m[0m
+┃ [34m⏸ nixos-system-amaterasu-24.05.20240531.805a384[0m[0m
+┣━━━ [1mBuilds         [0m
+┗━ ∑ [33m⏵ 0[0m │ [32m✔ [1m2[0m[0m │ [34m⏸ [1m1[0m[0m │ [1m⏱ 8s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[0m[34mnixos-system-amaterasu-24.05.20240531.805a> [0mbuilding '/nix/store/nxy63d577rf9s1525782yqxn1vcl5xp9-nixos-system-amaterasu-24.05.20240531.805a384.drv'
+┏━ [1mDependency Graph[0m:
+┃    [34m┌─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┃ [34m┌─ [0m[32m✔ etc[0m [90m[0m
+┃ [33m[1m⏵ nixos-system-amaterasu-24.05.20240531.805a384[0m[0m[0m
+┣━━━ [1mBuilds         [0m
+┗━ ∑ [33m⏵ [1m1[0m[0m │ [32m✔ [1m2[0m[0m │ [34m⏸ 0[0m │ [1m⏱ 8s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K┏━ [1mDependency Graph[0m:
+┃    [34m┌─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┃ [34m┌─ [0m[32m✔ etc[0m [90m[0m
+┃ [32m✔ nixos-system-amaterasu-24.05.20240531.805a384[0m [90m[0m[0m
+┣━━━ [1mBuilds         [0m
+┗━ ∑ [33m⏵ 0[0m │ [32m✔ [1m3[0m[0m │ [34m⏸ 0[0m │ [1m⏱ 8s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K┏━ [1mDependency Graph[0m:
+┃    [34m┌─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┃ [34m┌─ [0m[32m✔ etc[0m [90m[0m
+┃ [32m✔ nixos-system-amaterasu-24.05.20240531.805a384[0m [90m[0m[0m
+┣━━━ [1mBuilds         [0m
+┗━ ∑ [33m⏵ 0[0m │ [32m✔ [1m3[0m[0m │ [34m⏸ 0[0m │ [1m[32mFinished at 22:55:15 after 8s[0m[0m[?25h
+[32m>[39m Comparing changes
+<<< /run/current-system
+>>> /tmp/nh-os-3d8jTO/result
+No version or selection state changes.
+Closure size: 1755 -> 1755 (4 paths added, 4 paths removed, delta +0, disk usage +24B).
+[32m>[39m Activating configuration
+activating the configuration...
+setting up /etc...
+reloading user units for hugob...
+restarting sysinit-reactivation.target
+[32m>[39m Adding configuration to bootloader
+updating GRUB 2 menu...
+Warning: os-prober will be executed to detect other bootable partitions.
+Its output will be used to detect bootable binaries on them and create new boot entries.
+lsblk: /dev/mapper/no*[0-9]: not a block device
+lsblk: /dev/mapper/block*[0-9]: not a block device
+lsblk: /dev/mapper/devices*[0-9]: not a block device
+lsblk: /dev/mapper/found*[0-9]: not a block device

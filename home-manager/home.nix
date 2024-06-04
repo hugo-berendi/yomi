@@ -7,6 +7,7 @@
   config,
   pkgs,
   upkgs,
+  opkgs,
   ...
 }: let
   imports = [
@@ -95,7 +96,7 @@ in {
       pkgs.sxiv
       pkgs.mpv
       pkgs.unityhub
-      pkgs.waybar
+      opkgs.waybar
       upkgs.nerdfetch # for displaying pc/laptop stats
       upkgs.alejandra # nix formatter
       upkgs.neovim
