@@ -1,4 +1,21 @@
 warning: Git tree '/home/hugob/dotfiles/nix-config' is dirty
+these 8 derivations will be built:
+  /nix/store/0fpwcm0wkdl3n6a7sq2hx010kvdl0ksi-dummy-xdg-mime-dirs1.drv
+  /nix/store/45r9ks3lnbizkymvmdadmh2ifh0f3fcc-dummy-xdg-mime-dirs2.drv
+  /nix/store/rma0mkmjga41plcbl14l7k97jqi4gbw2-dummy-fc-dir2.drv
+  /nix/store/hw14vhy7k0gm6izirnqacj18bp8sqh6i-home-manager-path.drv
+  /nix/store/clid60xxl3sslbkp3g9czsvfi2ifr0bp-hm_fontconfigconf.d10hmfonts.conf.drv
+  /nix/store/irrwwi9z95kgzf5xfdl2n2dhbbk2xpbs-home-manager-files.drv
+  /nix/store/svwblxqp9lil4r6rj9q971mmfxrw53da-activation-script.drv
+  /nix/store/hcf3ym5h44ddxmqc6id68lls41pwirxs-home-manager-generation.drv
+building '/nix/store/rma0mkmjga41plcbl14l7k97jqi4gbw2-dummy-fc-dir2.drv'...
+building '/nix/store/0fpwcm0wkdl3n6a7sq2hx010kvdl0ksi-dummy-xdg-mime-dirs1.drv'...
+building '/nix/store/45r9ks3lnbizkymvmdadmh2ifh0f3fcc-dummy-xdg-mime-dirs2.drv'...
+building '/nix/store/hw14vhy7k0gm6izirnqacj18bp8sqh6i-home-manager-path.drv'...
+building '/nix/store/svwblxqp9lil4r6rj9q971mmfxrw53da-activation-script.drv'...
+building '/nix/store/clid60xxl3sslbkp3g9czsvfi2ifr0bp-hm_fontconfigconf.d10hmfonts.conf.drv'...
+building '/nix/store/irrwwi9z95kgzf5xfdl2n2dhbbk2xpbs-home-manager-files.drv'...
+building '/nix/store/hcf3ym5h44ddxmqc6id68lls41pwirxs-home-manager-generation.drv'...
 Starting Home Manager activation
 Activating checkFilesChanged
 Activating cleanEmptyLinkTargets
@@ -10,11 +27,12 @@ Activating writeBoundary
 Activating installPackages
 replacing old 'home-manager-path'
 installing 'home-manager-path'
+building '/nix/store/c1hvy184wq63k4di3hsvahrhr10k6y5m-user-environment.drv'...
 Activating dconfSettings
 Activating migrateGhAccounts
 Activating linkGeneration
 Cleaning up orphan links from /home/hugob
-No change so reusing latest profile generation 49
+Creating profile generation 50
 Creating home file links in /home/hugob
 Activating onFilesChange
 Activating runUnmountPersistentStoragePaths

@@ -1,63 +1,250 @@
 [32m>[39m Building NixOS configuration
 [?25l[35;1mwarning:[0m Git tree '/home/hugob/dotfiles/nix-config' is dirty
-[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 7s[0m[1G[2Kthese 3 derivations will be built:
-  /nix/store/2kls3g5x9h0bq5bmb3falb7r2x3my3bk-etc-nix-registry.json.drv
-  /nix/store/2a86gvj8yx2min54q3kd54pc4l3xqdwp-etc.drv
-  /nix/store/nxy63d577rf9s1525782yqxn1vcl5xp9-nixos-system-amaterasu-24.05.20240531.805a384.drv
+[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[35;1mwarning:[0m updating lock file '/home/hugob/dotfiles/nix-config/flake.lock':
+• [32;1mAdded input 'nixpkgs-old':[0m
+    'github:nixos/nixpkgs/a62e6edd6d5e1fa0329b8653c801147986f8d446' (2024-05-31)
+[35;1mwarning:[0m Git tree '/home/hugob/dotfiles/nix-config' is dirty
+[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 7s[0m[1G[2K[1m⏱ 7s[0m[1G[2K[1m⏱ 7s[0m[1G[2K[1m⏱ 7s[0m[1G[2K[1m⏱ 7s[0m[1G[2Kthese 11 derivations will be built:
+  /nix/store/2z0aamc9r838c5liidbfihh14y98z0l0-etc-pam-environment.drv
+  /nix/store/a5gbxc2jph9ckfn34a296cwcm9wmq9by-set-environment.drv
+  /nix/store/7y4cvmv2ian4vp1x4aji9n606wpjdlv2-etc-fish-nixos-env-preinit.fish.drv
+  /nix/store/w20fyssx8a1jrrj53qmr4912z4rfjq9v-nix.conf.drv
+  /nix/store/rhq5sz2z6bwn58q1h9l3vy7562j60z92-X-Restart-Triggers-nix-daemon.drv
+  /nix/store/6ygq86pxcn6qynxf2r0phxbds8ma0cj5-unit-nix-daemon.service.drv
+  /nix/store/l34rjvhva9icnddz04kbhfjsvnd06n2p-system-units.drv
+┏━ [1mDependency Graph[0m with 3 roots:
+┃ [34m⏸ etc-pam-environment[0m
+┃ [34m┌─ [0m[34m⏸ set-environment[0m
+┃ [34m⏸ etc-fish-nixos-env-preinit.fish[0m
+┃       [34m┌─ [0m[34m⏸ nix.conf[0m
+┃    [34m┌─ [0m[34m⏸ X-Restart-Triggers-nix-daemon[0m
+┃ [34m┌─ [0m[34m⏸ unit-nix-daemon.service[0m
+┃ [34m⏸ system-units[0m[0m
+┣━━━ [1mBuilds         [0m
+┗━ ∑ [33m⏵ 0[0m │ [32m✔ 0[0m │ [34m⏸ [1m7[0m[0m │ [1m⏱ 7s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K  /nix/store/l68043gnnjc61ffhzhscbgz4ls9sdzl3-etc-nix-registry.json.drv
+  /nix/store/pyxc25n6a3vk9nx3dnazmajsj3ki7sys-etc-profile.drv
+  /nix/store/wn0glk7sagwwqvd8l8d5n547jdkc8pg4-etc.drv
+  /nix/store/5bfbka0pfvx63hwqdx7qzg7iphdvmf9z-nixos-system-amaterasu-24.05.20240531.805a384.drv
 ┏━ [1mDependency Graph[0m:
-┃    [34m┌─ [0m[34m⏸ etc-nix-registry.json[0m
+┃    [34m┌─ [0m[34m⏸ etc-profile[0m
+┃    [34m├─ [0m[34m⏸ etc-nix-registry.json[0m
+┃    [34m│  [0m      [34m┌─ [0m[34m⏸ nix.conf[0m
+┃    [34m│  [0m   [34m┌─ [0m[34m⏸ X-Restart-Triggers-nix-daemon[0m
+┃    [34m│  [0m[34m┌─ [0m[34m⏸ unit-nix-daemon.service[0m
+┃    [34m├─ [0m[34m⏸ system-units[0m
+┃    [34m│  [0m[34m┌─ [0m[34m⏸ set-environment[0m
+┃    [34m├─ [0m[34m⏸ etc-fish-nixos-env-preinit.fish[0m
+┃    [34m├─ [0m[34m⏸ etc-pam-environment[0m
+┃ [34m┌─ [0m[34m⏸ etc[0m
+┃ [34m⏸ nixos-system-amaterasu-24.05.20240531.805a384[0m[0m
+┣━━━ [1mBuilds          [0m
+┗━ ∑ [33m⏵ 0[0m │ [32m✔ 0[0m │ [34m⏸ [1m11[0m[0m │ [1m⏱ 8s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[0m[34metc-nix-registry.json> [0mbuilding '/nix/store/l68043gnnjc61ffhzhscbgz4ls9sdzl3-etc-nix-registry.json.drv'
+[0m[34metc-pam-environment> [0mbuilding '/nix/store/2z0aamc9r838c5liidbfihh14y98z0l0-etc-pam-environment.drv'
+[0m[34mnix.conf> [0mbuilding '/nix/store/w20fyssx8a1jrrj53qmr4912z4rfjq9v-nix.conf.drv'
+┏━ [1mDependency Graph[0m:
+┃    [34m┌─ [0m[34m⏸ etc-profile[0m
+┃    [34m├─ [0m[33m[1m⏵ etc-nix-registry.json[0m[0m
+┃    [34m│  [0m      [34m┌─ [0m[33m[1m⏵ nix.conf[0m[0m
+┃    [34m│  [0m   [34m┌─ [0m[34m⏸ X-Restart-Triggers-nix-daemon[0m
+┃    [34m│  [0m[34m┌─ [0m[34m⏸ unit-nix-daemon.service[0m
+┃    [34m├─ [0m[34m⏸ system-units[0m
+┃    [34m│  [0m[34m┌─ [0m[34m⏸ set-environment[0m
+┃    [34m├─ [0m[34m⏸ etc-fish-nixos-env-preinit.fish[0m
+┃    [34m├─ [0m[33m[1m⏵ etc-pam-environment[0m[0m
 ┃ [34m┌─ [0m[34m⏸ etc[0m
 ┃ [34m⏸ nixos-system-amaterasu-24.05.20240531.805a384[0m[0m
 ┣━━━ [1mBuilds         [0m
-┗━ ∑ [33m⏵ 0[0m │ [32m✔ 0[0m │ [34m⏸ [1m3[0m[0m │ [1m⏱ 7s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[0m[34metc-nix-registry.json> [0mbuilding '/nix/store/2kls3g5x9h0bq5bmb3falb7r2x3my3bk-etc-nix-registry.json.drv'
+┗━ ∑ [33m⏵ [1m3[0m[0m │ [32m✔ 0[0m │ [34m⏸ [1m8[0m[0m │ [1m⏱ 8s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[0m[34mset-environment> [0mbuilding '/nix/store/a5gbxc2jph9ckfn34a296cwcm9wmq9by-set-environment.drv'
+[0m[34mnix.conf> [0mValidating generated nix.conf
 ┏━ [1mDependency Graph[0m:
-┃    [34m┌─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┃    [34m┌─ [0m[34m⏸ etc-profile[0m
+┃    [34m│  [0m[34m┌─ [0m[32m✔ set-environment[0m [90m[0m
+┃    [34m├─ [0m[34m⏸ etc-fish-nixos-env-preinit.fish[0m
+┃    [34m│  [0m   [34m┌─ [0m[34m⏸ X-Restart-Triggers-nix-daemon[0m[90m waiting for [0m[33m1 ⏵[0m
+┃    [34m│  [0m[34m┌─ [0m[34m⏸ unit-nix-daemon.service[0m
+┃    [34m├─ [0m[34m⏸ system-units[0m
+┃    [34m├─ [0m[33m[1m⏵ nix.conf[0m[0m
+┃    [34m├─ [0m[32m✔ etc-pam-environment[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
 ┃ [34m┌─ [0m[34m⏸ etc[0m
 ┃ [34m⏸ nixos-system-amaterasu-24.05.20240531.805a384[0m[0m
 ┣━━━ [1mBuilds         [0m
-┗━ ∑ [33m⏵ 0[0m │ [32m✔ [1m1[0m[0m │ [34m⏸ [1m2[0m[0m │ [1m⏱ 7s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[0m[34metc> [0mbuilding '/nix/store/2a86gvj8yx2min54q3kd54pc4l3xqdwp-etc.drv'
+┗━ ∑ [33m⏵ [1m1[0m[0m │ [32m✔ [1m3[0m[0m │ [34m⏸ [1m7[0m[0m │ [1m⏱ 8s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[0m[34metc-fish-nixos-env-preinit.fish> [0mbuilding '/nix/store/7y4cvmv2ian4vp1x4aji9n606wpjdlv2-etc-fish-nixos-env-preinit.fish.drv'
+[0m[34metc-profile> [0mbuilding '/nix/store/pyxc25n6a3vk9nx3dnazmajsj3ki7sys-etc-profile.drv'
+[0m[34mX-Restart-Triggers-nix-daemon> [0mbuilding '/nix/store/rhq5sz2z6bwn58q1h9l3vy7562j60z92-X-Restart-Triggers-nix-daemon.drv'
 ┏━ [1mDependency Graph[0m:
-┃    [34m┌─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┃    [34m┌─ [0m[32m✔ etc-pam-environment[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-profile[0m [90m[0m
+┃    [34m│  [0m[34m┌─ [0m[32m✔ set-environment[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-fish-nixos-env-preinit.fish[0m [90m[0m
+┃    [34m│  [0m   [34m┌─ [0m[33m[1m⏵ X-Restart-Triggers-nix-daemon[0m[0m
+┃    [34m│  [0m[34m┌─ [0m[34m⏸ unit-nix-daemon.service[0m
+┃    [34m├─ [0m[34m⏸ system-units[0m
+┃    [34m├─ [0m[32m✔ nix.conf[0m [90m[0m
+┃ [34m┌─ [0m[34m⏸ etc[0m
+┃ [34m⏸ nixos-system-amaterasu-24.05.20240531.805a384[0m[0m
+┣━━━ [1mBuilds         [0m
+┗━ ∑ [33m⏵ [1m1[0m[0m │ [32m✔ [1m6[0m[0m │ [34m⏸ [1m4[0m[0m │ [1m⏱ 8s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[0m[34munit-nix-daemon.service> [0mbuilding '/nix/store/6ygq86pxcn6qynxf2r0phxbds8ma0cj5-unit-nix-daemon.service.drv'
+┏━ [1mDependency Graph[0m:
+┃    [34m┌─ [0m[32m✔ etc-pam-environment[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-fish-nixos-env-preinit.fish[0m [90m[0m
+┃    [34m│  [0m[34m┌─ [0m[32m✔ set-environment[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-profile[0m [90m[0m
+┃    [34m│  [0m      [34m┌─ [0m[32m✔ nix.conf[0m [90m[0m
+┃    [34m│  [0m   [34m┌─ [0m[32m✔ X-Restart-Triggers-nix-daemon[0m [90m[0m
+┃    [34m│  [0m[34m┌─ [0m[32m✔ unit-nix-daemon.service[0m [90m[0m
+┃    [34m├─ [0m[34m⏸ system-units[0m
+┃ [34m┌─ [0m[34m⏸ etc[0m
+┃ [34m⏸ nixos-system-amaterasu-24.05.20240531.805a384[0m[0m
+┣━━━ [1mBuilds         [0m
+┗━ ∑ [33m⏵ 0[0m │ [32m✔ [1m8[0m[0m │ [34m⏸ [1m3[0m[0m │ [1m⏱ 8s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[0m[34msystem-units> [0mbuilding '/nix/store/l34rjvhva9icnddz04kbhfjsvnd06n2p-system-units.drv'
+┏━ [1mDependency Graph[0m:
+┃    [34m┌─ [0m[32m✔ etc-pam-environment[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-fish-nixos-env-preinit.fish[0m [90m[0m
+┃    [34m│  [0m[34m┌─ [0m[32m✔ set-environment[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-profile[0m [90m[0m
+┃    [34m│  [0m      [34m┌─ [0m[32m✔ nix.conf[0m [90m[0m
+┃    [34m│  [0m   [34m┌─ [0m[32m✔ X-Restart-Triggers-nix-daemon[0m [90m[0m
+┃    [34m│  [0m[34m┌─ [0m[32m✔ unit-nix-daemon.service[0m [90m[0m
+┃    [34m├─ [0m[33m[1m⏵ system-units[0m[0m
+┃ [34m┌─ [0m[34m⏸ etc[0m
+┃ [34m⏸ nixos-system-amaterasu-24.05.20240531.805a384[0m[0m
+┣━━━ [1mBuilds         [0m
+┗━ ∑ [33m⏵ [1m1[0m[0m │ [32m✔ [1m8[0m[0m │ [34m⏸ [1m2[0m[0m │ [1m⏱ 8s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K┏━ [1mDependency Graph[0m:
+┃    [34m┌─ [0m[32m✔ etc-pam-environment[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-fish-nixos-env-preinit.fish[0m [90m[0m
+┃    [34m│  [0m[34m┌─ [0m[32m✔ set-environment[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-profile[0m [90m[0m
+┃    [34m│  [0m      [34m┌─ [0m[32m✔ nix.conf[0m [90m[0m
+┃    [34m│  [0m   [34m┌─ [0m[32m✔ X-Restart-Triggers-nix-daemon[0m [90m[0m
+┃    [34m│  [0m[34m┌─ [0m[32m✔ unit-nix-daemon.service[0m [90m[0m
+┃    [34m├─ [0m[33m[1m⏵ system-units[0m[0m ⏱ 1s
+┃ [34m┌─ [0m[34m⏸ etc[0m
+┃ [34m⏸ nixos-system-amaterasu-24.05.20240531.805a384[0m[0m
+┣━━━ [1mBuilds         [0m
+┗━ ∑ [33m⏵ [1m1[0m[0m │ [32m✔ [1m8[0m[0m │ [34m⏸ [1m2[0m[0m │ [1m⏱ 9s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K┏━ [1mDependency Graph[0m:
+┃    [34m┌─ [0m[32m✔ etc-pam-environment[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-fish-nixos-env-preinit.fish[0m [90m[0m
+┃    [34m│  [0m[34m┌─ [0m[32m✔ set-environment[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-profile[0m [90m[0m
+┃    [34m│  [0m      [34m┌─ [0m[32m✔ nix.conf[0m [90m[0m
+┃    [34m│  [0m   [34m┌─ [0m[32m✔ X-Restart-Triggers-nix-daemon[0m [90m[0m
+┃    [34m│  [0m[34m┌─ [0m[32m✔ unit-nix-daemon.service[0m [90m[0m
+┃    [34m├─ [0m[32m✔ system-units[0m [90m⏱ 1s[0m
+┃ [34m┌─ [0m[34m⏸ etc[0m
+┃ [34m⏸ nixos-system-amaterasu-24.05.20240531.805a384[0m[0m
+┣━━━ [1mBuilds         [0m
+┗━ ∑ [33m⏵ 0[0m │ [32m✔ [1m9[0m[0m │ [34m⏸ [1m2[0m[0m │ [1m⏱ 9s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[0m[34metc> [0mbuilding '/nix/store/wn0glk7sagwwqvd8l8d5n547jdkc8pg4-etc.drv'
+┏━ [1mDependency Graph[0m:
+┃    [34m┌─ [0m[32m✔ etc-pam-environment[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-fish-nixos-env-preinit.fish[0m [90m[0m
+┃    [34m│  [0m[34m┌─ [0m[32m✔ set-environment[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-profile[0m [90m[0m
+┃    [34m│  [0m      [34m┌─ [0m[32m✔ nix.conf[0m [90m[0m
+┃    [34m│  [0m   [34m┌─ [0m[32m✔ X-Restart-Triggers-nix-daemon[0m [90m[0m
+┃    [34m│  [0m[34m┌─ [0m[32m✔ unit-nix-daemon.service[0m [90m[0m
+┃    [34m├─ [0m[32m✔ system-units[0m [90m⏱ 1s[0m
 ┃ [34m┌─ [0m[33m[1m⏵ etc[0m[0m
 ┃ [34m⏸ nixos-system-amaterasu-24.05.20240531.805a384[0m[0m
 ┣━━━ [1mBuilds         [0m
-┗━ ∑ [33m⏵ [1m1[0m[0m │ [32m✔ [1m1[0m[0m │ [34m⏸ [1m1[0m[0m │ [1m⏱ 7s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K┏━ [1mDependency Graph[0m:
-┃    [34m┌─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┗━ ∑ [33m⏵ [1m1[0m[0m │ [32m✔ [1m9[0m[0m │ [34m⏸ [1m1[0m[0m │ [1m⏱ 9s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K┏━ [1mDependency Graph[0m:
+┃    [34m┌─ [0m[32m✔ etc-pam-environment[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-fish-nixos-env-preinit.fish[0m [90m[0m
+┃    [34m│  [0m[34m┌─ [0m[32m✔ set-environment[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-profile[0m [90m[0m
+┃    [34m│  [0m      [34m┌─ [0m[32m✔ nix.conf[0m [90m[0m
+┃    [34m│  [0m   [34m┌─ [0m[32m✔ X-Restart-Triggers-nix-daemon[0m [90m[0m
+┃    [34m│  [0m[34m┌─ [0m[32m✔ unit-nix-daemon.service[0m [90m[0m
+┃    [34m├─ [0m[32m✔ system-units[0m [90m⏱ 1s[0m
 ┃ [34m┌─ [0m[33m[1m⏵ etc[0m[0m
 ┃ [34m⏸ nixos-system-amaterasu-24.05.20240531.805a384[0m[0m
 ┣━━━ [1mBuilds         [0m
-┗━ ∑ [33m⏵ [1m1[0m[0m │ [32m✔ [1m1[0m[0m │ [34m⏸ [1m1[0m[0m │ [1m⏱ 8s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K┏━ [1mDependency Graph[0m:
-┃    [34m┌─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┗━ ∑ [33m⏵ [1m1[0m[0m │ [32m✔ [1m9[0m[0m │ [34m⏸ [1m1[0m[0m │ [1m⏱ 10s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K┏━ [1mDependency Graph[0m:
+┃    [34m┌─ [0m[32m✔ etc-pam-environment[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-fish-nixos-env-preinit.fish[0m [90m[0m
+┃    [34m│  [0m[34m┌─ [0m[32m✔ set-environment[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-profile[0m [90m[0m
+┃    [34m│  [0m      [34m┌─ [0m[32m✔ nix.conf[0m [90m[0m
+┃    [34m│  [0m   [34m┌─ [0m[32m✔ X-Restart-Triggers-nix-daemon[0m [90m[0m
+┃    [34m│  [0m[34m┌─ [0m[32m✔ unit-nix-daemon.service[0m [90m[0m
+┃    [34m├─ [0m[32m✔ system-units[0m [90m⏱ 1s[0m
 ┃ [34m┌─ [0m[32m✔ etc[0m [90m[0m
 ┃ [34m⏸ nixos-system-amaterasu-24.05.20240531.805a384[0m[0m
-┣━━━ [1mBuilds         [0m
-┗━ ∑ [33m⏵ 0[0m │ [32m✔ [1m2[0m[0m │ [34m⏸ [1m1[0m[0m │ [1m⏱ 8s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[0m[34mnixos-system-amaterasu-24.05.20240531.805a> [0mbuilding '/nix/store/nxy63d577rf9s1525782yqxn1vcl5xp9-nixos-system-amaterasu-24.05.20240531.805a384.drv'
+┣━━━ [1mBuilds          [0m
+┗━ ∑ [33m⏵ 0[0m │ [32m✔ [1m10[0m[0m │ [34m⏸ [1m1[0m[0m │ [1m⏱ 10s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[0m[34mnixos-system-amaterasu-24.05.20240531.805a> [0mbuilding '/nix/store/5bfbka0pfvx63hwqdx7qzg7iphdvmf9z-nixos-system-amaterasu-24.05.20240531.805a384.drv'
 ┏━ [1mDependency Graph[0m:
-┃    [34m┌─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┃    [34m┌─ [0m[32m✔ etc-pam-environment[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-fish-nixos-env-preinit.fish[0m [90m[0m
+┃    [34m│  [0m[34m┌─ [0m[32m✔ set-environment[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-profile[0m [90m[0m
+┃    [34m│  [0m      [34m┌─ [0m[32m✔ nix.conf[0m [90m[0m
+┃    [34m│  [0m   [34m┌─ [0m[32m✔ X-Restart-Triggers-nix-daemon[0m [90m[0m
+┃    [34m│  [0m[34m┌─ [0m[32m✔ unit-nix-daemon.service[0m [90m[0m
+┃    [34m├─ [0m[32m✔ system-units[0m [90m⏱ 1s[0m
 ┃ [34m┌─ [0m[32m✔ etc[0m [90m[0m
 ┃ [33m[1m⏵ nixos-system-amaterasu-24.05.20240531.805a384[0m[0m[0m
-┣━━━ [1mBuilds         [0m
-┗━ ∑ [33m⏵ [1m1[0m[0m │ [32m✔ [1m2[0m[0m │ [34m⏸ 0[0m │ [1m⏱ 8s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K┏━ [1mDependency Graph[0m:
-┃    [34m┌─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┣━━━ [1mBuilds          [0m
+┗━ ∑ [33m⏵ [1m1[0m[0m │ [32m✔ [1m10[0m[0m │ [34m⏸ 0[0m │ [1m⏱ 10s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K┏━ [1mDependency Graph[0m:
+┃    [34m┌─ [0m[32m✔ etc-pam-environment[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-fish-nixos-env-preinit.fish[0m [90m[0m
+┃    [34m│  [0m[34m┌─ [0m[32m✔ set-environment[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-profile[0m [90m[0m
+┃    [34m│  [0m      [34m┌─ [0m[32m✔ nix.conf[0m [90m[0m
+┃    [34m│  [0m   [34m┌─ [0m[32m✔ X-Restart-Triggers-nix-daemon[0m [90m[0m
+┃    [34m│  [0m[34m┌─ [0m[32m✔ unit-nix-daemon.service[0m [90m[0m
+┃    [34m├─ [0m[32m✔ system-units[0m [90m⏱ 1s[0m
+┃ [34m┌─ [0m[32m✔ etc[0m [90m[0m
+┃ [33m[1m⏵ nixos-system-amaterasu-24.05.20240531.805a384[0m[0m[0m
+┣━━━ [1mBuilds          [0m
+┗━ ∑ [33m⏵ [1m1[0m[0m │ [32m✔ [1m10[0m[0m │ [34m⏸ 0[0m │ [1m⏱ 10s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K┏━ [1mDependency Graph[0m:
+┃    [34m┌─ [0m[32m✔ etc-pam-environment[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-fish-nixos-env-preinit.fish[0m [90m[0m
+┃    [34m│  [0m[34m┌─ [0m[32m✔ set-environment[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-profile[0m [90m[0m
+┃    [34m│  [0m      [34m┌─ [0m[32m✔ nix.conf[0m [90m[0m
+┃    [34m│  [0m   [34m┌─ [0m[32m✔ X-Restart-Triggers-nix-daemon[0m [90m[0m
+┃    [34m│  [0m[34m┌─ [0m[32m✔ unit-nix-daemon.service[0m [90m[0m
+┃    [34m├─ [0m[32m✔ system-units[0m [90m⏱ 1s[0m
 ┃ [34m┌─ [0m[32m✔ etc[0m [90m[0m
 ┃ [32m✔ nixos-system-amaterasu-24.05.20240531.805a384[0m [90m[0m[0m
-┣━━━ [1mBuilds         [0m
-┗━ ∑ [33m⏵ 0[0m │ [32m✔ [1m3[0m[0m │ [34m⏸ 0[0m │ [1m⏱ 8s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K┏━ [1mDependency Graph[0m:
-┃    [34m┌─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┣━━━ [1mBuilds          [0m
+┗━ ∑ [33m⏵ 0[0m │ [32m✔ [1m11[0m[0m │ [34m⏸ 0[0m │ [1m⏱ 10s[0m[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K┏━ [1mDependency Graph[0m:
+┃    [34m┌─ [0m[32m✔ etc-pam-environment[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-nix-registry.json[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-fish-nixos-env-preinit.fish[0m [90m[0m
+┃    [34m│  [0m[34m┌─ [0m[32m✔ set-environment[0m [90m[0m
+┃    [34m├─ [0m[32m✔ etc-profile[0m [90m[0m
+┃    [34m│  [0m      [34m┌─ [0m[32m✔ nix.conf[0m [90m[0m
+┃    [34m│  [0m   [34m┌─ [0m[32m✔ X-Restart-Triggers-nix-daemon[0m [90m[0m
+┃    [34m│  [0m[34m┌─ [0m[32m✔ unit-nix-daemon.service[0m [90m[0m
+┃    [34m├─ [0m[32m✔ system-units[0m [90m⏱ 1s[0m
 ┃ [34m┌─ [0m[32m✔ etc[0m [90m[0m
 ┃ [32m✔ nixos-system-amaterasu-24.05.20240531.805a384[0m [90m[0m[0m
-┣━━━ [1mBuilds         [0m
-┗━ ∑ [33m⏵ 0[0m │ [32m✔ [1m3[0m[0m │ [34m⏸ 0[0m │ [1m[32mFinished at 22:55:15 after 8s[0m[0m[?25h
+┣━━━ [1mBuilds          [0m
+┗━ ∑ [33m⏵ 0[0m │ [32m✔ [1m11[0m[0m │ [34m⏸ 0[0m │ [1m[32mFinished at 22:58:46 after 10s[0m[0m[?25h
 [32m>[39m Comparing changes
 <<< /run/current-system
->>> /tmp/nh-os-3d8jTO/result
-No version or selection state changes.
-Closure size: 1755 -> 1755 (4 paths added, 4 paths removed, delta +0, disk usage +24B).
+>>> /tmp/nh-os-uqXIlP/result
+Version changes:
+[C.]  #1  source  <none> x18 -> <none> x19
+Closure size: 1755 -> 1756 (13 paths added, 12 paths removed, delta +1, disk usage +149.0MiB).
 [32m>[39m Activating configuration
 activating the configuration...
 setting up /etc...
 reloading user units for hugob...
 restarting sysinit-reactivation.target
+restarting the following units: nix-daemon.service
 [32m>[39m Adding configuration to bootloader
 updating GRUB 2 menu...
 Warning: os-prober will be executed to detect other bootable partitions.
