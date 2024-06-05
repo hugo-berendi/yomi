@@ -1,95 +1,76 @@
-{disks ? ["/dev/nvme0n1"], ...}: {
+{
+  device ? throw "/dev/nvme0n1",
+  ...
+}: {
   disko.devices = {
-    # {{{ Disks
-    disk = {
-      x = {
-        type = "disk";
-        device = builtins.elemAt disks 0;
-        content = {
-          type = "table";
-          format = "gpt";
-          partitions = [
-            # {{{ Boot
-            {
-              name = "ESP";
-              size = "512MiB";
-              fs-type = "fat32";
-              bootable = true;
-              content = {
-                type = "filesystem";
-                format = "vfat";
-                mountpoint = "/boot";
-              };
-            }
-            # }}}
-            # {{{ Swap
-            {
-              name = "swap";
-              size = "16GiB";
-              content = {
-                type = "swap";
-                resumeDevice = true;
-              };
-            }
-            # }}}
-            # {{{ Main
-            {
-              name = "zfs";
-              size = "100%";
-              content = {
-                type = "zfs";
-                pool = "zroot";
-              };
-            }
-            # }}}
-          ];
+    disk.main = {
+      inherit device;
+      type = "disk";
+      content = {
+        type = "gpt";
+        partitions = {
+          boot = {
+            name = "boot";
+            size = "1M";
+            type = "EF02";
+          };
+          esp = {
+            name = "ESP";
+            size = "500M";
+            type = "EF00";
+            content = {
+              type = "filesystem";
+              format = "vfat";
+              mountpoint = "/boot";
+            };
+          };
+          swap = {
+            size = "16G";
+            content = {
+              type = "swap";
+              resumeDevice = true;
+            };
+          };
+          root = {
+            name = "root";
+            size = "100%";
+            content = {
+              type = "lvm_pv";
+              vg = "root_vg";
+            };
+          };
         };
       };
     };
-    # }}}
-    # {{{ zpools
-    zpool = {
-      zroot = {
-        type = "zpool";
-        mountpoint = "/";
+    lvm_vg = {
+      root_vg = {
+        type = "lvm_vg";
+        lvs = {
+          root = {
+            size = "100%FREE";
+            content = {
+              type = "btrfs";
+              extraArgs = ["-f"];
 
-        postCreateHook = ''
-          zfs snapshot zroot@blank
-          zfs set keylocation="prompt" "zroot";
-        '';
+              subvolumes = {
+                "/root" = {
+                  mountpoint = "/";
+                };
 
-        rootFsOptions = {
-          compression = "lz4";
-          "com.sun:auto-snapshot" = "false";
-          encryption = "aes-256-gcm";
-          keyformat = "passphrase";
-          keylocation = "file:///hermes/secrets/amaterasu/disk.key";
-        };
+                "/persist" = {
+                  mountOptions = ["subvol=persist" "noatime"];
+                  mountpoint = "/persist";
+                };
 
-        # {{{ Datasets
-        datasets = {
-          "root/persist/data" = {
-            type = "zfs_fs";
-            mountpoint = "/persist/data";
-            options."com.sun:auto-snapshot" = "true";
-          };
-          "root/persist/state" = {
-            type = "zfs_fs";
-            mountpoint = "/persist/state";
-            options."com.sun:auto-snapshot" = "true";
-          };
-          "root/local/nix" = {
-            type = "zfs_fs";
-            mountpoint = "/nix";
-          };
-          "root/local/cache" = {
-            type = "zfs_fs";
-            mountpoint = "/persist/local/cache";
+                "/nix" = {
+                  mountOptions = ["subvol=nix" "noatime"];
+                  mountpoint = "/nix";
+                };
+              };
+            };
           };
         };
-        # }}}
       };
     };
-    # }}}
   };
 }
