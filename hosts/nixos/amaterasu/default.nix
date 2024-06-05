@@ -27,7 +27,8 @@
     ./hardware
     ./boot.nix
     # {{{ disk formatting using disko (only enable on new install)
-    # ./filesystems
+    ./filesystems
+    ./services/zfs.nix
     # }}}
   ];
 
