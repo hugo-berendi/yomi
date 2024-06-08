@@ -1,7 +1,7 @@
-{opkgs, ...}: {
+{pkgs, ...}: {
   programs.waybar = {
     enable = false;
-    package = opkgs.waybar;
+    package = pkgs.old.waybar;
 
     systemd.enable = true;
     systemd.target = "hyprland-session.target";

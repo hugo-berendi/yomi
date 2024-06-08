@@ -20,4 +20,11 @@
       config.allowUnfree = true;
     };
   };
+  # be accessible through 'pkgs.old'
+  old-packages = final: _prev: {
+    old = import inputs.nixpkgs-old {
+      system = final.system;
+      config.allowUnfree = true;
+    };
+  };
 }

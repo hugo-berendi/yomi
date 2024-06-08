@@ -1,64 +1,23 @@
-[32m>[39m Building NixOS configuration
-[?25l[35;1mwarning:[0m Git tree '/home/hugob/dotfiles/nix-config' is dirty
-[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 0s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 1s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 2s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 3s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 4s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 5s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 6s[0m[1G[2K[1m⏱ 7s[0m[1G[2K[1m⏱ 7s[0m[1G[2K[1m⏱ 7s[0m[1G[2K[1m⏱ 7s[0m[1G[2K[1m⏱ 7s[0m[1G[2K[1m⏱ 7s[0m[1G[2K[1m⏱ 7s[0m[1G[2K[1m⏱ 7s[0m[1G[2K[1m⏱ 7s[0m[1G[2K[1m⏱ 7s[0m[1G[2K[1m⏱ 7s[0m[1G[2K[1m⏱ 7s[0m[1G[2K[1m⏱ 7s[0m[1G[2K[1m⏱ 7s[0m[1G[2K[1m⏱ 7s[0m[1G[2K[1m⏱ 7s[0m[1G[2K[1m⏱ 8s[0m[1G[2K[1m⏱ 8s[0m[1G[2K[1m⏱ 8s[0m[1G[2K[1m⏱ 8s[0m[1G[2K[1m⏱ 8s[0m[1G[2K[1m⏱ 8s[0m[1G[2K[1m⏱ 8s[0m[1G[2K[1m⏱ 8s[0m[1G[2K[1m⏱ 8s[0m[1G[2K[1m⏱ 8s[0m[1G[2K[1m⏱ 9s[0m[1G[2K[1m⏱ 10s[0m[1G[2K[1m⏱ 11s[0m[1G[2K[1m⏱ 12s[0m[1G[2K[1m⏱ 13s[0m[1G[2K[1m⏱ 14s[0m[1G[2K[1m⏱ 15s[0m[1G[2K[1m⏱ 16s[0m[1G[2K[1m⏱ 17s[0m[1G[2K[1m⏱ 18s[0m[1G[2K[1m⏱ 19s[0m[1G[2K[1m⏱ 20s[0m[1G[2K[1m⏱ 21s[0m[1G[2K[1m⏱ 21s[0m[1G[2K[1m⏱ 21s[0m[1G[2K[1m⏱ 21s[0m[1G[2K[1m⏱ 21s[0m[1G[2K[1m⏱ 21s[0m[1G[2K[1m⏱ 21s[0m[1G[2K[1m⏱ 21s[0m[1G[2K[1m⏱ 21s[0m[1G[2K[1m⏱ 21s[0m[1G[2K[1m⏱ 21s[0m[1G[2K[31;1merror:[0m
-       … while calling the '[35;1mseq[0m' builtin
-
-         [34;1mat [35;1m/nix/store/i1aw9jjgxcvyd642s12kw3iasmarwd42-source/lib/modules.nix:322:18[0m:
-
-          321|         options = checked options;
-          322|         config = checked (removeAttrs config [ "_module" ]);
-             |                  [31;1m^[0m
-          323|         _module = checked (config._module);
-
-       … while calling the '[35;1mthrow[0m' builtin
-
-         [34;1mat [35;1m/nix/store/i1aw9jjgxcvyd642s12kw3iasmarwd42-source/lib/modules.nix:298:18[0m:
-
-          297|                     ''
-          298|             else throw baseMsg
-             |                  [31;1m^[0m
-          299|         else null;
-
-       [31;1merror:[0m The option `disko' does not exist. Definition values:
-       - In `/nix/store/4kv3syk6prwjgr7ilda1h164cbbb4mfv-source/hosts/nixos/amaterasu/filesystems':
-           {
-             devices = {
-               disk = {
-                 x = {
-                   content = {
-           ...
-┏━[1;31m 1 Errors: [0m
-┃ [31;1merror:[0m
-┃        … while calling the '[35;1mseq[0m' builtin
-┃ 
-┃          [34;1mat [35;1m/nix/store/i1aw9jjgxcvyd642s12kw3iasmarwd42-source/lib/modules.nix:322:18[0m:
-┃ 
-┃           321|         options = checked options;
-┃           322|         config = checked (removeAttrs config [ "_module" ]);
-┃              |                  [31;1m^[0m
-┃           323|         _module = checked (config._module);
-┃ 
-┃        … while calling the '[35;1mthrow[0m' builtin
-┃ 
-┃          [34;1mat [35;1m/nix/store/i1aw9jjgxcvyd642s12kw3iasmarwd42-source/lib/modules.nix:298:18[0m:
-┃ 
-┃           297|                     ''
-┃           298|             else throw baseMsg
-┃              |                  [31;1m^[0m
-┃           299|         else null;
-┃ 
-┃        [31;1merror:[0m The option `disko' does not exist. Definition values:
-┃        - In `/nix/store/4kv3syk6prwjgr7ilda1h164cbbb4mfv-source/hosts/nixos/amaterasu/filesystems':
-┃            {
-┃              devices = {
-┃                disk = {
-┃                  x = {
-┃                    content = {
-┃            ...[0m
-┣━━━                                                             
-┗━ ∑ [1m[31m⚠ Exited with 1 errors reported by nix at 13:49:08 after 22s[0m[0m[?25h
-Error: 
-   0: [91mCommand exited with status Exited(1)[0m
-
-Location:
-   [35msrc/commands.rs[0m:[35m151[0m
+warning: Git tree '/home/hugob/dotfiles/nix-config' is dirty
+warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
+building the system configuration...
+warning: Git tree '/home/hugob/dotfiles/nix-config' is dirty
+warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
+these 3 derivations will be built:
+  /nix/store/4dq94nnixy8xc0dzfws1z5y11fj646vw-etc-nix-registry.json.drv
+  /nix/store/d8jn2hww75y1l2ckfx36ijvyfnpzms3k-etc.drv
+  /nix/store/5pdavfxqqd5hlxb8zcjx5w78sk3k7mqd-nixos-system-amaterasu-24.05.20240531.805a384.drv
+building '/nix/store/4dq94nnixy8xc0dzfws1z5y11fj646vw-etc-nix-registry.json.drv'...
+building '/nix/store/d8jn2hww75y1l2ckfx36ijvyfnpzms3k-etc.drv'...
+building '/nix/store/5pdavfxqqd5hlxb8zcjx5w78sk3k7mqd-nixos-system-amaterasu-24.05.20240531.805a384.drv'...
+updating GRUB 2 menu...
+Warning: os-prober will be executed to detect other bootable partitions.
+Its output will be used to detect bootable binaries on them and create new boot entries.
+lsblk: /dev/mapper/no*[0-9]: not a block device
+lsblk: /dev/mapper/raid*[0-9]: not a block device
+lsblk: /dev/mapper/disks*[0-9]: not a block device
+activating the configuration...
+setting up /etc...
+reloading user units for hugob...
+restarting sysinit-reactivation.target
+the following new units were started: systemd-localed.service

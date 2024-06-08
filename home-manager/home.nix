@@ -6,8 +6,6 @@
   lib,
   config,
   pkgs,
-  upkgs,
-  opkgs,
   ...
 }: let
   imports = [
@@ -57,7 +55,7 @@ in {
       outputs.overlays.additions
       outputs.overlays.modifications
       outputs.overlays.unstable-packages
-
+      outputs.overlays.old-packages
       # You can also add overlays exported from other flakes:
       # neovim-nightly-overlay.overlays.default
 
@@ -95,15 +93,15 @@ in {
       pkgs.zathura
       pkgs.sxiv
       pkgs.mpv
-      pkgs.unityhub
-      opkgs.waybar
-      upkgs.nerdfetch # for displaying pc/laptop stats
-      upkgs.alejandra # nix formatter
-      upkgs.neovim
-      upkgs.neovide
-      upkgs.nh
-      upkgs.nix-output-monitor
-      upkgs.nvd
+      #pkgs.unityhub
+      pkgs.old.waybar
+      pkgs.unstable.nerdfetch # for displaying pc/laptop stats
+      pkgs.unstable.alejandra # nix formatter
+      pkgs.unstable.neovim
+      pkgs.unstable.neovide
+      pkgs.unstable.nh
+      pkgs.unstable.nix-output-monitor
+      pkgs.unstable.nvd
     ];
   };
 

@@ -1,7 +1,4 @@
-{
-  device ? throw "/dev/nvme0n1",
-  ...
-}: {
+{device ? throw "/dev/nvme0n1", ...}: {
   disko.devices = {
     disk.main = {
       inherit device;

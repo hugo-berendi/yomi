@@ -1,6 +1,6 @@
 {
   inputs,
-  upkgs,
+  pkgs,
   config,
   ...
 }: {

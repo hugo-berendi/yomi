@@ -1,4 +1,5 @@
 warning: Git tree '/home/hugob/dotfiles/nix-config' is dirty
+warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
 Starting Home Manager activation
 Activating checkFilesChanged
 Activating cleanEmptyLinkTargets
@@ -14,17 +15,14 @@ Activating dconfSettings
 Activating migrateGhAccounts
 Activating linkGeneration
 Cleaning up orphan links from /home/hugob
-No change so reusing latest profile generation 50
+No change so reusing latest profile generation 3
 Creating home file links in /home/hugob
 Activating onFilesChange
 Activating runUnmountPersistentStoragePaths
 Activating reloadSystemd
 Starting units: hyprland-session.target
-Started pipewire.socket - active
-Started pipewire-pulse.socket - active
-Started wireplumber.service - active
-Started pipewire.service - active
 warning: Git tree '/home/hugob/dotfiles/nix-config' is dirty
+warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
 
 There are 162 unread and relevant news items.
 Read them by running the command "home-manager news".

@@ -6,7 +6,6 @@
   lib,
   config,
   pkgs,
-  upkgs,
   ...
 }: {
   # You can import other NixOS modules here
@@ -17,6 +16,7 @@
     # Or modules from other flakes (such as nixos-hardware):
     # inputs.hardware.nixosModules.common-cpu-amd
     # inputs.hardware.nixosModules.common-ssd
+    inputs.nix-flatpak.nixosModules.nix-flatpak
 
     # You can also split up your configuration and import pieces of it here:
     # ./users.nix
@@ -27,8 +27,8 @@
     ./hardware
     ./boot.nix
     # {{{ disk formatting using disko (only enable on new install)
-    ./filesystems
-    ./services/zfs.nix
+    # ./filesystems
+    # ./services/zfs.nix
     # }}}
   ];
 
@@ -39,6 +39,7 @@
       outputs.overlays.additions
       outputs.overlays.modifications
       outputs.overlays.unstable-packages
+      outputs.overlays.old-packages
 
       # You can also add overlays exported from other flakes:
       # neovim-nightly-overlay.overlays.default
@@ -138,19 +139,43 @@
   programs.hyprland.enable = true;
 
   # Enable the sddm.
-  services.xserver = {
+  services.displayManager.sddm = {
     enable = true;
-    displayManager.sddm = {
-      enable = true;
-      theme = "rose-pine";
-      wayland = {enable = true;};
-    };
+    theme = "rose-pine";
+    wayland = {enable = true;};
   };
 
-  fonts.packages = with upkgs; [maple-mono-NF (nerdfonts.override {fonts = ["Recursive"];})];
+  fonts.packages = with pkgs.unstable; [maple-mono-NF (nerdfonts.override {fonts = ["Recursive"];})];
 
   # flatpak
-  services.flatpak = {enable = true;};
+  services.flatpak = {
+    enable = true;
+    update = {
+      onActivation = true;
+      auto = {
+        enable = true;
+        onCalendar = "weekly"; # Default value
+      };
+    };
+    remotes = lib.mkOptionDefault [
+      {
+        name = "flathub-beta";
+        location = "https://flathub.org/beta-repo/flathub-beta.flatpakrepo";
+      }
+    ];
+    overrides = {
+      global = {
+        # Force Wayland by default
+        Context.sockets = ["wayland" "!x11" "!fallback-x11"];
+      };
+    };
+    packages = [
+      {
+        appId = "dev.vencord.Vesktop";
+        origin = "flathub";
+      }
+    ];
+  };
   xdg.portal = {
     enable = true;
     configPackages = [pkgs.xdg-desktop-portal-hyprland];
@@ -192,6 +217,8 @@
     rofi
     hyprland
     ugrep
+    cargo
+    rustc
   ];
 
   environment.sessionVariables = {

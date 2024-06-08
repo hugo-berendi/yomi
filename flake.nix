@@ -58,6 +58,9 @@
     anyrun.url = "github:Kirottu/anyrun";
     anyrun.inputs.nixpkgs.follows = "nixpkgs";
 
+    nix-flatpak.url = "github:gmodena/nix-flatpak";
+    nix-flatpak.inputs.nixpkgs.follows = "nixpkgs";
+
     miros.url = "github:prescientmoon/miros";
     miros.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -70,8 +73,8 @@
     darkmatter-grub-theme.inputs.nixpkgs.follows = "nixpkgs";
 
     stylix.url = "github:danth/stylix/a33d88cf8f75446f166f2ff4f810a389feed2d56";
-    # stylix.inputs.nixpkgs.follows = "nixpkgs";
-    # stylix.inputs.home-manager.follows = "home-manager";
+    stylix.inputs.nixpkgs.follows = "nixpkgs";
+    stylix.inputs.home-manager.follows = "home-manager";
 
     base16-schemes.url = "github:tinted-theming/schemes";
     base16-schemes.flake = false;
@@ -102,9 +105,6 @@
 
     specialArgs = system: {
       inherit inputs outputs;
-
-      upkgs = inputs.nixpkgs-unstable.legacyPackages.${system};
-      opkgs = inputs.nixpkgs-old.legacyPackages.${system};
     };
   in {
     nixpkgs.config.permittedInsecurePackages = [
@@ -142,6 +142,16 @@
           specialArgs = specialArgs system;
 
           modules = [
+            home-manager.nixosModules.home-manager
+            {
+              home-manager.users.hugob = import ./home-manager/home.nix;
+              home-manager.extraSpecialArgs = specialArgs system // {inherit hostname;};
+              home-manager.useUserPackages = true;
+
+              # stylix.homeManagerIntegration.followSystem = false;
+              # stylix.homeManagerIntegration.autoImport = false;
+            }
+
             ./hosts/nixos/${hostname}
           ];
         };
