@@ -2,7 +2,6 @@
 # Use this to configure your system environment (it replaces /etc/nixos/configuration.nix)
 {
   inputs,
-  outputs,
   lib,
   config,
   pkgs,
@@ -22,6 +21,11 @@
     # ./users.nix
     ../common/optional/quietboot.nix
     ../common/optional/desktop/steam.nix
+    ../common/optional/flatpak.nix
+
+    ../common/global
+
+    ../common/users/pilot.nix
 
     # Import your generated (nixos-generate-config) hardware configuration
     ./hardware
@@ -31,33 +35,6 @@
     # ./services/zfs.nix
     # }}}
   ];
-
-  nixpkgs = {
-    # You can add overlays here
-    overlays = [
-      # Add overlays your own flake exports (from overlays and pkgs dir):
-      outputs.overlays.additions
-      outputs.overlays.modifications
-      outputs.overlays.unstable-packages
-      outputs.overlays.old-packages
-
-      # You can also add overlays exported from other flakes:
-      # neovim-nightly-overlay.overlays.default
-
-      # Or define it inline, for example:
-      # (final: prev: {
-      #   hi = final.hello.overrideAttrs (oldAttrs: {
-      #     patches = [ ./change-hello-to-hi.patch ];
-      #   });
-      # })
-    ];
-    # Configure your nixpkgs instance
-    config = {
-      # Disable if you don't want unfree packages
-      allowUnfree = true;
-    };
-  };
-
   nix = let
     flakeInputs = lib.filterAttrs (_: lib.isType "flake") inputs;
   in {
@@ -85,8 +62,6 @@
 
   programs.dconf.enable = true;
 
-  # FIXME: Add the rest of your current configuration
-
   networking.hostName = "amaterasu";
   networking.networkmanager.enable = true;
 
@@ -106,20 +81,6 @@
     LC_PAPER = "de_DE.UTF-8";
     LC_TELEPHONE = "de_DE.UTF-8";
     LC_TIME = "de_DE.UTF-8";
-  };
-
-  users.users = {
-    hugob = {
-      # If you do, you can skip setting a root password by passing '--no-root-passwd' to nixos-install.
-      # Be sure to change it (using passwd) after rebooting!
-      initialPassword = "130907";
-      isNormalUser = true;
-      openssh.authorizedKeys.keys = [
-        # TODO: Add your SSH public key(s) here, if you plan on using SSH to connect
-      ];
-      extraGroups = ["wheel" "networkmanager"];
-      shell = pkgs.fish;
-    };
   };
 
   # This setups a SSH server. Very important if you're setting up a headless system.
@@ -147,35 +108,6 @@
 
   fonts.packages = with pkgs.unstable; [maple-mono-NF (nerdfonts.override {fonts = ["Recursive"];})];
 
-  # flatpak
-  services.flatpak = {
-    enable = true;
-    update = {
-      onActivation = true;
-      auto = {
-        enable = true;
-        onCalendar = "weekly"; # Default value
-      };
-    };
-    remotes = lib.mkOptionDefault [
-      {
-        name = "flathub-beta";
-        location = "https://flathub.org/beta-repo/flathub-beta.flatpakrepo";
-      }
-    ];
-    overrides = {
-      global = {
-        # Force Wayland by default
-        Context.sockets = ["wayland" "!x11" "!fallback-x11"];
-      };
-    };
-    packages = [
-      {
-        appId = "dev.vencord.Vesktop";
-        origin = "flathub";
-      }
-    ];
-  };
   xdg.portal = {
     enable = true;
     configPackages = [pkgs.xdg-desktop-portal-hyprland];

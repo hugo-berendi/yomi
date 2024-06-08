@@ -110,17 +110,32 @@
     nixpkgs.config.permittedInsecurePackages = [
       "electron-25.9.0"
     ];
-
-    # Your custom packages
+    # {{{ Packages
     # Accessible through 'nix build', 'nix shell', etc
-    packages =
-      forAllSystems (system: import ./pkgs nixpkgs.legacyPackages.${system});
+    packages = forAllSystems (
+      system: let
+        pkgs = nixpkgs.legacyPackages.${system};
+      in
+        import ./pkgs {inherit pkgs;}
+    );
+    # }}}
     # Formatter for your nix files, available through 'nix fmt'
     # Other options beside 'alejandra' include 'nixpkgs-fmt'
     formatter =
       forAllSystems (system: nixpkgs.legacyPackages.${system}.alejandra);
 
-    # Your custom packages and modifications, exported as overlays
+    # {{{ Bootstrapping and other pinned devshells
+    # Accessible through 'nix develop'
+    devShells =
+      forAllSystems
+      (system: let
+        pkgs = nixpkgs.legacyPackages.${system};
+        args = {inherit pkgs;} // specialArgs system;
+      in
+        import ./devshells args);
+    # }}}
+    # {{{ Overlays and modules
+    # Custom packages and modifications, exported as overlays
     overlays = import ./overlays {inherit inputs;};
     # Reusable nixos modules you might want to export
     # These are usually stuff you would upstream into nixpkgs
@@ -129,7 +144,8 @@
 
     # Reusable home-manager modules
     homeManagerModules = import ./modules/home-manager // import ./modules/common;
-
+    # }}}
+    # {{{ Nixos
     # NixOS configuration entrypoint
     # Available through 'nixos-rebuild --flake .#your-hostname'
     nixosConfigurations = let
@@ -160,6 +176,10 @@
         system = "x86_64-linux";
         hostname = "amaterasu";
       };
+      inari = nixos {
+        system = "aarch64-linux";
+        hostname = "inari";
+      };
     };
 
     # Standalone home-manager configuration entrypoint
@@ -172,13 +192,36 @@
         home-manager.lib.homeManagerConfiguration {
           pkgs = nixpkgs.legacyPackages.${system};
           extraSpecialArgs = specialArgs system // {inherit hostname;};
-          modules = [./home-manager/home.nix];
+          modules = [./home/${hostname}.nix];
         };
     in {
       "${pilot}@amaterasu" = mkHomeConfig {
         system = "x86_64-linux";
         hostname = "amaterasu";
       };
+      "${pilot}@inari" = mkHomeConfig {
+        system = "aarch64-linux";
+        hostname = "inari";
+      };
     };
   };
+
+  # {{{ Caching and whatnot
+  # TODO: persist trusted substituters file
+  nixConfig = {
+    extra-substituters = [
+      "https://nix-community.cachix.org"
+      # "https://anyrun.cachix.org"
+      "https://smos.cachix.org"
+      "https://intray.cachix.org"
+    ];
+
+    extra-trusted-public-keys = [
+      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      # "anyrun.cachix.org-1:pqBobmOjI7nKlsUMV25u9QHa9btJK65/C8vnO3p346s="
+      "smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM="
+      "intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ="
+    ];
+  };
+  # }}}
 }

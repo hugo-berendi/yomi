@@ -5,7 +5,6 @@
   outputs,
   lib,
   config,
-  pkgs,
   ...
 }: let
   imports = [
@@ -24,30 +23,17 @@
     inputs.smos.homeManagerModules.x86_64-linux.default
     # }}}
     # }}}
-
-    ./features/desktop/firefox
-    ./features/desktop/discord
-    # ./features/cli/productivity
-    # ./features/cli/pass.nix
-    # ./features/cli/nix-index.nix
-    # ./features/cli/catgirl.nix
-    # ./features/cli/lazygit.nix
-    ./features/cli/git.nix
-    ./features/cli/ssh.nix
-    ./features/cli/tmux
-    ./features/wayland/hyprland
-    ./features/desktop/spotify.nix
-    ./features/desktop/obsidian.nix
-    ./features/desktop/zathura.nix
-    ./features/desktop
-
+    # {{{ global configuration
+    ./features/cli
     ./features/persistence.nix
     ../common
+    # }}}
   ];
 in {
   # Import all modules defined in modules/home-manager
   imports = builtins.attrValues outputs.homeManagerModules ++ imports;
 
+  # {{{ Nixpkgs
   nixpkgs = {
     # You can add overlays here
     overlays = [
@@ -58,13 +44,6 @@ in {
       outputs.overlays.old-packages
       # You can also add overlays exported from other flakes:
       # neovim-nightly-overlay.overlays.default
-
-      # Or define it inline, for example:
-      # (final: prev: {
-      #   hi = final.hello.overrideAttrs (oldAttrs: {
-      #     patches = [ ./change-hello-to-hi.patch ];
-      #   });
-      # })
     ];
     # Configure your nixpkgs instance
     config = {
@@ -75,44 +54,27 @@ in {
       ];
     };
   };
-
-  home = {
-    username = "hugob";
-    homeDirectory = "/home/hugob";
-    stateVersion = "24.05"; # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
-    file = {};
-    sessionVariables = {EDITOR = "nvim";};
-    packages = [
-      pkgs.zoxide
-      pkgs.nwg-bar
-      pkgs.nwg-look
-      pkgs.thunderbird
-      pkgs.thefuck
-      pkgs.eza
-      pkgs.nodejs
-      pkgs.zathura
-      pkgs.sxiv
-      pkgs.mpv
-      #pkgs.unityhub
-      pkgs.old.waybar
-      pkgs.unstable.nerdfetch # for displaying pc/laptop stats
-      pkgs.unstable.alejandra # nix formatter
-      pkgs.unstable.neovim
-      pkgs.unstable.neovide
-      pkgs.unstable.nh
-      pkgs.unstable.nix-output-monitor
-      pkgs.unstable.nvd
-    ];
-  };
-
-  # Enable home-manager and git
+  # }}}
+  # {{{ Enable the home-manager and git clis
   programs = {
     home-manager.enable = true;
+    git.enable = true;
   };
-
+  # }}}
+  # {{{ Ad-hoc settings
   # Nicely reload system units when changing configs
-  systemd.user.startServices = "sd-switch";
+  systemd.user.startServices = lib.mkForce "sd-switch";
 
+  # Tell sops-nix to use ssh keys for decrypting secrets
+  sops.age.sshKeyPaths = ["${config.home.homeDirectory}/.ssh/id_ed25519"];
+
+  # By default the paths given by sops contain annoying %r sections
+  sops.defaultSymlinkPath = "${config.home.homeDirectory}/.nix-sops";
+
+  # {{{ Ad-hoc stylix targets
+  stylix.targets.xresources.enable = true;
+  # }}}
+  # }}} # }}}
   # {{{ Xdg user directories
   # Set the xdg env vars
   xdg.enable = true;
@@ -134,14 +96,4 @@ in {
     extraConfig.XDG_PROJECTS_DIR = "${config.home.homeDirectory}/Projects";
   };
   # }}}
-
-  satellite = {
-    monitors = [
-      {
-        name = "eDP-1";
-        width = 1920;
-        height = 1080;
-      }
-    ];
-  };
 }
