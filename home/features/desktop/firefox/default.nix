@@ -27,6 +27,7 @@
     ublock-origin
     unpaywall
     user-agent-string-switcher
+    darkreader
   ];
   # }}}
 in {
@@ -184,7 +185,7 @@ in {
         "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
 
         # Set language to english
-        "general.useragent.locale" = "en-GB";
+        "general.useragent.locale" = "en-US";
 
         # Do not restore sessions after what looks like a "crash"
         "browser.sessionstore.resume_from_crash" = false;

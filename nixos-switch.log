@@ -5,46 +5,63 @@ building the system configuration...
 Using saved setting for 'extra-substituters = https://nix-community.cachix.org https://smos.cachix.org https://intray.cachix.org' from ~/.local/share/nix/trusted-settings.json.
 Using saved setting for 'extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM= intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ=' from ~/.local/share/nix/trusted-settings.json.
 warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
-error:
-       … while calling the 'head' builtin
-         at /nix/store/giq1qbcwfx5gq0g9jf6id0b3m55a860j-source/lib/attrsets.nix:1575:11:
-         1574|         || pred here (elemAt values 1) (head values) then
-         1575|           head values
-             |           ^
-         1576|         else
-
-       … while evaluating the attribute 'value'
-         at /nix/store/giq1qbcwfx5gq0g9jf6id0b3m55a860j-source/lib/modules.nix:809:9:
-          808|     in warnDeprecation opt //
-          809|       { value = builtins.addErrorContext "while evaluating the option `${showOption loc}':" value;
-             |         ^
-          810|         inherit (res.defsFinal') highestPrio;
-
-       … while evaluating the option `system.build.toplevel':
-
-       … while evaluating definitions from `/nix/store/giq1qbcwfx5gq0g9jf6id0b3m55a860j-source/nixos/modules/system/activation/top-level.nix':
-
-       … while evaluating the option `system.systemBuilderArgs':
-
-       … while evaluating definitions from `/nix/store/giq1qbcwfx5gq0g9jf6id0b3m55a860j-source/nixos/modules/system/activation/activatable-system.nix':
-
-       … while evaluating the option `system.activationScripts.etc.text':
-
-       … while evaluating definitions from `/nix/store/giq1qbcwfx5gq0g9jf6id0b3m55a860j-source/nixos/modules/system/etc/etc-activation.nix':
-
-       … while evaluating definitions from `/nix/store/giq1qbcwfx5gq0g9jf6id0b3m55a860j-source/nixos/modules/system/etc/etc.nix':
-
-       … while evaluating the option `environment.etc.dbus-1.source':
-
-       … while evaluating the option `environment.systemPackages':
-
-       … while evaluating definitions from `/nix/store/nm5k4qpak7nry2rk9y3crnyxk5wfrsk0-source/hosts/nixos/amaterasu':
-
-       (stack trace truncated; use '--show-trace' to show the full, detailed trace)
-
-       error: undefined variable 'dotnet'
-       at /nix/store/nm5k4qpak7nry2rk9y3crnyxk5wfrsk0-source/hosts/nixos/amaterasu/default.nix:80:5:
-           79|     gcc
-           80|     dotnet
-             |     ^
-           81|     go
+these 21 derivations will be built:
+  /nix/store/8ghy2wbb82gks67m79zaih6kzpxr77dr-system-path.drv
+  /nix/store/8fq1kfbmvprg6z4wgz8dyf3glk2461wk-X-Restart-Triggers-polkit.drv
+  /nix/store/0fnx7vhsgd564wdvswfcf2q1n79p9fvf-unit-polkit.service.drv
+  /nix/store/p4v19nmqgiwymibaar77cxpv0icsgiq9-dotnet-runtime-8.0.5_fish-completions.drv
+  /nix/store/2rv3n2b13ksh3vp7gb3i2dlw3hddj4p7-system_fish-completions.drv
+  /nix/store/x2iyqn8jfx2q05xysn47wf14r2q2sh1s-set-environment.drv
+  /nix/store/5smmbll2kqfx8wijss4lzv9cjxn9ixgh-etc-fish-nixos-env-preinit.fish.drv
+  /nix/store/6hryh31nfrm83mcmxlvjgvnpd8043x51-etc-pam-environment.drv
+  /nix/store/81f7by0d5y2njg08qkyr27gdh0438wln-etc-profile.drv
+  /nix/store/f4nw4brqpnfg9rd0hi594aibhznkn7p6-man-paths.drv
+  /nix/store/jr6kcb122cwpvb8007v7l21qsargsqx0-man-cache.drv
+  /nix/store/c38kw75p304ny4gai2yjiqlnjg6lg23v-etc-man_db.conf.drv
+  /nix/store/ir9ld8j9l2izydjvv9lspciq7c2rsq36-etc-nix-registry.json.drv
+  /nix/store/w361qdbihnm63mjpmfnh30xfdn22w5lw-dbus-1.drv
+  /nix/store/a8mkc8my979j88sia63k2pfsly70wlbn-X-Restart-Triggers-dbus.drv
+  /nix/store/4c2zflfl0lrqlfa188xvqr3frq7c3im7-unit-dbus.service.drv
+  /nix/store/rfgr5md802v3n5jkjp3mrfyg7gsn3fh2-system-units.drv
+  /nix/store/dj6ip9mxa71c23skxs26hgzszw3ndgm2-unit-dbus.service.drv
+  /nix/store/v6dp72awkm6nwhhrkk7r46z2bddc07pq-user-units.drv
+  /nix/store/sdlxvzir4388gzkh11jcr6p8b5s54r37-etc.drv
+  /nix/store/2nwvn9dzh4sszqxsqzb6bniq0xzgk8sf-nixos-system-amaterasu-24.05.20240609.2819fff.drv
+this path will be fetched (22.04 MiB download, 69.25 MiB unpacked):
+  /nix/store/4z363kk982cnaywc36cgcdsac7an5qif-dotnet-runtime-8.0.5
+copying path '/nix/store/4z363kk982cnaywc36cgcdsac7an5qif-dotnet-runtime-8.0.5' from 'https://cache.nixos.org'...
+building '/nix/store/ir9ld8j9l2izydjvv9lspciq7c2rsq36-etc-nix-registry.json.drv'...
+building '/nix/store/6hryh31nfrm83mcmxlvjgvnpd8043x51-etc-pam-environment.drv'...
+building '/nix/store/x2iyqn8jfx2q05xysn47wf14r2q2sh1s-set-environment.drv'...
+building '/nix/store/5smmbll2kqfx8wijss4lzv9cjxn9ixgh-etc-fish-nixos-env-preinit.fish.drv'...
+building '/nix/store/81f7by0d5y2njg08qkyr27gdh0438wln-etc-profile.drv'...
+building '/nix/store/p4v19nmqgiwymibaar77cxpv0icsgiq9-dotnet-runtime-8.0.5_fish-completions.drv'...
+building '/nix/store/f4nw4brqpnfg9rd0hi594aibhznkn7p6-man-paths.drv'...
+building '/nix/store/8ghy2wbb82gks67m79zaih6kzpxr77dr-system-path.drv'...
+building '/nix/store/2rv3n2b13ksh3vp7gb3i2dlw3hddj4p7-system_fish-completions.drv'...
+building '/nix/store/jr6kcb122cwpvb8007v7l21qsargsqx0-man-cache.drv'...
+building '/nix/store/8fq1kfbmvprg6z4wgz8dyf3glk2461wk-X-Restart-Triggers-polkit.drv'...
+building '/nix/store/w361qdbihnm63mjpmfnh30xfdn22w5lw-dbus-1.drv'...
+building '/nix/store/0fnx7vhsgd564wdvswfcf2q1n79p9fvf-unit-polkit.service.drv'...
+building '/nix/store/a8mkc8my979j88sia63k2pfsly70wlbn-X-Restart-Triggers-dbus.drv'...
+building '/nix/store/4c2zflfl0lrqlfa188xvqr3frq7c3im7-unit-dbus.service.drv'...
+building '/nix/store/dj6ip9mxa71c23skxs26hgzszw3ndgm2-unit-dbus.service.drv'...
+building '/nix/store/rfgr5md802v3n5jkjp3mrfyg7gsn3fh2-system-units.drv'...
+building '/nix/store/v6dp72awkm6nwhhrkk7r46z2bddc07pq-user-units.drv'...
+building '/nix/store/c38kw75p304ny4gai2yjiqlnjg6lg23v-etc-man_db.conf.drv'...
+building '/nix/store/sdlxvzir4388gzkh11jcr6p8b5s54r37-etc.drv'...
+building '/nix/store/2nwvn9dzh4sszqxsqzb6bniq0xzgk8sf-nixos-system-amaterasu-24.05.20240609.2819fff.drv'...
+updating GRUB 2 menu...
+Warning: os-prober will be executed to detect other bootable partitions.
+Its output will be used to detect bootable binaries on them and create new boot entries.
+lsblk: /dev/mapper/no*[0-9]: not a block device
+lsblk: /dev/mapper/block*[0-9]: not a block device
+lsblk: /dev/mapper/devices*[0-9]: not a block device
+lsblk: /dev/mapper/found*[0-9]: not a block device
+activating the configuration...
+setting up /etc...
+reloading user units for hugob...
+restarting sysinit-reactivation.target
+reloading the following units: dbus.service
+restarting the following units: polkit.service
+the following new units were started: systemd-localed.service
