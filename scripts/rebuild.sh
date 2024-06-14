@@ -33,7 +33,7 @@ alejandra . &>/dev/null ||
 	)
 
 # add all changes for commit
-git add .
+sudo git add .
 
 # Shows your changes
 git diff -U0
