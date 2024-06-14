@@ -1,6 +1,17 @@
 Using saved setting for 'extra-substituters = https://nix-community.cachix.org https://smos.cachix.org https://intray.cachix.org' from ~/.local/share/nix/trusted-settings.json.
 Using saved setting for 'extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM= intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ=' from ~/.local/share/nix/trusted-settings.json.
 warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
+these 5 derivations will be built:
+  /nix/store/sa9yyq1bm5kywrg3nyj9gd4jkar6dkyq-home-manager-path.drv
+  /nix/store/c4rpl0v8i35drq1ywq5jv2cm7pxmq83j-hm_fontconfigconf.d10hmfonts.conf.drv
+  /nix/store/cmzxjmcwh4dcjywd82x0zznba12qmsb6-home-manager-files.drv
+  /nix/store/kmx2j6gc77slpmlcmwxqg13p06vgyspq-activation-script.drv
+  /nix/store/a950b111dis5yq0jicy8vlw7l6zvr0cl-home-manager-generation.drv
+building '/nix/store/sa9yyq1bm5kywrg3nyj9gd4jkar6dkyq-home-manager-path.drv'...
+building '/nix/store/kmx2j6gc77slpmlcmwxqg13p06vgyspq-activation-script.drv'...
+building '/nix/store/c4rpl0v8i35drq1ywq5jv2cm7pxmq83j-hm_fontconfigconf.d10hmfonts.conf.drv'...
+building '/nix/store/cmzxjmcwh4dcjywd82x0zznba12qmsb6-home-manager-files.drv'...
+building '/nix/store/a950b111dis5yq0jicy8vlw7l6zvr0cl-home-manager-generation.drv'...
 Starting Home Manager activation
 Activating checkFilesChanged
 Activating cleanEmptyLinkTargets
@@ -13,7 +24,7 @@ Activating createGpgHomedir
 Activating migrateGhAccounts
 Activating linkGeneration
 Cleaning up orphan links from /home/hugob
-Creating profile generation 3
+Creating profile generation 4
 Creating home file links in /home/hugob
 Activating batCache
 No themes were found in '/home/hugob/.config/bat/themes', using the default set
@@ -24,14 +35,28 @@ Writing metadata to folder /home/hugob/.cache/bat ... okay
 Activating installPackages
 replacing old 'home-manager-path'
 installing 'home-manager-path'
-building '/nix/store/irzdp1ns8wvcvy5c6aqqb787w6zyk4r6-user-environment.drv'...
-Activating dconfSettings
-Activating onFilesChange
-Activating runUnmountPersistentStoragePaths
-Activating reloadSystemd
-Starting units: hyprland-session.target
-warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
+building '/nix/store/crcz09z0yfi4zpxd53j6dpqz2l86kk5y-user-environment.drv'...
+error: Unable to build profile. There is a conflict for the following files:
 
-There are 163 unread and relevant news items.
-Read them by running the command "home-manager news".
+         /nix/store/9cwiblii5ziyk7x9znimb1zzx7cjf08z-waybar-0.10.3/lib/libcava.so
+         /nix/store/q9k2b67927kipcj2inh193jqrd1b5cjd-home-manager-path/lib/libcava.so
+error: builder for '/nix/store/crcz09z0yfi4zpxd53j6dpqz2l86kk5y-user-environment.drv' failed with exit code 1;
+       last 4 log lines:
+       > error: Unable to build profile. There is a conflict for the following files:
+       >
+       >          /nix/store/9cwiblii5ziyk7x9znimb1zzx7cjf08z-waybar-0.10.3/lib/libcava.so
+       >          /nix/store/q9k2b67927kipcj2inh193jqrd1b5cjd-home-manager-path/lib/libcava.so
+       For full logs, run 'nix log /nix/store/crcz09z0yfi4zpxd53j6dpqz2l86kk5y-user-environment.drv'.
 
+Oops, Nix failed to install your new Home Manager profile!
+
+Perhaps there is a conflict with a package that was installed using
+"nix-env -i"? Try running
+
+    nix-env -q
+
+and if there is a conflicting package you can remove it with
+
+    nix-env -e {package name}
+
+Then try activating your Home Manager configuration again.
