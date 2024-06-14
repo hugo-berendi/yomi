@@ -254,6 +254,37 @@ in {
       };
       # }}}
     };
+
+    # {{{ Standalone "apps" which actually run inside a browser.
+    apps.extensions = extensions;
+    apps.app = {
+      # TODO: auto increment ids
+      # {{{ Desmos
+      desmos = {
+        url = "https://www.desmos.com/calculator";
+        icon = ../../../../common/icons/desmos.png;
+        displayName = "Desmos";
+        id = 1;
+      };
+      # }}}
+      # {{{ Monkey type
+      monkey-type = {
+        url = "https://monkeytype.com/";
+        icon = ../../../../common/icons/monkeytype.png;
+        displayName = "Monkeytype";
+        id = 2;
+      };
+      # }}}
+      # {{{ Clockify
+      clockify = {
+        url = "https://app.clockify.me/";
+        icon = ../../../../common/icons/clockify.png;
+        displayName = "Clockify";
+        id = 3;
+      };
+      # }}}
+    };
+    # }}}
   };
 
   # {{{ Make firefox the default
