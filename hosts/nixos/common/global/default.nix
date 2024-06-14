@@ -12,16 +12,17 @@
     inputs.disko.nixosModules.default
     inputs.stylix.nixosModules.stylix
     inputs.sops-nix.nixosModules.sops
+    inputs.nix-flatpak.nixosModules.nix-flatpak
     # }}}
     # {{{ global configuration
-    ./cli/fish.nix
+    # ./cli/fish.nix
     ./cli/htop.nix
-    ./services/openssh.nix
-    ./services/tailscale.nix
+    # ./services/openssh.nix
+    # ./services/tailscale.nix
     ./nix.nix
     ./locale.nix
     ./persistence.nix
-    ./wireless
+    # ./wireless
 
     ../../../../common
     # }}}
@@ -50,10 +51,10 @@ in {
   nixpkgs = {
     # Add all overlays defined in the overlays directory
     overlays =
-      builtins.attrValues outputs.overlays
-      ++ lib.lists.optional
-      config.satellite.toggles.neovim-nightly.enable
-      inputs.neovim-nightly-overlay.overlay;
+      builtins.attrValues outputs.overlays;
+    # ++ lib.lists.optional
+    # config.satellite.toggles.neovim-nightly.enable
+    # inputs.neovim-nightly-overlay.overlay;
 
     config.allowUnfree = true;
   };

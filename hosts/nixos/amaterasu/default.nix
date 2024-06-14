@@ -15,7 +15,6 @@
     # Or modules from other flakes (such as nixos-hardware):
     # inputs.hardware.nixosModules.common-cpu-amd
     # inputs.hardware.nixosModules.common-ssd
-    inputs.nix-flatpak.nixosModules.nix-flatpak
 
     # You can also split up your configuration and import pieces of it here:
     # ./users.nix
@@ -35,53 +34,10 @@
     # ./services/zfs.nix
     # }}}
   ];
-  nix = let
-    flakeInputs = lib.filterAttrs (_: lib.isType "flake") inputs;
-  in {
-    settings = {
-      # Enable flakes and new 'nix' command
-      experimental-features = "nix-command flakes";
-      # Opinionated: disable global registry
-      flake-registry = "";
-      # Workaround for https://github.com/NixOS/nix/issues/9574
-      nix-path = config.nix.nixPath;
-    };
-    # Opinionated: disable channels
-    channel.enable = false;
-
-    # Opinionated: make flake registry and nix path match flake inputs
-    registry = lib.mapAttrs (_: flake: {inherit flake;}) flakeInputs;
-    nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
-
-    # garbage collection
-    gc = {
-      automatic = true;
-      options = "--max-freed 1G --delete-older-than 7d";
-    };
-  };
-
   programs.dconf.enable = true;
 
   networking.hostName = "amaterasu";
   networking.networkmanager.enable = true;
-
-  # Set your time zone.
-  time.timeZone = "Europe/Berlin";
-
-  # Select internationalisation properties.
-  i18n.defaultLocale = "en_US.UTF-8";
-
-  i18n.extraLocaleSettings = {
-    LC_ADDRESS = "de_DE.UTF-8";
-    LC_IDENTIFICATION = "de_DE.UTF-8";
-    LC_MEASUREMENT = "de_DE.UTF-8";
-    LC_MONETARY = "de_DE.UTF-8";
-    LC_NAME = "de_DE.UTF-8";
-    LC_NUMERIC = "de_DE.UTF-8";
-    LC_PAPER = "de_DE.UTF-8";
-    LC_TELEPHONE = "de_DE.UTF-8";
-    LC_TIME = "de_DE.UTF-8";
-  };
 
   # This setups a SSH server. Very important if you're setting up a headless system.
   # Feel free to remove if you don't need it.

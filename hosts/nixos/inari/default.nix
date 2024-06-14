@@ -2,8 +2,8 @@
   imports = [
     ../common/global
     ../common/users/pilot.nix
-    ../common/optional/services/kanata.nix
-    ../common/optional/services/restic
+    # ../common/optional/services/kanata.nix
+    # ../common/optional/services/restic
 
     # ./services/syncthing.nix
     # ./services/whoogle.nix
@@ -27,8 +27,8 @@
     # ./services/forgejo.nix
     # ./services/jupyter.nix
     # ./services/ddclient.nix
-    ./filesystems
-    ./hardware
+    # ./filesystems
+    # ./hardware
   ];
 
   # Machine ids

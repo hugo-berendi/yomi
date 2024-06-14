@@ -248,6 +248,9 @@ in {
 
         # Do not recommend addons
         "extensions.htmlaboutaddons.recommendations.enabled" = false;
+
+        # auto-enable all extensions
+        "extensions.autoDisableScopes" = 0;
       };
       # }}}
     };

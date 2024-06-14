@@ -7,17 +7,19 @@
 }: {
   satellite.pilot.name = "hugob";
 
-  sops.secrets.pilot_password = {
-    sopsFile = ../secrets.yaml;
-    neededForUsers = true;
-  };
+  # sops.secrets.pilot_password = {
+  #   sopsFile = ../secrets.yaml;
+  #   neededForUsers = true;
+  # };
 
   users = {
     # Configure users through nix only
-    mutableUsers = false;
+    # mutableUsers = false;
 
-    users.pilot = {
-      inherit (config.satellite.pilot) name;
+    users.hugob = {
+      # inherit (config.satellite.pilot) name;
+
+      description = "Hugo Berendi";
 
       # Adds me to some default groups, and creates the home dir
       isNormalUser = true;
@@ -32,10 +34,11 @@
         "audio" # Audio devices
         "video" # Webcam and the like
         "network" # wpa_supplicant
+	"networkmanager"
         "syncthing" # syncthing!
       ];
 
-      hashedPasswordFile = config.sops.secrets.pilot_password.path;
+      # hashedPasswordFile = config.sops.secrets.pilot_password.path;
       shell = pkgs.fish;
 
       openssh.authorizedKeys.keyFiles =

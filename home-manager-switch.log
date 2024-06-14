@@ -1,4 +1,7 @@
-warning: Git tree '/home/hugob/dotfiles/nix-config' is dirty
+warning: ignoring untrusted flake configuration setting 'extra-substituters'.
+Pass '--accept-flake-config' to trust it
+warning: ignoring untrusted flake configuration setting 'extra-trusted-public-keys'.
+Pass '--accept-flake-config' to trust it
 warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
 Starting Home Manager activation
 Activating checkFilesChanged
@@ -8,27 +11,42 @@ Activating unmountPersistentStoragePaths
 Activating createAndMountPersistentStoragePaths
 Activating createTargetFileDirectories
 Activating writeBoundary
-Activating installPackages
-installing 'home-manager-path'
-Activating dconfSettings
+Activating createGpgHomedir
 Activating migrateGhAccounts
 Activating linkGeneration
 Cleaning up orphan links from /home/hugob
-Creating profile generation 7
+Creating profile generation 11
 Creating home file links in /home/hugob
-Activating onFilesChange
-Activating runUnmountPersistentStoragePaths
-Activating reloadSystemd
-The user systemd session is degraded:
-  UNIT          LOAD   ACTIVE SUB    DESCRIPTION
-● dunst.service loaded failed failed Dunst notification daemon
-● tmux.service  loaded failed failed tmux default session (detached)
+Activating batCache
+No themes were found in '/home/hugob/.config/bat/themes', using the default set
+No syntaxes were found in '/home/hugob/.config/bat/syntaxes', using the default set.
+Writing theme set to /home/hugob/.cache/bat/themes.bin ... okay
+Writing syntax set to /home/hugob/.cache/bat/syntaxes.bin ... okay
+Writing metadata to folder /home/hugob/.cache/bat ... okay
+Activating installPackages
+installing 'home-manager-path'
+building '/nix/store/r2dv8yy2s1jffqvn2ddm9q11awgpvbgw-user-environment.drv'...
+error: Unable to build profile. There is a conflict for the following files:
 
-Legend: LOAD   → Reflects whether the unit definition was properly loaded.
-        ACTIVE → The high-level unit activation state, i.e. generalization of SUB.
-        SUB    → The low-level unit activation state, values depend on unit type.
+         /nix/store/j86b2yj3dr5l1acy4vix0fvn2irycg4f-unityhub-3.6.1/share/applications/unityhub.desktop
+         /nix/store/ki3ia4q6z08wzs9srpsc2x856pd3vslg-home-manager-path/share/applications/unityhub.desktop
+error: builder for '/nix/store/r2dv8yy2s1jffqvn2ddm9q11awgpvbgw-user-environment.drv' failed with exit code 1;
+       last 4 log lines:
+       > error: Unable to build profile. There is a conflict for the following files:
+       >
+       >          /nix/store/j86b2yj3dr5l1acy4vix0fvn2irycg4f-unityhub-3.6.1/share/applications/unityhub.desktop
+       >          /nix/store/ki3ia4q6z08wzs9srpsc2x856pd3vslg-home-manager-path/share/applications/unityhub.desktop
+       For full logs, run 'nix log /nix/store/r2dv8yy2s1jffqvn2ddm9q11awgpvbgw-user-environment.drv'.
 
-2 loaded units listed.
-Attempting to reload services anyway...
-Starting units: hyprland-session.target
-Started tmux-spawn-8880d3e5-c4d6-41b7-813d-e807613f620f.scope - active
+Oops, Nix failed to install your new Home Manager profile!
+
+Perhaps there is a conflict with a package that was installed using
+"nix-env -i"? Try running
+
+    nix-env -q
+
+and if there is a conflicting package you can remove it with
+
+    nix-env -e {package name}
+
+Then try activating your Home Manager configuration again.
