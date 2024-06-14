@@ -34,7 +34,7 @@
         "audio" # Audio devices
         "video" # Webcam and the like
         "network" # wpa_supplicant
-	"networkmanager"
+        "networkmanager"
         "syncthing" # syncthing!
       ];
 

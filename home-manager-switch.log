@@ -1,7 +1,5 @@
-warning: ignoring untrusted flake configuration setting 'extra-substituters'.
-Pass '--accept-flake-config' to trust it
-warning: ignoring untrusted flake configuration setting 'extra-trusted-public-keys'.
-Pass '--accept-flake-config' to trust it
+Using saved setting for 'extra-substituters = https://nix-community.cachix.org https://smos.cachix.org https://intray.cachix.org' from ~/.local/share/nix/trusted-settings.json.
+Using saved setting for 'extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM= intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ=' from ~/.local/share/nix/trusted-settings.json.
 warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
 Starting Home Manager activation
 Activating checkFilesChanged
@@ -15,7 +13,7 @@ Activating createGpgHomedir
 Activating migrateGhAccounts
 Activating linkGeneration
 Cleaning up orphan links from /home/hugob
-Creating profile generation 11
+No change so reusing latest profile generation 1
 Creating home file links in /home/hugob
 Activating batCache
 No themes were found in '/home/hugob/.config/bat/themes', using the default set
@@ -24,29 +22,99 @@ Writing theme set to /home/hugob/.cache/bat/themes.bin ... okay
 Writing syntax set to /home/hugob/.cache/bat/syntaxes.bin ... okay
 Writing metadata to folder /home/hugob/.cache/bat ... okay
 Activating installPackages
+replacing old 'home-manager-path'
 installing 'home-manager-path'
-building '/nix/store/r2dv8yy2s1jffqvn2ddm9q11awgpvbgw-user-environment.drv'...
-error: Unable to build profile. There is a conflict for the following files:
+Activating dconfSettings
+Activating onFilesChange
+Activating runUnmountPersistentStoragePaths
+Activating reloadSystemd
+The user systemd session is degraded:
+  UNIT                                                                                   LOAD   ACTIVE SUB    DESCRIPTION
+● bindMount--persist-data-home-hugob-Documents-.service                                  loaded failed failed Bind mount '/persist/data/home/hugob/Documents' at '/home/hugob/Documents'
+● bindMount--persist-data-home-hugob-Music-.service                                      loaded failed failed Bind mount '/persist/data/home/hugob/Music' at '/home/hugob/Music'
+● bindMount--persist-data-home-hugob-Pictures-.service                                   loaded failed failed Bind mount '/persist/data/home/hugob/Pictures' at '/home/hugob/Pictures'
+● bindMount--persist-data-home-hugob-Projects-.service                                   loaded failed failed Bind mount '/persist/data/home/hugob/Projects' at '/home/hugob/Projects'
+● bindMount--persist-data-home-hugob-Videos-.service                                     loaded failed failed Bind mount '/persist/data/home/hugob/Videos' at '/home/hugob/Videos'
+● bindMount--persist-local-cache-home-hugob-firefox-cache-mozilla-firefox-.service       loaded failed failed Bind mount '/persist/local/cache/home/hugob/firefox/.cache/mozilla/firefox' at '/home/hugob/.cache/mozilla/firefox'
+● bindMount--persist-local-cache-home-hugob-nodejs-cache-node-gyp-.service               loaded failed failed Bind mount '/persist/local/cache/home/hugob/nodejs/.cache/node-gyp' at '/home/hugob/.cache/node-gyp'
+● bindMount--persist-local-cache-home-hugob-nodejs-cache-pnpm-.service                   loaded failed failed Bind mount '/persist/local/cache/home/hugob/nodejs/.cache/pnpm' at '/home/hugob/.cache/pnpm'
+● bindMount--persist-local-cache-home-hugob-nodejs-cache-yarn-.service                   loaded failed failed Bind mount '/persist/local/cache/home/hugob/nodejs/.cache/yarn' at '/home/hugob/.cache/yarn'
+● bindMount--persist-local-cache-home-hugob-nodejs-local-share-pnpm-.service             loaded failed failed Bind mount '/persist/local/cache/home/hugob/nodejs/.local/share/pnpm' at '/home/hugob/.local/share/pnpm'
+● bindMount--persist-local-cache-home-hugob-nodejs-local-state-pnpm-.service             loaded failed failed Bind mount '/persist/local/cache/home/hugob/nodejs/.local/state/pnpm' at '/home/hugob/.local/state/pnpm'
+● bindMount--persist-local-cache-home-hugob-nodejs-npm-.service                          loaded failed failed Bind mount '/persist/local/cache/home/hugob/nodejs/.npm' at '/home/hugob/.npm'
+● bindMount--persist-local-cache-home-hugob-purescript-cache-spago-.service              loaded failed failed Bind mount '/persist/local/cache/home/hugob/purescript/.cache/spago' at '/home/hugob/.cache/spago'
+● bindMount--persist-local-cache-home-hugob-purescript-local-share-purescript-.service   loaded failed failed Bind mount '/persist/local/cache/home/hugob/purescript/.local/share/purescript' at '/home/hugob/.local/share/purescript'
+● bindMount--persist-local-cache-home-hugob-python-cache-pip-.service                    loaded failed failed Bind mount '/persist/local/cache/home/hugob/python/.cache/pip' at '/home/hugob/.cache/pip'
+● bindMount--persist-local-cache-home-hugob-python-ipython-.service                      loaded failed failed Bind mount '/persist/local/cache/home/hugob/python/.ipython' at '/home/hugob/.ipython'
+● bindMount--persist-local-cache-home-hugob-python-jupyter-.service                      loaded failed failed Bind mount '/persist/local/cache/home/hugob/python/.jupyter' at '/home/hugob/.jupyter'
+● bindMount--persist-local-cache-home-hugob-python-local-share-jupyter-.service          loaded failed failed Bind mount '/persist/local/cache/home/hugob/python/.local/share/jupyter' at '/home/hugob/.local/share/jupyter'
+● bindMount--persist-local-cache-home-hugob-qbittorrent-local-share-qBittorrent-.service loaded failed failed Bind mount '/persist/local/cache/home/hugob/qbittorrent/.local/share/qBittorrent' at '/home/hugob/.local/share/qBittorrent'
+● bindMount--persist-local-cache-home-hugob-rust-cargo-.service                          loaded failed failed Bind mount '/persist/local/cache/home/hugob/rust/.cargo' at '/home/hugob/.cargo'
+● bindMount--persist-local-cache-home-hugob-rust-rustup-.service                         loaded failed failed Bind mount '/persist/local/cache/home/hugob/rust/.rustup' at '/home/hugob/.rustup'
+● bindMount--persist-local-cache-home-hugob-spotify-cache-spotify-.service               loaded failed failed Bind mount '/persist/local/cache/home/hugob/spotify/.cache/spotify' at '/home/hugob/.cache/spotify'
+● bindMount--persist-local-cache-home-hugob-tealdeer-cache-tealdeer-.service             loaded failed failed Bind mount '/persist/local/cache/home/hugob/tealdeer/.cache/tealdeer' at '/home/hugob/.cache/tealdeer'
+● bindMount--persist-state-home-hugob-direnv-local-share-direnv-allow-.service           loaded failed failed Bind mount '/persist/state/home/hugob/direnv/.local/share/direnv/allow' at '/home/hugob/.local/share/direnv/allow'
+● bindMount--persist-state-home-hugob-discord-config-discord-.service                    loaded failed failed Bind mount '/persist/state/home/hugob/discord/.config/discord' at '/home/hugob/.config/discord'
+● bindMount--persist-state-home-hugob-element-config-Element-.service                    loaded failed failed Bind mount '/persist/state/home/hugob/element/.config/Element' at '/home/hugob/.config/Element'
+● bindMount--persist-state-home-hugob-firefox-mozilla-firefox-.service                   loaded failed failed Bind mount '/persist/state/home/hugob/firefox/.mozilla/firefox' at '/home/hugob/.mozilla/firefox'
+● bindMount--persist-state-home-hugob-gpg-gnupg-.service                                 loaded failed failed Bind mount '/persist/state/home/hugob/gpg/.gnupg' at '/home/hugob/.gnupg'
+● bindMount--persist-state-home-hugob-lutris-cache-lutris-banners-.service               loaded failed failed Bind mount '/persist/state/home/hugob/lutris/.cache/lutris/banners' at '/home/hugob/.cache/lutris/banners'
+● bindMount--persist-state-home-hugob-lutris-cache-lutris-coverart-.service              loaded failed failed Bind mount '/persist/state/home/hugob/lutris/.cache/lutris/coverart' at '/home/hugob/.cache/lutris/coverart'
+● bindMount--persist-state-home-hugob-lutris-config-lutris-.service                      loaded failed failed Bind mount '/persist/state/home/hugob/lutris/.config/lutris' at '/home/hugob/.config/lutris'
+● bindMount--persist-state-home-hugob-qbittorrent-config-qBittorrent-.service            loaded failed failed Bind mount '/persist/state/home/hugob/qbittorrent/.config/qBittorrent' at '/home/hugob/.config/qBittorrent'
+● bindMount--persist-state-home-hugob-signal-config-Signal-.service                      loaded failed failed Bind mount '/persist/state/home/hugob/signal/.config/Signal' at '/home/hugob/.config/Signal'
+● bindMount--persist-state-home-hugob-sops-config-sops-age-.service                      loaded failed failed Bind mount '/persist/state/home/hugob/sops/.config/sops/age' at '/home/hugob/.config/sops/age'
+● bindMount--persist-state-home-hugob-spotify-config-spotify-.service                    loaded failed failed Bind mount '/persist/state/home/hugob/spotify/.config/spotify' at '/home/hugob/.config/spotify'
+● bindMount--persist-state-home-hugob-steam-factorio-.service                            loaded failed failed Bind mount '/persist/state/home/hugob/steam/.factorio' at '/home/hugob/.factorio'
+● bindMount--persist-state-home-hugob-wine-wine-.service                                 loaded failed failed Bind mount '/persist/state/home/hugob/wine/.wine' at '/home/hugob/.wine'
+● bindMount--persist-state-home-hugob-zathura-local-share-zathura-.service               loaded failed failed Bind mount '/persist/state/home/hugob/zathura/.local/share/zathura' at '/home/hugob/.local/share/zathura'
 
-         /nix/store/j86b2yj3dr5l1acy4vix0fvn2irycg4f-unityhub-3.6.1/share/applications/unityhub.desktop
-         /nix/store/ki3ia4q6z08wzs9srpsc2x856pd3vslg-home-manager-path/share/applications/unityhub.desktop
-error: builder for '/nix/store/r2dv8yy2s1jffqvn2ddm9q11awgpvbgw-user-environment.drv' failed with exit code 1;
-       last 4 log lines:
-       > error: Unable to build profile. There is a conflict for the following files:
-       >
-       >          /nix/store/j86b2yj3dr5l1acy4vix0fvn2irycg4f-unityhub-3.6.1/share/applications/unityhub.desktop
-       >          /nix/store/ki3ia4q6z08wzs9srpsc2x856pd3vslg-home-manager-path/share/applications/unityhub.desktop
-       For full logs, run 'nix log /nix/store/r2dv8yy2s1jffqvn2ddm9q11awgpvbgw-user-environment.drv'.
+Legend: LOAD   → Reflects whether the unit definition was properly loaded.
+        ACTIVE → The high-level unit activation state, i.e. generalization of SUB.
+        SUB    → The low-level unit activation state, values depend on unit type.
 
-Oops, Nix failed to install your new Home Manager profile!
+38 loaded units listed.
+Attempting to reload services anyway...
+Started bindMount--persist-local-cache-home-hugob-purescript-cache-spago-.service - failed
+Started bindMount--persist-local-cache-home-hugob-python-cache-pip-.service - failed
+Started bindMount--persist-data-home-hugob-Projects-.service - failed
+Started bindMount--persist-state-home-hugob-signal-config-Signal-.service - failed
+Started bindMount--persist-local-cache-home-hugob-rust-cargo-.service - failed
+Started bindMount--persist-local-cache-home-hugob-python-local-share-jupyter-.service - failed
+Started bindMount--persist-state-home-hugob-spotify-config-spotify-.service - failed
+Started bindMount--persist-local-cache-home-hugob-tealdeer-cache-tealdeer-.service - failed
+Started bindMount--persist-local-cache-home-hugob-nodejs-local-state-pnpm-.service - failed
+Started bindMount--persist-local-cache-home-hugob-python-jupyter-.service - failed
+Started bindMount--persist-local-cache-home-hugob-firefox-cache-mozilla-firefox-.service - failed
+Started bindMount--persist-data-home-hugob-Videos-.service - failed
+Started bindMount--persist-state-home-hugob-wine-wine-.service - failed
+Started bindMount--persist-data-home-hugob-Documents-.service - failed
+Started bindMount--persist-state-home-hugob-lutris-cache-lutris-coverart-.service - failed
+Started bindMount--persist-state-home-hugob-qbittorrent-config-qBittorrent-.service - failed
+Started bindMount--persist-state-home-hugob-lutris-config-lutris-.service - failed
+Started bindMount--persist-local-cache-home-hugob-spotify-cache-spotify-.service - failed
+Started bindMount--persist-local-cache-home-hugob-python-ipython-.service - failed
+Started bindMount--persist-local-cache-home-hugob-nodejs-npm-.service - failed
+Started bindMount--persist-state-home-hugob-firefox-mozilla-firefox-.service - failed
+Started bindMount--persist-state-home-hugob-discord-config-discord-.service - failed
+Started bindMount--persist-local-cache-home-hugob-nodejs-cache-pnpm-.service - failed
+Started bindMount--persist-state-home-hugob-lutris-cache-lutris-banners-.service - failed
+Started bindMount--persist-local-cache-home-hugob-qbittorrent-local-share-qBittorrent-.service - failed
+Started bindMount--persist-local-cache-home-hugob-rust-rustup-.service - failed
+Started bindMount--persist-data-home-hugob-Pictures-.service - failed
+Started bindMount--persist-local-cache-home-hugob-nodejs-cache-node-gyp-.service - failed
+Started bindMount--persist-state-home-hugob-sops-config-sops-age-.service - failed
+Started bindMount--persist-state-home-hugob-direnv-local-share-direnv-allow-.service - failed
+Started bindMount--persist-local-cache-home-hugob-nodejs-local-share-pnpm-.service - failed
+Started bindMount--persist-state-home-hugob-steam-factorio-.service - failed
+Started bindMount--persist-state-home-hugob-zathura-local-share-zathura-.service - failed
+Started bindMount--persist-local-cache-home-hugob-nodejs-cache-yarn-.service - failed
+Started bindMount--persist-local-cache-home-hugob-purescript-local-share-purescript-.service - failed
+Started bindMount--persist-state-home-hugob-gpg-gnupg-.service - failed
+Started bindMount--persist-data-home-hugob-Music-.service - failed
+Started bindMount--persist-state-home-hugob-element-config-Element-.service - failed
+warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
 
-Perhaps there is a conflict with a package that was installed using
-"nix-env -i"? Try running
+There are 163 unread and relevant news items.
+Read them by running the command "home-manager news".
 
-    nix-env -q
-
-and if there is a conflicting package you can remove it with
-
-    nix-env -e {package name}
-
-Then try activating your Home Manager configuration again.
