@@ -13,7 +13,6 @@
     # ./features/cli/nix-index.nix
     # ./features/cli/pass.nix
     ./features/wayland/hyprland
-    ./features/wayland/global.nix
   ];
   home = {
     username = "hugob";
