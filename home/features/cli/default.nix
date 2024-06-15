@@ -9,6 +9,7 @@
     ./starship.nix
     ./direnv.nix
     ./tealdeer.nix
+    ./tools.nix
     # ./fish
   ];
 
