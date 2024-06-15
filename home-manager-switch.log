@@ -1,21 +1,15 @@
 Using saved setting for 'extra-substituters = https://nix-community.cachix.org https://smos.cachix.org https://intray.cachix.org' from ~/.local/share/nix/trusted-settings.json.
 Using saved setting for 'extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM= intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ=' from ~/.local/share/nix/trusted-settings.json.
 warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
-these 7 derivations will be built:
-  /nix/store/5q0b0s4y2injkdysg6vl77jba6l4nrf6-hm_.mozillafirefoxhugobuser.js.drv
-  /nix/store/k99zjgix3lvx7bkf4f5ngq499gj22kwq-darkreader-4.9.86.xpi.drv
-  /nix/store/r9kzyj7x45nwaxmpgaisq004v0w65pff-darkreader-4.9.86.drv
-  /nix/store/967gbpkm9y2hmvgvnf6gm2h7n1wy9wjx-hm-firefox-extensions.drv
-  /nix/store/rl8cwiwh75inx0y1nlskkz2vnz2vkq8n-hm-firefox-extensions.drv
-  /nix/store/6i2qqp0hfsw5bg2c7zwhby27m9i0c68z-home-manager-files.drv
-  /nix/store/11g1avlrrg2ylc3zjjfx3pgws6js06nv-home-manager-generation.drv
-building '/nix/store/5q0b0s4y2injkdysg6vl77jba6l4nrf6-hm_.mozillafirefoxhugobuser.js.drv'...
-building '/nix/store/k99zjgix3lvx7bkf4f5ngq499gj22kwq-darkreader-4.9.86.xpi.drv'...
-building '/nix/store/r9kzyj7x45nwaxmpgaisq004v0w65pff-darkreader-4.9.86.drv'...
-building '/nix/store/967gbpkm9y2hmvgvnf6gm2h7n1wy9wjx-hm-firefox-extensions.drv'...
-building '/nix/store/rl8cwiwh75inx0y1nlskkz2vnz2vkq8n-hm-firefox-extensions.drv'...
-building '/nix/store/6i2qqp0hfsw5bg2c7zwhby27m9i0c68z-home-manager-files.drv'...
-building '/nix/store/11g1avlrrg2ylc3zjjfx3pgws6js06nv-home-manager-generation.drv'...
+these 4 derivations will be built:
+  /nix/store/7fsfxlrf813gzwrvfcsaz8q3cxslkm58-hm_hyprhyprland.conf.drv
+  /nix/store/50rl494nm6ppckh3999rdxbslqzwmcvw-home-manager-files.drv
+  /nix/store/dsdh6gmiaf5wvrkx0sfi1pbwb8jflf97-activation-script.drv
+  /nix/store/pck6xdz1mm1ch67lvw1wrfg2qjvl5ynn-home-manager-generation.drv
+building '/nix/store/7fsfxlrf813gzwrvfcsaz8q3cxslkm58-hm_hyprhyprland.conf.drv'...
+building '/nix/store/dsdh6gmiaf5wvrkx0sfi1pbwb8jflf97-activation-script.drv'...
+building '/nix/store/50rl494nm6ppckh3999rdxbslqzwmcvw-home-manager-files.drv'...
+building '/nix/store/pck6xdz1mm1ch67lvw1wrfg2qjvl5ynn-home-manager-generation.drv'...
 Starting Home Manager activation
 Activating checkFilesChanged
 Activating cleanEmptyLinkTargets
@@ -28,7 +22,7 @@ Activating createGpgHomedir
 Activating migrateGhAccounts
 Activating linkGeneration
 Cleaning up orphan links from /home/hugob
-Creating profile generation 6
+Creating profile generation 7
 Creating home file links in /home/hugob
 Activating batCache
 No themes were found in '/home/hugob/.config/bat/themes', using the default set
@@ -39,10 +33,21 @@ Writing metadata to folder /home/hugob/.cache/bat ... okay
 Activating installPackages
 replacing old 'home-manager-path'
 installing 'home-manager-path'
+building '/nix/store/hmq6fm1m5638j1nw2imbay5k3qhlszc4-user-environment.drv'...
 Activating dconfSettings
 Activating onFilesChange
 Activating runUnmountPersistentStoragePaths
 Activating reloadSystemd
+The user systemd session is degraded:
+  UNIT          LOAD   ACTIVE SUB    DESCRIPTION
+● dunst.service loaded failed failed Dunst notification daemon
+
+Legend: LOAD   → Reflects whether the unit definition was properly loaded.
+        ACTIVE → The high-level unit activation state, i.e. generalization of SUB.
+        SUB    → The low-level unit activation state, values depend on unit type.
+
+1 loaded units listed.
+Attempting to reload services anyway...
 Starting units: hyprland-session.target
 warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
 
