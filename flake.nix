@@ -174,15 +174,15 @@
           specialArgs = specialArgs system;
 
           modules = [
-            # home-manager.nixosModules.home-manager
-            # {
-            #   home-manager.users.hugob = import ./home/${hostname}.nix;
-            #   home-manager.extraSpecialArgs = specialArgs system // {inherit hostname;};
-            #   home-manager.useUserPackages = true;
+            home-manager.nixosModules.home-manager
+            {
+              home-manager.users.hugob = import ./home/${hostname}.nix;
+              home-manager.extraSpecialArgs = specialArgs system // {inherit hostname;};
+              home-manager.useUserPackages = true;
 
-            #   stylix.homeManagerIntegration.followSystem = false;
-            #   stylix.homeManagerIntegration.autoImport = false;
-            # }
+              stylix.homeManagerIntegration.followSystem = false;
+              stylix.homeManagerIntegration.autoImport = false;
+            }
 
             ./hosts/nixos/${hostname}
           ];

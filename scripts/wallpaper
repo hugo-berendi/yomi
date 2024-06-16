@@ -1,0 +1,7 @@
+#!/bin/sh
+
+swww query
+if [ $? -eq 1 ]; then
+	swww init
+fi
+swww img ~/Wallpaper/something-beautiful-in-nature.jpg
