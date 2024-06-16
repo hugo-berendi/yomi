@@ -4,7 +4,13 @@
   pkgs,
   ...
 }: {
-  imports = [./waybar.nix ../desktop];
+  imports = [
+    ./waybar.nix
+    ./wlogout.nix
+    ./wlsunset.nix
+
+    ../desktop
+  ];
 
   home.sessionVariables.NIXOS_OZONES_WL = "1";
   services.swayosd.enable = true;

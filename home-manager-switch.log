@@ -1,6 +1,42 @@
 Using saved setting for 'extra-substituters = https://nix-community.cachix.org https://smos.cachix.org https://intray.cachix.org' from ~/.local/share/nix/trusted-settings.json.
 Using saved setting for 'extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM= intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ=' from ~/.local/share/nix/trusted-settings.json.
 warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
+these 6 derivations will be built:
+  /nix/store/i9yil46r5yb2h4q89gvdsrb83svy45cx-bashrc.drv
+  /nix/store/r8n7nd1ly01b547l5dpx23cd3xqna1a6-home-manager-path.drv
+  /nix/store/wybhnvsmsca2162xnjxw36vwrnqq1hji-hm_fontconfigconf.d10hmfonts.conf.drv
+  /nix/store/a2ydzzm6rxdja3irbrisn8ch9y8lxrcn-home-manager-files.drv
+  /nix/store/slhr4bafn9558dcaa01i2xp9xrzzmml2-activation-script.drv
+  /nix/store/5qvdhws1rvhkdacd0bmmys4j1fyb7frm-home-manager-generation.drv
+these 11 paths will be fetched (4.97 MiB download, 18.30 MiB unpacked):
+  /nix/store/6y47ch91gnmzqx8091qc93vgwxgyycib-aria2-1.37.0
+  /nix/store/zxbsg3svkhm1wpic5q0y1s3qqwcqf07k-aria2-1.37.0-bin
+  /nix/store/j1fl69fsbg8zzywlsxylcynb3kj7dc0a-aria2-1.37.0-man
+  /nix/store/haq8gq5vv56qimbmh7j6hlp8a6h6pbr0-c-ares-1.27.0
+  /nix/store/aqwksgv36gyl6h3mqrw7czxp3l04a7n6-dogdns-unstable-2021-10-07
+  /nix/store/llmxyfgpnp507v4m663pjywp3ga6m59w-dogdns-unstable-2021-10-07-man
+  /nix/store/gbgzdayh2p9m319rl84wzyzll1ib9ayk-gping-1.16.1
+  /nix/store/ayn7a91mfzdgmdhp1r0y4k6v5w1n3mnr-most-5.2.0
+  /nix/store/qbg6s0dxs3d1kqqm6vwqkmmllflv485v-procs-0.14.5
+  /nix/store/2flzps2p110iwm75rbsrplr3mxvqziw7-python3.11-speedtest-cli-2.1.3
+  /nix/store/rx2cp7b8b1c326fpg9fig5hwgf9lajbm-rm-improved-0.13.1
+copying path '/nix/store/j1fl69fsbg8zzywlsxylcynb3kj7dc0a-aria2-1.37.0-man' from 'https://cache.nixos.org'...
+copying path '/nix/store/llmxyfgpnp507v4m663pjywp3ga6m59w-dogdns-unstable-2021-10-07-man' from 'https://cache.nixos.org'...
+copying path '/nix/store/haq8gq5vv56qimbmh7j6hlp8a6h6pbr0-c-ares-1.27.0' from 'https://cache.nixos.org'...
+copying path '/nix/store/aqwksgv36gyl6h3mqrw7czxp3l04a7n6-dogdns-unstable-2021-10-07' from 'https://cache.nixos.org'...
+copying path '/nix/store/gbgzdayh2p9m319rl84wzyzll1ib9ayk-gping-1.16.1' from 'https://cache.nixos.org'...
+copying path '/nix/store/ayn7a91mfzdgmdhp1r0y4k6v5w1n3mnr-most-5.2.0' from 'https://cache.nixos.org'...
+copying path '/nix/store/qbg6s0dxs3d1kqqm6vwqkmmllflv485v-procs-0.14.5' from 'https://cache.nixos.org'...
+copying path '/nix/store/2flzps2p110iwm75rbsrplr3mxvqziw7-python3.11-speedtest-cli-2.1.3' from 'https://cache.nixos.org'...
+copying path '/nix/store/rx2cp7b8b1c326fpg9fig5hwgf9lajbm-rm-improved-0.13.1' from 'https://cache.nixos.org'...
+building '/nix/store/i9yil46r5yb2h4q89gvdsrb83svy45cx-bashrc.drv'...
+copying path '/nix/store/6y47ch91gnmzqx8091qc93vgwxgyycib-aria2-1.37.0' from 'https://cache.nixos.org'...
+copying path '/nix/store/zxbsg3svkhm1wpic5q0y1s3qqwcqf07k-aria2-1.37.0-bin' from 'https://cache.nixos.org'...
+building '/nix/store/r8n7nd1ly01b547l5dpx23cd3xqna1a6-home-manager-path.drv'...
+building '/nix/store/slhr4bafn9558dcaa01i2xp9xrzzmml2-activation-script.drv'...
+building '/nix/store/wybhnvsmsca2162xnjxw36vwrnqq1hji-hm_fontconfigconf.d10hmfonts.conf.drv'...
+building '/nix/store/a2ydzzm6rxdja3irbrisn8ch9y8lxrcn-home-manager-files.drv'...
+building '/nix/store/5qvdhws1rvhkdacd0bmmys4j1fyb7frm-home-manager-generation.drv'...
 Starting Home Manager activation
 Activating checkFilesChanged
 Activating cleanEmptyLinkTargets
@@ -13,7 +49,7 @@ Activating createGpgHomedir
 Activating migrateGhAccounts
 Activating linkGeneration
 Cleaning up orphan links from /home/hugob
-No change so reusing latest profile generation 7
+Creating profile generation 8
 Creating home file links in /home/hugob
 Activating batCache
 No themes were found in '/home/hugob/.config/bat/themes', using the default set
@@ -24,6 +60,7 @@ Writing metadata to folder /home/hugob/.cache/bat ... okay
 Activating installPackages
 replacing old 'home-manager-path'
 installing 'home-manager-path'
+building '/nix/store/izk5251aqzgnydnnz0i608nkqqh42xpq-user-environment.drv'...
 Activating dconfSettings
 Activating onFilesChange
 Activating runUnmountPersistentStoragePaths
