@@ -10,6 +10,7 @@
     ./direnv.nix
     ./tealdeer.nix
     ./tools.nix
+    ./tmux
     # ./fish
   ];
 

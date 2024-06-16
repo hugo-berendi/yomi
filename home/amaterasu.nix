@@ -35,7 +35,7 @@
       qbittorrent
       unstable.unityhub
       unstable.overskride
-      unstable.nerdfetch # for displaying pc/laptop stats
+      # unstable.nerdfetch # for displaying pc/laptop stats
       unstable.alejandra # nix formatter
       unstable.neovim
       unstable.neovide

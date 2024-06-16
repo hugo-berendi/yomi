@@ -15,6 +15,7 @@
     inputs.anyrun.homeManagerModules.default
     inputs.nix-index-database.hmModules.nix-index
     inputs.sops-nix.homeManagerModules.sops
+    inputs.hyprland.homeManagerModules.default
 
     # {{{ self management
     # NOTE: using `pkgs.system` before `module.options` is evaluated

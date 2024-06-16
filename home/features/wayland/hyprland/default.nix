@@ -2,6 +2,7 @@
   pkgs,
   lib,
   config,
+  inputs,
   ...
 }: {
   imports = [../global.nix ./hyprpaper.nix];
@@ -11,6 +12,12 @@
     enable = true;
     package = pkgs.hyprland;
     extraConfig = builtins.readFile ./hyprland.conf;
+
+    plugins = [
+      # {{{ Plugins
+      # inputs.hy3.packages.x86_64-linux.hy3
+      # }}}
+    ];
 
     settings = {
       # {{{ Decoration
