@@ -2,17 +2,18 @@ Using saved setting for 'extra-substituters = https://nix-community.cachix.org h
 Using saved setting for 'extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM= intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ=' from ~/.local/share/nix/trusted-settings.json.
 warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
 these 2 derivations will be built:
-  /nix/store/70hgb7ailish408pgi2xx0hl92lhwq25-home-manager-files.drv
-  /nix/store/xaigvim4rmlmiijk8bsxviljm5m5kx45-home-manager-generation.drv
-building '/nix/store/70hgb7ailish408pgi2xx0hl92lhwq25-home-manager-files.drv'...
-building '/nix/store/xaigvim4rmlmiijk8bsxviljm5m5kx45-home-manager-generation.drv'...
+  /nix/store/sk7iqzpbidf8kapfd0nzjk0s7zpcc4qq-home-manager-files.drv
+  /nix/store/0csx9skngc2nl2ny6y3bl20w7yrfwzck-home-manager-generation.drv
+building '/nix/store/sk7iqzpbidf8kapfd0nzjk0s7zpcc4qq-home-manager-files.drv'...
+building '/nix/store/0csx9skngc2nl2ny6y3bl20w7yrfwzck-home-manager-generation.drv'...
 Starting Home Manager activation
 Activating checkFilesChanged
 Activating cleanEmptyLinkTargets
 Activating checkLinkTargets
-Existing file '/home/hugob/.config/yazi/flavors/rose-pine.yazi/rose-pine.tmTheme' is in the way of '/nix/store/rsdn977hfpij9hxs2k8knmcqj8aarwqc-home-manager-files/.config/yazi/flavors/rose-pine.yazi/rose-pine.tmTheme', will be skipped since they are the same
-Existing file '/home/hugob/.config/yazi/flavors/rose-pine.yazi/theme.toml' is in the way of '/nix/store/rsdn977hfpij9hxs2k8knmcqj8aarwqc-home-manager-files/.config/yazi/flavors/rose-pine.yazi/theme.toml', will be skipped since they are the same
-Existing file '/home/hugob/.config/yazi/plugins/glow.yazi/init.lua' is in the way of '/nix/store/rsdn977hfpij9hxs2k8knmcqj8aarwqc-home-manager-files/.config/yazi/plugins/glow.yazi/init.lua', will be skipped since they are the same
+cmp: /nix/store/njra610knlpzrhv039hnj05apk5hzyp5-home-manager-files/.config/yazi/flavors: Is a directory
+Existing file '/home/hugob/.config/yazi/flavors' is in the way of '/nix/store/njra610knlpzrhv039hnj05apk5hzyp5-home-manager-files/.config/yazi/flavors', will be moved to '/home/hugob/.config/yazi/flavors.backup'
+cmp: /nix/store/njra610knlpzrhv039hnj05apk5hzyp5-home-manager-files/.config/yazi/plugins: Is a directory
+Existing file '/home/hugob/.config/yazi/plugins' is in the way of '/nix/store/njra610knlpzrhv039hnj05apk5hzyp5-home-manager-files/.config/yazi/plugins', will be moved to '/home/hugob/.config/yazi/plugins.backup'
 Activating unmountPersistentStoragePaths
 Activating createAndMountPersistentStoragePaths
 Activating createTargetFileDirectories
@@ -21,14 +22,9 @@ Activating createGpgHomedir
 Activating migrateGhAccounts
 Activating linkGeneration
 Cleaning up orphan links from /home/hugob
-Creating profile generation 27
+Path '/home/hugob/.config/yazi/flavors/rose-pine.yazi/theme.toml' does not link into a Home Manager generation. Skipping delete.
+Creating profile generation 28
 Creating home file links in /home/hugob
-mv: cannot move '/home/hugob/.config/yazi/flavors/rose-pine.yazi/rose-pine.tmTheme' to '/home/hugob/.config/yazi/flavors/rose-pine.yazi/rose-pine.tmTheme.backup': Read-only file system
-Moving '/home/hugob/.config/yazi/flavors/rose-pine.yazi/rose-pine.tmTheme' failed!
-mv: cannot move '/home/hugob/.config/yazi/flavors/rose-pine.yazi/theme.toml' to '/home/hugob/.config/yazi/flavors/rose-pine.yazi/theme.toml.backup': Read-only file system
-Moving '/home/hugob/.config/yazi/flavors/rose-pine.yazi/theme.toml' failed!
-mv: cannot move '/home/hugob/.config/yazi/plugins/glow.yazi/init.lua' to '/home/hugob/.config/yazi/plugins/glow.yazi/init.lua.backup': Read-only file system
-Moving '/home/hugob/.config/yazi/plugins/glow.yazi/init.lua' failed!
 Activating batCache
 No themes were found in '/home/hugob/.config/bat/themes', using the default set
 No syntaxes were found in '/home/hugob/.config/bat/syntaxes', using the default set.
@@ -38,7 +34,6 @@ Writing metadata to folder /home/hugob/.cache/bat ... okay
 Activating installPackages
 replacing old 'home-manager-path'
 installing 'home-manager-path'
-building '/nix/store/78k33vjkcwqxsw163pyl96s8q5wqdvwh-user-environment.drv'...
 Activating dconfSettings
 Activating onFilesChange
 Activating runUnmountPersistentStoragePaths
