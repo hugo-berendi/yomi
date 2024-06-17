@@ -1,6 +1,6 @@
 
 (defwindow powermenu
-  monitor 0 ;; wayland users may need this
+  :monitor 0 ;; wayland users may need this
   :stacking "fg"
   :windowtype "normal"
   :wm-ignore true
