@@ -17,7 +17,7 @@
 
 (defwidget powermenu_layout []
   (box :class "layout-box" :space-evenly false :orientation "vertical"
-       :style "background-image: url('./wallpaper.jpg')"
+       :style "background-image: url('./wallpaper')"
     (box :valign "start" :space-evenly false :spacing 25
       (_sundial)
       (_battery :status {EWW_BATTERY.BAT0.status}
