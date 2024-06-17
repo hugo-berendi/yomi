@@ -77,7 +77,6 @@
     wget
     git
     gcc
-    dotnet-runtime_8
     go
     python3
     python3.pkgs.pip
@@ -88,7 +87,6 @@
     tmux
     fd
     btop
-    yazi
     fishPlugins.done
     fishPlugins.fzf-fish
     fishPlugins.forgit

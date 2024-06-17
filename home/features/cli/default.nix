@@ -11,6 +11,7 @@
     ./tealdeer.nix
     ./tools.nix
     ./tmux
+    ./yazi
     # ./fish
   ];
 
@@ -34,7 +35,6 @@
     httpie # Better curl
     # }}}
     # {{{ Misc
-    yazi # Terminal file explorer
     bc # Calculator
     ouch # Unified compression / decompression tool
     mkpasswd # Hash passwords

@@ -1,36 +1,25 @@
 Using saved setting for 'extra-substituters = https://nix-community.cachix.org https://smos.cachix.org https://intray.cachix.org' from ~/.local/share/nix/trusted-settings.json.
 Using saved setting for 'extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM= intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ=' from ~/.local/share/nix/trusted-settings.json.
 warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
-Starting Home Manager activation
-Activating checkFilesChanged
-Activating cleanEmptyLinkTargets
-Activating checkLinkTargets
-Activating unmountPersistentStoragePaths
-Activating createAndMountPersistentStoragePaths
-Activating createTargetFileDirectories
-Activating writeBoundary
-Activating createGpgHomedir
-Activating migrateGhAccounts
-Activating linkGeneration
-Cleaning up orphan links from /home/hugob
-No change so reusing latest profile generation 19
-Creating home file links in /home/hugob
-Activating batCache
-No themes were found in '/home/hugob/.config/bat/themes', using the default set
-No syntaxes were found in '/home/hugob/.config/bat/syntaxes', using the default set.
-Writing theme set to /home/hugob/.cache/bat/themes.bin ... okay
-Writing syntax set to /home/hugob/.cache/bat/syntaxes.bin ... okay
-Writing metadata to folder /home/hugob/.cache/bat ... okay
-Activating installPackages
-replacing old 'home-manager-path'
-installing 'home-manager-path'
-Activating dconfSettings
-Activating onFilesChange
-Activating runUnmountPersistentStoragePaths
-Activating reloadSystemd
-Starting units: hyprland-session.target
-warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
+error (ignored): error: end of string reached
+error:
+       … while calling the 'derivationStrict' builtin
+         at <nix/derivation-internal.nix>:9:12:
+            8|
+            9|   strict = derivationStrict drvAttrs;
+             |            ^
+           10|
 
-There are 164 unread and relevant news items.
-Read them by running the command "home-manager news".
+       … while evaluating derivation 'home-manager-generation'
+         whose name attribute is located at /nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/pkgs/stdenv/generic/make-derivation.nix:331:7
 
+       … while evaluating attribute 'buildCommand' of derivation 'home-manager-generation'
+         at /nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/pkgs/build-support/trivial-builders/default.nix:68:17:
+           67|         enableParallelBuilding = true;
+           68|         inherit buildCommand name;
+             |                 ^
+           69|         passAsFile = [ "buildCommand" ]
+
+       (stack trace truncated; use '--show-trace' to show the full, detailed trace)
+
+       error: path '/nix/store/w09vpx54kw9z01qqym4axdgz35q2hf45-source/home/features/cli/yazi/flavors' does not exist
