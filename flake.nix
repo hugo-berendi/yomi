@@ -31,6 +31,10 @@
     };
     # }}}
 
+    # {{{ Yazi flakes
+    yazi.url = "github:sxyazi/yazi";
+    # }}}
+
     # Firefox addons
     firefox-addons.url = "git+https://gitlab.com/rycee/nur-expressions?dir=pkgs/firefox-addons";
     firefox-addons.inputs.nixpkgs.follows = "nixpkgs";
