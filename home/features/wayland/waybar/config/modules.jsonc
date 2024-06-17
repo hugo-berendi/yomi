@@ -16,14 +16,12 @@
   },
 
   "custom/updates": {
-    "format": " {}",
+    "format": "󰏗 {}",
     "tooltip-format": "{}",
     "escape": true,
     "return-type": "json",
-    "exec": "~/.config/scripts/updates.sh",
+    "exec": "nix-store --query --requisites /run/current-system | wc -l",
     "restart-interval": 30,
-    "on-click": "~/.config/scripts/installupdates.sh",
-    "on-click-right": "~/.config/.settings/software.sh",
     "tooltip": false,
   },
 
