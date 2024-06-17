@@ -1,46 +1,37 @@
 Using saved setting for 'extra-substituters = https://nix-community.cachix.org https://smos.cachix.org https://intray.cachix.org' from ~/.local/share/nix/trusted-settings.json.
 Using saved setting for 'extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM= intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ=' from ~/.local/share/nix/trusted-settings.json.
 warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
-these 2 derivations will be built:
-  /nix/store/sk7iqzpbidf8kapfd0nzjk0s7zpcc4qq-home-manager-files.drv
-  /nix/store/0csx9skngc2nl2ny6y3bl20w7yrfwzck-home-manager-generation.drv
-building '/nix/store/sk7iqzpbidf8kapfd0nzjk0s7zpcc4qq-home-manager-files.drv'...
-building '/nix/store/0csx9skngc2nl2ny6y3bl20w7yrfwzck-home-manager-generation.drv'...
-Starting Home Manager activation
-Activating checkFilesChanged
-Activating cleanEmptyLinkTargets
-Activating checkLinkTargets
-cmp: /nix/store/njra610knlpzrhv039hnj05apk5hzyp5-home-manager-files/.config/yazi/flavors: Is a directory
-Existing file '/home/hugob/.config/yazi/flavors' is in the way of '/nix/store/njra610knlpzrhv039hnj05apk5hzyp5-home-manager-files/.config/yazi/flavors', will be moved to '/home/hugob/.config/yazi/flavors.backup'
-cmp: /nix/store/njra610knlpzrhv039hnj05apk5hzyp5-home-manager-files/.config/yazi/plugins: Is a directory
-Existing file '/home/hugob/.config/yazi/plugins' is in the way of '/nix/store/njra610knlpzrhv039hnj05apk5hzyp5-home-manager-files/.config/yazi/plugins', will be moved to '/home/hugob/.config/yazi/plugins.backup'
-Activating unmountPersistentStoragePaths
-Activating createAndMountPersistentStoragePaths
-Activating createTargetFileDirectories
-Activating writeBoundary
-Activating createGpgHomedir
-Activating migrateGhAccounts
-Activating linkGeneration
-Cleaning up orphan links from /home/hugob
-Path '/home/hugob/.config/yazi/flavors/rose-pine.yazi/theme.toml' does not link into a Home Manager generation. Skipping delete.
-Creating profile generation 28
-Creating home file links in /home/hugob
-Activating batCache
-No themes were found in '/home/hugob/.config/bat/themes', using the default set
-No syntaxes were found in '/home/hugob/.config/bat/syntaxes', using the default set.
-Writing theme set to /home/hugob/.cache/bat/themes.bin ... okay
-Writing syntax set to /home/hugob/.cache/bat/syntaxes.bin ... okay
-Writing metadata to folder /home/hugob/.cache/bat ... okay
-Activating installPackages
-replacing old 'home-manager-path'
-installing 'home-manager-path'
-Activating dconfSettings
-Activating onFilesChange
-Activating runUnmountPersistentStoragePaths
-Activating reloadSystemd
-Starting units: hyprland-session.target
-warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
+error:
+       … while calling the 'derivationStrict' builtin
+         at <nix/derivation-internal.nix>:9:12:
+            8|
+            9|   strict = derivationStrict drvAttrs;
+             |            ^
+           10|
 
-There are 164 unread and relevant news items.
-Read them by running the command "home-manager news".
+       … while evaluating derivation 'home-manager-generation'
+         whose name attribute is located at /nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/pkgs/stdenv/generic/make-derivation.nix:331:7
 
+       … while evaluating attribute 'buildCommand' of derivation 'home-manager-generation'
+         at /nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/pkgs/build-support/trivial-builders/default.nix:68:17:
+           67|         enableParallelBuilding = true;
+           68|         inherit buildCommand name;
+             |                 ^
+           69|         passAsFile = [ "buildCommand" ]
+
+       … while evaluating the option `home.activation.installPackages.data':
+
+       … while evaluating definitions from `/nix/store/1m3xkp0fingsbsswmp09s3m8q64gkcq8-source/modules/home-environment.nix':
+
+       … while evaluating the option `home.packages':
+
+       … while evaluating definitions from `/nix/store/z7ykgszmf1cd0zrs7f20p21vamwb7hj7-source/home/features/cli/yazi':
+
+       (stack trace truncated; use '--show-trace' to show the full, detailed trace)
+
+       error: undefined variable 'transmission-cli'
+       at /nix/store/z7ykgszmf1cd0zrs7f20p21vamwb7hj7-source/home/features/cli/yazi/default.nix:28:5:
+           27|     ouch
+           28|     transmission-cli
+             |     ^
+           29|     ripgrep

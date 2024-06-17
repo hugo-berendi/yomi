@@ -22,5 +22,10 @@
 
   home.packages = with pkgs; [
     glow
+    hexyl
+    exiftool
+    ouch
+    transmission
+    ripgrep
   ];
 }
