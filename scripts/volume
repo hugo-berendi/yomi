@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-iDIR="$HOME/.config/dunst/icons"
+iDIR="$HOME/dotfiles/nix-config/home/features/desktop/dunst/icons"
 
 # Get Volume
 get_volume() {
@@ -24,7 +24,7 @@ get_icon() {
 
 # Notify
 notify_user() {
-    dunstify -h string:x-canonical-private-synchronous:sys-notify -u low -i "$(get_icon)" "Volume: $(get_volume)%" -h int:value:"$(get_volume)"
+	dunstify -h string:x-canonical-private-synchronous:sys-notify -u low -i "$(get_icon)" "Volume: $(get_volume)%" -h int:value:"$(get_volume)"
 }
 
 # Increase Volume

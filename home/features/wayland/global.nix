@@ -49,5 +49,7 @@
       wl-clipboard # Clipboard manager
       hyprpicker # Color picker
       grimblast # Screenshot tool
+      brightnessctl # Adjust screen brightness
+      pamixer # Adjust audio volume
     ];
 }

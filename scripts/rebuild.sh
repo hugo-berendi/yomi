@@ -19,7 +19,7 @@ pushd ~/dotfiles/nix-config/
 nvim .
 
 # Early return if no changes were detected (thanks @singiamtel!)
-if git diff --quiet HEAD -- .; then
+if sudo git diff --quiet HEAD -- .; then
 	echo "No changes detected, exiting."
 	popd
 	exit 0
@@ -36,7 +36,7 @@ alejandra . &>/dev/null ||
 sudo git add .
 
 # Shows your changes
-git diff -U0
+sudo git diff -U0
 
 echo "NixOS Rebuilding..."
 notify-send -e "NixOS Rebuilding..." --icon=software-update-available
