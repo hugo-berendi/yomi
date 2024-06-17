@@ -5,10 +5,9 @@
   ...
 }: {
   imports = [
-    ./waybar.nix
+    ./waybar
     ./wlogout.nix
     ./wlsunset.nix
-    ./eww
 
     ../desktop
   ];

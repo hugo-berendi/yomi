@@ -53,4 +53,7 @@
     duh = "du -hd 1";
     # }}}
   };
+
+  xdg.configFile."scripts".source = ./scripts;
+  home.sessionPath = ["$HOME/.config/scripts"];
 }

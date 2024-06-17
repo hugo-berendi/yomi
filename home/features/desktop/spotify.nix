@@ -27,7 +27,10 @@
   });
 in {
   imports = [./audio.nix];
-  home.packages = [pkgs.spot];
+  home.packages = [
+    pkgs.spot
+    pkgs.playerctl
+  ];
 
   programs.spicetify = {
     enable = true;

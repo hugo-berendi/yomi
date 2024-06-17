@@ -1,0 +1,51 @@
+{
+  // General
+  "position": "top",
+  "layer": "top",
+  "margin-top": 20,
+  "margin-left": 20,
+  "margin-right": 20,
+  "margin-bottom": 0,
+  "spacing": 0,
+
+  // Load modules
+  "include": ["~/.config/waybar/modules.jsonc"],
+
+  // Modules left
+  "modules-left": [
+      "hyprland/workspaces",
+      "custom/spotify"
+  ],
+
+  // Modules right
+  "modules-right": [
+      "custom/dexcom",
+      "custom/updates",
+      "group/general",
+      "group/hardware",
+      "custom/power"
+  ],
+
+  // Group hadware
+  "group/hardware": {
+      "orientation": "horizontal",
+      "modules": [
+          "disk",
+          "cpu",
+          "memory"
+      ]
+  },
+
+  // general group 
+  "group/general": {
+      "orientation": "horizontal",
+      "modules": [
+          "network",
+          "bluetooth",
+          "pulseaudio",
+          "battery",
+          "clock",
+          "custom/weather"
+      ]
+  }
+}

@@ -1,41 +1,21 @@
 Using saved setting for 'extra-substituters = https://nix-community.cachix.org https://smos.cachix.org https://intray.cachix.org' from ~/.local/share/nix/trusted-settings.json.
 Using saved setting for 'extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM= intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ=' from ~/.local/share/nix/trusted-settings.json.
 warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
-these 2 derivations will be built:
-  /nix/store/9h8wxw3nv4xw2inrjh1srpyalc7i490f-home-manager-files.drv
-  /nix/store/shlmcb5mrn885iyplv4swp79pr6nwr1p-home-manager-generation.drv
-building '/nix/store/9h8wxw3nv4xw2inrjh1srpyalc7i490f-home-manager-files.drv'...
-building '/nix/store/shlmcb5mrn885iyplv4swp79pr6nwr1p-home-manager-generation.drv'...
-Starting Home Manager activation
-Activating checkFilesChanged
-Activating cleanEmptyLinkTargets
-Activating checkLinkTargets
-Activating unmountPersistentStoragePaths
-Activating createAndMountPersistentStoragePaths
-Activating createTargetFileDirectories
-Activating writeBoundary
-Activating createGpgHomedir
-Activating migrateGhAccounts
-Activating linkGeneration
-Cleaning up orphan links from /home/hugob
-Creating profile generation 36
-Creating home file links in /home/hugob
-Activating batCache
-No themes were found in '/home/hugob/.config/bat/themes', using the default set
-No syntaxes were found in '/home/hugob/.config/bat/syntaxes', using the default set.
-Writing theme set to /home/hugob/.cache/bat/themes.bin ... okay
-Writing syntax set to /home/hugob/.cache/bat/syntaxes.bin ... okay
-Writing metadata to folder /home/hugob/.cache/bat ... okay
-Activating installPackages
-replacing old 'home-manager-path'
-installing 'home-manager-path'
-Activating dconfSettings
-Activating onFilesChange
-Activating runUnmountPersistentStoragePaths
-Activating reloadSystemd
-Starting units: hyprland-session.target
-warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
+error:
+       … while evaluating a branch condition
+         at /nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/lib/lists.nix:125:9:
+          124|       fold' = n:
+          125|         if n == len
+             |         ^
+          126|         then nul
 
-There are 164 unread and relevant news items.
-Read them by running the command "home-manager news".
+       … while calling the 'length' builtin
+         at /nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/lib/lists.nix:123:13:
+          122|     let
+          123|       len = length list;
+             |             ^
+          124|       fold' = n:
 
+       (stack trace truncated; use '--show-trace' to show the full, detailed trace)
+
+       error: path '/nix/store/p8df6nxfc5pxbrq2w0idxf7y1kmngwai-source/home/features/wayland/waybar.nix' does not exist

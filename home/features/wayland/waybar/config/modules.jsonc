@@ -1,0 +1,140 @@
+{
+  "hyprland/workspaces": {
+    "on-click": "activate",
+    "active-only": false,
+    "disable-scroll": true,
+    "all-outputs": true,
+    "format": "{icon}",
+    "format-icons": {
+      "default": "",
+      "urgent": "",
+      "active": "",
+    },
+    "persistent_workspaces": {
+      "*": 10,
+    },
+  },
+
+  "custom/updates": {
+    "format": " {}",
+    "tooltip-format": "{}",
+    "escape": true,
+    "return-type": "json",
+    "exec": "~/.config/scripts/updates.sh",
+    "restart-interval": 30,
+    "on-click": "~/.config/scripts/installupdates.sh",
+    "on-click-right": "~/.config/.settings/software.sh",
+    "tooltip": false,
+  },
+
+  "custom/spotify": {
+    "format": "<span foreground='#cba6f7'>󰎈 </span><span font='HackNerdFont weight=325 Italic'>{}</span>",
+    "interval": 1,
+    "exec-if": "pgrep spotify",
+    "on-click": "playerctl -p spotify play-pause",
+    "on-scroll-up": "playerctl -p spotify previous",
+    "on-scroll-down": "playerctl -p spotify next",
+    "tooltip": false,
+    "escape": true,
+    "max-length": 60,
+    "exec": "$HOME/.config/scripts/spotify.sh",
+    "return-type": "json",
+  },
+
+  "clock": {
+    "format": "<span foreground='#C6AAE8'> </span>{:%a %d %H:%M}",
+    "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
+  },
+
+  "custom/weather": {
+    "exec": "python ~/.config/scripts/weather.py",
+    "restart-interval": 300,
+    "return-type": "json",
+    "on-click": "xdg-open https://weather.com/en-IN/weather/today/l/$(location_id)",
+    // "format-alt": "{alt}",
+  },
+
+  "custom/dexcom": {
+    "exec": "python ~/.config/scripts/dexcom.py",
+    "restart-interval": 300,
+    "return-type": "json",
+    "format": "{}",
+  },
+
+  "battery": {
+    "states": {
+      "warning": 30,
+      "critical": 15,
+    },
+    "format": "<span foreground='#B1E3AD'>{icon} </span>{capacity}% ",
+    "format-warning": "<span foreground='#B1E3AD'>{icon} </span>{capacity}% ",
+    "format-critical": "<span foreground='#E38C8F'>{icon} </span>{capacity}% ",
+    "format-charging": "<span foreground='#B1E3AD'>  </span>{capacity}% ",
+    "format-plugged": "<span foreground='#B1E3AD'>  </span>{capacity}% ",
+    "format-alt": "<span foreground='#B1E3AD'>{icon} </span>{time} ",
+    "format-full": "<span foreground='#B1E3AD'> </span> {capacity}% ",
+    "format-icons": [" ", " ", " ", " ", " "],
+    "tooltip-format": "{time}",
+  },
+
+  "network": {
+    "format-wifi": "<span foreground='#F2CECF'> </span> ",
+    "format-ethernet": "<span foreground='#F2CECF'>󰈀 </span> ",
+    "format-linked": "{ifname} (No IP)  ",
+    "format-disconnected": "<span foreground='#F2CECF'> </span> ",
+    "tooltip-format-wifi": "Signal Strenght: {signalStrength}% ",
+    "on-click": "~/.config/scripts/toggle.sh wlan",
+  },
+
+  "bluetooth": {
+    // "controller": "controller1", // specify the alias of the controller if there are more than 1 on the system
+    "format": "",
+    "format-disabled": "󰂲", // an empty format will hide the module
+    "format-connected": "󰂱",
+    "tooltip-format": "{controller_alias}\t{controller_address}",
+    "tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{device_enumerate}",
+    "tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
+    "on-click": "~/.config/scripts/toggle.sh bluetooth",
+  },
+
+  "pipewire": {
+    "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
+    "format": "<span foreground='#EBDDAA'>{icon}</span> {volume}% ",
+    "format-muted": "<span foreground='#EBDDAA'></span> Muted ",
+    "format-icons": {
+      "headphone": "",
+      "hands-free": "",
+      "headset": "",
+      "phone": "",
+      "portable": "",
+      "car": "",
+      "default": ["", ""],
+    },
+  },
+
+  "custom/power": {
+    "format": "",
+    "on-click": "nwg-bar",
+    "tooltip": false,
+  },
+
+  // CPU
+  "cpu": {
+    "format": " {usage}% ",
+    "on-click": "kitty -e htop",
+  },
+
+  // Memory
+  "memory": {
+    "format": "<span font_desc='Font Awesome 6 Free'> </span>{}% ",
+    "on-click": "kitty -e htop",
+  },
+
+  // Harddisc space used
+  "disk": {
+    "interval": 30,
+    "format": " {percentage_used}% ",
+    "path": "/home/",
+    "on-click": "kitty -e htop",
+  },
+}
