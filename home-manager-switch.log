@@ -1,21 +1,54 @@
 Using saved setting for 'extra-substituters = https://nix-community.cachix.org https://smos.cachix.org https://intray.cachix.org' from ~/.local/share/nix/trusted-settings.json.
 Using saved setting for 'extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM= intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ=' from ~/.local/share/nix/trusted-settings.json.
 warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
-error:
-       … while evaluating a branch condition
-         at /nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/lib/lists.nix:125:9:
-          124|       fold' = n:
-          125|         if n == len
-             |         ^
-          126|         then nul
+these 6 derivations will be built:
+  /nix/store/cvc0lyqw8vfjhh593hp2v83w9dkjnd4d-hm-session-vars.sh.drv
+  /nix/store/p6w5lyvyqqjzad7808v6axgkl51pcah3-home-manager-path.drv
+  /nix/store/nzscqd340pnar1qbkwnh6gqvzp824ind-hm_fontconfigconf.d10hmfonts.conf.drv
+  /nix/store/vkl00r62kaj8lgdp7jcyp1f3026pghxp-home-manager-files.drv
+  /nix/store/zsizdd1ivfms9hary8cq4h5f7mbyzzhf-activation-script.drv
+  /nix/store/b8001fdh3vcpp3alphjgr4jg3ilf101q-home-manager-generation.drv
+building '/nix/store/cvc0lyqw8vfjhh593hp2v83w9dkjnd4d-hm-session-vars.sh.drv'...
+building '/nix/store/p6w5lyvyqqjzad7808v6axgkl51pcah3-home-manager-path.drv'...
+building '/nix/store/zsizdd1ivfms9hary8cq4h5f7mbyzzhf-activation-script.drv'...
+building '/nix/store/nzscqd340pnar1qbkwnh6gqvzp824ind-hm_fontconfigconf.d10hmfonts.conf.drv'...
+building '/nix/store/vkl00r62kaj8lgdp7jcyp1f3026pghxp-home-manager-files.drv'...
+building '/nix/store/b8001fdh3vcpp3alphjgr4jg3ilf101q-home-manager-generation.drv'...
+Starting Home Manager activation
+Activating checkFilesChanged
+Activating cleanEmptyLinkTargets
+Activating checkLinkTargets
+cmp: /nix/store/726p0fldfacdxrfiv70nllpa4r21n9am-home-manager-files/.config/waybar: Is a directory
+Existing file '/home/hugob/.config/waybar' is in the way of '/nix/store/726p0fldfacdxrfiv70nllpa4r21n9am-home-manager-files/.config/waybar', will be moved to '/home/hugob/.config/waybar.backup'
+cmp: /nix/store/726p0fldfacdxrfiv70nllpa4r21n9am-home-manager-files/.config/scripts: Is a directory
+Existing file '/home/hugob/.config/scripts' is in the way of '/nix/store/726p0fldfacdxrfiv70nllpa4r21n9am-home-manager-files/.config/scripts', will be moved to '/home/hugob/.config/scripts.backup'
+Activating unmountPersistentStoragePaths
+Activating createAndMountPersistentStoragePaths
+Activating createTargetFileDirectories
+Activating writeBoundary
+Activating createGpgHomedir
+Activating migrateGhAccounts
+Activating linkGeneration
+Cleaning up orphan links from /home/hugob
+Creating profile generation 38
+Creating home file links in /home/hugob
+Activating batCache
+No themes were found in '/home/hugob/.config/bat/themes', using the default set
+No syntaxes were found in '/home/hugob/.config/bat/syntaxes', using the default set.
+Writing theme set to /home/hugob/.cache/bat/themes.bin ... okay
+Writing syntax set to /home/hugob/.cache/bat/syntaxes.bin ... okay
+Writing metadata to folder /home/hugob/.cache/bat ... okay
+Activating installPackages
+replacing old 'home-manager-path'
+installing 'home-manager-path'
+building '/nix/store/7cl6y7w5p755hznvhw37jjq5n1f7kjvr-user-environment.drv'...
+Activating dconfSettings
+Activating onFilesChange
+Activating runUnmountPersistentStoragePaths
+Activating reloadSystemd
+Starting units: hyprland-session.target
+warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
 
-       … while calling the 'length' builtin
-         at /nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/lib/lists.nix:123:13:
-          122|     let
-          123|       len = length list;
-             |             ^
-          124|       fold' = n:
+There are 164 unread and relevant news items.
+Read them by running the command "home-manager news".
 
-       (stack trace truncated; use '--show-trace' to show the full, detailed trace)
-
-       error: path '/nix/store/p8df6nxfc5pxbrq2w0idxf7y1kmngwai-source/home/features/wayland/waybar.nix' does not exist

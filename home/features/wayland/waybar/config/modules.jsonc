@@ -47,7 +47,7 @@
   },
 
   "custom/weather": {
-    "exec": "python ~/.config/scripts/weather.py",
+    "exec": "nix-shell ~/.config/scripts/shell.nix --run \"python ~/.config/scripts/weather.py\"",
     "restart-interval": 300,
     "return-type": "json",
     "on-click": "xdg-open https://weather.com/en-IN/weather/today/l/$(location_id)",
@@ -55,7 +55,7 @@
   },
 
   "custom/dexcom": {
-    "exec": "python ~/.config/scripts/dexcom.py",
+    "exec": "nix-shell ~/.config/scripts/shell.nix --run \"python ~/.config/scripts/dexcom.py\"",
     "restart-interval": 300,
     "return-type": "json",
     "format": "{}",
