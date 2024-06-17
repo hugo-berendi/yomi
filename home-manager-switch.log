@@ -1,6 +1,11 @@
 Using saved setting for 'extra-substituters = https://nix-community.cachix.org https://smos.cachix.org https://intray.cachix.org' from ~/.local/share/nix/trusted-settings.json.
 Using saved setting for 'extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM= intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ=' from ~/.local/share/nix/trusted-settings.json.
 warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
+these 2 derivations will be built:
+  /nix/store/hdvw3ajz7wxw0ni2gsf2ll653j53viwv-home-manager-files.drv
+  /nix/store/dxxz8dkb3xns87w9s2xnrpsgjix64i1p-home-manager-generation.drv
+building '/nix/store/hdvw3ajz7wxw0ni2gsf2ll653j53viwv-home-manager-files.drv'...
+building '/nix/store/dxxz8dkb3xns87w9s2xnrpsgjix64i1p-home-manager-generation.drv'...
 Starting Home Manager activation
 Activating checkFilesChanged
 Activating cleanEmptyLinkTargets
@@ -13,7 +18,7 @@ Activating createGpgHomedir
 Activating migrateGhAccounts
 Activating linkGeneration
 Cleaning up orphan links from /home/hugob
-Creating profile generation 44
+Creating profile generation 46
 Creating home file links in /home/hugob
 Activating batCache
 No themes were found in '/home/hugob/.config/bat/themes', using the default set
@@ -23,24 +28,12 @@ Writing syntax set to /home/hugob/.cache/bat/syntaxes.bin ... okay
 Writing metadata to folder /home/hugob/.cache/bat ... okay
 Activating installPackages
 installing 'home-manager-path'
-building '/nix/store/gyd8bdqh7f0012nxjpa0lcr245llz150-user-environment.drv'...
+building '/nix/store/jwjjfza79bl21aprrnbpdm783bjplnz2-user-environment.drv'...
 Activating dconfSettings
 Activating onFilesChange
 Activating runUnmountPersistentStoragePaths
 Activating reloadSystemd
-The user systemd session is degraded:
-  UNIT         LOAD   ACTIVE SUB    DESCRIPTION
-● tmux.service loaded failed failed tmux default session (detached)
-
-Legend: LOAD   → Reflects whether the unit definition was properly loaded.
-        ACTIVE → The high-level unit activation state, i.e. generalization of SUB.
-        SUB    → The low-level unit activation state, values depend on unit type.
-
-1 loaded units listed.
-Attempting to reload services anyway...
 Starting units: hyprland-session.target
-Started tmux-spawn-9475512f-acbb-46fc-81a7-b0e5dc2c31ad.scope - active
-Started tmux.service - active
 warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
 
 There are 164 unread and relevant news items.
