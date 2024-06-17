@@ -1,25 +1,51 @@
 Using saved setting for 'extra-substituters = https://nix-community.cachix.org https://smos.cachix.org https://intray.cachix.org' from ~/.local/share/nix/trusted-settings.json.
 Using saved setting for 'extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM= intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ=' from ~/.local/share/nix/trusted-settings.json.
 warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
-error (ignored): error: end of string reached
-error:
-       … while calling the 'derivationStrict' builtin
-         at <nix/derivation-internal.nix>:9:12:
-            8|
-            9|   strict = derivationStrict drvAttrs;
-             |            ^
-           10|
+these 2 derivations will be built:
+  /nix/store/70hgb7ailish408pgi2xx0hl92lhwq25-home-manager-files.drv
+  /nix/store/xaigvim4rmlmiijk8bsxviljm5m5kx45-home-manager-generation.drv
+building '/nix/store/70hgb7ailish408pgi2xx0hl92lhwq25-home-manager-files.drv'...
+building '/nix/store/xaigvim4rmlmiijk8bsxviljm5m5kx45-home-manager-generation.drv'...
+Starting Home Manager activation
+Activating checkFilesChanged
+Activating cleanEmptyLinkTargets
+Activating checkLinkTargets
+Existing file '/home/hugob/.config/yazi/flavors/rose-pine.yazi/rose-pine.tmTheme' is in the way of '/nix/store/rsdn977hfpij9hxs2k8knmcqj8aarwqc-home-manager-files/.config/yazi/flavors/rose-pine.yazi/rose-pine.tmTheme', will be skipped since they are the same
+Existing file '/home/hugob/.config/yazi/flavors/rose-pine.yazi/theme.toml' is in the way of '/nix/store/rsdn977hfpij9hxs2k8knmcqj8aarwqc-home-manager-files/.config/yazi/flavors/rose-pine.yazi/theme.toml', will be skipped since they are the same
+Existing file '/home/hugob/.config/yazi/plugins/glow.yazi/init.lua' is in the way of '/nix/store/rsdn977hfpij9hxs2k8knmcqj8aarwqc-home-manager-files/.config/yazi/plugins/glow.yazi/init.lua', will be skipped since they are the same
+Activating unmountPersistentStoragePaths
+Activating createAndMountPersistentStoragePaths
+Activating createTargetFileDirectories
+Activating writeBoundary
+Activating createGpgHomedir
+Activating migrateGhAccounts
+Activating linkGeneration
+Cleaning up orphan links from /home/hugob
+Creating profile generation 27
+Creating home file links in /home/hugob
+mv: cannot move '/home/hugob/.config/yazi/flavors/rose-pine.yazi/rose-pine.tmTheme' to '/home/hugob/.config/yazi/flavors/rose-pine.yazi/rose-pine.tmTheme.backup': Read-only file system
+Moving '/home/hugob/.config/yazi/flavors/rose-pine.yazi/rose-pine.tmTheme' failed!
+mv: cannot move '/home/hugob/.config/yazi/flavors/rose-pine.yazi/theme.toml' to '/home/hugob/.config/yazi/flavors/rose-pine.yazi/theme.toml.backup': Read-only file system
+Moving '/home/hugob/.config/yazi/flavors/rose-pine.yazi/theme.toml' failed!
+mv: cannot move '/home/hugob/.config/yazi/plugins/glow.yazi/init.lua' to '/home/hugob/.config/yazi/plugins/glow.yazi/init.lua.backup': Read-only file system
+Moving '/home/hugob/.config/yazi/plugins/glow.yazi/init.lua' failed!
+Activating batCache
+No themes were found in '/home/hugob/.config/bat/themes', using the default set
+No syntaxes were found in '/home/hugob/.config/bat/syntaxes', using the default set.
+Writing theme set to /home/hugob/.cache/bat/themes.bin ... okay
+Writing syntax set to /home/hugob/.cache/bat/syntaxes.bin ... okay
+Writing metadata to folder /home/hugob/.cache/bat ... okay
+Activating installPackages
+replacing old 'home-manager-path'
+installing 'home-manager-path'
+building '/nix/store/78k33vjkcwqxsw163pyl96s8q5wqdvwh-user-environment.drv'...
+Activating dconfSettings
+Activating onFilesChange
+Activating runUnmountPersistentStoragePaths
+Activating reloadSystemd
+Starting units: hyprland-session.target
+warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
 
-       … while evaluating derivation 'home-manager-generation'
-         whose name attribute is located at /nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/pkgs/stdenv/generic/make-derivation.nix:331:7
+There are 164 unread and relevant news items.
+Read them by running the command "home-manager news".
 
-       … while evaluating attribute 'buildCommand' of derivation 'home-manager-generation'
-         at /nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/pkgs/build-support/trivial-builders/default.nix:68:17:
-           67|         enableParallelBuilding = true;
-           68|         inherit buildCommand name;
-             |                 ^
-           69|         passAsFile = [ "buildCommand" ]
-
-       (stack trace truncated; use '--show-trace' to show the full, detailed trace)
-
-       error: path '/nix/store/i5rqk15dsh0qpjgq39ppa0kavj32ixs8-source/home/features/cli/yazi/flavors/rose-pine.yazi/rose-pine.tmTheme' does not exist

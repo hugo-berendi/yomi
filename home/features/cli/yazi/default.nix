@@ -13,9 +13,11 @@
   };
 
   xdg.configFile = {
-    "yazi/plugins/glow.yazi/init.lua".source = ./plugins/glow.yazi/init.lua;
-    "yazi/flavors/rose-pine.yazi/rose-pine.tmTheme".source = ./flavors/rose-pine.yazi/rose-pine.tmTheme;
-    "yazi/flavors/rose-pine.yazi/theme.toml".source = ./flavors/rose-pine.yazi/theme.toml;
+    "yazi/plugins".source = ./plugins;
+    "yazi/flavors".source = ./flavors;
+    # "yazi/plugins/glow.yazi/init.lua".source = ./plugins/glow.yazi/init.lua;
+    # "yazi/flavors/rose-pine.yazi/rose-pine.tmTheme".source = ./flavors/rose-pine.yazi/rose-pine.tmTheme;
+    # "yazi/flavors/rose-pine.yazi/theme.toml".source = ./flavors/rose-pine.yazi/theme.toml;
   };
 
   home.packages = with pkgs; [
