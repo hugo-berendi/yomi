@@ -10,9 +10,14 @@
       "urgent": "",
       "active": "",
     },
-    "persistent_workspaces": {
-      "*": 10,
+    "persistent-workspaces": {
+      "*": 5,
     },
+  },
+
+  "tray": {
+    "icon-size": 16,
+    "spacing": 4,
   },
 
   "custom/updates": {
