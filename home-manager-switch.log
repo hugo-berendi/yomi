@@ -1,37 +1,63 @@
 Using saved setting for 'extra-substituters = https://nix-community.cachix.org https://smos.cachix.org https://intray.cachix.org' from ~/.local/share/nix/trusted-settings.json.
 Using saved setting for 'extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM= intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ=' from ~/.local/share/nix/trusted-settings.json.
 warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
-error:
-       … while calling the 'derivationStrict' builtin
-         at <nix/derivation-internal.nix>:9:12:
-            8|
-            9|   strict = derivationStrict drvAttrs;
-             |            ^
-           10|
+these 7 derivations will be built:
+  /nix/store/2wvkxviv46ndaqjsc5dn7amji0nvrfrs-yazi-settings.drv
+  /nix/store/ndyacbg6fcaddjxp11fj0q48zhshn644-home-manager-path.drv
+  /nix/store/9dn8fff2284q9xw3j48036cfp7g02cwp-activation-script.drv
+  /nix/store/bqb5q1g5njrndlbc20kamx0vz2hawr37-hm_fontconfigconf.d10hmfonts.conf.drv
+  /nix/store/xlxdxjnv120wbpvxw9fm5mc7r2kd8jwa-yazi-keymap.drv
+  /nix/store/fblbzqa736jb9qy3jm1b8nr0glid69p7-home-manager-files.drv
+  /nix/store/dq0s6nzsj2m8g0yd8iaqr4p8j04sldnv-home-manager-generation.drv
+these 5 paths will be fetched (4.78 MiB download, 24.54 MiB unpacked):
+  /nix/store/wnl5bp04lmwfynd5i7kp7p1c1a5i76j8-hexyl-0.14.0
+  /nix/store/4m7i5v263rs91j6blgxs4l3y0p9qpqhp-libnatpmp-20230423
+  /nix/store/fpwllj99hdnznyzhqrc7z3wp1ch2lkbp-miniupnpc-2.2.6
+  /nix/store/6scrhdz42mq882wnlz71rz8yq1a5h6gk-perl5.38.2-Image-ExifTool-12.84
+  /nix/store/rcq147jzh7ca7vak4k77yvgmylsp66qq-transmission-3.00
+copying path '/nix/store/wnl5bp04lmwfynd5i7kp7p1c1a5i76j8-hexyl-0.14.0' from 'https://cache.nixos.org'...
+copying path '/nix/store/6scrhdz42mq882wnlz71rz8yq1a5h6gk-perl5.38.2-Image-ExifTool-12.84' from 'https://cache.nixos.org'...
+copying path '/nix/store/fpwllj99hdnznyzhqrc7z3wp1ch2lkbp-miniupnpc-2.2.6' from 'https://cache.nixos.org'...
+copying path '/nix/store/4m7i5v263rs91j6blgxs4l3y0p9qpqhp-libnatpmp-20230423' from 'https://cache.nixos.org'...
+building '/nix/store/xlxdxjnv120wbpvxw9fm5mc7r2kd8jwa-yazi-keymap.drv'...
+building '/nix/store/2wvkxviv46ndaqjsc5dn7amji0nvrfrs-yazi-settings.drv'...
+copying path '/nix/store/rcq147jzh7ca7vak4k77yvgmylsp66qq-transmission-3.00' from 'https://cache.nixos.org'...
+building '/nix/store/ndyacbg6fcaddjxp11fj0q48zhshn644-home-manager-path.drv'...
+building '/nix/store/9dn8fff2284q9xw3j48036cfp7g02cwp-activation-script.drv'...
+building '/nix/store/bqb5q1g5njrndlbc20kamx0vz2hawr37-hm_fontconfigconf.d10hmfonts.conf.drv'...
+building '/nix/store/fblbzqa736jb9qy3jm1b8nr0glid69p7-home-manager-files.drv'...
+building '/nix/store/dq0s6nzsj2m8g0yd8iaqr4p8j04sldnv-home-manager-generation.drv'...
+Starting Home Manager activation
+Activating checkFilesChanged
+Activating cleanEmptyLinkTargets
+Activating checkLinkTargets
+Activating unmountPersistentStoragePaths
+Activating createAndMountPersistentStoragePaths
+Activating createTargetFileDirectories
+Activating writeBoundary
+Activating createGpgHomedir
+Activating migrateGhAccounts
+Activating linkGeneration
+Cleaning up orphan links from /home/hugob
+Creating profile generation 30
+Creating home file links in /home/hugob
+Activating batCache
+No themes were found in '/home/hugob/.config/bat/themes', using the default set
+No syntaxes were found in '/home/hugob/.config/bat/syntaxes', using the default set.
+Writing theme set to /home/hugob/.cache/bat/themes.bin ... okay
+Writing syntax set to /home/hugob/.cache/bat/syntaxes.bin ... okay
+Writing metadata to folder /home/hugob/.cache/bat ... okay
+Activating installPackages
+replacing old 'home-manager-path'
+installing 'home-manager-path'
+building '/nix/store/2mzi1dciazgdy5crgy73k4033lafhxz7-user-environment.drv'...
+Activating dconfSettings
+Activating onFilesChange
+Activating runUnmountPersistentStoragePaths
+Activating reloadSystemd
+Starting units: hyprland-session.target
+warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
 
-       … while evaluating derivation 'home-manager-generation'
-         whose name attribute is located at /nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/pkgs/stdenv/generic/make-derivation.nix:331:7
+There are 164 unread and relevant news items.
+Read them by running the command "home-manager news".
 
-       … while evaluating attribute 'buildCommand' of derivation 'home-manager-generation'
-         at /nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/pkgs/build-support/trivial-builders/default.nix:68:17:
-           67|         enableParallelBuilding = true;
-           68|         inherit buildCommand name;
-             |                 ^
-           69|         passAsFile = [ "buildCommand" ]
-
-       … while evaluating the option `home.activation.installPackages.data':
-
-       … while evaluating definitions from `/nix/store/1m3xkp0fingsbsswmp09s3m8q64gkcq8-source/modules/home-environment.nix':
-
-       … while evaluating the option `home.packages':
-
-       … while evaluating definitions from `/nix/store/z7ykgszmf1cd0zrs7f20p21vamwb7hj7-source/home/features/cli/yazi':
-
-       (stack trace truncated; use '--show-trace' to show the full, detailed trace)
-
-       error: undefined variable 'transmission-cli'
-       at /nix/store/z7ykgszmf1cd0zrs7f20p21vamwb7hj7-source/home/features/cli/yazi/default.nix:28:5:
-           27|     ouch
-           28|     transmission-cli
-             |     ^
-           29|     ripgrep

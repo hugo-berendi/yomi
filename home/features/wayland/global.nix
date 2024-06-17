@@ -8,6 +8,7 @@
     ./waybar.nix
     ./wlogout.nix
     ./wlsunset.nix
+    ./eww
 
     ../desktop
   ];
