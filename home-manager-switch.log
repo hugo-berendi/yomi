@@ -22,4 +22,4 @@ error:
 
        (stack trace truncated; use '--show-trace' to show the full, detailed trace)
 
-       error: path '/nix/store/w09vpx54kw9z01qqym4axdgz35q2hf45-source/home/features/cli/yazi/flavors' does not exist
+       error: path '/nix/store/i5rqk15dsh0qpjgq39ppa0kavj32ixs8-source/home/features/cli/yazi/flavors/rose-pine.yazi/rose-pine.tmTheme' does not exist

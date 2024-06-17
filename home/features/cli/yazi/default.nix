@@ -1,6 +1,5 @@
 {
   pkgs,
-  config,
   inputs,
   ...
 }: {
@@ -13,6 +12,13 @@
     keymap = builtins.fromTOML (builtins.readFile ./keymap.toml);
   };
 
-  home.file."${config.xdg.configHome}/yazi/plugins".source = ./plugins;
-  home.file."${config.xdg.configHome}/yazi/flavors".source = ./flavors;
+  xdg.configFile = {
+    "yazi/plugins/glow.yazi/init.lua".source = ./plugins/glow.yazi/init.lua;
+    "yazi/flavors/rose-pine.yazi/rose-pine.tmTheme".source = ./flavors/rose-pine.yazi/rose-pine.tmTheme;
+    "yazi/flavors/rose-pine.yazi/theme.toml".source = ./flavors/rose-pine.yazi/theme.toml;
+  };
+
+  home.packages = with pkgs; [
+    glow
+  ];
 }
