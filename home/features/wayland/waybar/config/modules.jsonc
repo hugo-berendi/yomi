@@ -25,7 +25,7 @@
     "tooltip-format": "{}",
     "escape": true,
     "return-type": "json",
-    "exec": "nix-store --query --requisites /run/current-system | wc -l | xargs -I {} echo '{\"text\": {} }' | jq .",
+    "exec": "nix-store --query --requisites /run/current-system | wc -l | xargs -I {} echo '{\"text\": \"{}\" }'",
     "restart-interval": 30,
     "tooltip": false,
   },
