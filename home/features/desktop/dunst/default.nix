@@ -65,6 +65,7 @@
       exaperimental = {
         per_monitor_dpi = false;
       };
+
       urgency_low = {
         background = "#1E1E1E";
         foreground = "#CDD6F4";

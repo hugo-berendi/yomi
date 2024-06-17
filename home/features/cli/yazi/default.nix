@@ -10,6 +10,8 @@
     theme = lib.importToml ./theme.toml;
     settings = lib.importToml ./yazi.toml;
     keymaps = lib.importToml ./keymap.toml;
-    plugins = {};
+    plugins = {
+      "glow.yazi" = ./plugins/glow.yazi/init.lua;
+    };
   };
 }
