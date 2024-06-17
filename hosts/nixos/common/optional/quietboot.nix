@@ -13,10 +13,10 @@
   boot = {
     # See https://search.nixos.org/options?show=boot.initrd.verbose&query=boot.initrd.verbose
     kernelParams = [
-      # "quiet"
+      "quiet"
       "loglevel=3"
       "nowatchdog"
-      # "splash"
+      "splash"
       "systemd.show_status=auto"
       "udev.log_level=3"
       "rd.udev.log_level=3"
