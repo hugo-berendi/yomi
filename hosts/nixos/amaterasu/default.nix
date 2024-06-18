@@ -106,11 +106,14 @@
     ugrep
     cargo
     rustc
+
+    envfs
   ];
 
   environment.sessionVariables = {
     NIXOS_OZONE_WL = "1";
     FLAKE = "/home/hugob/dotfiles/nix-config";
+    ENVFS_RESOLVE_ALWAYS = "1";
   };
 
   environment.etc."fuse.conf".text = lib.mkForce ''
@@ -122,6 +125,7 @@
     fish.enable = true;
     nix-ld = {
       enable = true;
+      package = pkgs.nix-ld-rs;
 
       # Sets up all the libraries to load
       libraries = with pkgs; [
