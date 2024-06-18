@@ -41,6 +41,9 @@ sudo git diff -U0
 echo "NixOS Rebuilding..."
 notify-send -e "NixOS Rebuilding..." --icon=software-update-available
 
+# Init ags types
+ags --init -c /home/hugob/dotfiles/nix-config/home/features/wayland/ags/config
+
 # Enable insecure packages
 export NIXPKGS_ALLOW_INSECURE=1
 export NIXPKGS_ALLOW_UNFREE=1
