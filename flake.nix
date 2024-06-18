@@ -31,6 +31,10 @@
     };
     # }}}
 
+    # {{{ AGS
+    ags.url = "github:Aylur/ags";
+    # }}}
+
     # {{{ Yazi flakes
     yazi.url = "github:sxyazi/yazi";
     # }}}

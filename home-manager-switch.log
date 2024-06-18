@@ -2,10 +2,10 @@ Using saved setting for 'extra-substituters = https://nix-community.cachix.org h
 Using saved setting for 'extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM= intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ=' from ~/.local/share/nix/trusted-settings.json.
 warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
 these 2 derivations will be built:
-  /nix/store/332i7qqx5bzdsx1c97dirki45ybs4yxc-home-manager-files.drv
-  /nix/store/6456f2bbg85c4401rgn3rmwymb824m4f-home-manager-generation.drv
-building '/nix/store/332i7qqx5bzdsx1c97dirki45ybs4yxc-home-manager-files.drv'...
-building '/nix/store/6456f2bbg85c4401rgn3rmwymb824m4f-home-manager-generation.drv'...
+  /nix/store/pvmflivi028ikq1njxxww0mmajc5220l-home-manager-files.drv
+  /nix/store/kag4n7bsp3jzgrf2xv13xfxlbg2p49y4-home-manager-generation.drv
+building '/nix/store/pvmflivi028ikq1njxxww0mmajc5220l-home-manager-files.drv'...
+building '/nix/store/kag4n7bsp3jzgrf2xv13xfxlbg2p49y4-home-manager-generation.drv'...
 Starting Home Manager activation
 Activating checkFilesChanged
 Activating cleanEmptyLinkTargets
@@ -18,7 +18,7 @@ Activating createGpgHomedir
 Activating migrateGhAccounts
 Activating linkGeneration
 Cleaning up orphan links from /home/hugob
-Creating profile generation 48
+Creating profile generation 50
 Creating home file links in /home/hugob
 Activating batCache
 No themes were found in '/home/hugob/.config/bat/themes', using the default set

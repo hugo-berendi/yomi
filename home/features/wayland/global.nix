@@ -5,6 +5,7 @@
   ...
 }: {
   imports = [
+    ./ags
     ./waybar
     ./wlogout.nix
     ./wlsunset.nix
