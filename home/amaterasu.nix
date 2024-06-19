@@ -33,12 +33,11 @@
       mpv
       signal-desktop
       qbittorrent
+      unstable.vencord
       unstable.unityhub
       unstable.overskride
       # unstable.nerdfetch # for displaying pc/laptop stats
       unstable.alejandra # nix formatter
-      unstable.neovim
-      unstable.neovide
       unstable.nh
       unstable.nix-output-monitor
       unstable.nvd

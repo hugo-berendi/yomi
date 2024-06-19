@@ -17,6 +17,7 @@
     inputs.sops-nix.homeManagerModules.sops
     inputs.hyprland.homeManagerModules.default
     inputs.ags.homeManagerModules.default
+    inputs.nixvim.homeManagerModules.nixvim
     # {{{ self management
     # NOTE: using `pkgs.system` before `module.options` is evaluated
     # leads to infinite recursion!

@@ -65,6 +65,15 @@
     neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
     neovim-nightly-overlay.inputs.nixpkgs.follows = "nixpkgs";
     # }}}
+    # {{{ Nixvim
+    nixvim = {
+      url = "github:nix-community/nixvim";
+      # If you are not running an unstable channel of nixpkgs, select the corresponding branch of nixvim.
+      # url = "github:nix-community/nixvim/nixos-24.05";
+
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    # }}}
     # {{{ Self management
     # Smos
     smos.url = "github:NorfairKing/smos";
@@ -187,6 +196,7 @@
               home-manager.users.hugob = import ./home/${hostname}.nix;
               home-manager.extraSpecialArgs = specialArgs system // {inherit hostname;};
               home-manager.useUserPackages = true;
+              home-manager.backupFileExtension = "backup";
 
               stylix.homeManagerIntegration.followSystem = false;
               stylix.homeManagerIntegration.autoImport = false;
