@@ -1,6 +1,17 @@
 Using saved setting for 'extra-substituters = https://nix-community.cachix.org https://smos.cachix.org https://intray.cachix.org' from ~/.local/share/nix/trusted-settings.json.
 Using saved setting for 'extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM= intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ=' from ~/.local/share/nix/trusted-settings.json.
 warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
+these 5 derivations will be built:
+  /nix/store/ifi9fni531knd2gfxhwjmd13wydz2v27-home-manager-path.drv
+  /nix/store/dxdj4ykfb9mbkwpy3nz6vifarx5p9lzs-hm_fontconfigconf.d10hmfonts.conf.drv
+  /nix/store/lf31maq0npy4vwmxbqkvbs9z387hqyvf-home-manager-files.drv
+  /nix/store/v2140krx7msskgr1azxzr119pwc3d6yv-activation-script.drv
+  /nix/store/mrzb5glszzi4vqgf2c10iw506apdx121-home-manager-generation.drv
+building '/nix/store/ifi9fni531knd2gfxhwjmd13wydz2v27-home-manager-path.drv'...
+building '/nix/store/v2140krx7msskgr1azxzr119pwc3d6yv-activation-script.drv'...
+building '/nix/store/dxdj4ykfb9mbkwpy3nz6vifarx5p9lzs-hm_fontconfigconf.d10hmfonts.conf.drv'...
+building '/nix/store/lf31maq0npy4vwmxbqkvbs9z387hqyvf-home-manager-files.drv'...
+building '/nix/store/mrzb5glszzi4vqgf2c10iw506apdx121-home-manager-generation.drv'...
 Starting Home Manager activation
 Activating checkFilesChanged
 Activating cleanEmptyLinkTargets
@@ -13,7 +24,7 @@ Activating createGpgHomedir
 Activating migrateGhAccounts
 Activating linkGeneration
 Cleaning up orphan links from /home/hugob
-No change so reusing latest profile generation 57
+Creating profile generation 59
 Creating home file links in /home/hugob
 Activating batCache
 No themes were found in '/home/hugob/.config/bat/themes', using the default set
@@ -22,8 +33,8 @@ Writing theme set to /home/hugob/.cache/bat/themes.bin ... okay
 Writing syntax set to /home/hugob/.cache/bat/syntaxes.bin ... okay
 Writing metadata to folder /home/hugob/.cache/bat ... okay
 Activating installPackages
-replacing old 'home-manager-path'
 installing 'home-manager-path'
+building '/nix/store/d82fjrrciyn8729xcjkwf0wlx42wkfgr-user-environment.drv'...
 Activating dconfSettings
 Activating onFilesChange
 Activating runUnmountPersistentStoragePaths

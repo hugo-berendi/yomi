@@ -33,6 +33,8 @@
       mpv
       signal-desktop
       qbittorrent
+      unstable.neovim
+      unstable.neovide
       unstable.vencord
       unstable.unityhub
       unstable.overskride
