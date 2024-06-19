@@ -108,12 +108,6 @@
     envfs
   ];
 
-  system.activationScripts = {
-    symlinks.text = lib.mkDefault ''
-      ln -s /run/current-system/sw/bin/fish /usr/bin/fish
-    '';
-  };
-
   environment.sessionVariables = {
     NIXOS_OZONE_WL = "1";
     FLAKE = "/home/hugob/dotfiles/nix-config";
