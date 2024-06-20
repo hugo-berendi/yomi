@@ -23,6 +23,7 @@
     packages = with pkgs; [
       biome
 
+      prismlauncher
       zoxide
       nwg-bar
       nwg-look
