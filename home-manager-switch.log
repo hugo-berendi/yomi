@@ -2,16 +2,16 @@ Using saved setting for 'extra-substituters = https://nix-community.cachix.org h
 Using saved setting for 'extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM= intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ=' from ~/.local/share/nix/trusted-settings.json.
 warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
 these 5 derivations will be built:
-  /nix/store/7hq0aikh7znwp9dhwlljrcbqkfkh9rby-home-manager-path.drv
-  /nix/store/7k30fp4rkdv1zbfhxp92xrvjb0a21j6f-hm_fontconfigconf.d10hmfonts.conf.drv
-  /nix/store/bsxsk9g3m97q7m4k0ga1wg0vykl05jgl-home-manager-files.drv
-  /nix/store/k502xklc1h7nhby4f6hgbv49lkn855fh-activation-script.drv
-  /nix/store/ivb91mwb0avih1v2xyjm3lca92cscfj7-home-manager-generation.drv
-building '/nix/store/7hq0aikh7znwp9dhwlljrcbqkfkh9rby-home-manager-path.drv'...
-building '/nix/store/k502xklc1h7nhby4f6hgbv49lkn855fh-activation-script.drv'...
-building '/nix/store/7k30fp4rkdv1zbfhxp92xrvjb0a21j6f-hm_fontconfigconf.d10hmfonts.conf.drv'...
-building '/nix/store/bsxsk9g3m97q7m4k0ga1wg0vykl05jgl-home-manager-files.drv'...
-building '/nix/store/ivb91mwb0avih1v2xyjm3lca92cscfj7-home-manager-generation.drv'...
+  /nix/store/nn361rcnj95zhzq7krj9jp7pbxa1pklf-home-manager-path.drv
+  /nix/store/014d6mbybz49my4bwjk2bv49fbyprfj5-activation-script.drv
+  /nix/store/my5pwl6b2qbg264anpypj6j9h7k4lx83-hm_fontconfigconf.d10hmfonts.conf.drv
+  /nix/store/hb8g4112wh08sril6bdw87g8xr7v6h28-home-manager-files.drv
+  /nix/store/hjzy16512h72fj3j0808k3fm6gdz1jbw-home-manager-generation.drv
+building '/nix/store/nn361rcnj95zhzq7krj9jp7pbxa1pklf-home-manager-path.drv'...
+building '/nix/store/014d6mbybz49my4bwjk2bv49fbyprfj5-activation-script.drv'...
+building '/nix/store/my5pwl6b2qbg264anpypj6j9h7k4lx83-hm_fontconfigconf.d10hmfonts.conf.drv'...
+building '/nix/store/hb8g4112wh08sril6bdw87g8xr7v6h28-home-manager-files.drv'...
+building '/nix/store/hjzy16512h72fj3j0808k3fm6gdz1jbw-home-manager-generation.drv'...
 Starting Home Manager activation
 Activating checkFilesChanged
 Activating cleanEmptyLinkTargets
@@ -24,7 +24,7 @@ Activating createGpgHomedir
 Activating migrateGhAccounts
 Activating linkGeneration
 Cleaning up orphan links from /home/hugob
-Creating profile generation 66
+Creating profile generation 68
 Creating home file links in /home/hugob
 Activating batCache
 No themes were found in '/home/hugob/.config/bat/themes', using the default set
@@ -34,7 +34,7 @@ Writing syntax set to /home/hugob/.cache/bat/syntaxes.bin ... okay
 Writing metadata to folder /home/hugob/.cache/bat ... okay
 Activating installPackages
 installing 'home-manager-path'
-building '/nix/store/v7fnx2n6s3gpfl4c6nw8p0cimilc1xaz-user-environment.drv'...
+building '/nix/store/s6psrynxhh52x1vppy9wain2wlgfhznd-user-environment.drv'...
 Activating dconfSettings
 Activating onFilesChange
 Activating runUnmountPersistentStoragePaths
