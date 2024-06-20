@@ -1,4 +1,8 @@
 {pkgs, ...}: {
+  home.packages = with pkgs; [
+    bun
+  ];
+
   programs.ags = {
     enable = true;
 
@@ -8,7 +12,6 @@
       gtksourceview
       webkitgtk
       accountsservice
-      bun
     ];
   };
 }
