@@ -21,6 +21,8 @@
     file = {};
     sessionVariables = {EDITOR = "nvim";};
     packages = with pkgs; [
+      biome
+
       zoxide
       nwg-bar
       nwg-look

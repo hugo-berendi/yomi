@@ -1,30 +1,41 @@
-const time = Variable("", {
-  poll: [
-    1000,
-    function () {
-      return Date().toString();
-    },
-  ],
-});
-
-const Bar = (monitor: number) =>
-  Widget.Window({
-    monitor,
-    name: `bar${monitor}`,
-    anchor: ["top", "left", "right"],
-    exclusivity: "exclusive",
-    child: Widget.CenterBox({
-      start_widget: Widget.Label({
-        hpack: "center",
-        label: "Welcome to AGS!",
-      }),
-      end_widget: Widget.Label({
-        hpack: "center",
-        label: time.bind(),
-      }),
-    }),
-  });
+// import "lib/session"
+// import "style/style"
+// import init from "lib/init"
+// import options from "options"
+// import Bar from "widget/bar/Bar"
+// import Launcher from "widget/launcher/Launcher"
+// import NotificationPopups from "widget/notifications/NotificationPopups"
+// import OSD from "widget/osd/OSD"
+// import Overview from "widget/overview/Overview"
+// import PowerMenu from "widget/powermenu/PowerMenu"
+// import ScreenCorners from "widget/bar/ScreenCorners"
+// import SettingsDialog from "widget/settings/SettingsDialog"
+// import Verification from "widget/powermenu/Verification"
+// import { forMonitors } from "lib/utils"
+// import { setupQuickSettings } from "widget/quicksettings/QuickSettings"
+// import { setupDateMenu } from "widget/datemenu/DateMenu"
 
 App.config({
-  windows: [Bar(0)],
+  onConfigParsed: () => {
+    // setupQuickSettings()
+    // setupDateMenu()
+    // init()
+  },
+  closeWindowDelay: {
+    // "launcher": options.transition.value,
+    // "overview": options.transition.value,
+    // "quicksettings": options.transition.value,
+    // "datemenu": options.transition.value,
+  },
+  windows: () => [
+    // ...forMonitors(Bar),
+    // ...forMonitors(NotificationPopups),
+    // ...forMonitors(ScreenCorners),
+    // ...forMonitors(OSD),
+    // Launcher(),
+    // Overview(),
+    // PowerMenu(),
+    // SettingsDialog(),
+    // Verification(),
+  ],
 });
