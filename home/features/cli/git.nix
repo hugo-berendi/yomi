@@ -8,7 +8,7 @@
     package = pkgs.gitFull;
 
     userName = "hugo-berendi";
-    userEmail = "hugo-berendi@outlook.de";
+    userEmail = "hugo.berendi@outlook.de";
 
     # {{{ Globally ignored files
     ignores = [
