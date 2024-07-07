@@ -24,35 +24,32 @@ error:
 
        … while evaluating definitions from `/nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/nixos/modules/system/activation/top-level.nix':
 
-       … while evaluating the option `assertions':
+       … while evaluating the option `warnings':
 
-       … while evaluating definitions from `/nix/store/1m3xkp0fingsbsswmp09s3m8q64gkcq8-source/nixos/common.nix':
+       … while evaluating definitions from `/nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/nixos/modules/system/boot/systemd.nix':
 
-       … while evaluating the option `home-manager.users.hugob.assertions':
+       … while evaluating the option `systemd.services.home-manager-hugob.serviceConfig':
 
-       … while evaluating definitions from `/nix/store/1m3xkp0fingsbsswmp09s3m8q64gkcq8-source/modules/systemd.nix':
+       … while evaluating definitions from `/nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/flake.nix':
 
-       … while evaluating the option `home-manager.users.hugob.home.username':
+       … while evaluating the option `home-manager.users.hugob.home.file."/home/hugob/.gnupg/gpg-agent.conf".source':
 
-       … while evaluating definitions from `/nix/store/1m3xkp0fingsbsswmp09s3m8q64gkcq8-source/nixos/common.nix':
+       … while evaluating definitions from `/nix/store/1m3xkp0fingsbsswmp09s3m8q64gkcq8-source/modules/files.nix':
 
-       … while evaluating the option `users.users':
+       … while evaluating the option `home-manager.users.hugob.home.file."/home/hugob/.gnupg/gpg-agent.conf".text':
 
-       … while evaluating definitions from `/nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/nixos/modules/services/networking/rpcbind.nix':
+       … while evaluating definitions from `/nix/store/1m3xkp0fingsbsswmp09s3m8q64gkcq8-source/modules/services/gpg-agent.nix':
 
-       … while evaluating the option `services.rpcbind.enable':
+       … while evaluating the option `home-manager.users.hugob.services.gpg-agent.pinentryPackage':
 
-       … while evaluating definitions from `/nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/nixos/modules/tasks/filesystems/nfs.nix':
-
-       … while evaluating the option `boot.supportedFilesystems':
-
-       … while evaluating definitions from `/nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/nixos/modules/tasks/filesystems.nix':
-
-       … while evaluating the option `fileSystems."/var/lib/nixos".device':
+       … while evaluating definitions from `/nix/store/mb51vmxx0waw4afa6x2h47cx6h0zrj4y-source/home/features/cli/gpg.nix':
 
        (stack trace truncated; use '--show-trace' to show the full, detailed trace)
 
-       error: The option `fileSystems."/var/lib/nixos".device' has conflicting definition values:
-       - In `/nix/store/nq4082lzdz4ahcxcg54bgnsm4wb4v487-source/hosts/nixos/amaterasu/hardware/generated.nix': "/dev/nvme0n1p2"
-       - In `/nix/store/nq4082lzdz4ahcxcg54bgnsm4wb4v487-source/hosts/nixos/common/global/persistence.nix': "/persist/state/var/lib/nixos"
-       Use `lib.mkForce value` or `lib.mkDefault value` to change the priority on any of these definitions.
+       error: attribute 'pinenetry-gnome3' missing
+       at /nix/store/mb51vmxx0waw4afa6x2h47cx6h0zrj4y-source/home/features/cli/gpg.nix:21:23:
+           20|     enable = true;
+           21|     pinentryPackage = pkgs.pinenetry-gnome3;
+             |                       ^
+           22|   };
+       Did you mean pinentry-gnome3?

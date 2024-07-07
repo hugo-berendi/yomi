@@ -119,6 +119,8 @@
     mount_max = 1000
   '';
 
+  services.dbus.packages = [pkgs.gcr];
+
   programs = {
     fish.enable = true;
     nix-ld = {

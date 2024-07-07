@@ -18,7 +18,7 @@ in {
 
   services.gpg-agent = {
     enable = true;
-    pinentryPackage = pkgs.pinentry-curses;
+    pinentryPackage = pkgs.pinentry-gnome3;
   };
 
   programs.gpg.enable = true;
