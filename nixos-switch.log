@@ -1,1 +1,58 @@
-/run/current-system/sw/bin/nixos-rebuild: unknown option `--b'
+Using saved setting for 'extra-substituters = https://nix-community.cachix.org https://smos.cachix.org https://intray.cachix.org' from ~/.local/share/nix/trusted-settings.json.
+Using saved setting for 'extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM= intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ=' from ~/.local/share/nix/trusted-settings.json.
+warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
+building the system configuration...
+Using saved setting for 'extra-substituters = https://nix-community.cachix.org https://smos.cachix.org https://intray.cachix.org' from ~/.local/share/nix/trusted-settings.json.
+Using saved setting for 'extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM= intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ=' from ~/.local/share/nix/trusted-settings.json.
+warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
+error:
+       … while calling the 'head' builtin
+         at /nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/lib/attrsets.nix:1575:11:
+         1574|         || pred here (elemAt values 1) (head values) then
+         1575|           head values
+             |           ^
+         1576|         else
+
+       … while evaluating the attribute 'value'
+         at /nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/lib/modules.nix:809:9:
+          808|     in warnDeprecation opt //
+          809|       { value = builtins.addErrorContext "while evaluating the option `${showOption loc}':" value;
+             |         ^
+          810|         inherit (res.defsFinal') highestPrio;
+
+       … while evaluating the option `system.build.toplevel':
+
+       … while evaluating definitions from `/nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/nixos/modules/system/activation/top-level.nix':
+
+       … while evaluating the option `assertions':
+
+       … while evaluating definitions from `/nix/store/1m3xkp0fingsbsswmp09s3m8q64gkcq8-source/nixos/common.nix':
+
+       … while evaluating the option `home-manager.users.hugob.assertions':
+
+       … while evaluating definitions from `/nix/store/1m3xkp0fingsbsswmp09s3m8q64gkcq8-source/modules/systemd.nix':
+
+       … while evaluating the option `home-manager.users.hugob.home.username':
+
+       … while evaluating definitions from `/nix/store/1m3xkp0fingsbsswmp09s3m8q64gkcq8-source/nixos/common.nix':
+
+       … while evaluating the option `users.users':
+
+       … while evaluating definitions from `/nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/nixos/modules/services/networking/rpcbind.nix':
+
+       … while evaluating the option `services.rpcbind.enable':
+
+       … while evaluating definitions from `/nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/nixos/modules/tasks/filesystems/nfs.nix':
+
+       … while evaluating the option `boot.supportedFilesystems':
+
+       … while evaluating definitions from `/nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/nixos/modules/tasks/filesystems.nix':
+
+       … while evaluating the option `fileSystems."/var/lib/nixos".device':
+
+       (stack trace truncated; use '--show-trace' to show the full, detailed trace)
+
+       error: The option `fileSystems."/var/lib/nixos".device' has conflicting definition values:
+       - In `/nix/store/nq4082lzdz4ahcxcg54bgnsm4wb4v487-source/hosts/nixos/amaterasu/hardware/generated.nix': "/dev/nvme0n1p2"
+       - In `/nix/store/nq4082lzdz4ahcxcg54bgnsm4wb4v487-source/hosts/nixos/common/global/persistence.nix': "/persist/state/var/lib/nixos"
+       Use `lib.mkForce value` or `lib.mkDefault value` to change the priority on any of these definitions.
