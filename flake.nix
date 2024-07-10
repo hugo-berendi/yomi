@@ -196,7 +196,7 @@
               home-manager.users.hugob = import ./home/${hostname}.nix;
               home-manager.extraSpecialArgs = specialArgs system // {inherit hostname;};
               home-manager.useUserPackages = true;
-              home-manager.backupFileExtension = "backup";
+              home-manager.backupFileExtension = "back";
 
               stylix.homeManagerIntegration.followSystem = false;
               stylix.homeManagerIntegration.autoImport = false;

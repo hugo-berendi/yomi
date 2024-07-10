@@ -12,6 +12,7 @@
     ./tools.nix
     ./tmux
     ./yazi
+    ./neovim
     # ./fish
   ];
 

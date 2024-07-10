@@ -5,31 +5,6 @@ building the system configuration...
 Using saved setting for 'extra-substituters = https://nix-community.cachix.org https://smos.cachix.org https://intray.cachix.org' from ~/.local/share/nix/trusted-settings.json.
 Using saved setting for 'extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM= intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ=' from ~/.local/share/nix/trusted-settings.json.
 warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
-these 12 derivations will be built:
-  /nix/store/75r158p6fprkb8gdybims538479i4hxn-etc-pam-environment.drv
-  /nix/store/wyiqiq12v5a04zlqwmz9via1qs0wr6gd-set-environment.drv
-  /nix/store/7c2sm2ggcqkpdcwwdg2iyq4q1509yzzv-etc-fish-nixos-env-preinit.fish.drv
-  /nix/store/ab7xfgs2ijrq276hxa34fsna52zh3ggz-etc-nix-registry.json.drv
-  /nix/store/prlw8asddf5r96dx04g3m0xir0rqfkkw-hm_gitconfig.drv
-  /nix/store/ar5wzfi3dp4i82d3bmq547pb1vqy78xr-home-manager-files.drv
-  /nix/store/xzc98wk6gb5sq5il9yd77bci2x1cx19n-home-manager-generation.drv
-  /nix/store/afq3s2j68w62jmqqbh5f68512m30hka2-unit-home-manager-hugob.service.drv
-  /nix/store/nvxdbhwhxcja3499mcw7360x9gplh3y4-etc-profile.drv
-  /nix/store/vall8dmkrl7w5rkl2j428znk0pnzvxng-system-units.drv
-  /nix/store/dxc2ph1830kjnsi728l7zp3rrf00h500-etc.drv
-  /nix/store/scw2z33l4il2zbgyarhk5mnj72rapppd-nixos-system-amaterasu-24.05.20240615.752c634.drv
-building '/nix/store/ab7xfgs2ijrq276hxa34fsna52zh3ggz-etc-nix-registry.json.drv'...
-building '/nix/store/75r158p6fprkb8gdybims538479i4hxn-etc-pam-environment.drv'...
-building '/nix/store/wyiqiq12v5a04zlqwmz9via1qs0wr6gd-set-environment.drv'...
-building '/nix/store/prlw8asddf5r96dx04g3m0xir0rqfkkw-hm_gitconfig.drv'...
-building '/nix/store/7c2sm2ggcqkpdcwwdg2iyq4q1509yzzv-etc-fish-nixos-env-preinit.fish.drv'...
-building '/nix/store/nvxdbhwhxcja3499mcw7360x9gplh3y4-etc-profile.drv'...
-building '/nix/store/ar5wzfi3dp4i82d3bmq547pb1vqy78xr-home-manager-files.drv'...
-building '/nix/store/xzc98wk6gb5sq5il9yd77bci2x1cx19n-home-manager-generation.drv'...
-building '/nix/store/afq3s2j68w62jmqqbh5f68512m30hka2-unit-home-manager-hugob.service.drv'...
-building '/nix/store/vall8dmkrl7w5rkl2j428znk0pnzvxng-system-units.drv'...
-building '/nix/store/dxc2ph1830kjnsi728l7zp3rrf00h500-etc.drv'...
-building '/nix/store/scw2z33l4il2zbgyarhk5mnj72rapppd-nixos-system-amaterasu-24.05.20240615.752c634.drv'...
 updating GRUB 2 menu...
 Warning: os-prober will be executed to detect other bootable partitions.
 Its output will be used to detect bootable binaries on them and create new boot entries.
@@ -41,5 +16,26 @@ activating the configuration...
 setting up /etc...
 reloading user units for hugob...
 restarting sysinit-reactivation.target
-restarting the following units: home-manager-hugob.service
 the following new units were started: systemd-localed.service
+warning: the following units failed: home-manager-hugob.service
+
+× home-manager-hugob.service - Home Manager environment for hugob
+     Loaded: loaded (/etc/systemd/system/home-manager-hugob.service; enabled; preset: enabled)
+     Active: failed (Result: exit-code) since Wed 2024-07-10 21:51:28 CEST; 627ms ago
+   Duration: 25min 8.383s
+    Process: 71587 ExecStart=/nix/store/7i0d80cp7l2f3kzphp2pgl75f8k9bqal-hm-setup-env /nix/store/mgpiw0fxqlw9050584x0nl8pszy2sxxn-home-manager-generation (code=exited, status=1/FAILURE)
+   Main PID: 71587 (code=exited, status=1/FAILURE)
+         IP: 0B in, 0B out
+        CPU: 372ms
+
+Jul 10 21:51:28 amaterasu hm-activate-hugob[71700]: Please do one of the following:
+Jul 10 21:51:28 amaterasu hm-activate-hugob[71700]: - Move or remove the above files and try again.
+Jul 10 21:51:28 amaterasu hm-activate-hugob[71700]: - In standalone mode, use 'home-manager switch -b backup' to back up
+Jul 10 21:51:28 amaterasu hm-activate-hugob[71700]:   files automatically.
+Jul 10 21:51:28 amaterasu hm-activate-hugob[71700]: - When used as a NixOS or nix-darwin module, set
+Jul 10 21:51:28 amaterasu hm-activate-hugob[71700]:     'home-manager.backupFileExtension'
+Jul 10 21:51:28 amaterasu hm-activate-hugob[71700]:   to, for example, 'backup' and rebuild.
+Jul 10 21:51:28 amaterasu systemd[1]: home-manager-hugob.service: Main process exited, code=exited, status=1/FAILURE
+Jul 10 21:51:28 amaterasu systemd[1]: home-manager-hugob.service: Failed with result 'exit-code'.
+Jul 10 21:51:28 amaterasu systemd[1]: Failed to start Home Manager environment for hugob.
+warning: error(s) occurred while switching to the new configuration
