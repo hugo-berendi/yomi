@@ -1,6 +1,11 @@
 Using saved setting for 'extra-substituters = https://nix-community.cachix.org https://smos.cachix.org https://intray.cachix.org' from ~/.local/share/nix/trusted-settings.json.
 Using saved setting for 'extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM= intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ=' from ~/.local/share/nix/trusted-settings.json.
 warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
+these 2 derivations will be built:
+  /nix/store/6c3ig4i13aaxi0ajrl37zzdf29rlikzn-home-manager-files.drv
+  /nix/store/i9vsivvrnifgqjhz3cf13z6wy0lpsnjx-home-manager-generation.drv
+building '/nix/store/6c3ig4i13aaxi0ajrl37zzdf29rlikzn-home-manager-files.drv'...
+building '/nix/store/i9vsivvrnifgqjhz3cf13z6wy0lpsnjx-home-manager-generation.drv'...
 Starting Home Manager activation
 Activating checkFilesChanged
 Activating cleanEmptyLinkTargets
@@ -13,7 +18,7 @@ Activating createGpgHomedir
 Activating migrateGhAccounts
 Activating linkGeneration
 Cleaning up orphan links from /home/hugob
-No change so reusing latest profile generation 92
+Creating profile generation 94
 Creating home file links in /home/hugob
 Activating batCache
 No themes were found in '/home/hugob/.config/bat/themes', using the default set
@@ -22,8 +27,8 @@ Writing theme set to /home/hugob/.cache/bat/themes.bin ... okay
 Writing syntax set to /home/hugob/.cache/bat/syntaxes.bin ... okay
 Writing metadata to folder /home/hugob/.cache/bat ... okay
 Activating installPackages
-replacing old 'home-manager-path'
 installing 'home-manager-path'
+building '/nix/store/bc3q009x1q8xm0d5hrdylk8rh4j1ik7x-user-environment.drv'...
 Activating dconfSettings
 Activating onFilesChange
 Activating runUnmountPersistentStoragePaths
