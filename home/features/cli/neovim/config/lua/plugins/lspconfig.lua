@@ -107,7 +107,7 @@ return {
 	{ "elkowar/yuck.vim" },
 	{
 		"sontungexpt/better-diagnostic-virtual-text",
-		"LspAttach",
+		lazy = "LspAttach",
 		opts = {},
 	},
 }
