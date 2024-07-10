@@ -1,17 +1,11 @@
 Using saved setting for 'extra-substituters = https://nix-community.cachix.org https://smos.cachix.org https://intray.cachix.org' from ~/.local/share/nix/trusted-settings.json.
 Using saved setting for 'extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM= intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ=' from ~/.local/share/nix/trusted-settings.json.
 warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
-these 5 derivations will be built:
-  /nix/store/x8lfiqm0xgb8ydgzvl0yka0nd9sfj0n7-home-manager-path.drv
-  /nix/store/4q0kp74g4gng62fyyirz28fnmkay2ca7-hm_fontconfigconf.d10hmfonts.conf.drv
-  /nix/store/99qwivwwdmn4vzjjr5d7srwr1wzbkmys-activation-script.drv
-  /nix/store/zn65p76rbky9b5yx87vzfpp07rvwzdhq-home-manager-files.drv
-  /nix/store/v3ja1g42x1i40gfqnjhjn3bay2sjd94d-home-manager-generation.drv
-building '/nix/store/x8lfiqm0xgb8ydgzvl0yka0nd9sfj0n7-home-manager-path.drv'...
-building '/nix/store/99qwivwwdmn4vzjjr5d7srwr1wzbkmys-activation-script.drv'...
-building '/nix/store/4q0kp74g4gng62fyyirz28fnmkay2ca7-hm_fontconfigconf.d10hmfonts.conf.drv'...
-building '/nix/store/zn65p76rbky9b5yx87vzfpp07rvwzdhq-home-manager-files.drv'...
-building '/nix/store/v3ja1g42x1i40gfqnjhjn3bay2sjd94d-home-manager-generation.drv'...
+these 2 derivations will be built:
+  /nix/store/qksrs3j1ym6mpz75c46nxzc6b503q7cv-home-manager-files.drv
+  /nix/store/rlm00h4x4lz0ccdr33x119adgh8p6m1q-home-manager-generation.drv
+building '/nix/store/qksrs3j1ym6mpz75c46nxzc6b503q7cv-home-manager-files.drv'...
+building '/nix/store/rlm00h4x4lz0ccdr33x119adgh8p6m1q-home-manager-generation.drv'...
 Starting Home Manager activation
 Activating checkFilesChanged
 Activating cleanEmptyLinkTargets
@@ -24,7 +18,7 @@ Activating createGpgHomedir
 Activating migrateGhAccounts
 Activating linkGeneration
 Cleaning up orphan links from /home/hugob
-Creating profile generation 98
+Creating profile generation 100
 Creating home file links in /home/hugob
 Activating batCache
 No themes were found in '/home/hugob/.config/bat/themes', using the default set
@@ -34,7 +28,7 @@ Writing syntax set to /home/hugob/.cache/bat/syntaxes.bin ... okay
 Writing metadata to folder /home/hugob/.cache/bat ... okay
 Activating installPackages
 installing 'home-manager-path'
-building '/nix/store/iq3f84in3hxbvyqpwl7y2v17kckphr0l-user-environment.drv'...
+building '/nix/store/3gc8ljvlqvan224v06sqkidpx1l5v5h7-user-environment.drv'...
 Activating dconfSettings
 Activating onFilesChange
 Activating runUnmountPersistentStoragePaths
