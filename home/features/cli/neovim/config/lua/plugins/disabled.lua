@@ -1,5 +1,5 @@
 return {
 	"tris203/precognition.nvim",
 	"m4xshen/hardtime.nvim",
-	"markdown-preview.nvim",
+	{ "lukas-reineke/headlines.nvim", enable = false },
 }
