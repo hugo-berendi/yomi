@@ -2,10 +2,10 @@ Using saved setting for 'extra-substituters = https://nix-community.cachix.org h
 Using saved setting for 'extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM= intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ=' from ~/.local/share/nix/trusted-settings.json.
 warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
 these 2 derivations will be built:
-  /nix/store/40mpvqy6l34d9r0j814fvya9gcgk1lbx-home-manager-files.drv
-  /nix/store/khndl7xn75n7y84mc7mj19ybvn0svyzz-home-manager-generation.drv
-building '/nix/store/40mpvqy6l34d9r0j814fvya9gcgk1lbx-home-manager-files.drv'...
-building '/nix/store/khndl7xn75n7y84mc7mj19ybvn0svyzz-home-manager-generation.drv'...
+  /nix/store/fq26va88rj1gavq6knvg8rj44c88g554-home-manager-files.drv
+  /nix/store/rqjxab9vyrb2sm8smglk4xvsb5j1aj1s-home-manager-generation.drv
+building '/nix/store/fq26va88rj1gavq6knvg8rj44c88g554-home-manager-files.drv'...
+building '/nix/store/rqjxab9vyrb2sm8smglk4xvsb5j1aj1s-home-manager-generation.drv'...
 Starting Home Manager activation
 Activating checkFilesChanged
 Activating cleanEmptyLinkTargets
@@ -18,7 +18,7 @@ Activating createGpgHomedir
 Activating migrateGhAccounts
 Activating linkGeneration
 Cleaning up orphan links from /home/hugob
-Creating profile generation 105
+Creating profile generation 108
 Creating home file links in /home/hugob
 Activating batCache
 No themes were found in '/home/hugob/.config/bat/themes', using the default set
@@ -28,7 +28,7 @@ Writing syntax set to /home/hugob/.cache/bat/syntaxes.bin ... okay
 Writing metadata to folder /home/hugob/.cache/bat ... okay
 Activating installPackages
 installing 'home-manager-path'
-building '/nix/store/yaibnvdwbmi0vfn8w4v2adnnz7bm7mlc-user-environment.drv'...
+building '/nix/store/f3jg6fip8w2rihnja1ixapnqj0y9i689-user-environment.drv'...
 Activating dconfSettings
 Activating onFilesChange
 Activating runUnmountPersistentStoragePaths
@@ -44,8 +44,8 @@ Legend: LOAD   → Reflects whether the unit definition was properly loaded.
 1 loaded units listed.
 Attempting to reload services anyway...
 Starting units: hyprland-session.target
-Started tmux-spawn-50a40b4a-5027-46b4-a303-d3e9db996273.scope - active
 Started tmux.service - active
+Started tmux-spawn-1e03eb4b-98be-425c-9cb6-dc9a04fd211d.scope - active
 warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
 
 There are 164 unread and relevant news items.

@@ -290,6 +290,22 @@ in {
         id = 3;
       };
       # }}}
+      #{{{ Proton Mail
+      proton-mail = {
+        url = "https://mail.protonmail.com/";
+        icon = ../../../../common/icons/protonmail.png;
+        displayName = "Proton Mail";
+        id = 4;
+      };
+      #}}}
+      # {{{ Proton Drive
+      proton-drive = {
+        url = "https://drive.protonmail.com/";
+        icon = ../../../../common/icons/protondrive.png;
+        displayName = "Proton Drive";
+        id = 5;
+      };
+      # }}}
     };
     # }}}
   };
