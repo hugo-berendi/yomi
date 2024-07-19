@@ -1,11 +1,17 @@
 Using saved setting for 'extra-substituters = https://nix-community.cachix.org https://smos.cachix.org https://intray.cachix.org' from ~/.local/share/nix/trusted-settings.json.
 Using saved setting for 'extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM= intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ=' from ~/.local/share/nix/trusted-settings.json.
 warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
-these 2 derivations will be built:
-  /nix/store/fq26va88rj1gavq6knvg8rj44c88g554-home-manager-files.drv
-  /nix/store/rqjxab9vyrb2sm8smglk4xvsb5j1aj1s-home-manager-generation.drv
-building '/nix/store/fq26va88rj1gavq6knvg8rj44c88g554-home-manager-files.drv'...
-building '/nix/store/rqjxab9vyrb2sm8smglk4xvsb5j1aj1s-home-manager-generation.drv'...
+these 5 derivations will be built:
+  /nix/store/nhbdwk8rgvyqxi9q7in652fgf3gkn006-home-manager-path.drv
+  /nix/store/kw41hnrxlan16rrgnkaf6hdjhgdwyg70-hm_fontconfigconf.d10hmfonts.conf.drv
+  /nix/store/2b3iw0c0n32xjywhzxyx9k491h7xg4dd-home-manager-files.drv
+  /nix/store/zdd7fr8x5zqmkns6qm2y5c8wapzzkww3-activation-script.drv
+  /nix/store/kg00kzws2mx62rr02gyl36b2vkk2ncil-home-manager-generation.drv
+building '/nix/store/nhbdwk8rgvyqxi9q7in652fgf3gkn006-home-manager-path.drv'...
+building '/nix/store/zdd7fr8x5zqmkns6qm2y5c8wapzzkww3-activation-script.drv'...
+building '/nix/store/kw41hnrxlan16rrgnkaf6hdjhgdwyg70-hm_fontconfigconf.d10hmfonts.conf.drv'...
+building '/nix/store/2b3iw0c0n32xjywhzxyx9k491h7xg4dd-home-manager-files.drv'...
+building '/nix/store/kg00kzws2mx62rr02gyl36b2vkk2ncil-home-manager-generation.drv'...
 Starting Home Manager activation
 Activating checkFilesChanged
 Activating cleanEmptyLinkTargets
@@ -18,7 +24,7 @@ Activating createGpgHomedir
 Activating migrateGhAccounts
 Activating linkGeneration
 Cleaning up orphan links from /home/hugob
-Creating profile generation 108
+Creating profile generation 110
 Creating home file links in /home/hugob
 Activating batCache
 No themes were found in '/home/hugob/.config/bat/themes', using the default set
@@ -28,24 +34,12 @@ Writing syntax set to /home/hugob/.cache/bat/syntaxes.bin ... okay
 Writing metadata to folder /home/hugob/.cache/bat ... okay
 Activating installPackages
 installing 'home-manager-path'
-building '/nix/store/f3jg6fip8w2rihnja1ixapnqj0y9i689-user-environment.drv'...
+building '/nix/store/bhvjd1l9z6k7c88983zvqrsk27ddwwar-user-environment.drv'...
 Activating dconfSettings
 Activating onFilesChange
 Activating runUnmountPersistentStoragePaths
 Activating reloadSystemd
-The user systemd session is degraded:
-  UNIT         LOAD   ACTIVE SUB    DESCRIPTION
-● tmux.service loaded failed failed tmux default session (detached)
-
-Legend: LOAD   → Reflects whether the unit definition was properly loaded.
-        ACTIVE → The high-level unit activation state, i.e. generalization of SUB.
-        SUB    → The low-level unit activation state, values depend on unit type.
-
-1 loaded units listed.
-Attempting to reload services anyway...
 Starting units: hyprland-session.target
-Started tmux.service - active
-Started tmux-spawn-1e03eb4b-98be-425c-9cb6-dc9a04fd211d.scope - active
 warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
 
 There are 164 unread and relevant news items.
