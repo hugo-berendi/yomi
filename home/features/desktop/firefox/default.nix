@@ -173,6 +173,12 @@ in {
           param = "query";
           aliases = ["@sp" "@startpage"];
         };
+
+        "Warframe Wiki" = mkBasicSearchEngine {
+          url = "https://warframe.fandom.com/wiki/Special:Search";
+          param = "query";
+          aliases = ["@wf" "@warframe-wiki"];
+        };
       };
       # }}}
       # }}}
