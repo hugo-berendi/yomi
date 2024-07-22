@@ -22,7 +22,7 @@
     ./nix.nix
     ./locale.nix
     ./persistence.nix
-    # ./wireless
+    ./wireless
 
     ../../../../common
     # }}}
