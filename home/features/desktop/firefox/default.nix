@@ -93,6 +93,7 @@ in {
             sponsorblock # skip youtube sponsors
             vimium-c # vim keybinds
             youtube-shorts-block
+            libredirect # redirect to FOSS alternatives
           ]
         ];
       # }}}

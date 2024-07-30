@@ -22,6 +22,7 @@
     sessionVariables = {EDITOR = "nvim";};
     packages = with pkgs; [
       biome
+      localsend
 
       prismlauncher
       zoxide
