@@ -18,30 +18,12 @@
   boot.extraModulePackages = [];
 
   fileSystems."/" = {
-    device = "/dev/nvme0n1p2";
+    device = "/dev/disk/by-uuid/0483e9b0-b311-4dcd-9862-dcc2e1ead4d6";
     fsType = "ext4";
   };
 
-  fileSystems."/var/lib/nixos" = {
-    device = "/persist/state/var/lib/nixos";
-    fsType = "none";
-    options = ["bind"];
-  };
-
-  fileSystems."/var/log" = {
-    device = "/persist/state/var/log";
-    fsType = "none";
-    options = ["bind"];
-  };
-
-  fileSystems."/var/lib/systemd" = {
-    device = "/persist/state/var/lib/systemd";
-    fsType = "none";
-    options = ["bind"];
-  };
-
   fileSystems."/boot" = {
-    device = "/dev/nvme0n1p1";
+    device = "/dev/disk/by-uuid/DA71-6D79";
     fsType = "vfat";
     options = ["fmask=0022" "dmask=0022"];
   };
