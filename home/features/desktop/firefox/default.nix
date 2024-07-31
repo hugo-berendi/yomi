@@ -30,7 +30,30 @@
     darkreader
   ];
   # }}}
+  customUrl = "https://hugo-berendi.github.io/startpage/";
 in {
+  home.file."firefox/autoconfig.cfg".text = ''
+    var { classes: Cc, interfaces: Ci, utils: Cu } = Components;
+    try {
+      Cu.import("resource:///modules/AboutNewTab.jsm");
+      var newTabURL = "${customUrl}";
+      AboutNewTab.newTabURL = newTabURL;
+    } catch (e) {
+      Cu.reportError(e); // report errors in the Browser Console
+    }
+  '';
+
+  home.file."firefox/defaults/pref/autoconfig.js".text = ''
+    pref("general.config.filename", "autoconfig.cfg");
+    pref("general.config.obscure_value", 0);
+    pref("general.config.sandbox_enabled", false);
+  '';
+
+  # systemd.tmpfiles.rules = [
+  #   "d /etc/firefox 0755 root root -"
+  #   "d /etc/firefox/defaults/pref 0755 root root -"
+  # ];
+
   programs.firefox = {
     enable = true;
 
@@ -97,6 +120,7 @@ in {
           ]
         ];
       # }}}
+
       # {{{ Search engines
       search.engines = let
         # {{{ Search engine creation helpers
