@@ -46,10 +46,10 @@ export NIXPKGS_ALLOW_INSECURE=1
 export NIXPKGS_ALLOW_UNFREE=1
 
 # Rebuild, output simplified errors, log trackebacks
-sudo nixos-rebuild switch --flake ".#amaterasu" &>nixos-switch.log || (cat nixos-switch.log | grep --color error && git reset && exit 1)
+sudo nixos-rebuild switch --upgrade-all --flake ".#amaterasu" &>nixos-switch.log || (cat nixos-switch.log | grep --color error && git reset && exit 1)
 
 # Rebuild home-manager, output simplified errors, log trackebacks
-home-manager switch --impure -b backup --flake ".#hugob@amaterasu" &>home-manager-switch.log || (cat home-manager-switch.log | grep --color error && git reset && exit 1)
+# home-manager switch --impure -b backup --flake ".#hugob@amaterasu" &>home-manager-switch.log || (cat home-manager-switch.log | grep --color error && git reset && exit 1)
 
 # Init ags types
 ags --init -c /home/hugob/dotfiles/nix-config/home/features/wayland/ags/config
