@@ -196,7 +196,6 @@
               home-manager.users.hugob = import ./home/${hostname}.nix;
               home-manager.extraSpecialArgs = specialArgs system // {inherit hostname;};
               home-manager.useUserPackages = true;
-              home-manager.backupFileExtension = "back";
 
               stylix.homeManagerIntegration.followSystem = false;
               stylix.homeManagerIntegration.autoImport = false;
@@ -211,29 +210,6 @@
         hostname = "amaterasu";
       };
       inari = nixos {
-        system = "aarch64-linux";
-        hostname = "inari";
-      };
-    };
-
-    # Standalone home-manager configuration entrypoint
-    # Available through 'home-manager --flake .#your-username@your-hostname'
-    homeConfigurations = let
-      mkHomeConfig = {
-        system,
-        hostname,
-      }:
-        home-manager.lib.homeManagerConfiguration {
-          pkgs = nixpkgs.legacyPackages.${system};
-          extraSpecialArgs = specialArgs system // {inherit hostname;};
-          modules = [./home/${hostname}.nix];
-        };
-    in {
-      "${pilot}@amaterasu" = mkHomeConfig {
-        system = "x86_64-linux";
-        hostname = "amaterasu";
-      };
-      "${pilot}@inari" = mkHomeConfig {
         system = "aarch64-linux";
         hostname = "inari";
       };
