@@ -11,7 +11,7 @@
 in {
   programs.password-store = {
     enable = true;
-    package = pkgs.pass.withExtensions (exts:
+    package = pkgs.pass-wayland.withExtensions (exts:
       with exts; [
         pass-otp
         pass-import
