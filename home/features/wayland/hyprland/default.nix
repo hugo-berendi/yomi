@@ -4,8 +4,15 @@
   config,
   inputs,
   ...
-}: {
+}: let
+  rosePineCursor = import ./rose-pine-cursor.nix {inherit pkgs;};
+in {
   imports = [../global.nix ./hyprpaper.nix];
+
+  home.packages = [
+    pkgs.hyprcursor
+    rosePineCursor
+  ];
 
   stylix.targets.hyprland.enable = true;
   wayland.windowManager.hyprland = {

@@ -5,22 +5,45 @@ building the system configuration...
 Using saved setting for 'extra-substituters = https://nix-community.cachix.org https://smos.cachix.org https://intray.cachix.org' from ~/.local/share/nix/trusted-settings.json.
 Using saved setting for 'extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM= intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ=' from ~/.local/share/nix/trusted-settings.json.
 warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
-these 3 derivations will be built:
-  /nix/store/8hff1yfmmwhxkivbz3d93i3lzjc6apa7-etc-nix-registry.json.drv
-  /nix/store/11f7mmcff764iwimckyx3gb1h0s4lf9i-etc.drv
-  /nix/store/7h3fhpx86rjqdxkn1i8lgs3xi6c6b0ii-nixos-system-amaterasu-24.05.20240615.752c634.drv
-building '/nix/store/8hff1yfmmwhxkivbz3d93i3lzjc6apa7-etc-nix-registry.json.drv'...
-building '/nix/store/11f7mmcff764iwimckyx3gb1h0s4lf9i-etc.drv'...
-building '/nix/store/7h3fhpx86rjqdxkn1i8lgs3xi6c6b0ii-nixos-system-amaterasu-24.05.20240615.752c634.drv'...
-updating GRUB 2 menu...
-Warning: os-prober will be executed to detect other bootable partitions.
-Its output will be used to detect bootable binaries on them and create new boot entries.
-lsblk: /dev/mapper/no*[0-9]: not a block device
-lsblk: /dev/mapper/block*[0-9]: not a block device
-lsblk: /dev/mapper/devices*[0-9]: not a block device
-lsblk: /dev/mapper/found*[0-9]: not a block device
-activating the configuration...
-setting up /etc...
-reloading user units for hugob...
-restarting sysinit-reactivation.target
-the following new units were started: systemd-localed.service
+error:
+       … while calling the 'head' builtin
+         at /nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/lib/attrsets.nix:1575:11:
+         1574|         || pred here (elemAt values 1) (head values) then
+         1575|           head values
+             |           ^
+         1576|         else
+
+       … while evaluating the attribute 'value'
+         at /nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/lib/modules.nix:809:9:
+          808|     in warnDeprecation opt //
+          809|       { value = builtins.addErrorContext "while evaluating the option `${showOption loc}':" value;
+             |         ^
+          810|         inherit (res.defsFinal') highestPrio;
+
+       … while evaluating the option `system.build.toplevel':
+
+       … while evaluating definitions from `/nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/nixos/modules/system/activation/top-level.nix':
+
+       … while evaluating the option `warnings':
+
+       … while evaluating definitions from `/nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/nixos/modules/system/boot/systemd.nix':
+
+       … while evaluating the option `systemd.services.home-manager-hugob.serviceConfig':
+
+       … while evaluating definitions from `/nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/flake.nix':
+
+       … while evaluating the option `home-manager.users.hugob.home.file."/home/hugob/.config/fontconfig/conf.d/10-hm-fonts.conf".source':
+
+       … while evaluating definitions from `/nix/store/1m3xkp0fingsbsswmp09s3m8q64gkcq8-source/modules/files.nix':
+
+       … while evaluating the option `home-manager.users.hugob.home.file."/home/hugob/.config/fontconfig/conf.d/10-hm-fonts.conf".text':
+
+       … while evaluating definitions from `/nix/store/1m3xkp0fingsbsswmp09s3m8q64gkcq8-source/modules/misc/xdg.nix':
+
+       … while evaluating the option `home-manager.users.hugob.xdg.configFile."fontconfig/conf.d/10-hm-fonts.conf".text':
+
+       … while evaluating definitions from `/nix/store/1m3xkp0fingsbsswmp09s3m8q64gkcq8-source/modules/misc/fontconfig.nix':
+
+       (stack trace truncated; use '--show-trace' to show the full, detailed trace)
+
+       error: invalid SRI hash '0lgpha72s6mg4hdgygnabqi88i50kaalz4hvn3zi468xlyy1i4i7'
