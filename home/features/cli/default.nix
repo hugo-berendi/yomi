@@ -13,6 +13,7 @@
     ./tmux
     ./yazi
     ./neovim
+    ./pass.nix
     # ./fish
   ];
 

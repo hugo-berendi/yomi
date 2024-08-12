@@ -1,0 +1,9 @@
+#/usr/bin/env bash
+
+ISSUER=$(gum input --placeholder "Issuer")
+ACCOUNTNAME=$(gum input --placeholder "Accountname")
+SECRET=$(gum input --placeholder "TOTP Secret")
+
+URI=$(echo "otpauth://totp/$ISSUER:$ACCOUNTNAME?secret=$SECRET&issuer=$ISSUER")
+
+gum confirm "Is this correct? $URI" && echo "$URI"
