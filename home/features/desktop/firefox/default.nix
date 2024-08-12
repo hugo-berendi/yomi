@@ -28,6 +28,7 @@
     unpaywall
     user-agent-string-switcher
     darkreader
+    passff
   ];
   # }}}
   customUrl = "https://hugo-berendi.github.io/startpage/";
