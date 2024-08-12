@@ -11,10 +11,12 @@
 in {
   programs.password-store = {
     enable = true;
-    package = pkgs.pass.withExtensions (exts: [
-      exts.pass-otp
-      exts.pass-import
-    ]);
+    package = pkgs.pass.withExtensions (exts:
+      with exts; [
+        pass-otp
+        pass-import
+        pass-audit
+      ]);
     settings.PASSWORD_STORE_DIR = storePath;
   };
 
