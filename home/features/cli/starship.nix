@@ -6,6 +6,7 @@
     settings = {
       # Inserts a blank line between shell prompts
       add_newline = true;
+      palette = "catppuccin_mocha";
 
       # Custom format for the prompt
       format = lib.concatStrings [

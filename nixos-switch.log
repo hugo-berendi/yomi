@@ -5,42 +5,51 @@ building the system configuration...
 Using saved setting for 'extra-substituters = https://nix-community.cachix.org https://smos.cachix.org https://intray.cachix.org' from ~/.local/share/nix/trusted-settings.json.
 Using saved setting for 'extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM= intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ=' from ~/.local/share/nix/trusted-settings.json.
 warning: input 'nix-flatpak' has an override for a non-existent input 'nixpkgs'
-error:
-       … while calling the 'head' builtin
-         at /nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/lib/attrsets.nix:1575:11:
-         1574|         || pred here (elemAt values 1) (head values) then
-         1575|           head values
-             |           ^
-         1576|         else
-
-       … while evaluating the attribute 'value'
-         at /nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/lib/modules.nix:809:9:
-          808|     in warnDeprecation opt //
-          809|       { value = builtins.addErrorContext "while evaluating the option `${showOption loc}':" value;
-             |         ^
-          810|         inherit (res.defsFinal') highestPrio;
-
-       … while evaluating the option `system.build.toplevel':
-
-       … while evaluating definitions from `/nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/nixos/modules/system/activation/top-level.nix':
-
-       … while evaluating the option `warnings':
-
-       … while evaluating definitions from `/nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/nixos/modules/system/boot/systemd.nix':
-
-       … while evaluating the option `systemd.services.home-manager-hugob.serviceConfig':
-
-       … while evaluating definitions from `/nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/flake.nix':
-
-       … while evaluating the option `home-manager.users.hugob.home.file."/home/hugob/.config/fish/config.fish".source':
-
-       … while evaluating definitions from `/nix/store/1m3xkp0fingsbsswmp09s3m8q64gkcq8-source/modules/misc/xdg.nix':
-
-       … while evaluating the option `home-manager.users.hugob.xdg.configFile."fish/config.fish".source':
-
-       (stack trace truncated; use '--show-trace' to show the full, detailed trace)
-
-       error: The option `home-manager.users.hugob.programs.fish.shellAliases.la' has conflicting definition values:
-       - In `/nix/store/l08m90p50cahjff1yq1j4qdrq28zl08y-source/home/features/cli/fish/shell-aliases.nix': "eza -a --color=always --group-directories-first --icons"
-       - In `/nix/store/1m3xkp0fingsbsswmp09s3m8q64gkcq8-source/modules/home-environment.nix': "/nix/store/w9sm3cl1rhqiy7vdhh1mxabgc6ywd0i9-eza-0.18.16/bin/eza --icons --long --all"
-       Use `lib.mkForce value` or `lib.mkDefault value` to change the priority on any of these definitions.
+these 17 derivations will be built:
+  /nix/store/8n94ghjsrspw9827nmi4fvnfyw48gp5h-history.fish.drv
+  /nix/store/giwgqaapgsvi86axbah7mv15jx0mpf5a-__history_previous_command.fish.drv
+  /nix/store/ii4qxy374b78r13cvvbffzwfbf1dygzm-__history_previous_command_arguments.fish.drv
+  /nix/store/irpqvl2am67q8062b7arrvqbldr4139h-copy.fish.drv
+  /nix/store/lawmxkidz6xpnl1bxrv4nvn9bpdw86np-config.fish.drv
+  /nix/store/wvh8r5q7vh29k1yi55ybyx174brlwcy3-bashrc.drv
+  /nix/store/pnppvkxh2kgwymscbp2ykq11dbx0ypmd-home-manager-files.drv
+  /nix/store/0n70cxm0w6gd2d7a19ldwbs0kr2qqsgj-home-manager-generation.drv
+  /nix/store/h2i1cyf0lqm0x1n6rhjyz9j9icqnv6mx-set-environment.drv
+  /nix/store/216k8zpmaa9y4ksckbh9gpifz4l1dzjj-etc-fish-nixos-env-preinit.fish.drv
+  /nix/store/9p3pjd9x4bybjfiany0jpamwd06c3zl6-etc-profile.drv
+  /nix/store/amrmssw6h4bxx2wxp40ps0syslfdp428-etc-pam-environment.drv
+  /nix/store/gnbas3idrwbaaqvhms2ybj87y0wnyifc-etc-nix-registry.json.drv
+  /nix/store/zg4n6iwhvbycpcw5rvsw1vgfpc77pnbx-unit-home-manager-hugob.service.drv
+  /nix/store/r372ff2r05fjccf6cvjlf3wdm0z3ccz8-system-units.drv
+  /nix/store/9bkk55n6cilbbsdcafd43igrfzai5zfq-etc.drv
+  /nix/store/1wkq109b86yw4l2w1h928h7r6577z0ha-nixos-system-amaterasu-24.05.20240615.752c634.drv
+building '/nix/store/gnbas3idrwbaaqvhms2ybj87y0wnyifc-etc-nix-registry.json.drv'...
+building '/nix/store/amrmssw6h4bxx2wxp40ps0syslfdp428-etc-pam-environment.drv'...
+building '/nix/store/h2i1cyf0lqm0x1n6rhjyz9j9icqnv6mx-set-environment.drv'...
+building '/nix/store/wvh8r5q7vh29k1yi55ybyx174brlwcy3-bashrc.drv'...
+building '/nix/store/giwgqaapgsvi86axbah7mv15jx0mpf5a-__history_previous_command.fish.drv'...
+building '/nix/store/ii4qxy374b78r13cvvbffzwfbf1dygzm-__history_previous_command_arguments.fish.drv'...
+building '/nix/store/lawmxkidz6xpnl1bxrv4nvn9bpdw86np-config.fish.drv'...
+building '/nix/store/irpqvl2am67q8062b7arrvqbldr4139h-copy.fish.drv'...
+building '/nix/store/8n94ghjsrspw9827nmi4fvnfyw48gp5h-history.fish.drv'...
+building '/nix/store/216k8zpmaa9y4ksckbh9gpifz4l1dzjj-etc-fish-nixos-env-preinit.fish.drv'...
+building '/nix/store/9p3pjd9x4bybjfiany0jpamwd06c3zl6-etc-profile.drv'...
+building '/nix/store/pnppvkxh2kgwymscbp2ykq11dbx0ypmd-home-manager-files.drv'...
+building '/nix/store/0n70cxm0w6gd2d7a19ldwbs0kr2qqsgj-home-manager-generation.drv'...
+building '/nix/store/zg4n6iwhvbycpcw5rvsw1vgfpc77pnbx-unit-home-manager-hugob.service.drv'...
+building '/nix/store/r372ff2r05fjccf6cvjlf3wdm0z3ccz8-system-units.drv'...
+building '/nix/store/9bkk55n6cilbbsdcafd43igrfzai5zfq-etc.drv'...
+building '/nix/store/1wkq109b86yw4l2w1h928h7r6577z0ha-nixos-system-amaterasu-24.05.20240615.752c634.drv'...
+updating GRUB 2 menu...
+Warning: os-prober will be executed to detect other bootable partitions.
+Its output will be used to detect bootable binaries on them and create new boot entries.
+lsblk: /dev/mapper/no*[0-9]: not a block device
+lsblk: /dev/mapper/block*[0-9]: not a block device
+lsblk: /dev/mapper/devices*[0-9]: not a block device
+lsblk: /dev/mapper/found*[0-9]: not a block device
+activating the configuration...
+setting up /etc...
+reloading user units for hugob...
+restarting sysinit-reactivation.target
+restarting the following units: home-manager-hugob.service
+the following new units were started: systemd-localed.service
