@@ -35,5 +35,9 @@
           command cp $argv
       end
     '';
+
+    starship_transient_prompt_func = ''
+      starship character
+    '';
   };
 }
