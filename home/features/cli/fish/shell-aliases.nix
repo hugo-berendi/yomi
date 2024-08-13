@@ -28,7 +28,6 @@
 
     yolo = "fd --type f --hidden --exclude .git | fzf-tmux -p --reverse | xargs nvim";
 
-    cd = "z";
-    cdi = "zi";
+    upd = "~/dotfiles/nix-config/scripts/rebuild.sh";
   };
 }

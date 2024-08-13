@@ -6,7 +6,7 @@
 }: {
   programs.kitty = {
     enable = true;
-
+    shellIntegration.enableFishIntegration = true;
     extraConfig = ''
       background_opacity 0.85
 

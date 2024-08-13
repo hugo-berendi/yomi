@@ -15,7 +15,8 @@
     ./neovim
     ./pass.nix
     ./fish
-    # ./fish
+    ./zoxide.nix
+    ./nix-index.nix
   ];
 
   programs.bash.enable = true;
