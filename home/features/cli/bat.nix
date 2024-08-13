@@ -5,6 +5,4 @@
     enable = true;
     config.theme = "base16-256";
   };
-
-  home.shellAliases.cat = "bat";
 }
