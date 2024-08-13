@@ -19,6 +19,7 @@ in {
   services.gpg-agent = {
     enable = true;
     pinentryPackage = pkgs.pinentry-gnome3;
+    enableFishIntegration = true;
   };
 
   programs.gpg.enable = true;

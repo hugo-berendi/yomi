@@ -37,7 +37,7 @@
     '';
 
     starship_transient_prompt_func = ''
-      starship character
+      starship module character
     '';
   };
 }
