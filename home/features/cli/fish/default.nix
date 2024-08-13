@@ -7,7 +7,5 @@
     ./login-shell-init.nix
   ];
 
-  programs.fish = {
-    enable = true;
-  };
+  programs.fish.enable = true;
 }
