@@ -1,8 +1,10 @@
 {config, ...}: let
   statePath = "${config.xdg.dataHome}/direnv/allow";
 in {
-  programs.direnv.enable = true;
-  programs.direnv.nix-direnv.enable = true;
+  programs.direnv = {
+    enable = true;
+    nix-direnv.enable = true;
+  };
 
   home.sessionVariables = {
     # No more long command warnings

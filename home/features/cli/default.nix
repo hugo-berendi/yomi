@@ -14,6 +14,7 @@
     ./yazi
     ./neovim
     ./pass.nix
+    ./fish
     # ./fish
   ];
 

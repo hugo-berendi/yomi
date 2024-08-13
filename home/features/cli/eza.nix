@@ -5,7 +5,10 @@
 }: let
   package = pkgs.eza;
 in {
-  home.packages = [package];
+  programs.eza = {
+    enable = true;
+    enableFishIntegration = true;
+  };
 
   home.shellAliases = let
     eza = lib.getExe package;
