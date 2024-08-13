@@ -69,9 +69,6 @@
     # Direnv hook
     direnv hook fish | source
 
-    # Setup zoxide
-    zoxide init fish | source
-
     # setup thefuck
     thefuck --alias | source
   '';
