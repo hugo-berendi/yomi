@@ -2,22 +2,29 @@
   inputs,
   pkgs,
   config,
+  osConfig,
   ...
-}: {
+}: let
+  normal-plugins = with inputs.anyrun.packages.${pkgs.system}; [
+    applications
+    dictionary
+    rink
+    stdin
+    # symbols # Looks ugly atm
+    websearch
+    translate
+    kidex
+  ];
+in {
   programs.anyrun = {
     enable = true;
     config = {
       # {{{ Plugins
-      plugins = with inputs.anyrun.packages.${pkgs.system}; [
-        applications
-        dictionary
-        rink
-        stdin
-        # symbols # Looks ugly atm
-        websearch
-        translate
-        kidex
-      ];
+      plugins =
+        normal-plugins
+        ++ [
+          inputs.anyrun-nixos-options.packages.${pkgs.system}.default
+        ];
       # }}}
       # {{{ Geometry
       x.fraction = 0.5;
@@ -37,6 +44,28 @@
           url: "startpage.com/do/search?q={}",
         )],
       )
+    '';
+
+    extraConfigFiles."nixos-options.ron".text = let
+      #               ↓ home-manager refers to the nixos configuration as osConfig
+      nixos-options = osConfig.system.build.manual.optionsJSON + "/share/doc/nixos/options.json";
+      hm-options = inputs.home-manager.packages.${pkgs.system}.docs-json + "/share/doc/home-manager/options.json";
+      # merge your options
+      options = builtins.toJSON {
+        ":no" = [nixos-options];
+        ":hmo" = [hm-options];
+      };
+      # or alternatively if you wish to read any other documentation options, such as home-manager
+      # get the docs-json package from the home-manager flake
+      # options = builtins.toJSON {
+      #   ":something-else" = [some-other-option];
+      #   ":nall" = [nixos-options hm-options some-other-option];
+      # };
+    in ''
+      Config(
+          // add your option paths
+          options: ${options},
+       )
     '';
 
     extraCss =
