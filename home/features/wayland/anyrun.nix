@@ -46,6 +46,14 @@ in {
       )
     '';
 
+    extraConfigFiles."translate.ron".text = ''
+      Config(
+        prefix: ":t",
+        language_delimiter: ">",
+        max_entries: 3,
+      )
+    '';
+
     extraConfigFiles."nixos-options.ron".text = let
       #               ↓ home-manager refers to the nixos configuration as osConfig
       nixos-options = osConfig.system.build.manual.optionsJSON + "/share/doc/nixos/options.json";
@@ -101,7 +109,6 @@ in {
           margin: 1rem;
           background: rgba(${config.satellite.theming.colors.rgba "base00"});
           min-height: 1rem;
-          max-height: 10rem;
         }
         /* }}} */
         /* {{{ Input */
