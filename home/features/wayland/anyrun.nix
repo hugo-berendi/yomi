@@ -21,6 +21,7 @@
       # }}}
       # {{{ Geometry
       x.fraction = 0.5;
+      y.fraction = 0.5;
 
       hidePluginInfo = true;
       closeOnClick = true;
@@ -50,10 +51,6 @@
         #plugin,
         #match {
           background: transparent;
-        }
-
-        #window {
-          padding: 25% 0 0 0;
         }
 
         * {
