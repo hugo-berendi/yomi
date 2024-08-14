@@ -17,12 +17,10 @@
         alwaysTrust.enable = true;
         anonymiseFileNames.enable = true;
         betterFolders.enable = true;
-        betterSettings.enable = true;
         betterUploadButton.enable = true;
         biggerStreamPreview.enable = true;
         clearURLs.enable = true;
         copyUserURLs.enable = true;
-        crashHandler.enable = true;
         customRPC = {
           enable = true;
           appID = "882206464102686740";
