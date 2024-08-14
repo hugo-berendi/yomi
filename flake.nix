@@ -112,6 +112,13 @@
     base16-schemes.flake = false;
 
     nixos-hardware.url = "github:nixos/nixos-hardware";
+
+    nix-mineral = {
+      url = "github:cynicsketch/nix-mineral"; # Refers to the main branch and is updated to the latest commit when you use "nix flake update"
+      # url = "github:cynicsketch/nix-mineral/v0.1.6-alpha" # Refers to a specific tag and follows that tag until you change it
+      # url = "github:cynicsketch/nix-mineral/cfaf4cf15c7e6dc7f882c471056b57ea9ea0ee61" # Refers to a specific commit and follows that until you change it
+      flake = false;
+    };
     # }}}
   };
 
@@ -121,9 +128,9 @@
     home-manager,
     ...
   } @ inputs: let
-    # Main username
-    pilot = "hugob";
-
+    imports = [
+      "${inputs.nix-mineral}/nix-mineral.nix"
+    ];
     inherit (self) outputs;
     # Supported systems for your flake packages, shell, etc.
     systems = [
@@ -141,28 +148,6 @@
       inherit inputs outputs;
     };
   in {
-    nix-health.default = {
-      caches = {required = ["https://cache.nixos.org/"];};
-      direnv = {
-        enable = true;
-        required = false;
-      };
-      flake-enabled = {};
-      max-jobs = {};
-      nix-version = {min-required = "2.13.0";};
-      rosetta = {
-        enable = true;
-        required = true;
-      };
-      system = {
-        enable = true;
-        min_disk_space = "1024.0 GB";
-        min_ram = null;
-        required = false;
-      };
-      trusted-users = {};
-    };
-
     nixpkgs.config.permittedInsecurePackages = [
       "electron-25.9.0"
     ];
