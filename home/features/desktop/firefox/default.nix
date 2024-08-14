@@ -312,6 +312,14 @@ in {
         id = 5;
       };
       # }}}
+      # {{{ Excalidraw
+      excalidraw = {
+        url = "https://excalidraw.com/";
+        icon = ../../../../common/icons/excalidraw.png;
+        displayName = "Excalidraw";
+        id = 6;
+      };
+      # }}}
     };
     # }}}
   };
