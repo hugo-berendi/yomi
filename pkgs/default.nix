@@ -8,4 +8,5 @@ in {
   # homer = pkgs.callPackage (import ./homer.nix) { };
 
   plymouthThemeLone = plymouthThemes.lone;
+  hyprpicker-new = pkgs.callPackage (import ./hyprpicker.nix) {};
 }

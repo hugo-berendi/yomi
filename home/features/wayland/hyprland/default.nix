@@ -9,8 +9,8 @@
 in {
   imports = [../global.nix ./hyprpaper.nix];
 
-  home.packages = [
-    pkgs.hyprcursor
+  home.packages = with pkgs; [
+    hyprcursor
     rosePineCursor
   ];
 
