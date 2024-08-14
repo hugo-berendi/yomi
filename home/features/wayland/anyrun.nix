@@ -54,7 +54,7 @@
         }
 
         * {
-          font-size: 2rem;
+          font-size: 1.5rem;
           outline: none;
         }
         /* }}} */
@@ -76,7 +76,7 @@
         /* }}} */
         /* {{{ Input */
         #entry {
-          font-size: 2rem;
+          font-size: 1.5rem;
           padding: 1rem;
           border: 3px solid ${config.lib.stylix.scheme.withHashtag.base08};
           border-radius: ${toString config.satellite.theming.rounding.radius}px;
