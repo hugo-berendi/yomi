@@ -47,6 +47,8 @@
       unstable.nh
       unstable.nix-output-monitor
       unstable.nvd
+
+      gtk3 # needed for gtk-launch
     ];
   };
 
