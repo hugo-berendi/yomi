@@ -17,7 +17,6 @@
         websearch
         translate
         kidex
-        randr
       ];
       # }}}
       # {{{ Geometry
