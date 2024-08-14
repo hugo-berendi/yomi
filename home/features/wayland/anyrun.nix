@@ -52,6 +52,10 @@
           background: transparent;
         }
 
+        #window {
+          margin: 25% 0 0 0;
+        }
+
         * {
           font-size: 2rem;
           outline: none;
