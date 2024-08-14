@@ -53,10 +53,7 @@
         }
 
         #window {
-          margin-left: auto;
-          margin-right: auto;
-          align-items: center; /* Vertically center content */
-          justify-content: center; /* Horizontally center content */
+          padding: 25% 0 0 0;
         }
 
         * {
