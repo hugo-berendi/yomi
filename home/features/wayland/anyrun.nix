@@ -101,7 +101,7 @@ in {
           margin: 1rem;
           background: rgba(${config.satellite.theming.colors.rgba "base00"});
           min-height: 1rem;
-          max-height: 15rem;
+          max-height: 10rem;
         }
         /* }}} */
         /* {{{ Input */
