@@ -16,15 +16,12 @@
     "....." = "cd ../../../..";
     "......" = "cd ../../../../..";
 
-    big = "expac -H M \"%m\\t%n\" | sort -h | nl";
     dir = "dir --color=auto";
 
     tldr = "tldr --color always";
     bruh = "thefuck";
 
     jctl = "journalctl -p 3 -xb"; #get error messages from journalctl
-
-    rip = "expac --timefmt=\"%Y-%m-%d %T\" \"%l\\t%n %v\" | sort | tail -200 | nl"; #recent installed packages
 
     yolo = "fd --type f --hidden --exclude .git | fzf-tmux -p --reverse | xargs nvim";
 
