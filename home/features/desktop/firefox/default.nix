@@ -96,6 +96,7 @@ in {
             vimium-c # vim keybinds
             youtube-shorts-block
             libredirect # redirect to FOSS alternatives
+            new-tab-override # custom new tab page
           ]
         ];
       # }}}
