@@ -29,11 +29,13 @@ in {
       # {{{ Geometry
       x.fraction = 0.5;
       y.fraction = 0.3;
+      width.fraction = 0.3;
 
       hidePluginInfo = true;
       closeOnClick = true;
       showResultsImmediately = true;
-      maxEntries = 7;
+      maxEntries = null;
+      layer = "overlay";
     };
 
     extraConfigFiles."websearch.ron".text = ''
