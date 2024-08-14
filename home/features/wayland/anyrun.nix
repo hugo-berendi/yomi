@@ -75,7 +75,6 @@ in {
       Config(
           // add your option paths
           options: ${options},
-          max_entries: 2,
        )
     '';
 
