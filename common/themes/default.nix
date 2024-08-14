@@ -71,7 +71,9 @@
           name = "BreezeX-RoséPine";
         };
       };
-      satellite = {};
+      satellite = {
+        rounding.radius = 8.0;
+      };
     };
     # }}}
 
