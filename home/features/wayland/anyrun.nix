@@ -55,7 +55,6 @@
         * {
           font-size: 2rem;
           outline: none;
-          margin-top: 25%;
         }
         /* }}} */
         /* {{{ Transparent & raised surfaces */
