@@ -50,6 +50,8 @@
     };
   };
 
+  services.fwupd.enable = true;
+
   # TODO: Remove in the future:
   programs.hyprland.enable = true;
 
