@@ -9,6 +9,7 @@
     ./waybar
     ./wlogout.nix
     ./wlsunset.nix
+    ./anyrun.nix
 
     ../desktop
   ];
