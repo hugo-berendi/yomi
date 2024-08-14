@@ -9,4 +9,5 @@ in {
 
   plymouthThemeLone = plymouthThemes.lone;
   hyprpicker-new = pkgs.callPackage (import ./hyprpicker.nix) {};
+  vimclip = pkgs.callPackage (import ./vimclip.nix) {};
 }
