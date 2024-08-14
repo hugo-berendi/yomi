@@ -53,7 +53,10 @@
         }
 
         #window {
-          margin: 60rem 0 0 0;
+          margin-left: auto;
+          margin-right: auto;
+          align-items: center; /* Vertically center content */
+          justify-content: center; /* Horizontally center content */
         }
 
         * {
