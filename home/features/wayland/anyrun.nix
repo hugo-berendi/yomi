@@ -63,7 +63,7 @@
         row#match:selected {
           box-shadow: 0.5px 0.5px 1.5px 1.5px rgba(0, 0, 0, 0.5);
           border-radius: ${toString config.satellite.theming.rounding.radius}px;
-          border: 1px solid ${config.lib.stylix.scheme.withHashtag.base08};
+          border: 3px solid ${config.lib.stylix.scheme.withHashtag.base08};
         }
 
         #entry,
@@ -77,7 +77,9 @@
         #entry {
           font-size: 2rem;
           padding: 1rem;
-          border: none;
+          border: 3px solid ${config.lib.stylix.scheme.withHashtag.base08};
+          border-radius: ${toString config.satellite.theming.rounding.radius}px;
+
         }
         /* }}} */
         /* {{{ Matches */

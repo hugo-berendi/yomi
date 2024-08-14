@@ -3,42 +3,41 @@ Using saved setting for 'extra-trusted-public-keys = nix-community.cachix.org-1:
 building the system configuration...
 Using saved setting for 'extra-substituters = https://nix-community.cachix.org https://smos.cachix.org https://intray.cachix.org' from ~/.local/share/nix/trusted-settings.json.
 Using saved setting for 'extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM= intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ=' from ~/.local/share/nix/trusted-settings.json.
-error:
-       … while calling the 'head' builtin
-         at /nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/lib/attrsets.nix:1575:11:
-         1574|         || pred here (elemAt values 1) (head values) then
-         1575|           head values
-             |           ^
-         1576|         else
-
-       … while evaluating the attribute 'value'
-         at /nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/lib/modules.nix:809:9:
-          808|     in warnDeprecation opt //
-          809|       { value = builtins.addErrorContext "while evaluating the option `${showOption loc}':" value;
-             |         ^
-          810|         inherit (res.defsFinal') highestPrio;
-
-       … while evaluating the option `system.build.toplevel':
-
-       … while evaluating definitions from `/nix/store/mcwr2j04fikfsrsaq76f4bviinvl6zql-source/nixos/modules/system/activation/top-level.nix':
-
-       … while evaluating the option `home-manager.users.hugob.home.file':
-
-       … while evaluating definitions from `/nix/store/1m3xkp0fingsbsswmp09s3m8q64gkcq8-source/modules/misc/xdg.nix':
-
-       … while evaluating the option `home-manager.users.hugob.xdg.configFile':
-
-       … while evaluating definitions from `/nix/store/07bdqk0fblnf73ihqf8awvz9892rkhnh-source/home/global.nix':
-
-       … while evaluating the option `home-manager.users.hugob.programs.anyrun.extraCss':
-
-       … while evaluating definitions from `/nix/store/07bdqk0fblnf73ihqf8awvz9892rkhnh-source/home/features/wayland/anyrun.nix':
-
-       (stack trace truncated; use '--show-trace' to show the full, detailed trace)
-
-       error: attribute 'withHashtag' missing
-       at /nix/store/07bdqk0fblnf73ihqf8awvz9892rkhnh-source/home/features/wayland/anyrun.nix:66:31:
-           65|           border-radius: ${toString config.satellite.theming.rounding.radius}px;
-           66|           border: 1px solid ${config.lib.stylix.withHashtag.base08};
-             |                               ^
-           67|         }
+these 12 derivations will be built:
+  /nix/store/39l7yfzgpdr3pwb4hpg17lhn192zm0dg-etc-pam-environment.drv
+  /nix/store/44m206igwp1nnfccgfy4x2p9cdgb6b8i-hm_anyrunstyle.css.drv
+  /nix/store/68nwm2d5c75x1ra78j4rcyyilrg336np-home-manager-files.drv
+  /nix/store/8hzm4rhfmn7jvxppl9kl56bkmrrcd232-home-manager-generation.drv
+  /nix/store/8330c5lcib3gqi89535zi6i83gil42c5-unit-home-manager-hugob.service.drv
+  /nix/store/avrhk4hmn8hsl9v4sd1hkfnjks9ln0sm-system-units.drv
+  /nix/store/i106awfs06b0p694rg0dgh7lhx1956cf-set-environment.drv
+  /nix/store/bvvxydb3npddkdrywhn79dvajfi4n04s-etc-profile.drv
+  /nix/store/fib9f6iprqxc97x7yvrqj1c6hnfzcnsk-etc-nix-registry.json.drv
+  /nix/store/j59dzbs77n677i1vypi24pdyicp7y4nl-etc-fish-nixos-env-preinit.fish.drv
+  /nix/store/hnrq0hbjr9nn3lfvnhpp29knmxaqdgwq-etc.drv
+  /nix/store/p8wnx373bag140755db2yd1c6pykfhk9-nixos-system-amaterasu-24.05.20240615.752c634.drv
+building '/nix/store/fib9f6iprqxc97x7yvrqj1c6hnfzcnsk-etc-nix-registry.json.drv'...
+building '/nix/store/39l7yfzgpdr3pwb4hpg17lhn192zm0dg-etc-pam-environment.drv'...
+building '/nix/store/i106awfs06b0p694rg0dgh7lhx1956cf-set-environment.drv'...
+building '/nix/store/44m206igwp1nnfccgfy4x2p9cdgb6b8i-hm_anyrunstyle.css.drv'...
+building '/nix/store/j59dzbs77n677i1vypi24pdyicp7y4nl-etc-fish-nixos-env-preinit.fish.drv'...
+building '/nix/store/bvvxydb3npddkdrywhn79dvajfi4n04s-etc-profile.drv'...
+building '/nix/store/68nwm2d5c75x1ra78j4rcyyilrg336np-home-manager-files.drv'...
+building '/nix/store/8hzm4rhfmn7jvxppl9kl56bkmrrcd232-home-manager-generation.drv'...
+building '/nix/store/8330c5lcib3gqi89535zi6i83gil42c5-unit-home-manager-hugob.service.drv'...
+building '/nix/store/avrhk4hmn8hsl9v4sd1hkfnjks9ln0sm-system-units.drv'...
+building '/nix/store/hnrq0hbjr9nn3lfvnhpp29knmxaqdgwq-etc.drv'...
+building '/nix/store/p8wnx373bag140755db2yd1c6pykfhk9-nixos-system-amaterasu-24.05.20240615.752c634.drv'...
+updating GRUB 2 menu...
+Warning: os-prober will be executed to detect other bootable partitions.
+Its output will be used to detect bootable binaries on them and create new boot entries.
+lsblk: /dev/mapper/no*[0-9]: not a block device
+lsblk: /dev/mapper/block*[0-9]: not a block device
+lsblk: /dev/mapper/devices*[0-9]: not a block device
+lsblk: /dev/mapper/found*[0-9]: not a block device
+activating the configuration...
+setting up /etc...
+reloading user units for hugob...
+restarting sysinit-reactivation.target
+restarting the following units: home-manager-hugob.service
+the following new units were started: systemd-localed.service
