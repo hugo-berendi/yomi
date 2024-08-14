@@ -93,7 +93,7 @@ in {
         }
 
         * {
-          font-size: 1.5rem;
+          font-size: 1rem;
           outline: none;
         }
         /* }}} */
@@ -115,7 +115,7 @@ in {
         /* }}} */
         /* {{{ Input */
         #entry {
-          font-size: 1.5rem;
+          font-size: 1rem;
           padding: 1rem;
           border: 3px solid ${config.lib.stylix.scheme.withHashtag.base08};
           border-radius: ${toString config.satellite.theming.rounding.radius}px;
