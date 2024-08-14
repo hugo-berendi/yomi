@@ -13,6 +13,7 @@
     inputs.stylix.nixosModules.stylix
     inputs.sops-nix.nixosModules.sops
     inputs.nix-flatpak.nixosModules.nix-flatpak
+    # inputs.nixos-hardware.nixosModules.framework-13-7040-amd
     # }}}
     # {{{ global configuration
     # ./cli/fish.nix
@@ -43,10 +44,6 @@ in {
   services.journald.extraConfig = lib.mkDefault ''
     SystemMaxUse=256M
   '';
-
-  # Boot using systemd
-  boot.initrd.systemd.enable = true;
-  # }}}
 
   nixpkgs = {
     # Add all overlays defined in the overlays directory

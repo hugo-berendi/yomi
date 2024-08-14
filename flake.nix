@@ -92,7 +92,6 @@
     anyrun.inputs.nixpkgs.follows = "nixpkgs";
 
     nix-flatpak.url = "github:gmodena/nix-flatpak";
-    nix-flatpak.inputs.nixpkgs.follows = "nixpkgs";
 
     miros.url = "github:prescientmoon/miros";
     miros.inputs.nixpkgs.follows = "nixpkgs";
@@ -111,6 +110,8 @@
 
     base16-schemes.url = "github:tinted-theming/schemes";
     base16-schemes.flake = false;
+
+    nixos-hardware.url = "github:nixos/nixos-hardware";
     # }}}
   };
 
