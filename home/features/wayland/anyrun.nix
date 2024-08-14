@@ -53,7 +53,7 @@
         }
 
         #window {
-          margin: 25% 0 0 0;
+          margin: 60rem 0 0 0;
         }
 
         * {
