@@ -63,6 +63,7 @@
         row#match:selected {
           box-shadow: 0.5px 0.5px 1.5px 1.5px rgba(0, 0, 0, 0.5);
           border-radius: ${toString config.satellite.theming.rounding.radius}px;
+          border: 1px solid ${config.lib.stylix.scheme.withHashtag.base08};
         }
 
         #entry,
