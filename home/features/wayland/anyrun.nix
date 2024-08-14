@@ -14,20 +14,30 @@
         rink
         stdin
         # symbols # Looks ugly atm
-        # websearch
+        websearch
+        translate
+        kidex
+        randr
       ];
       # }}}
       # {{{ Geometry
       x.fraction = 0.5;
-      y.fraction = 0.25;
-      width.fraction = 0.5;
-      # }}}
 
       hidePluginInfo = true;
       closeOnClick = true;
       showResultsImmediately = true;
       maxEntries = 7;
     };
+
+    extraConfigFiles."websearch.ron".text = ''
+      Config(
+        prefix: "?",
+        engines: [Custom(
+          name: "Startpage",
+          url: "startpage.com/do/search?q={}",
+        )],
+      )
+    '';
 
     extraCss =
       /*

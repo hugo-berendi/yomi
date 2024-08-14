@@ -1872,6 +1872,21 @@
         "type": "github"
       }
     },
+    "nixcord": {
+      "locked": {
+        "lastModified": 1722899954,
+        "narHash": "sha256-6Bvb8OgsQTc7SqN1Xxig7Iyl5M7Be4PQWP7c13+Usug=",
+        "owner": "kaylorben",
+        "repo": "nixcord",
+        "rev": "7f92af829b6bb814ba9fb6bc539ec5e5bb3c8708",
+        "type": "github"
+      },
+      "original": {
+        "owner": "kaylorben",
+        "repo": "nixcord",
+        "type": "github"
+      }
+    },
     "nixos-hardware": {
       "locked": {
         "lastModified": 1723310128,
@@ -2454,6 +2469,7 @@
         "nix-flatpak": "nix-flatpak",
         "nix-index-database": "nix-index-database",
         "nix-mineral": "nix-mineral",
+        "nixcord": "nixcord",
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs_9",
         "nixpkgs-old": "nixpkgs-old",

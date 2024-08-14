@@ -2,28 +2,45 @@
   config,
   pkgs,
   ...
-}: let
-  themeMap = pkgs.callPackage (import ./themes.nix) {};
-
-  # REASON: newer discord versions don't work with the one in nixpkgs
-  discocss = pkgs.discocss.overrideAttrs (old: rec {
-    version = "unstable-2023-09-02";
-    src = pkgs.fetchFromGitHub {
-      owner = "bddvlpr";
-      repo = "discocss";
-      rev = "37f1520bc90822b35e60baa9036df7a05f43fab8";
-      sha256 = "1559mxmc0ppl4jxvdzszphysp1j31k2hm93qv7yz87xn9j0z2m04";
+}: {
+  programs.nixcord = {
+    enable = true; # enable Nixcord. Also installs discord package
+    config = {
+      themeLinks = [
+        # or use an online theme
+        "https://raw.githubusercontent.com/rose-pine/discord/main/rose-pine-moon.theme.css"
+      ];
+      frameless = true;
+      autoUpdate = false;
+      transparent = true;
+      plugins = {
+        alwaysTrust.enable = true;
+        anonymiseFileNames.enable = true;
+        betterFolders.enable = true;
+        betterSettings.enable = true;
+        betterUploadButton.enable = true;
+        biggerStreamPreview.enable = true;
+        clearURLs.enable = true;
+        copyUserURLs.enable = true;
+        crashHandler.enable = true;
+        customRPC = {
+          enable = true;
+          appID = "882206464102686740";
+          appName = "NixOS";
+          details = "Configuring NixOS";
+        };
+        dearrow.enable = true;
+        fakeNitro.enable = true;
+        imageLink.enable = true;
+        nsfwGateBypass.enable = true;
+        plainFolderIcon.enable = true;
+        platformIndicators.enable = true;
+        readAllNotificationsButton.enable = true;
+      };
     };
-  });
-in {
-  programs.discord = {
-    enable = true;
-    disableUpdateCheck = true;
-    enableDevtools = true;
+    extraConfig = {
+    };
   };
-
-  home.packages = [discocss];
-  #xdg.configFile."discocss/custom.css".source = config.satellite.theming.get themeMap;
 
   # {{{ Storage
   # Clean cache older than 10 days

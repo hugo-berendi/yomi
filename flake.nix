@@ -119,6 +119,8 @@
       # url = "github:cynicsketch/nix-mineral/cfaf4cf15c7e6dc7f882c471056b57ea9ea0ee61" # Refers to a specific commit and follows that until you change it
       flake = false;
     };
+
+    nixcord.url = "github:kaylorben/nixcord";
     # }}}
   };
 
