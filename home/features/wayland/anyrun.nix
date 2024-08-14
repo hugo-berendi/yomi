@@ -34,7 +34,7 @@ in {
       hidePluginInfo = true;
       closeOnClick = true;
       showResultsImmediately = true;
-      maxEntries = null;
+      maxEntries = 5;
       layer = "overlay";
     };
 
@@ -75,6 +75,7 @@ in {
       Config(
           // add your option paths
           options: ${options},
+          max_entries: 2,
        )
     '';
 
