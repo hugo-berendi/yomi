@@ -1856,6 +1856,22 @@
         "type": "github"
       }
     },
+    "nix-mineral": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1722804891,
+        "narHash": "sha256-CGQMSLlqO6D5yDXYNZTfDqv2RqifC4WTP9RxiRBaCX0=",
+        "owner": "cynicsketch",
+        "repo": "nix-mineral",
+        "rev": "477ef3395dc6fd69237d717edcc6f4274364b745",
+        "type": "github"
+      },
+      "original": {
+        "owner": "cynicsketch",
+        "repo": "nix-mineral",
+        "type": "github"
+      }
+    },
     "nixos-hardware": {
       "locked": {
         "lastModified": 1723310128,
@@ -2437,6 +2453,7 @@
         "neovim-nightly-overlay": "neovim-nightly-overlay",
         "nix-flatpak": "nix-flatpak",
         "nix-index-database": "nix-index-database",
+        "nix-mineral": "nix-mineral",
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs_9",
         "nixpkgs-old": "nixpkgs-old",
