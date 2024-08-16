@@ -5,25 +5,23 @@
   lib,
   ...
 }: let
-  spicePkgs = inputs.spicetify-nix.packages.${pkgs.system}.default;
+  spicePkgs = inputs.spicetify-nix.legacyPackages.${pkgs.system};
   themeMap = lib.fix (self: {
-    "Catppuccin Mocha" = spicePkgs.themes.Comfy;
-    "Catppuccin Latte" = spicePkgs.themes.Comfy;
-    "Catppuccin Frappe" = spicePkgs.themes.Comfy;
-    "Catppuccin Macchiato" = spicePkgs.themes.Comfy;
+    "Rose Pine" = spicePkgs.themes.comfy;
+    "Rose Pine Moon" = spicePkgs.themes.comfy;
+    "Rose Pine Dawn" = spicePkgs.themes.comfy;
 
-    default.light = self."Catppuccin Latte";
-    default.dark = self."Catppuccin Macchiato";
+    default.light = self."Rose Pine Dawn";
+    default.dark = self."Rose Pine Moon";
   });
 
   colorschemeMap = lib.fix (self: {
-    "Catppuccin Mocha" = "catppuccin-mocha";
-    "Catppuccin Latte" = "catppuccin-latte";
-    "Catppuccin Frappe" = "catppuccin-frappe";
-    "Catppuccin Macchiato" = "catppuccin-macchiato";
+    "Rose Pine" = "rose-pine";
+    "Rose Pine Moon" = "rose-pine-moon";
+    "Rose Pine Dawn" = "rose-pine-dawn";
 
-    default.light = self."Catppuccin Latte";
-    default.dark = self."Catppuccin Macchiato";
+    default.light = self."Rose Pine Dawn";
+    default.dark = self."Rose Pine Moon";
   });
 in {
   imports = [./audio.nix];
@@ -36,6 +34,9 @@ in {
     enable = true;
 
     spotifyPackage = pkgs.unstable.spotify;
+
+    theme = config.satellite.theming.get themeMap;
+    colorScheme = config.satellite.theming.get colorschemeMap;
 
     enabledExtensions = with spicePkgs.extensions; [
       fullAppDisplayMod
