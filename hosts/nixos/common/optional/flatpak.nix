@@ -22,10 +22,10 @@
       };
     };
     packages = [
-      {
-        appId = "dev.vencord.Vesktop";
-        origin = "flathub";
-      }
+      # {
+      #   appId = "dev.vencord.Vesktop";
+      #   origin = "flathub";
+      # }
       {
         appId = "dev.bragefuglseth.Keypunch";
         origin = "flathub";

@@ -3,6 +3,7 @@ Using saved setting for 'extra-trusted-public-keys = nix-community.cachix.org-1:
 building the system configuration...
 Using saved setting for 'extra-substituters = https://nix-community.cachix.org https://smos.cachix.org https://intray.cachix.org' from ~/.local/share/nix/trusted-settings.json.
 Using saved setting for 'extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM= intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ=' from ~/.local/share/nix/trusted-settings.json.
+Failed to start transient service unit: Unit nixos-rebuild-switch-to-configuration.service was already loaded or has a fragment file.
 updating GRUB 2 menu...
 Warning: os-prober will be executed to detect other bootable partitions.
 Its output will be used to detect bootable binaries on them and create new boot entries.
@@ -14,4 +15,26 @@ activating the configuration...
 setting up /etc...
 reloading user units for hugob...
 restarting sysinit-reactivation.target
-warning: error(s) occurred while switching to the new configuration
+the following new units were started: systemd-localed.service
+files-resetup.service, udisks2.service
+warning: the following units failed: flatpak-managed-install.service
+
+× flatpak-managed-install.service
+     Loaded: loaded (/etc/systemd/system/flatpak-managed-install.service; enabled; preset: enabled)
+     Active: failed (Result: exit-code) since Fri 2024-08-16 14:27:46 CEST; 60ms ago
+TriggeredBy: ● flatpak-managed-install.timer
+    Process: 11977 ExecStart=/nix/store/rpwbi7ri21az9zvpcsgsw49fm3hmc5ym-flatpak-managed-install (code=exited, status=1/FAILURE)
+   Main PID: 11977 (code=exited, status=1/FAILURE)
+         IP: 29.7M in, 1.0M out
+        CPU: 5.036s
+
+Aug 16 14:26:46 amaterasu flatpak[12119]: libostree HTTP error from remote flathub for <https://dl.flathub.org/repo/objects/b9/333a084db255f95b191c42d66078de23344823717c96b2fbc1198eedbcd600.filez>: Timeout was reached
+Aug 16 14:27:10 amaterasu flatpak[12119]: libostree HTTP error from remote flathub for <https://dl.flathub.org/repo/objects/28/1f4e460fae935aa3b1324dc7f8d9a7e0ec427f6c9922225362e49708975434.filez>: Timeout was reached
+Aug 16 14:27:16 amaterasu flatpak[12119]: libostree HTTP error from remote flathub for <https://dl.flathub.org/repo/objects/b9/333a084db255f95b191c42d66078de23344823717c96b2fbc1198eedbcd600.filez>: Timeout was reached
+Aug 16 14:27:40 amaterasu flatpak[12119]: libostree HTTP error from remote flathub for <https://dl.flathub.org/repo/objects/28/1f4e460fae935aa3b1324dc7f8d9a7e0ec427f6c9922225362e49708975434.filez>: Timeout was reached
+Aug 16 14:27:46 amaterasu flatpak[12119]: libostree HTTP error from remote flathub for <https://dl.flathub.org/repo/objects/b9/333a084db255f95b191c42d66078de23344823717c96b2fbc1198eedbcd600.filez>: Timeout was reached
+Aug 16 14:27:46 amaterasu rpwbi7ri21az9zvpcsgsw49fm3hmc5ym-flatpak-managed-install[12119]: Error: Failed to install dev.vencord.Vesktop: While pulling app/dev.vencord.Vesktop/x86_64/stable from remote flathub: While fetching https://dl.flathub.org/repo/objects/a0/89d5185f52f34f08a60621b0e7839b7a095d05b6acb8fdfec3c47af1e2cd1f.filez: [28] Timeout was reached
+Aug 16 14:27:46 amaterasu systemd[1]: flatpak-managed-install.service: Main process exited, code=exited, status=1/FAILURE
+Aug 16 14:27:46 amaterasu systemd[1]: flatpak-managed-install.service: Failed with result 'exit-code'.
+Aug 16 14:27:46 amaterasu systemd[1]: Failed to start flatpak-managed-install.service.
+Aug 16 14:27:46 amaterasu systemd[1]: flatpak-managed-install.service: Consumed 5.036s CPU time, received 29.7M IP traffic, sent 1.0M IP traffic.
