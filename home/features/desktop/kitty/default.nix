@@ -7,12 +7,12 @@
   programs.kitty = {
     enable = true;
     shellIntegration.enableFishIntegration = true;
+    font.name = config.stylix.fonts.monospace.name;
     extraConfig = ''
       background_opacity 0.85
 
       window_padding_width 6
 
-      font_family      ${config.stylix.fonts.monospace.name}
       bold_font        auto
       italic_font      auto
       bold_italic_font auto
