@@ -86,7 +86,7 @@ in {
     enable = lib.mkDefault true;
     createDirectories = lib.mkDefault false;
 
-    desktop = null;
+    desktop = "${config.home.homeDirectory}/Desktop";
     templates = null;
     download = "${config.home.homeDirectory}/Downloads";
     publicShare = "${config.home.homeDirectory}/Public";
