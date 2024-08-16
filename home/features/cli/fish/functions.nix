@@ -57,7 +57,7 @@
       fish
       */
       ''
-        starship module time character
+        starship module character
       '';
   };
 }
