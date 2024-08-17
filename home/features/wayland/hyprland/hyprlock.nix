@@ -1,4 +1,10 @@
-{config, ...}: {
+{
+  pkgs,
+  config,
+  ...
+}: let
+  gravatar = pkgs.callPackage (import ../../../../common/avatar.nix) {};
+in {
   programs.hyprlock = {
     enable = true;
     importantPrefixes = [];
@@ -16,6 +22,21 @@
         brightness = 0.8172;
         vibrancy = 0.1696;
         vibrancy_darkness = 0.0;
+      };
+
+      image = {
+        path = "${gravatar}";
+        size = 150; # lesser side if not 1:1 ratio
+        rounding = -1; # negative values mean circle
+        border_size = 4;
+        border_color = "rgb(${config.satellite.theming.colors.rgb "base0D"})";
+        rotate = 0; # degrees, counter-clockwise
+        reload_time = -1; # seconds between reloading, 0 to reload with SIGUSR2
+        reload_cmd = ""; # command to get new path. if empty, old path will be used. don't run "follow" commands like tail -F
+
+        position = "0, 200";
+        halign = "center";
+        valign = "center";
       };
 
       input-field = {
@@ -44,7 +65,7 @@
         invert_numlock = false; # change color if numlock is off
         swap_font_color = false; # see below
 
-        position = "0, 0";
+        position = "0, 20";
         halign = "center";
         valign = "center";
       };
