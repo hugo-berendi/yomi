@@ -16,9 +16,9 @@
     # inputs.nixos-hardware.nixosModules.framework-13-7040-amd
     # }}}
     # {{{ global configuration
-    # ./cli/fish.nix
+    ./cli/fish.nix
     ./cli/htop.nix
-    # ./services/openssh.nix
+    ./services/openssh.nix
     # ./services/tailscale.nix
     ./nix.nix
     ./locale.nix

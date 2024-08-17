@@ -18,8 +18,12 @@
     # ./users.nix
     ../common/optional/quietboot.nix
     ../common/optional/desktop/steam.nix
+    ../common/optional/desktop/xdg-portal.nix
     ../common/optional/flatpak.nix
     ../common/optional/greetd.nix
+    ../common/optional/pipewire.nix
+    ../common/optional/wayland/hyprland.nix
+    ../common/optional/services/kanata.nix
 
     ../common/global
 
@@ -33,6 +37,8 @@
     # ./services/zfs.nix
     # }}}
   ];
+  satellite.pilot.name = "hugob";
+
   programs.dconf.enable = true;
 
   networking.hostName = "amaterasu";
@@ -143,23 +149,6 @@
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
-
-  # Enable sound with pipewire.
-  sound.enable = true;
-  hardware.pulseaudio.enable = false;
-  security.rtkit.enable = true;
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
-    pulse.enable = true;
-    # If you want to use JACK applications, uncomment this
-    jack.enable = true;
-
-    # use the example session manager (no others are packaged yet so this is enabled by default,
-    # no need to redefine it in your config for now)
-    #media-session.enable = true;
-  };
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
   system.stateVersion = "24.05";

@@ -64,6 +64,13 @@ in {
     git.enable = true;
   };
   # }}}
+  # {{{ Set reasonable defaults for some settings
+  home = {
+    username = lib.mkDefault "hugob";
+    homeDirectory = lib.mkDefault "/home/${config.home.username}";
+    stateVersion = lib.mkDefault "24.05"; # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
+  };
+  # }}}
   # {{{ Ad-hoc settings
   # Nicely reload system units when changing configs
   systemd.user.startServices = lib.mkForce "sd-switch";

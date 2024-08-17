@@ -5,8 +5,6 @@
   lib,
   ...
 }: {
-  satellite.pilot.name = "hugob";
-
   # sops.secrets.pilot_password = {
   #   sopsFile = ../secrets.yaml;
   #   neededForUsers = true;
@@ -16,8 +14,8 @@
     # Configure users through nix only
     # mutableUsers = false;
 
-    users.hugob = {
-      # inherit (config.satellite.pilot) name;
+    users.${config.satellite.pilot.name} = {
+      inherit (config.satellite.pilot) name;
 
       description = "Hugo Berendi";
 

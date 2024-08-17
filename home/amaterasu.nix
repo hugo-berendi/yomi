@@ -15,9 +15,6 @@
     ./features/wayland/hyprland
   ];
   home = {
-    username = "hugob";
-    homeDirectory = "/home/hugob";
-    stateVersion = "24.05"; # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
     file = {};
     sessionVariables = {EDITOR = "nvim";};
     packages = with pkgs; [
