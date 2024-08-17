@@ -173,7 +173,7 @@
 in {
   services.kanata = {
     enable = true;
-    keyboards.tethysLaptop = {
+    keyboards.amaterasuLaptop = {
       devices = ["/dev/input/by-path/platform-i8042-serio-0-event-kbd"];
 
       config = mkConfig {
@@ -184,7 +184,7 @@ in {
     };
 
     keyboards.keychronK6 = {
-      devices = ["/dev/input/by-id/usb-Keychron_Keychron_K6-event-kbd"];
+      devices = ["/dev/input/by-id/usb-Keychron_Keychron_K2-event-kbd"];
 
       config = mkConfig {
         redTrigger = "lalt";
