@@ -16,7 +16,7 @@
             --remember
             --asterisks
         '';
-        user = config.users.users.pilot.name;
+        user = config.users.users.hugob.name;
       };
     };
   };

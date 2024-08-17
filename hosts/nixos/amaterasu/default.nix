@@ -19,6 +19,7 @@
     ../common/optional/quietboot.nix
     ../common/optional/desktop/steam.nix
     ../common/optional/flatpak.nix
+    ../common/optional/greetd.nix
 
     ../common/global
 
@@ -56,11 +57,11 @@
   programs.hyprland.enable = true;
 
   # Enable the sddm.
-  services.displayManager.sddm = {
-    enable = true;
-    theme = "rose-pine";
-    wayland = {enable = true;};
-  };
+  # services.displayManager.sddm = {
+  #   enable = true;
+  #   theme = "rose-pine";
+  #   wayland = {enable = true;};
+  # };
 
   fonts.packages = with pkgs.unstable; [maple-mono-NF (nerdfonts.override {fonts = ["Recursive"];})];
 
