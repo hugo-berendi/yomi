@@ -37,7 +37,7 @@
     # ./services/zfs.nix
     # }}}
   ];
-  satellite.pilot.name = "hugob";
+  # satellite.pilot.name = "hugob";
 
   programs.dconf.enable = true;
 
