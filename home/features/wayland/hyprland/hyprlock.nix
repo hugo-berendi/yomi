@@ -25,7 +25,7 @@ in {
       };
 
       image = {
-        path = "${gravatar}";
+        path = "${gravatar}/avatar.jpg";
         size = 150; # lesser side if not 1:1 ratio
         rounding = -1; # negative values mean circle
         border_size = 4;

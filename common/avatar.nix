@@ -11,6 +11,6 @@ in
 
     installPhase = ''
       mkdir -p $out
-      cp $src $out/
+      cp $src $out/avatar.jpg
     '';
   }
