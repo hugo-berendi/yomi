@@ -12,6 +12,7 @@ in {
   home.packages = with pkgs; [
     hyprcursor
     rosePineCursor
+    cliphist
   ];
 
   stylix.targets.hyprland.enable = true;
@@ -45,6 +46,7 @@ in {
       #  };
       #};
       # }}}
+
       # {{{ Monitors
       # Configure monitor properties
       monitor = lib.forEach config.satellite.monitors (
@@ -63,6 +65,12 @@ in {
         (m: lib.lists.optional (m.workspace != null) "${m.name},${m.workspace}")
         config.satellite.monitors;
       # }}}
+
+      # {{{ Keybindings
+      "$mod" = "SUPER";
+      bind = [
+        "$mod, CTRL, C, exec, cliphist list | anyrun --plugins ${inputs.anyrun.packages.${pkgs.system}.stdin}/lib/libstdin.so | cliphist decode | wl-copy"
+      ];
     };
   };
 }

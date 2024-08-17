@@ -30,11 +30,12 @@ in {
       x.fraction = 0.5;
       y.fraction = 0.3;
       width.fraction = 0.3;
+      height.fraction = 0.5;
 
       hidePluginInfo = true;
       closeOnClick = true;
       showResultsImmediately = true;
-      maxEntries = 5;
+      maxEntries = null;
       layer = "overlay";
     };
 
