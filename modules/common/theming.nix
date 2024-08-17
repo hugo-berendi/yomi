@@ -56,6 +56,11 @@ in {
         description = "Returns comma separated rgb values for a color. To be used in css files:)";
       };
 
+      rgb-attrs = lib.mkOption {
+        type = lib.types.functionTo lib.types.attrs;
+        description = "Returns attrset rgb values for a color.)";
+      };
+
       rgba = lib.mkOption {
         type = lib.types.functionTo lib.types.str;
         description = ''
@@ -82,6 +87,12 @@ in {
         config.lib.stylix.scheme."${color}-rgb-g"
         config.lib.stylix.scheme."${color}-rgb-b"
       ];
+
+    colors.rgb-attrs = color: {
+      r = config.lib.stylix.scheme."${color}-rgb-r";
+      g = config.lib.stylix.scheme."${color}-rgb-g";
+      b = config.lib.stylix.scheme."${color}-rgb-b";
+    };
 
     colors.rgba = color: "${cfg.colors.rgb color},${toString config.stylix.opacity.applications}";
   };

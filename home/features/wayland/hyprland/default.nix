@@ -7,7 +7,7 @@
 }: let
   rosePineCursor = import ./rose-pine-cursor.nix {inherit pkgs;};
 in {
-  imports = [../global.nix ./hyprpaper.nix];
+  imports = [../global.nix ./hyprpaper.nix ./hyprlock.nix ./hypridle.nix];
 
   home.packages = with pkgs; [
     hyprcursor
@@ -47,14 +47,15 @@ in {
       # }}}
       # {{{ Monitors
       # Configure monitor properties
-      #monitor = lib.forEach config.satellite.monitors (m:
-      #  lib.concatStringsSep "," [
-      #    m.name
-      #    "${toString m.width}x${toString m.height}@${toString m.refreshRate}"
-      #    "${toString m.x}x${toString m.y}"
-      #    "1"
-      #  ]
-      #);
+      monitor = lib.forEach config.satellite.monitors (
+        m:
+          lib.concatStringsSep "," [
+            m.name
+            "${toString m.width}x${toString m.height}@${toString m.refreshRate}"
+            "${toString m.x}x${toString m.y}"
+            "1"
+          ]
+      );
 
       # Map monitors to workspaces
       workspace =
