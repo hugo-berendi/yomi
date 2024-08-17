@@ -54,7 +54,7 @@ in {
         placeholder_text = "<span foreground='#${config.lib.stylix.scheme.withHashtag.base06}' style='italic'>Input Password...</span>"; # Text rendered in the input box when it's empty.
         hide_input = false;
         rounding = -1; # -1 means complete rounding (circle/oval)
-        check_color = "rgb(${config.satellite.theming.colors.rgb "base0C"})";
+        check_color = "rgb(${config.satellite.theming.colors.rgb "base09"})";
         fail_color = "rgb(${config.satellite.theming.colors.rgb "base08"})"; # if authentication failed, changes outer_color and fail message color
         fail_text = "<i>$FAIL <b>($ATTEMPTS)</b></i>"; # can be set to empty
         fail_timeout = 2000; # milliseconds before fail_text and fail_color disappears
