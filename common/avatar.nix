@@ -4,8 +4,8 @@ in
   stdenv.mkDerivation {
     name = "avatar";
     src = builtins.fetchurl {
-      url = "https://gravatar.com/avatar/${emailHash}.png";
-      sha256 = "09wani3p5qjg9mwqvq21adb0s38lvayf0wiafjyw5yamg5d4108d";
+      url = "https://gravatar.com/avatar/${emailHash}.png?size=500";
+      sha256 = "090pkfq2rdby4ryzk0nw7m3mwj0dw2wziyplifw708v0ig4xjqm8";
     };
     unpackPhase = "true";
 

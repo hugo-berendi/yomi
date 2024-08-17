@@ -49,7 +49,7 @@ in {
         outer_color = "rgb(${config.satellite.theming.colors.rgb "base0D"})";
         inner_color = "rgb(${config.satellite.theming.colors.rgb "base01"})";
         font_color = "rgb(${config.satellite.theming.colors.rgb "base05"})";
-        fade_on_empty = true;
+        fade_on_empty = false;
         fade_timeout = 1000; # Milliseconds before fade_on_empty is triggered.
         placeholder_text = "<i>Input Password...</i>"; # Text rendered in the input box when it's empty.
         hide_input = false;
