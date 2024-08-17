@@ -23,7 +23,6 @@
     ../common/optional/greetd.nix
     ../common/optional/pipewire.nix
     ../common/optional/wayland/hyprland.nix
-    ../common/optional/services/kanata.nix
 
     ../common/global
 
