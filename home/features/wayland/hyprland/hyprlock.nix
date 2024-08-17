@@ -51,7 +51,7 @@ in {
         font_color = "rgb(${config.satellite.theming.colors.rgb "base06"})";
         fade_on_empty = false;
         fade_timeout = 1000; # Milliseconds before fade_on_empty is triggered.
-        placeholder_text = ''<span color="${config.lib.stylix.scheme.withHashtag.base06}"><i>Input Password...</i></span>''; # Text rendered in the input box when it's empty.
+        placeholder_text = "<span color='${config.lib.stylix.scheme.withHashtag.base06}' style='italic'>Input Password...</span>"; # Text rendered in the input box when it's empty.
         hide_input = false;
         rounding = -1; # -1 means complete rounding (circle/oval)
         check_color = "rgb(${config.satellite.theming.colors.rgb "base0C"})";
