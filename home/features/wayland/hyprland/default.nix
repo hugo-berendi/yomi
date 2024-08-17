@@ -69,7 +69,7 @@ in {
       # {{{ Keybindings
       "$mod" = "SUPER";
       bind = [
-        "$mod, CTRL, C, exec, cliphist list | anyrun --plugins ${inputs.anyrun.packages.${pkgs.system}.stdin}/lib/libstdin.so | cliphist decode | wl-copy"
+        "$mod, C, exec, cliphist list | anyrun --plugins ${inputs.anyrun.packages.${pkgs.system}.stdin}/lib/libstdin.so | cliphist decode | wl-copy"
       ];
     };
   };
