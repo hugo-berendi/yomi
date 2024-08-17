@@ -4,13 +4,13 @@ in
   stdenv.mkDerivation {
     name = "avatar";
     src = builtins.fetchurl {
-      url = "https://gravatar.com/avatar/${emailHash}?s=200";
-      sha256 = "GeCsZZWlkpEBfqM99N9sBallkSebeh3DjyWYZirOMzU=";
+      url = "https://gravatar.com/avatar/${emailHash}.png";
+      sha256 = "09wani3p5qjg9mwqvq21adb0s38lvayf0wiafjyw5yamg5d4108d";
     };
     unpackPhase = "true";
 
     installPhase = ''
       mkdir -p $out
-      cp $src $out/avatar.jpg
+      cp $src $out/avatar.png
     '';
   }
