@@ -137,7 +137,7 @@
 	"disk": {
 		"interval": 30,
 		"format": " {percentage_used}% ",
-		"path": "/home/",
+		"path": "/",
 		"on-click": "kitty -e htop"
 	}
 }
