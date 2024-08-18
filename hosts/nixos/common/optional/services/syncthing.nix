@@ -19,6 +19,8 @@ in {
       # {{{ Device ids
       devices = {
         nothing.id = "7KM7BJR-DNSYR3Q-CBAFRDC-EDFPGXS-FTY2JTK-4XDELIV-BSHBM2Y-PFOWFQJ";
+        ipad.id = "UK6IU6S-IULHYLK-MVQPLC6-NYZV5BY-N6F6N2H-4PYW5UN-QWO2VBB-U3GQVA5";
+        amaterasu.id = "OAW3CNC-YF5T6PX-E5BQUZL-XT2KPAO-53AEHLH-P3C7HFR-GY2ZII6-PBS55Q2";
       };
       # }}}
 
