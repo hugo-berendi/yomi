@@ -25,6 +25,8 @@
     ../common/optional/wayland/hyprland.nix
     # ../common/optional/services/protonvpn.nix
 
+    ./services/syncthing.nix
+
     ../common/global
 
     ../common/users/pilot.nix
