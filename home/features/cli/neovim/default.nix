@@ -37,23 +37,23 @@
     extraArgs ? "",
     wrapFlags ? lib.id,
   }: let
-    startupScript =
-      config.satellite.lib.lua.writeFile
-      "." "startup"
-      /*
-      lua
-      */
-      ''
-        -- vim.g.nix_extra_runtime = ${nlib.encode extraRuntime}
-        vim.g.nix_projects_dir = ${nlib.encode config.xdg.userDirs.extraConfig.XDG_PROJECTS_DIR}
-        vim.g.nix_theme = ${config.satellite.colorscheme.lua}
-        -- Provide hints as to what app we are running in
-        -- (Useful because neovide does not provide the info itself right away)
-        vim.g.nix_neovim_app = ${nlib.encode name}
-      '';
-    extraFlags =
-      lib.escapeShellArg (wrapFlags
-        ''-u ~/.config/nvim/init.lua'');
+    # startupScript =
+    #   config.satellite.lib.lua.writeFile
+    #   "." "startup"
+    #   /*
+    #   lua
+    #   */
+    #   ''
+    #     -- vim.g.nix_extra_runtime = ${nlib.encode extraRuntime}
+    #     vim.g.nix_projects_dir = ${nlib.encode config.xdg.userDirs.extraConfig.XDG_PROJECTS_DIR}
+    #     vim.g.nix_theme = ${config.satellite.colorscheme.lua}
+    #     -- Provide hints as to what app we are running in
+    #     -- (Useful because neovide does not provide the info itself right away)
+    #     vim.g.nix_neovim_app = ${nlib.encode name}
+    #   '';
+    # extraFlags =
+    #   lib.escapeShellArg (wrapFlags
+    #     ''-u ~/.config/nvim/init.lua'');
   in
     pkgs.symlinkJoin {
       inherit (base) name meta;
@@ -61,9 +61,10 @@
       nativeBuildInputs = [pkgs.makeWrapper];
 
       # --prefix PATH : ${lib.makeBinPath generated.dependencies} \
+
+      # --add-flags ${extraFlags} \
       postBuild = ''
         wrapProgram $out/bin/${binName} \
-          --add-flags ${extraFlags} \
           ${extraArgs}
       '';
     };
