@@ -21,9 +21,9 @@
     generated.lua;
 
   extraRuntime = lib.concatStringsSep "," [
-    # generatedConfig
+    generatedConfig
     # mirosSnippetCache
-    # "${pkgs.vimPlugins.lazy-nvim}"
+    "${pkgs.vimPlugins.lazy-nvim}"
   ];
 
   # }}}
