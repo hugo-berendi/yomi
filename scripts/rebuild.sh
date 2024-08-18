@@ -13,10 +13,10 @@
 set -e
 
 # cd to your config dir
-pushd ~/dotfiles/nix-config/
+pushd ~/Projects/nix-config/
 
 # Edit your config
-# nvim .
+nvim .
 
 # Early return if no changes were detected (thanks @singiamtel!)
 if sudo git diff --quiet HEAD -- .; then
