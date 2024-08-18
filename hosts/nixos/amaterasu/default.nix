@@ -23,7 +23,7 @@
     ../common/optional/greetd.nix
     ../common/optional/pipewire.nix
     ../common/optional/wayland/hyprland.nix
-    ../common/optional/services/protonvpn.nix
+    # ../common/optional/services/protonvpn.nix
 
     ../common/global
 

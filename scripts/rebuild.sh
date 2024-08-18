@@ -16,7 +16,7 @@ set -e
 pushd ~/dotfiles/nix-config/
 
 # Edit your config
-nvim .
+# nvim .
 
 # Early return if no changes were detected (thanks @singiamtel!)
 if sudo git diff --quiet HEAD -- .; then
