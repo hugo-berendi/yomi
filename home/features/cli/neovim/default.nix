@@ -92,7 +92,8 @@ in {
   # We want other modules to know that we are using neovim!
   satellite.toggles.neovim.enable = true;
 
-  # xdg.configFile.nvim.source = config.satellite.dev.path "home/features/neovim/config";
+  # Link files in the appropriate places
+  xdg.configFile.nvim.source = config.satellite.dev.path "home/features/cli/neovim/config";
   home.sessionVariables.EDITOR = "nvim";
 
   home.packages = [
@@ -100,8 +101,6 @@ in {
     neovide
     pkgs.vimclip
   ];
-
-  xdg.configFile."nvim".source = ./config;
   # }}}
   # {{{ Persistence
   # satellite.persistence.at.state.apps.neovim.directories = [
