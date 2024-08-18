@@ -103,14 +103,14 @@ in {
   xdg.configFile."nvim".source = ./config;
   # }}}
   # {{{ Persistence
-  satellite.persistence.at.state.apps.neovim.directories = [
-    ".local/state/nvim"
-    "${config.xdg.dataHome}/nvim"
-  ];
-
-  satellite.persistence.at.cache.apps.neovim.directories = [
-    "${config.xdg.cacheHome}/nvim"
-    # mirosSnippetCache
-  ];
+  # satellite.persistence.at.state.apps.neovim.directories = [
+  #   ".local/state/nvim"
+  #   "${config.xdg.dataHome}/nvim"
+  # ];
+  #
+  # satellite.persistence.at.cache.apps.neovim.directories = [
+  #   "${config.xdg.cacheHome}/nvim"
+  #   # mirosSnippetCache
+  # ];
   # }}}
 }
