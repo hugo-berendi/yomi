@@ -3,6 +3,6 @@
   imports = [./fonts.nix ./themes];
 
   # {{{ ad-hoc toggles
-  # satellite.toggles.neovim-nightly.enable = false;
+  satellite.toggles.neovim-nightly.enable = false;
   # }}}
 }

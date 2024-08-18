@@ -10,10 +10,9 @@
       efiSysMountPoint = "/boot";
     };
     grub = {
-      enable = true;
+      devices = ["nodev"];
       efiSupport = true;
-      device = "nodev";
-      useOSProber = true;
+      enable = true;
       theme = pkgs.stdenv.mkDerivation {
         pname = "grub-catppuccin";
         version = "1.0";
@@ -24,12 +23,16 @@
         };
         installPhase = "  cp -r ./src/catppuccin-mocha-grub-theme $out\n";
       };
-      # extraConfig = ''
-      #   nowatchdog
-      #   nvme_load=YES
-      #   loglevel=3
-      #   qiet
-      # '';
+      extraEntries = ''
+        menuentry "Windows" {
+          insmod part_gpt
+          insmod fat
+          insmod search_fs_uuid
+          insmod chain
+          search --fs-uuid --set=root $FS_UUID
+          chainloader /EFI/Microsoft/Boot/bootmgfw.efi
+        }
+      '';
     };
   };
 }

@@ -15,6 +15,7 @@
             -g " (.>_>.) Welcome to amaterasu! (.<_<.)" \
             --remember
             --asterisks
+            --theme border=magenta;text=white;prompt=white;time=white;action=white;button=magenta;container=black;input=white
         '';
         user = config.users.users.hugob.name;
       };

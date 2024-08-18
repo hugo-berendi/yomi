@@ -4,5 +4,7 @@
   # cloudflared = import ./cloudflared.nix;
   # nginx = import ./nginx.nix;
   pilot = import ./pilot.nix;
+  protonvpn = import ./protonvpn.nix;
+
   # pounce = import ./pounce.nix;
 }

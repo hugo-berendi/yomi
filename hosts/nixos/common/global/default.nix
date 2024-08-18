@@ -48,10 +48,10 @@ in {
   nixpkgs = {
     # Add all overlays defined in the overlays directory
     overlays =
-      builtins.attrValues outputs.overlays;
-    # ++ lib.lists.optional
-    # config.satellite.toggles.neovim-nightly.enable
-    # inputs.neovim-nightly-overlay.overlay;
+      builtins.attrValues outputs.overlays
+      ++ lib.lists.optional
+      config.satellite.toggles.neovim-nightly.enable
+      inputs.neovim-nightly-overlay.overlays.default;
 
     config.allowUnfree = true;
   };

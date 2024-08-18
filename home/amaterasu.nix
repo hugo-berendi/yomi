@@ -34,9 +34,6 @@
       mpv
       signal-desktop
       qbittorrent
-      unstable.neovim
-      unstable.neovide
-      unstable.vencord
       unstable.unityhub
       unstable.overskride
       # unstable.nerdfetch # for displaying pc/laptop stats

@@ -7,6 +7,16 @@
     ./login-shell-init.nix
   ];
 
+  home.packages = with pkgs; [
+    fishPlugins.done
+    fishPlugins.fzf-fish
+    fishPlugins.forgit
+    fishPlugins.hydro
+    fzf
+    fishPlugins.grc
+    grc
+  ];
+
   programs.fish.enable = true;
   programs.fish.plugins = [
     {

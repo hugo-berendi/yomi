@@ -23,6 +23,7 @@
     ../common/optional/greetd.nix
     ../common/optional/pipewire.nix
     ../common/optional/wayland/hyprland.nix
+    ../common/optional/services/protonvpn.nix
 
     ../common/global
 
@@ -36,45 +37,53 @@
     # ./services/zfs.nix
     # }}}
   ];
-  # satellite.pilot.name = "hugob";
-
-  programs.dconf.enable = true;
-
   networking.hostName = "amaterasu";
   networking.networkmanager.enable = true;
 
-  # This setups a SSH server. Very important if you're setting up a headless system.
-  # Feel free to remove if you don't need it.
-  services.openssh = {
+  # {{{ A few ad-hoc hardware settings
+  hardware.enableAllFirmware = true;
+  hardware.opengl.enable = true;
+  # hardware.opentabletdriver.enable = true;
+  # hardware.keyboard.qmk.enable = true;
+  powerManagement.cpuFreqGovernor = "ondemand";
+  services.tlp.enable = true;
+  services.thermald.enable = true;
+  # }}}
+  # {{{ A few ad-hoc programs
+  programs.kdeconnect.enable = true;
+  programs.firejail.enable = true;
+  programs.extra-container.enable = true;
+  virtualisation.docker.enable = true;
+  virtualisation.waydroid.enable = true;
+  # virtualisation.spiceUSBRedirection.enable = true; # This was required for the vm usb passthrough tomfoolery
+  # }}}
+  # {{{ Ad-hoc stylix targets
+  # TODO: include this on all gui hosts
+  # TODO: is this useful outside of home-manager?
+  stylix.targets.gtk.enable = true;
+  # }}}
+  # {{{ Some ad-hoc site blocking
+  networking.extraHosts = let
+    blacklisted = [
+      # "twitter.com"
+      # "www.reddit.com"
+      "minesweeper.online"
+    ];
+    blacklist = lib.concatStringsSep "\n" (lib.forEach blacklisted (host: "127.0.0.1 ${host}"));
+  in
+    blacklist;
+  # }}}
+
+  services.mysql = {
     enable = true;
-    settings = {
-      # Opinionated: forbid root login through SSH.
-      PermitRootLogin = "no";
-      # Opinionated: use keys only.
-      # Remove if you want to SSH using passwords
-      PasswordAuthentication = false;
-    };
+    package = pkgs.mysql80;
   };
+
+  programs.dconf.enable = true;
+  services.gnome.evolution-data-server.enable = true;
+  services.gnome.gnome-online-accounts.enable = true;
 
   services.fwupd.enable = true;
-
-  # TODO: Remove in the future:
-  programs.hyprland.enable = true;
-
-  # Enable the sddm.
-  # services.displayManager.sddm = {
-  #   enable = true;
-  #   theme = "rose-pine";
-  #   wayland = {enable = true;};
-  # };
-
-  fonts.packages = with pkgs.unstable; [maple-mono-NF (nerdfonts.override {fonts = ["Recursive"];})];
-
-  xdg.portal = {
-    enable = true;
-    configPackages = [pkgs.xdg-desktop-portal-hyprland];
-    extraPortals = [pkgs.xdg-desktop-portal-hyprland pkgs.xdg-desktop-portal-gtk];
-  };
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
@@ -87,28 +96,13 @@
     python3
     python3.pkgs.pip
     rustup
-    bat
     unzip
-    starship
-    tmux
     fd
     btop
-    fishPlugins.done
-    fishPlugins.fzf-fish
-    fishPlugins.forgit
-    fishPlugins.hydro
-    fzf
-    fishPlugins.grc
-    grc
-    (callPackage ./sddm-rose-pine.nix {})
-    (callPackage ./fonts.nix {})
     home-manager
     dunst
     dunst
     libnotify
-    tofi
-    rofi
-    hyprland
     ugrep
     cargo
     rustc
@@ -143,8 +137,6 @@
       ];
     };
   };
-
-  hardware = {opengl.enable = true;};
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
