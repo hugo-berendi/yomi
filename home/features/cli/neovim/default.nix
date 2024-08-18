@@ -5,86 +5,90 @@
   inputs,
   ...
 }: let
-  korora = inputs.korora.lib;
-  nlib =
-    import ../../../../modules/common/korora-neovim.nix
-    {inherit lib korora;}
-    {tempestModule = "my.tempest";};
-
-  generated =
-    nlib.generateConfig
-    (lib.fix (self: with nlib; {}));
-  # Experimental nix module generation
-  generatedConfig =
-    config.satellite.lib.lua.writeFile
-    "lua/nix" "init"
-    generated.lua;
-
-  extraRuntime = lib.concatStringsSep "," [
-    generatedConfig
-    # mirosSnippetCache
-    "${pkgs.vimPlugins.lazy-nvim}"
-  ];
-
-  # }}}
-  # {{{ Client wrapper
-  # Wraps a neovim client, providing the dependencies
-  # and setting some flags:
-  wrapClient = {
-    base,
-    name,
-    binName ? name,
-    extraArgs ? "",
-    wrapFlags ? lib.id,
-  }: let
-    # startupScript =
-    #   config.satellite.lib.lua.writeFile
-    #   "." "startup"
-    #   /*
-    #   lua
-    #   */
-    #   ''
-    #     -- vim.g.nix_extra_runtime = ${nlib.encode extraRuntime}
-    #     vim.g.nix_projects_dir = ${nlib.encode config.xdg.userDirs.extraConfig.XDG_PROJECTS_DIR}
-    #     vim.g.nix_theme = ${config.satellite.colorscheme.lua}
-    #     -- Provide hints as to what app we are running in
-    #     -- (Useful because neovide does not provide the info itself right away)
-    #     vim.g.nix_neovim_app = ${nlib.encode name}
-    #   '';
-    # extraFlags =
-    #   lib.escapeShellArg (wrapFlags
-    #     ''-u ~/.config/nvim/init.lua'');
-  in
-    pkgs.symlinkJoin {
-      inherit (base) name meta;
-      paths = [base];
-      nativeBuildInputs = [pkgs.makeWrapper];
-
-      # --prefix PATH : ${lib.makeBinPath generated.dependencies} \
-
-      # --add-flags ${extraFlags} \
-      postBuild = ''
-        wrapProgram $out/bin/${binName} \
-          ${extraArgs}
-      '';
-    };
-  # }}}
-  # {{{ Clients
-  neovim = wrapClient {
-    base =
-      if config.satellite.toggles.neovim-nightly.enable
-      then pkgs.neovim
-      else pkgs.unstable.neovim;
-    name = "nvim";
-  };
-
-  neovide = wrapClient {
-    base = pkgs.neovide;
-    name = "neovide";
-    extraArgs = "--set NEOVIDE_MULTIGRID true";
-    wrapFlags = flags: "-- ${flags}";
-  };
-  # }}}
+  # korora = inputs.korora.lib;
+  # nlib =
+  #   import ../../../../modules/common/korora-neovim.nix
+  #   {inherit lib korora;}
+  #   {tempestModule = "my.tempest";};
+  #
+  # generated =
+  #   nlib.generateConfig
+  #   (lib.fix (self: with nlib; {}));
+  # # Experimental nix module generation
+  # generatedConfig =
+  #   config.satellite.lib.lua.writeFile
+  #   "lua/nix" "init"
+  #   generated.lua;
+  #
+  # extraRuntime = lib.concatStringsSep "," [
+  #   generatedConfig
+  #   # mirosSnippetCache
+  #   "${pkgs.vimPlugins.lazy-nvim}"
+  # ];
+  #
+  # # }}}
+  # # {{{ Client wrapper
+  # # Wraps a neovim client, providing the dependencies
+  # # and setting some flags:
+  # wrapClient = {
+  #   base,
+  #   name,
+  #   binName ? name,
+  #   extraArgs ? "",
+  #   wrapFlags ? lib.id,
+  # }: let
+  #   # startupScript =
+  #   #   config.satellite.lib.lua.writeFile
+  #   #   "." "startup"
+  #   #   /*
+  #   #   lua
+  #   #   */
+  #   #   ''
+  #   #     -- vim.g.nix_extra_runtime = ${nlib.encode extraRuntime}
+  #   #     vim.g.nix_projects_dir = ${nlib.encode config.xdg.userDirs.extraConfig.XDG_PROJECTS_DIR}
+  #   #     vim.g.nix_theme = ${config.satellite.colorscheme.lua}
+  #   #     -- Provide hints as to what app we are running in
+  #   #     -- (Useful because neovide does not provide the info itself right away)
+  #   #     vim.g.nix_neovim_app = ${nlib.encode name}
+  #   #   '';
+  #   # extraFlags =
+  #   #   lib.escapeShellArg (wrapFlags
+  #   #     ''-u ~/.config/nvim/init.lua'');
+  # in
+  #   pkgs.symlinkJoin {
+  #     inherit (base) name meta;
+  #     paths = [base];
+  #     nativeBuildInputs = [pkgs.makeWrapper];
+  #
+  #     # --prefix PATH : ${lib.makeBinPath generated.dependencies} \
+  #
+  #     # --add-flags ${extraFlags} \
+  #     postBuild = ''
+  #       wrapProgram $out/bin/${binName} \
+  #         ${extraArgs}
+  #     '';
+  #   };
+  # # }}}
+  # # {{{ Clients
+  # neovim = wrapClient {
+  #   base =
+  #     if config.satellite.toggles.neovim-nightly.enable
+  #     then pkgs.neovim
+  #     else pkgs.unstable.neovim;
+  #   name = "nvim";
+  # };
+  #
+  # neovide = wrapClient {
+  #   base = pkgs.neovide;
+  #   name = "neovide";
+  #   extraArgs = "--set NEOVIDE_MULTIGRID true";
+  #   wrapFlags = flags: "-- ${flags}";
+  # };
+  # # }}}
+  neovim =
+    if config.satellite.toggles.neovim-nightly.enable
+    then pkgs.neovim
+    else pkgs.unstable.neovim;
 in {
   satellite.lua.styluaConfig = ../../../../stylua.toml;
 
@@ -97,7 +101,7 @@ in {
 
   home.packages = [
     neovim
-    neovide
+    pkgs.neovide
     pkgs.vimclip
   ];
 
