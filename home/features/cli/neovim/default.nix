@@ -53,7 +53,7 @@
       '';
     extraFlags =
       lib.escapeShellArg (wrapFlags
-        ''--cmd "lua dofile('${startupScript}/startup.lua')" -u ~/.config/nvim/init.lua'');
+        ''-u ~/.config/nvim/init.lua'');
   in
     pkgs.symlinkJoin {
       inherit (base) name meta;
@@ -90,6 +90,9 @@ in {
   # {{{ Basic config
   # We want other modules to know that we are using neovim!
   satellite.toggles.neovim.enable = true;
+
+  # xdg.configFile.nvim.source = config.satellite.dev.path "home/features/neovim/config";
+  home.sessionVariables.EDITOR = "nvim";
 
   home.packages = [
     neovim
