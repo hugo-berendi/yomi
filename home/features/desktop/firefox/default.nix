@@ -320,8 +320,21 @@ in {
         id = 6;
       };
       # }}}
+      # {{{ Syncthing
+      syncthing = {
+        url = "http://127.0.0.1:8384/";
+        icon = ../../../../common/icons/syncthing.png;
+        displayName = "Syncthing";
+        id = 7;
+      };
+      # }}}
     };
     # }}}
+  };
+
+  stylix.targets.firefox = {
+    enable = true;
+    profileNames = [config.home.username "desmos" "monkey-type" "syncthing" "clockify" "proton-mail" "proton-drive" "excalidraw"];
   };
 
   # {{{ Make firefox the default
