@@ -49,6 +49,9 @@
   home.sessionVariables.QT_SCREEN_SCALE_FACTORS = 1.4; # Bigger text in qt apps
 
   satellite = {
+    # Symlink some commonly modified dotfiles outside the nix store
+    dev.enable = true;
+
     monitors = [
       {
         name = "eDP-1";

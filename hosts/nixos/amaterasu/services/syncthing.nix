@@ -12,7 +12,7 @@ in {
   services.syncthing.settings.folders = {
     "stellar-sanctum" = {
       path = "${config.users.users.hugob.home}/Projects/stellar-sanctum/";
-      # devices = ["enceladus" "lapetus"];
+      devices = ["nothing"];
       versioning = commonVersioning;
     };
   };

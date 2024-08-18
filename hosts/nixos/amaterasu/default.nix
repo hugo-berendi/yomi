@@ -32,10 +32,6 @@
     # Import your generated (nixos-generate-config) hardware configuration
     ./hardware
     ./boot.nix
-    # {{{ disk formatting using disko (only enable on new install)
-    # ./filesystems
-    # ./services/zfs.nix
-    # }}}
   ];
   networking.hostName = "amaterasu";
   networking.networkmanager.enable = true;

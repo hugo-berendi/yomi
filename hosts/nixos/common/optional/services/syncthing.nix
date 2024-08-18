@@ -17,11 +17,9 @@ in {
 
     settings = {
       # {{{ Device ids
-      # devices = {
-      #   enceladus.id = "QWOAERM-V2FNXPI-TB7NFUS-LKW7JTB-IZY4OEZ-FYDPJNP-6IKPW4Y-YREXDQM";
-      #   lapetus.id = "VVHM7RC-ZSDOZJI-EGBIJR4-2DOGAXG-OEJZWSH-OYUK5XT-7CDMWSL-3AVM2AZ";
-      #   tethys.id = "NGHX5G4-IY3ZXL2-NQMMRQV-2GDQLC6-LIDWSNG-DAJUAQH-KBAP64V-55K2LQ6";
-      # };
+      devices = {
+        nothing.id = "7KM7BJR-DNSYR3Q-CBAFRDC-EDFPGXS-FTY2JTK-4XDELIV-BSHBM2Y-PFOWFQJ";
+      };
       # }}}
 
       extraOptions.options.crashReportingEnabled = false;

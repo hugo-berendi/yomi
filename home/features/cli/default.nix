@@ -1,6 +1,6 @@
 {pkgs, ...}: {
   imports = [
-    # ./scripts
+    ./scripts
     ./eza.nix
     ./bat.nix
     ./ssh.nix
@@ -17,6 +17,7 @@
     ./fish
     ./zoxide.nix
     ./nix-index.nix
+    ./lazygit.nix
   ];
 
   programs.bash.enable = true;
