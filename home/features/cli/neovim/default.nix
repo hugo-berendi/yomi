@@ -14,8 +14,18 @@
   generated =
     nlib.generateConfig
     (lib.fix (self: with nlib; {}));
-  # {{{ extraRuntime
   # Experimental nix module generation
+  generatedConfig =
+    config.satellite.lib.lua.writeFile
+    "lua/nix" "init"
+    generated.lua;
+
+  extraRuntime = lib.concatStringsSep "," [
+    # generatedConfig
+    # mirosSnippetCache
+    # "${pkgs.vimPlugins.lazy-nvim}"
+  ];
+
   # }}}
   # {{{ Client wrapper
   # Wraps a neovim client, providing the dependencies
@@ -27,33 +37,33 @@
     extraArgs ? "",
     wrapFlags ? lib.id,
   }: let
-    # startupScript =
-    #   config.satellite.lib.lua.writeFile
-    #   "." "startup"
-    #   /*
-    #   lua
-    #   */
-    #   ''
-    #     -- vim.g.nix_extra_runtime = ${nlib.encode extraRuntime}
-    #     vim.g.nix_projects_dir = ${nlib.encode config.xdg.userDirs.extraConfig.XDG_PROJECTS_DIR}
-    #     -- vim.g.nix_theme = ${config.satellite.colorscheme.lua}
-    #     -- Provide hints as to what app we are running in
-    #     -- (Useful because neovide does not provide the info itself right away)
-    #     vim.g.nix_neovim_app = ${nlib.encode name}
-    #   '';
-    # extraFlags =
-    #   lib.escapeShellArg (wrapFlags
-    #     ''--cmd "lua dofile('${startupScript}/startup.lua')"'');
+    startupScript =
+      config.satellite.lib.lua.writeFile
+      "." "startup"
+      /*
+      lua
+      */
+      ''
+        -- vim.g.nix_extra_runtime = ${nlib.encode extraRuntime}
+        vim.g.nix_projects_dir = ${nlib.encode config.xdg.userDirs.extraConfig.XDG_PROJECTS_DIR}
+        vim.g.nix_theme = ${config.satellite.colorscheme.lua}
+        -- Provide hints as to what app we are running in
+        -- (Useful because neovide does not provide the info itself right away)
+        vim.g.nix_neovim_app = ${nlib.encode name}
+      '';
+    extraFlags =
+      lib.escapeShellArg (wrapFlags
+        ''--cmd "lua dofile('${startupScript}/startup.lua')" -u ~/.config/nvim/init.lua'');
   in
     pkgs.symlinkJoin {
       inherit (base) name meta;
       paths = [base];
       nativeBuildInputs = [pkgs.makeWrapper];
-      # # --prefix PATH : ${lib.makeBinPath generated.dependencies} \
-      # --add-flags ${extraFlags} \
 
+      # --prefix PATH : ${lib.makeBinPath generated.dependencies} \
       postBuild = ''
         wrapProgram $out/bin/${binName} \
+          --add-flags ${extraFlags} \
           ${extraArgs}
       '';
     };
