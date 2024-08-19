@@ -13,7 +13,6 @@
     inputs.stylix.nixosModules.stylix
     inputs.sops-nix.nixosModules.sops
     inputs.nix-flatpak.nixosModules.nix-flatpak
-    # inputs.nixos-hardware.nixosModules.framework-13-7040-amd
     # }}}
     # {{{ global configuration
     ./cli/fish.nix

@@ -44,7 +44,7 @@
   # hardware.opentabletdriver.enable = true;
   # hardware.keyboard.qmk.enable = true;
   powerManagement.cpuFreqGovernor = "ondemand";
-  services.tlp.enable = true;
+  # services.tlp.enable = true;
   services.thermald.enable = true;
   # }}}
   # {{{ A few ad-hoc programs

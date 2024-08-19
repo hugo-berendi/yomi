@@ -53,7 +53,7 @@ nh os switch
 # home-manager switch --impure -b backup --flake ".#hugob@amaterasu" &>home-manager-switch.log || (cat home-manager-switch.log | grep --color error && git reset && exit 1)
 
 # Init ags types
-ags --init -c /home/hugob/dotfiles/nix-config/home/features/wayland/ags/config &>/dev/null
+ags --init -c /home/hugob/Projects/nix-config/home/features/wayland/ags/config &>/dev/null
 
 # Get current generation metadata
 current=$(nixos-rebuild list-generations | grep current)
