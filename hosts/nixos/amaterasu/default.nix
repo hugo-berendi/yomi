@@ -112,6 +112,7 @@
     NIXOS_OZONE_WL = "1";
     FLAKE = "/home/hugob/Projects/nix-config";
     ENVFS_RESOLVE_ALWAYS = "1";
+    LD_LIBRARY_PATH = lib.mkForce "${pkgs.stdenv.cc.cc.lib}/lib";
   };
 
   environment.etc."fuse.conf".text = lib.mkForce ''
