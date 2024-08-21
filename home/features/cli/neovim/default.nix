@@ -96,6 +96,9 @@ in {
   xdg.configFile.nvim.source = config.satellite.dev.path "home/features/cli/neovim/config";
   home.sessionVariables.EDITOR = "nvim";
 
+  # TODO: find out why neovim needs this
+  home.file."/usr/bin/fish".source = "${pkgs.fish}/bin/fish";
+
   home.packages = [
     neovim
     neovide
@@ -103,14 +106,14 @@ in {
   ];
   # }}}
   # {{{ Persistence
-  # satellite.persistence.at.state.apps.neovim.directories = [
-  #   ".local/state/nvim"
-  #   "${config.xdg.dataHome}/nvim"
-  # ];
-  #
-  # satellite.persistence.at.cache.apps.neovim.directories = [
-  #   "${config.xdg.cacheHome}/nvim"
-  #   # mirosSnippetCache
-  # ];
+  satellite.persistence.at.state.apps.neovim.directories = [
+    ".local/state/nvim"
+    "${config.xdg.dataHome}/nvim"
+  ];
+
+  satellite.persistence.at.cache.apps.neovim.directories = [
+    "${config.xdg.cacheHome}/nvim"
+    # mirosSnippetCache
+  ];
   # }}}
 }
