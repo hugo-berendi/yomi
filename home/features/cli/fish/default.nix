@@ -17,7 +17,11 @@
     grc
   ];
 
+  # TODO: find out why neovim needs this
+  home.file."/usr/bin/fish".source = "${pkgs.fish}/bin/fish";
+
   programs.fish.enable = true;
+  programs.fish.package = pkgs.fish;
   programs.fish.plugins = [
     {
       name = "done";
