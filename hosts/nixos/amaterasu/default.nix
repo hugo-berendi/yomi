@@ -30,6 +30,7 @@
     ../common/global
 
     ../common/users/pilot.nix
+    ../common/users/guest.nix
 
     # Import your generated (nixos-generate-config) hardware configuration
     ./hardware

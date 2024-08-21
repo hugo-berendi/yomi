@@ -7,10 +7,10 @@
 }: {
   satellite.pilot.name = "hugob";
 
-  # sops.secrets.pilot_password = {
-  #   sopsFile = ../secrets.yaml;
-  #   neededForUsers = true;
-  # };
+  sops.secrets.pilot_password = {
+    sopsFile = ../secrets.yaml;
+    neededForUsers = true;
+  };
 
   users = {
     # Configure users through nix only
@@ -38,8 +38,7 @@
         "syncthing" # syncthing!
       ];
 
-      # hashedPasswordFile = config.sops.secrets.pilot_password.path;
-      initialPassword = "130907";
+      hashedPasswordFile = config.sops.secrets.pilot_password.path;
       shell = pkgs.fish;
 
       openssh.authorizedKeys.keyFiles =
