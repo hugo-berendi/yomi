@@ -20,6 +20,9 @@ in {
     enable = true;
     pinentryPackage = pkgs.pinentry-gnome3;
     enableFishIntegration = true;
+    extraConfig = ''
+      no-allow-external-cache
+    '';
   };
 
   programs.gpg.enable = true;

@@ -22,16 +22,10 @@
       localsend
 
       prismlauncher
-      zoxide
-      nwg-bar
-      nwg-look
       thunderbird
       thefuck
-      eza
       nodejs
-      zathura
       sxiv
-      mpv
       signal-desktop
       qbittorrent
       unstable.unityhub
@@ -43,6 +37,17 @@
       unstable.nvd
 
       gtk3 # needed for gtk-launch
+
+      # {{{ Clis
+      sops # Secret editing
+      # sherlock # Search for usernames across different websites
+      # }}}
+      # {{{ Media playing/recording
+      mpv # Video player
+      imv # Image viewer
+      # peek # GIF recorder
+      # obs-studio # video recorder
+      # }}}
     ];
   };
 
