@@ -27,6 +27,6 @@
 
     upd = "~/Projects/nix-config/scripts/rebuild.sh";
 
-    cd = "zoxide";
+    # cd = "zoxide";
   };
 }

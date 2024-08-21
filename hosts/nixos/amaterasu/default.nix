@@ -36,6 +36,7 @@
     ./boot.nix
   ];
   networking.hostName = "amaterasu";
+  networking.networkmanager.enable = true;
 
   # {{{ A few ad-hoc hardware settings
   hardware.enableAllFirmware = true;
@@ -109,7 +110,7 @@
 
   environment.sessionVariables = {
     NIXOS_OZONE_WL = "1";
-    FLAKE = "/home/hugob/Projects/nix-config";
+    FLAKE = "/home/pilot/Projects/nix-config";
     ENVFS_RESOLVE_ALWAYS = "1";
     LD_LIBRARY_PATH = lib.mkForce "${pkgs.stdenv.cc.cc.lib}/lib";
   };

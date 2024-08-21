@@ -17,7 +17,7 @@
             --asterisks
             --theme border=magenta;text=white;prompt=white;time=white;action=white;button=magenta;container=black;input=white
         '';
-        user = config.users.users.hugob.name;
+        user = config.users.users.pilot.name;
       };
     };
   };
