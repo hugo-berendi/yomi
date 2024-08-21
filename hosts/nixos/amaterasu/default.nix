@@ -36,7 +36,6 @@
     ./boot.nix
   ];
   networking.hostName = "amaterasu";
-  networking.networkmanager.enable = true;
 
   # {{{ A few ad-hoc hardware settings
   hardware.enableAllFirmware = true;
