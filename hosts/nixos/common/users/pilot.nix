@@ -7,14 +7,14 @@
 }: {
   satellite.pilot.name = "hugob";
 
-  # sops.secrets.pilot_password = {
-  #   sopsFile = ../secrets.yaml;
-  #   neededForUsers = true;
-  # };
+  sops.secrets.pilot_password = {
+    sopsFile = ../secrets.yaml;
+    neededForUsers = true;
+  };
 
   users = {
     # Configure users through nix only
-    # mutableUsers = false;
+    mutableUsers = false;
 
     users.hugob = {
       inherit (config.satellite.pilot) name;
@@ -38,7 +38,7 @@
         "syncthing" # syncthing!
       ];
 
-      # hashedPasswordFile = config.sops.secrets.pilot_password.path;
+      hashedPasswordFile = config.sops.secrets.pilot_password.path;
       shell = pkgs.fish;
 
       openssh.authorizedKeys.keyFiles =
