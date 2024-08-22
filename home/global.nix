@@ -82,7 +82,6 @@ in {
   # {{{ Ad-hoc stylix targets
   stylix.targets.xresources.enable = true;
   # }}}
-  # }}} # }}}
   # {{{ Xdg user directories
   # Set the xdg env vars
   xdg.enable = true;

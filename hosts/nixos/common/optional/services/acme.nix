@@ -7,7 +7,7 @@
 
   security.acme.acceptTerms = true;
   security.acme.defaults = {
-    email = "acme@moonythm.dev";
+    email = "acme@hugo-berendi.de";
     dnsProvider = "cloudflare";
     environmentFile = config.sops.templates."acme.env".path;
   };

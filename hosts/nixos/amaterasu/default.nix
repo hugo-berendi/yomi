@@ -36,8 +36,14 @@
     ./hardware
     ./boot.nix
   ];
-  networking.hostName = "amaterasu";
 
+  # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
+  system.stateVersion = "24.05";
+
+  # {{{ Machine ids
+  networking.hostName = "amaterasu";
+  environment.etc.machine-id.text = "08357db3540c4cd2b76d4bb7f825ec88";
+  # }}}
   # {{{ A few ad-hoc hardware settings
   hardware.enableAllFirmware = true;
   hardware.opengl.enable = true;
@@ -139,7 +145,4 @@
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
-
-  # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
-  system.stateVersion = "24.05";
 }
