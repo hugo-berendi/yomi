@@ -12,13 +12,13 @@
     (modulesPath + "/installer/scan/not-detected.nix")
   ];
 
-  boot.initrd.availableKernelModules = ["nvme" "xhci_pci" "thunderbolt" "usb_storage" "sd_mod"];
+  boot.initrd.availableKernelModules = ["nvme" "xhci_pci" "ahci" "usbhid" "sd_mod"];
   boot.initrd.kernelModules = [];
   boot.kernelModules = ["kvm-amd"];
   boot.extraModulePackages = [];
 
   fileSystems."/" = {
-    device = "/dev/disk/by-uuid/0483e9b0-b311-4dcd-9862-dcc2e1ead4d6";
+    device = "/dev/disk/by-uuid/ac534202-5165-42b3-b643-8348bb5515ba";
     fsType = "ext4";
   };
 
@@ -40,20 +40,31 @@
     options = ["bind"];
   };
 
-  fileSystems."/boot" = {
-    device = "/dev/disk/by-uuid/DA71-6D79";
-    fsType = "vfat";
-    options = ["fmask=0022" "dmask=0022"];
+  fileSystems."/var/lib/tailscale" = {
+    device = "/persist/state/var/lib/tailscale";
+    fsType = "none";
+    options = ["bind"];
   };
 
-  swapDevices = [];
+  fileSystems."/boot" = {
+    device = "/dev/disk/by-uuid/1DC5-4EC6";
+    fsType = "vfat";
+    options = ["fmask=0077" "dmask=0077"];
+  };
+
+  swapDevices = [
+    {device = "/dev/disk/by-uuid/1fc10e39-ce54-4398-9c43-9ad5bd10fbb4";}
+  ];
 
   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
   # (the default) this is the recommended approach. When using systemd-networkd it's
   # still possible to use this option, but it's recommended to use it in conjunction
   # with explicit per-interface declarations with `networking.interfaces.<interface>.useDHCP`.
   networking.useDHCP = lib.mkDefault true;
-  # networking.interfaces.wlp1s0.useDHCP = lib.mkDefault true;
+  # networking.interfaces.docker0.useDHCP = lib.mkDefault true;
+  # networking.interfaces.enp5s0.useDHCP = lib.mkDefault true;
+  # networking.interfaces.tailscale0.useDHCP = lib.mkDefault true;
+  # networking.interfaces.wlp4s0.useDHCP = lib.mkDefault true;
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;

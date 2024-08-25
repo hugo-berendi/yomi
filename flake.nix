@@ -228,6 +228,10 @@
         system = "x86_64-linux";
         hostname = "amaterasu";
       };
+      tsukuyomi = nixos {
+        system = "x86_64-linux";
+        hostname = "tsukuyomi";
+      };
       inari = nixos {
         system = "aarch64-linux";
         hostname = "inari";

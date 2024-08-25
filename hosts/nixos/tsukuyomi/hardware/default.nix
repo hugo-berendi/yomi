@@ -3,6 +3,6 @@
     common-cpu-amd
     common-gpu-amd
     common-pc-ssd
-    # ./generated.nix
+    ./generated.nix
   ];
 }

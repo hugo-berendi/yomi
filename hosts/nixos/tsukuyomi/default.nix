@@ -33,7 +33,7 @@
   system.stateVersion = "24.05";
 
   # {{{ Machine ids
-  networking.hostName = "tsukoyomi";
+  networking.hostName = "tsukuyomi";
   # environment.etc.machine-id.text = "08357db3540c4cd2b76d4bb7f825ec88";
   # }}}
   # {{{ A few ad-hoc hardware settings

@@ -59,11 +59,12 @@
     dev.enable = true;
 
     monitors = [
-      # {
-      #   name = "eDP-1";
-      #   width = 2256;
-      #   height = 1504;
-      # }
+      {
+        name = "DP-1";
+        width = 2260;
+        height = 1440;
+        # refreshRate = 165;
+      }
     ];
   };
 }

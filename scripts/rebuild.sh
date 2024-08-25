@@ -46,7 +46,7 @@ export NIXPKGS_ALLOW_INSECURE=1
 export NIXPKGS_ALLOW_UNFREE=1
 
 # Rebuild, output simplified errors, log trackebacks
-sudo nixos-rebuild switch --upgrade-all --flake ".#amaterasu" &>nixos-switch.log || (cat nixos-switch.log | grep --color error && git reset && exit 1)
+sudo nixos-rebuild switch --upgrade-all --flake ".#${HOSTNAME}" &>nixos-switch.log || (cat nixos-switch.log | grep --color error && git reset && exit 1)
 # nh os switch
 
 # Rebuild home-manager, output simplified errors, log trackebacks
