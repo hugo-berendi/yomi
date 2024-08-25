@@ -7,19 +7,11 @@
 }: {
   # You can import other NixOS modules here
   imports = [
-    # If you want to use modules your own flake exports (from modules/nixos):
-    # outputs.nixosModules.example
-
-    # Or modules from other flakes (such as nixos-hardware):
-    # inputs.hardware.nixosModules.common-cpu-amd
-    # inputs.hardware.nixosModules.common-ssd
-
-    # You can also split up your configuration and import pieces of it here:
     # ./users.nix
     ../common/optional/quietboot.nix
     ../common/optional/desktop/steam.nix
     ../common/optional/desktop/xdg-portal.nix
-    ../common/optional/flatpak.nix
+    # ../common/optional/flatpak.nix
     ../common/optional/greetd.nix
     ../common/optional/pipewire.nix
     ../common/optional/wayland/hyprland.nix
@@ -41,8 +33,8 @@
   system.stateVersion = "24.05";
 
   # {{{ Machine ids
-  networking.hostName = "amaterasu";
-  environment.etc.machine-id.text = "08357db3540c4cd2b76d4bb7f825ec88";
+  networking.hostName = "tsukoyomi";
+  # environment.etc.machine-id.text = "08357db3540c4cd2b76d4bb7f825ec88";
   # }}}
   # {{{ A few ad-hoc hardware settings
   hardware.enableAllFirmware = true;
@@ -50,6 +42,8 @@
   # hardware.opentabletdriver.enable = true;
   # hardware.keyboard.qmk.enable = true;
   powerManagement.cpuFreqGovernor = "ondemand";
+  services.power-profiles-daemon.enable = lib.mkDefault true;
+  # services.thermald.enable = true;
   # }}}
   # {{{ A few ad-hoc programs
   programs.kdeconnect.enable = true;

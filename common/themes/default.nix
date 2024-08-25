@@ -65,6 +65,7 @@
       stylix = {
         image = ./wallpapers/something-beautiful-in-nature.jpg;
         base16Scheme = base16 "rose-pine-moon";
+        opacity = transparency 0.7;
         polarity = "dark";
         cursor = {
           package = pkgs.unstable.rose-pine-cursor;

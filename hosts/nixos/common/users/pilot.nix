@@ -38,7 +38,8 @@
         "syncthing" # syncthing!
       ];
 
-      hashedPasswordFile = config.sops.secrets.pilot_password.path;
+      # hashedPasswordFile = config.sops.secrets.pilot_password.path;
+      password = "130907";
       shell = pkgs.fish;
 
       openssh.authorizedKeys.keyFiles =

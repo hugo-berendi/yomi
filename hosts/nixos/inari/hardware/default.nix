@@ -5,7 +5,6 @@
     # common-pc-laptop
     # common-pc-laptop-hdd
     # common-pc-hdd
-    raspberry-pi-3
     ./generated.nix
   ];
 
