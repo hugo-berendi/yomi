@@ -209,16 +209,28 @@
           specialArgs = specialArgs system;
 
           modules = [
-            home-manager.nixosModules.home-manager
-            {
-              home-manager.users.pilot = import ./home/${hostname}.nix;
-              home-manager.extraSpecialArgs = specialArgs system // {inherit hostname;};
-              home-manager.useUserPackages = true;
-              home-manager.backupFileExtension = ".back";
+            # {{{ Import home manager
+            (
+              {lib, ...}: {
+                imports = lib.lists.optionals (builtins.pathExists ./home/${hostname}.nix) [
+                  home-manager.nixosModules.home-manager
+                  {
+                    home-manager.users.pilot = import ./home/${hostname}.nix;
+                    home-manager.extraSpecialArgs =
+                      specialArgs system
+                      // {
+                        inherit hostname;
+                      };
+                    home-manager.useUserPackages = true;
+                    home-manager.backupFileExtension = ".back";
 
-              stylix.homeManagerIntegration.followSystem = false;
-              stylix.homeManagerIntegration.autoImport = false;
-            }
+                    stylix.homeManagerIntegration.followSystem = false;
+                    stylix.homeManagerIntegration.autoImport = false;
+                  }
+                ];
+              }
+            )
+            # }}}
 
             ./hosts/nixos/${hostname}
           ];
@@ -235,6 +247,10 @@
       inari = nixos {
         system = "aarch64-linux";
         hostname = "inari";
+      };
+      iso = nixos {
+        system = "x86_64-linux";
+        hostname = "iso";
       };
     };
   };
