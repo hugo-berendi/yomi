@@ -23,13 +23,12 @@
 
   # {{{ Create home directories
   systemd.tmpfiles.rules = let
-    users =
-      lib.filter (v: v != null && v.isNormalUser)
-      (lib.mapAttrsToList (_: u: u) config.users.users);
+    users = lib.filter (v: v != null && v.isNormalUser) (
+      lib.mapAttrsToList (_: u: u) config.users.users
+    );
 
     mkHomePersistFor = location:
-      lib.forEach users
-      (user: "Q ${location}${user.home} ${user.homeMode} ${user.name} ${user.group} -");
+      lib.forEach users (user: "d ${location}${user.home} ${user.homeMode} ${user.name} ${user.group} -");
   in
     lib.flatten [
       (mkHomePersistFor "/persist/data")

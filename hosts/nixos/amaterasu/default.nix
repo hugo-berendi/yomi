@@ -44,13 +44,6 @@
   networking.hostName = "amaterasu";
   environment.etc.machine-id.text = "08357db3540c4cd2b76d4bb7f825ec88";
   # }}}
-  # {{{ A few ad-hoc hardware settings
-  hardware.enableAllFirmware = true;
-  hardware.opengl.enable = true;
-  # hardware.opentabletdriver.enable = true;
-  # hardware.keyboard.qmk.enable = true;
-  powerManagement.cpuFreqGovernor = "ondemand";
-  # }}}
   # {{{ A few ad-hoc programs
   programs.kdeconnect.enable = true;
   programs.firejail.enable = true;
@@ -58,11 +51,6 @@
   virtualisation.docker.enable = true;
   virtualisation.waydroid.enable = true;
   # virtualisation.spiceUSBRedirection.enable = true; # This was required for the vm usb passthrough tomfoolery
-  # }}}
-  # {{{ Ad-hoc stylix targets
-  # TODO: include this on all gui hosts
-  # TODO: is this useful outside of home-manager?
-  stylix.targets.gtk.enable = true;
   # }}}
   # {{{ Some ad-hoc site blocking
   networking.extraHosts = let
@@ -141,6 +129,5 @@
     };
   };
 
-  # Enable CUPS to print documents.
-  services.printing.enable = true;
+  satellite.pilot.name = "hugob";
 }

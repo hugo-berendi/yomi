@@ -21,7 +21,9 @@
     ./services/tailscale.nix
     ./nix.nix
     ./locale.nix
+    ./unicode.nix
     ./persistence.nix
+    ./ports.nix
     ./wireless
 
     ../../../../common
@@ -43,6 +45,15 @@ in {
   services.journald.extraConfig = lib.mkDefault ''
     SystemMaxUse=256M
   '';
+
+  # Boot using systemd
+  boot.initrd.systemd.enable = true;
+  # }}}
+  # {{{ Disable sudo default lecture
+  security.sudo.extraConfig = ''
+    Defaults lecture = never
+  '';
+  # }}}
 
   nixpkgs = {
     # Add all overlays defined in the overlays directory

@@ -1,12 +1,14 @@
 keys:
   - &hugob age1aew0wld84lhcdte90ra0a4xhkwd2tlaanyr94xeffufpl3rls55qclcsfv
   - &amaterasu age1x9dhumaa3qg77z9swunz3zl5r6ez6gqyhwd66ytp20ndzjefdvcsq6yfu8
+  - &tsukuyomi age1cq2ue7z0l3mhwhz2mmqlcsh0acmvsa7vayzjkr2efwjxltp9yexsj0rv5r
 creation_rules:
   - path_regex: hosts/nixos/common/secrets.yaml
     key_groups:
       - age:
           - *hugob
           - *amaterasu
+          - *tsukuyomi
   - path_regex: hosts/nixos/inari/secrets.yaml
     key_groups:
       - age:
@@ -16,8 +18,10 @@ creation_rules:
       - age:
           - *hugob
           - *amaterasu
+          - *tsukuyomi
   - path_regex: home/features/cli/productivity/secrets.yaml
     key_groups:
       - age:
           - *hugob
           - *amaterasu
+          - *tsukuyomi

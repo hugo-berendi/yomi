@@ -7,7 +7,7 @@
 }: {
   nix = {
     # Flake support and whatnot
-    package = pkgs.unstable.nixVersions.latest;
+    package = pkgs.lix;
 
     # Weekly clean up the store, I think
     gc = {
@@ -39,7 +39,7 @@
         "nix-command"
         "flakes"
         # "repl-flake"
-        # "auto-allocate-uids"
+        "auto-allocate-uids"
         # "configurable-impure-env"
       ];
 

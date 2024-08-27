@@ -5,7 +5,7 @@
   lib,
   ...
 }: {
-  satellite.pilot.name = "hugob";
+  satellite.pilot.name = lib.mkDefault "hugob";
 
   sops.secrets.pilot_password = {
     sopsFile = ../secrets.yaml;
@@ -38,8 +38,7 @@
         "syncthing" # syncthing!
       ];
 
-      # hashedPasswordFile = config.sops.secrets.pilot_password.path;
-      password = "130907";
+      hashedPasswordFile = config.sops.secrets.pilot_password.path;
       shell = pkgs.fish;
 
       openssh.authorizedKeys.keyFiles =

@@ -215,14 +215,13 @@
                 imports = lib.lists.optionals (builtins.pathExists ./home/${hostname}.nix) [
                   home-manager.nixosModules.home-manager
                   {
-                    home-manager.users.pilot = import ./home/${hostname}.nix;
+                    home-manager.users.pilot = ./home/${hostname}.nix;
                     home-manager.extraSpecialArgs =
                       specialArgs system
                       // {
                         inherit hostname;
                       };
                     home-manager.useUserPackages = true;
-                    home-manager.backupFileExtension = ".back";
 
                     stylix.homeManagerIntegration.followSystem = false;
                     stylix.homeManagerIntegration.autoImport = false;
