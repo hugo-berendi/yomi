@@ -1,5 +1,6 @@
 {
   inputs,
+  upkgs,
   pkgs,
   config,
   lib,
@@ -33,7 +34,7 @@ in {
   programs.spicetify = {
     enable = true;
 
-    spotifyPackage = pkgs.unstable.spotify;
+    spotifyPackage = upkgs.spotify;
 
     theme = config.satellite.theming.get themeMap;
     colorScheme = config.satellite.theming.get colorschemeMap;

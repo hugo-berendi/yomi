@@ -137,122 +137,120 @@
     nixos-generators,
     ...
   } @ inputs: let
-    imports = [
-      "${inputs.nix-mineral}/nix-mineral.nix"
-    ];
-
+    # {{{ Common helpers
     inherit (self) outputs;
-    # Supported systems for your flake packages, shell, etc.
-    systems = [
+    forAllSystems = nixpkgs.lib.genAttrs [
       "aarch64-linux"
       "i686-linux"
       "x86_64-linux"
       "aarch64-darwin"
       "x86_64-darwin"
     ];
-    # This is a function that generates an attribute by calling a function you
-    # pass to it, with each system as an argument
-    forAllSystems = nixpkgs.lib.genAttrs systems;
 
     specialArgs = system: {
       inherit inputs outputs;
+
+      upkgs = inputs.nixpkgs-unstable.legacyPackages.${system};
     };
-  in {
-    nixpkgs.config.permittedInsecurePackages = [
-      "electron-25.9.0"
-    ];
-    # {{{ Packages
-    # Accessible through 'nix build', 'nix shell', etc
-    packages = forAllSystems (
-      system: let
-        pkgs = nixpkgs.legacyPackages.${system};
-      in
-        import ./pkgs {inherit pkgs;}
-    );
+  in
     # }}}
-    # Formatter for your nix files, available through 'nix fmt'
-    # Other options beside 'alejandra' include 'nixpkgs-fmt'
-    formatter =
-      forAllSystems (system: nixpkgs.legacyPackages.${system}.alejandra);
+    {
+      # {{{ Packages
+      # Accessible through 'nix build', 'nix shell', etc
+      packages = forAllSystems (
+        system: let
+          pkgs = nixpkgs.legacyPackages.${system};
+          upkgs = inputs.nixpkgs-unstable.legacyPackages.${system};
+          myPkgs = import ./pkgs {inherit pkgs upkgs;};
+        in
+          myPkgs
+          // {
+            octodns = upkgs.octodns.withProviders (ps: [myPkgs.octodns-cloudflare]);
+          }
+          // (import ./dns/pkgs.nix) {inherit pkgs self system;}
+      );
+      # }}}
+      # {{{ Bootstrapping and other pinned devshells
+      # Accessible through 'nix develop'
+      devShells = forAllSystems (
+        system: let
+          pkgs = nixpkgs.legacyPackages.${system};
+          args =
+            {
+              inherit pkgs;
+            }
+            // specialArgs system;
+        in
+          import ./devshells args
+      );
+      # }}}
+      # {{{ Overlays and modules
+      # Custom packages and modifications, exported as overlays
+      overlays = import ./overlays;
 
-    # {{{ Bootstrapping and other pinned devshells
-    # Accessible through 'nix develop'
-    devShells =
-      forAllSystems
-      (system: let
-        pkgs = nixpkgs.legacyPackages.${system};
-        args = {inherit pkgs;} // specialArgs system;
-      in
-        import ./devshells args);
-    # }}}
-    # {{{ Overlays and modules
-    # Custom packages and modifications, exported as overlays
-    overlays = import ./overlays {inherit inputs;};
-    # Reusable nixos modules you might want to export
-    # These are usually stuff you would upstream into nixpkgs
-    # Reusable nixos modules
-    nixosModules = import ./modules/nixos // import ./modules/common;
+      # Reusable nixos modules
+      nixosModules = import ./modules/nixos // import ./modules/common;
 
-    # Reusable home-manager modules
-    homeManagerModules = import ./modules/home-manager // import ./modules/common;
-    # }}}
-    # {{{ Nixos
-    # NixOS configuration entrypoint
-    # Available through 'nixos-rebuild --flake .#your-hostname'
-    nixosConfigurations = let
-      nixos = {
-        system,
-        hostname,
-      }:
-        nixpkgs.lib.nixosSystem {
-          inherit system;
-          specialArgs = specialArgs system;
+      # Reusable home-manager modules
+      homeManagerModules = import ./modules/home-manager // import ./modules/common;
+      # }}}
+      # {{{ Nixos
+      # NixOS configuration entrypoint
+      # Available through 'nixos-rebuild --flake .#your-hostname'
+      nixosConfigurations = let
+        nixos = {
+          system,
+          hostname,
+        }:
+          nixpkgs.lib.nixosSystem {
+            inherit system;
+            specialArgs = specialArgs system;
 
-          modules = [
-            # {{{ Import home manager
-            (
-              {lib, ...}: {
-                imports = lib.lists.optionals (builtins.pathExists ./home/${hostname}.nix) [
-                  home-manager.nixosModules.home-manager
-                  {
-                    home-manager.users.pilot = ./home/${hostname}.nix;
-                    home-manager.extraSpecialArgs =
-                      specialArgs system
-                      // {
-                        inherit hostname;
-                      };
-                    home-manager.useUserPackages = true;
+            modules = [
+              # {{{ Import home manager
+              (
+                {lib, ...}: {
+                  imports = lib.lists.optionals (builtins.pathExists ./home/${hostname}.nix) [
+                    home-manager.nixosModules.home-manager
+                    {
+                      home-manager.users.pilot = ./home/${hostname}.nix;
+                      home-manager.extraSpecialArgs =
+                        specialArgs system
+                        // {
+                          inherit hostname;
+                        };
+                      home-manager.useUserPackages = true;
 
-                    stylix.homeManagerIntegration.followSystem = false;
-                    stylix.homeManagerIntegration.autoImport = false;
-                  }
-                ];
-              }
-            )
-            # }}}
+                      stylix.homeManagerIntegration.followSystem = false;
+                      stylix.homeManagerIntegration.autoImport = false;
+                    }
+                  ];
+                }
+              )
+              # }}}
 
-            ./hosts/nixos/${hostname}
-          ];
+              ./hosts/nixos/${hostname}
+            ];
+          };
+      in {
+        amaterasu = nixos {
+          system = "x86_64-linux";
+          hostname = "amaterasu";
         };
-    in {
-      amaterasu = nixos {
-        system = "x86_64-linux";
-        hostname = "amaterasu";
-      };
-      tsukuyomi = nixos {
-        system = "x86_64-linux";
-        hostname = "tsukuyomi";
-      };
-      inari = nixos {
-        system = "aarch64-linux";
-        hostname = "inari";
-      };
-      iso = nixos {
-        system = "x86_64-linux";
-        hostname = "iso";
+        tsukuyomi = nixos {
+          system = "x86_64-linux";
+          hostname = "tsukuyomi";
+        };
+        inari = nixos {
+          system = "aarch64-linux";
+          hostname = "inari";
+        };
+        iso = nixos {
+          system = "x86_64-linux";
+          hostname = "iso";
+        };
       };
     };
-  };
 
   # {{{ Caching and whatnot
   # TODO: persist trusted substituters file

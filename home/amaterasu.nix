@@ -1,11 +1,15 @@
-{pkgs, ...}: {
+{
+  pkgs,
+  upkgs,
+  ...
+}: {
   imports = [
     ./global.nix
 
     ./features/desktop/firefox
     ./features/desktop/discord
     ./features/desktop/wakatime
-    ./features/desktop/spotify.nix
+    # ./features/desktop/spotify.nix
     ./features/desktop/obsidian.nix
     ./features/desktop/zathura.nix
     # ./features/cli/productivity
@@ -29,13 +33,13 @@
       sxiv
       signal-desktop
       qbittorrent
-      unstable.unityhub
-      unstable.overskride
-      # unstable.nerdfetch # for displaying pc/laptop stats
-      unstable.alejandra # nix formatter
-      unstable.nh
-      unstable.nix-output-monitor
-      unstable.nvd
+      # upkgs.unityhub
+      upkgs.overskride
+      # upkgs.nerdfetch # for displaying pc/laptop stats
+      upkgs.alejandra # nix formatter
+      upkgs.nh
+      upkgs.nix-output-monitor
+      upkgs.nvd
 
       gtk3 # needed for gtk-launch
 

@@ -1,4 +1,5 @@
 {
+  upkgs,
   inputs,
   pkgs,
   ...
@@ -10,7 +11,7 @@
     popups = amount;
   };
 
-  base16 = name: "${pkgs.unstable.base16-schemes}/share/themes/${name}.yaml";
+  base16 = name: "${upkgs.base16-schemes}/share/themes/${name}.yaml";
 
   themes = {
     # {{{ Catppuccin mocha
@@ -53,7 +54,7 @@
         base16Scheme = base16 "rose-pine-dawn";
         polarity = "light";
         cursor = {
-          package = pkgs.unstable.rose-pine-cursor;
+          package = upkgs.rose-pine-cursor;
           name = "BreezeX-RoséPineDawn";
         };
       };
@@ -68,7 +69,7 @@
         opacity = transparency 0.7;
         polarity = "dark";
         cursor = {
-          package = pkgs.unstable.rose-pine-cursor;
+          package = upkgs.rose-pine-cursor;
           name = "BreezeX-RoséPine";
         };
       };

@@ -1,5 +1,6 @@
 {
   pkgs,
+  upkgs,
   config,
   lib,
   inputs,
@@ -74,7 +75,7 @@
     base =
       if config.satellite.toggles.neovim-nightly.enable
       then pkgs.neovim
-      else pkgs.unstable.neovim;
+      else upkgs.neovim;
     name = "nvim";
   };
 

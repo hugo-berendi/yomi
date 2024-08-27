@@ -50,6 +50,7 @@ in {
     config = {
       # Disable if you don't want unfree packages
       allowUnfree = true;
+      allowUnfreePredicate = ["spicetify-Comfy"];
       permittedInsecurePackages = [
         "electron-25.9.0"
       ];

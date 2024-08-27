@@ -21,12 +21,12 @@
     ../common/users/pilot.nix
     ../common/optional/desktop
     ../common/optional/wayland/hyprland.nix
-    ../common/optional/services/kanata.nix
+    # ../common/optional/services/kanata.nix
   ];
   # }}}
-  # {{{ Automount hermes
-  fileSystems."/hermes" = {
-    device = "/dev/disk/by-uuid/7FE7-CA68";
+  # {{{ Automount kagutsuchi
+  fileSystems."/kagutsuchi" = {
+    device = "/dev/disk/by-label/kagutsuchi";
     neededForBoot = true;
     options = [
       "nofail"
@@ -48,10 +48,10 @@
   # }}}
 
   # Tell sops-nix to use the hermes keys for decrypting secrets
-  sops.age.sshKeyPaths = ["/hermes/secrets/hermes/ssh_host_ed25519_key"];
+  sops.age.sshKeyPaths = ["/kagutsuchi/secrets/kagutsuchi/ssh_host_ed25519_key"];
 
   # Set username
-  satellite.pilot.name = "moon";
+  satellite.pilot.name = "hugob";
 
   # Fast but bad compression
   # isoImage.squashfsCompression = "gzip -Xcompression-level 1";

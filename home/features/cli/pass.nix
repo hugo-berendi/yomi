@@ -3,6 +3,7 @@
 # This currently acts as a simple local libsecret store.
 {
   pkgs,
+  upkgs,
   config,
   lib,
   ...
@@ -11,7 +12,7 @@
 in {
   programs.password-store = {
     enable = true;
-    package = pkgs.unstable.pass.withExtensions (exts: [
+    package = upkgs.pass.withExtensions (exts: [
       exts.pass-otp
       exts.pass-import
     ]);
