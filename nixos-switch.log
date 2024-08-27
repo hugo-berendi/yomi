@@ -26,9 +26,6 @@ error:
 
        (stack trace truncated; use '--show-trace' to show the full trace)
 
-       error: attribute 'plymouthThemeLone' missing
-       at /nix/store/ikmznw5nzrk3ava4wl5wlfbh0mkfxbj9-source/hosts/nixos/common/optional/quietboot.nix:4:22:
-            3|     enable = true;
-            4|     themePackages = [pkgs.plymouthThemeLone];
-             |                      ^
-            5|     theme = "lone";
+       error:
+       Failed assertions:
+       - The ‘fileSystems’ option does not specify your root file system.

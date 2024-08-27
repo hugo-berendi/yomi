@@ -6,24 +6,28 @@
   modulesPath,
   inputs,
   pkgs,
+  outputs,
   ...
 }: {
   # {{{ Imports
-  imports = [
-    "${modulesPath}/installer/cd-dvd/installation-cd-minimal.nix"
+  imports =
+    builtins.attrValues outputs.nixosModules
+    ++ [
+      "${modulesPath}/installer/cd-dvd/installation-cd-minimal.nix"
 
-    inputs.stylix.nixosModules.stylix
-    inputs.sops-nix.nixosModules.sops
+      inputs.stylix.nixosModules.stylix
+      inputs.sops-nix.nixosModules.sops
 
-    ../../../common
-    ../common/global/wireless
-    ../common/global/services/openssh.nix
-    ../common/users/pilot.nix
-    ../common/optional/desktop
-    ../common/optional/wayland/hyprland.nix
-    # ../common/optional/services/kanata.nix
-  ];
+      ../../../common
+      ../common/global/wireless
+      ../common/global/services/openssh.nix
+      ../common/global/cli/fish.nix
+      ../common/users/pilot.nix
+      ../common/optional/desktop
+      ../common/optional/wayland/hyprland.nix
+    ];
   # }}}
+
   # {{{ Automount kagutsuchi
   fileSystems."/kagutsuchi" = {
     device = "/dev/disk/by-label/kagutsuchi";
@@ -50,8 +54,17 @@
   # Tell sops-nix to use the hermes keys for decrypting secrets
   sops.age.sshKeyPaths = ["/kagutsuchi/secrets/kagutsuchi/ssh_host_ed25519_key"];
 
-  # Set username
-  satellite.pilot.name = "hugob";
+  environment.systemPackages = let
+    cloneConfig = pkgs.writeShellScriptBin "liftoff" ''
+      git clone git@github.com:hugo-berendi/nix-config.git
+      cd nix-config
+    '';
+  in
+    with pkgs; [
+      sops # Secret editing
+      neovim # Text editor
+      cloneConfig # Clones my nixos config from github
+    ];
 
   # Fast but bad compression
   # isoImage.squashfsCompression = "gzip -Xcompression-level 1";

@@ -16,7 +16,7 @@ set -e
 pushd ~/Projects/nix-config/
 
 # Edit your config
-nvim .
+# nvim .
 
 # Early return if no changes were detected (thanks @singiamtel!)
 if sudo git diff --quiet HEAD -- .; then
@@ -46,14 +46,15 @@ export NIXPKGS_ALLOW_INSECURE=1
 export NIXPKGS_ALLOW_UNFREE=1
 
 # Rebuild, output simplified errors, log trackebacks
-sudo nixos-rebuild switch --upgrade-all --flake ".#${HOSTNAME}" &>nixos-switch.log || (cat nixos-switch.log | grep --color error && git reset && exit 1)
+# sudo nixos-rebuild switch --upgrade-all --flake ".#${HOSTNAME}" &>nixos-switch.log || (cat nixos-switch.log | grep --color error && git reset && exit 1)
 # nh os switch
+sudo nixos-rebuild switch --flake .#$(hostname) --show-trace --fast
 
 # Rebuild home-manager, output simplified errors, log trackebacks
 # home-manager switch --impure -b backup --flake ".#hugob@amaterasu" &>home-manager-switch.log || (cat home-manager-switch.log | grep --color error && git reset && exit 1)
 
 # Init ags types
-ags --init -c /home/hugob/Projects/nix-config/home/features/wayland/ags/config &>/dev/null
+# ags --init -c /home/hugob/Projects/nix-config/home/features/wayland/ags/config &>/dev/null
 
 # Get current generation metadata
 current=$(nixos-rebuild list-generations | grep current)
