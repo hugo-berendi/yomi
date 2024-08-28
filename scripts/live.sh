@@ -29,7 +29,7 @@ if mountpoint -q /kagutsuchi; then
 else
 	echo "📁 Mounting keys"
 	mkdir -p /kagutsuchi
-	mount /dev/disk/by-label/kagutsuchi /kagutsuchi
+	mount /dev/disk/by-uuid/9e2345c6-7c31-4a76-97d8-73adc71c1a19 /kagutsuchi
 fi
 
 if [ "$mode" = "mount" ] && [ "$host" = "lapetus" ]; then
@@ -46,17 +46,18 @@ if [ "$action" = "install" ]; then
 		>./hosts/nixos/$host/hardware/generated.nix
 	git add .
 
-	echo "❄️  nstalling nixos"
+	echo "Installing nixos"
 	nixos-install --flake ".#$host"
 
 	echo "🔑 Copying user ssh keys"
+	mkdir -p /mnt/persist/state/home/hugob
 	for dir in /mnt/persist/state/home/*; do
 		mkdir -p "$dir/ssh/.ssh"
 		cp /kagutsuchi/secrets/$host/id* "$dir/ssh/.ssh"
 	done
 
 	echo "🔑 Copying host ssh keys"
-	mkdir -p /mnt/persist/state/home/
+	mkdir -p /mnt/persist/state/etc/ssh/
 	cp /kagutsuchi/secrets/$host/ssh* /mnt/persist/state/etc/ssh/
 fi
 

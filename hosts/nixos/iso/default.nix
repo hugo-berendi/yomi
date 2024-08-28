@@ -5,8 +5,8 @@
 {
   modulesPath,
   inputs,
-  pkgs,
   outputs,
+  pkgs,
   ...
 }: {
   # {{{ Imports
@@ -15,22 +15,16 @@
     ++ [
       "${modulesPath}/installer/cd-dvd/installation-cd-minimal.nix"
 
-      inputs.stylix.nixosModules.stylix
       inputs.sops-nix.nixosModules.sops
 
-      ../../../common
       ../common/global/wireless
-      ../common/global/services/openssh.nix
       ../common/global/cli/fish.nix
-      ../common/users/pilot.nix
-      ../common/optional/desktop
-      ../common/optional/wayland/hyprland.nix
+      # ../common/optional/services/kanata.nix
     ];
   # }}}
-
-  # {{{ Automount kagutsuchi
+  # {{{ Automount hermes
   fileSystems."/kagutsuchi" = {
-    device = "/dev/disk/by-label/kagutsuchi";
+    device = "/dev/disk/by-uuid/9e2345c6-7c31-4a76-97d8-73adc71c1a19";
     neededForBoot = true;
     options = [
       "nofail"

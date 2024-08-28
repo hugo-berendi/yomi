@@ -116,11 +116,12 @@
   satellite.persistence.at.state.apps.steam = {
     directories = [
       ".factorio" # TODO: perhaps this should have it's own file?
+      "${config.xdg.dataHome}/Steam"
       # A couple of games don't play well with bindfs
-      {
-        directory = "${config.xdg.dataHome}/Steam";
-        method = "symlink";
-      }
+      # {
+      #   directory = "${config.xdg.dataHome}/Steam";
+      #   method = "symlink";
+      # }
     ];
   };
   # }}}

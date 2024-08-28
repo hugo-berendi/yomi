@@ -29,22 +29,34 @@ in {
 
     settings = {
       # {{{ Decoration
-      #decoration = {
-      #  rounding = config.satellite.theming.rounding.radius;
-      #  active_opacity = 1;
-      #  inactive_opacity = 1;
+      decoration = {
+        rounding = config.satellite.theming.rounding.radius;
+        active_opacity = 1;
+        inactive_opacity = 1;
 
-      #  blur = {
-      #    enabled = config.satellite.theming.blur.enable;
-      #    ignore_opacity = true;
-      #    xray = true;
-      #    size = config.satellite.theming.blur.size;
-      #    passes = config.satellite.theming.blur.passes;
-      #    contrast = config.satellite.theming.blur.contrast;
-      #    brightness = config.satellite.theming.blur.brightness;
-      #    noise = 0.05;
-      #  };
-      #};
+        blur = {
+          enabled = config.satellite.theming.blur.enable;
+          ignore_opacity = true;
+          xray = true;
+          size = config.satellite.theming.blur.size;
+          passes = config.satellite.theming.blur.passes;
+          contrast = config.satellite.theming.blur.contrast;
+          brightness = config.satellite.theming.blur.brightness;
+          noise = 0.05;
+        };
+      };
+
+        general = {
+    gaps_in = 5;
+    gaps_out = 20;
+    border_size = 3;
+    col.active_border = $love;
+    col.inactive_border = $base;
+    layout = dwindle;
+
+    allow_tearing = true;
+};
+
       # }}}
 
       # {{{ Monitors

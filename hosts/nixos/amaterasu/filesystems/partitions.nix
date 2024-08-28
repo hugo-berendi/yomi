@@ -19,7 +19,7 @@
         # }}}
         # {{{ Luks
         luks = {
-          size = "100%";
+          size = "100%"; # The remaining space is left for windows
           content = {
             type = "luks";
             name = "crypted";
@@ -39,10 +39,20 @@
                   ];
                 };
                 # }}}
+                # {{{ /blank
+                "blank" = {
+                  mountpoint = "/blank";
+                  # should we reuse the `root` options here?
+                  mountOptions = [
+                    "compress=zstd"
+                    "noatime"
+                  ];
+                };
+                # }}}
                 # {{{ /swap
                 "swap" = {
                   mountpoint = "/.swapvol";
-                  swap.swapfile.size = "20G";
+                  swap.swapfile.size = "16G";
                 };
                 # }}}
                 # {{{ /persist/data

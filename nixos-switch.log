@@ -7,6 +7,7 @@ building the system configuration...
 fetching git input 'git+file:///home/hugob/Projects/nix-config'
 Using saved setting for 'extra-substituters = https://nix-community.cachix.org https://smos.cachix.org https://intray.cachix.org' from ~/.local/share/nix/trusted-settings.json.
 Using saved setting for 'extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM= intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ=' from ~/.local/share/nix/trusted-settings.json.
+<<<<<<< Updated upstream
 fetching github input 'github:NixOS/nixpkgs/cf28ee258fd5f9a52de6b9865cdb93a1f96d09b7'
 fetching github input 'github:NixOS/nixpkgs/b8dd8be3c790215716e7c12b247f45ca525867e2'
 error:
@@ -29,3 +30,17 @@ error:
        error:
        Failed assertions:
        - The ‘fileSystems’ option does not specify your root file system.
+=======
+warning: In a derivation named 'neovim-unwrapped-0.10.1', 'structuredAttrs' disables the effect of the derivation attribute 'disallowedRequisites'; use 'outputChecks.<output>.disallowedRequisites' instead
+warning: In a derivation named 'neovim-unwrapped-0.9.5', 'structuredAttrs' disables the effect of the derivation attribute 'disallowedRequisites'; use 'outputChecks.<output>.disallowedRequisites' instead
+trace: warning: The option `security.pam.enableSSHAgentAuth' defined in `/nix/store/aylamb5kamh3qspwj50541nb75jvi7vv-source/hosts/nixos/common/global/services/openssh.nix' has been renamed to `security.pam.sshAgentAuth.enable'.
+updating GRUB 2 menu...
+activating the configuration...
+sops-install-secrets: Imported /persist/state/etc/ssh/ssh_host_rsa_key as GPG key with fingerprint 9de59808c88a16297e624316233177e4ae7763c4
+sops-install-secrets: Imported /persist/state/etc/ssh/ssh_host_ed25519_key as age key with fingerprint age1x9dhumaa3qg77z9swunz3zl5r6ez6gqyhwd66ytp20ndzjefdvcsq6yfu8
+setting up /etc...
+sops-install-secrets: Imported /persist/state/etc/ssh/ssh_host_rsa_key as GPG key with fingerprint 9de59808c88a16297e624316233177e4ae7763c4
+sops-install-secrets: Imported /persist/state/etc/ssh/ssh_host_ed25519_key as age key with fingerprint age1x9dhumaa3qg77z9swunz3zl5r6ez6gqyhwd66ytp20ndzjefdvcsq6yfu8
+reloading user units for hugob...
+restarting sysinit-reactivation.target
+>>>>>>> Stashed changes
