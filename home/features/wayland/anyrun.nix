@@ -23,7 +23,6 @@ in {
       plugins =
         normal-plugins
         ++ [
-          inputs.anyrun-nixos-options.packages.${pkgs.system}.default
         ];
       # }}}
       # {{{ Geometry
@@ -57,28 +56,6 @@ in {
       )
     '';
 
-    extraConfigFiles."nixos-options.ron".text = let
-      #               ↓ home-manager refers to the nixos configuration as osConfig
-      nixos-options = osConfig.system.build.manual.optionsJSON + "/share/doc/nixos/options.json";
-      hm-options = inputs.home-manager.packages.${pkgs.system}.docs-json + "/share/doc/home-manager/options.json";
-      # merge your options
-      options = builtins.toJSON {
-        ":no" = [nixos-options];
-        ":hmo" = [hm-options];
-      };
-      # or alternatively if you wish to read any other documentation options, such as home-manager
-      # get the docs-json package from the home-manager flake
-      # options = builtins.toJSON {
-      #   ":something-else" = [some-other-option];
-      #   ":nall" = [nixos-options hm-options some-other-option];
-      # };
-    in ''
-      Config(
-          // add your option paths
-          options: ${options},
-       )
-    '';
-
     extraCss =
       /*
       css
@@ -104,7 +81,7 @@ in {
         row#match:selected {
           box-shadow: 0.5px 0.5px 1.5px 1.5px rgba(0, 0, 0, 0.5);
           border-radius: ${toString config.satellite.theming.rounding.radius}px;
-          border: 3px solid ${config.lib.stylix.scheme.withHashtag.base08};
+          border: 3px solid ${config.lib.stylix.scheme.withHashtag.base0D};
         }
 
         #entry,
@@ -118,7 +95,7 @@ in {
         #entry {
           font-size: 1rem;
           padding: 1rem;
-          border: 3px solid ${config.lib.stylix.scheme.withHashtag.base08};
+          border: 3px solid ${config.lib.stylix.scheme.withHashtag.base0D};
           border-radius: ${toString config.satellite.theming.rounding.radius}px;
 
         }

@@ -22,7 +22,7 @@
         opacity = transparency 0.7;
         polarity = "dark";
       };
-      satellite.rounding.radius = 8.0;
+      satellite.rounding.radius = 8;
     };
     # }}}
     # {{{ Catppuccin latte
@@ -33,7 +33,7 @@
         opacity = transparency 0.7;
         polarity = "light";
       };
-      satellite.rounding.radius = 8.0;
+      satellite.rounding.radius = 8;
     };
     # }}}
     # {{{ Catppuccin macchiato
@@ -44,7 +44,7 @@
         opacity = transparency 0.7;
         polarity = "dark";
       };
-      satellite.rounding.radius = 8.0;
+      satellite.rounding.radius = 8;
     };
     # }}}
     # {{{ Rosepine dawn
@@ -52,13 +52,28 @@
       stylix = {
         image = ./wallpapers/rosepine_light_field.png;
         base16Scheme = base16 "rose-pine-dawn";
+        opacity = transparency 0.3;
         polarity = "light";
         cursor = {
           package = upkgs.rose-pine-cursor;
           name = "BreezeX-RoséPineDawn";
         };
       };
-      satellite = {};
+      satellite = {
+        gaps = {
+          outer = 20;
+          inner = 5;
+        };
+        rounding = {
+          enable = true;
+          radius = 15;
+          size = 3;
+        };
+        blur = {
+          passes = 2;
+          size = 10;
+        };
+      };
     };
     # }}}
     # {{{ Rosepine moon
@@ -66,7 +81,7 @@
       stylix = {
         image = ./wallpapers/something-beautiful-in-nature.jpg;
         base16Scheme = base16 "rose-pine-moon";
-        opacity = transparency 0.7;
+        opacity = transparency 0.5;
         polarity = "dark";
         cursor = {
           package = upkgs.rose-pine-cursor;
@@ -74,7 +89,19 @@
         };
       };
       satellite = {
-        rounding.radius = 8.0;
+        gaps = {
+          outer = 20;
+          inner = 5;
+        };
+        rounding = {
+          enable = true;
+          radius = 8;
+          size = 3;
+        };
+        blur = {
+          passes = 2;
+          size = 7;
+        };
       };
     };
     # }}}
@@ -87,7 +114,7 @@
         opacity = transparency 0.7;
         polarity = "light";
       };
-      satellite.rounding.radius = 8.0;
+      satellite.rounding.radius = 8;
 
       # For this one, I went with a big size, which means the blur just adds a slight gradient to the backgrounds.
       satellite.blur = {
@@ -104,13 +131,13 @@
         opacity = transparency 0.7;
         polarity = "dark";
       };
-      satellite.rounding.radius = 8.0;
+      satellite.rounding.radius = 8;
     };
     # }}}
   };
 
   # Select your current theme here!
-  currentTheme = themes.rosepine-moon;
+  currentTheme = themes.rosepine-dawn;
 in {
   # We apply the current theme here.
   # The rest is handled by the respective modules!

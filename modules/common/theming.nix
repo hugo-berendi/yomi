@@ -7,12 +7,27 @@
   cfg = config.satellite.theming;
 in {
   options.satellite.theming = {
+    gaps = {
+      enable = lib.mkEnableOption "gaps (padding / margin) for apps";
+      inner = lib.mkOption {
+        default = 0;
+        type = lib.types.int;
+      };
+      outer = lib.mkOption {
+        default = 0;
+        type = lib.types.int;
+      };
+    };
     rounding = {
       # Note: this is automatically set to true when the radius is strictly positive
       enable = lib.mkEnableOption "rounded corners for desktop apps";
       radius = lib.mkOption {
-        default = 0.0;
-        type = lib.types.float;
+        default = 0;
+        type = lib.types.int;
+      };
+      size = lib.mkOption {
+        default = 0;
+        type = lib.types.int;
       };
     };
 
@@ -26,16 +41,16 @@ in {
         type = lib.types.int;
       };
       brightness = lib.mkOption {
-        default = 1.0;
-        type = lib.types.float;
+        default = 1;
+        type = lib.types.int;
       };
       contrast = lib.mkOption {
-        default = 1.2;
-        type = lib.types.float;
+        default = 1;
+        type = lib.types.int;
       };
       size = lib.mkOption {
-        default = 10.0;
-        type = lib.types.float;
+        default = 10;
+        type = lib.types.int;
       };
     };
 
@@ -68,11 +83,34 @@ in {
           The transparency is taken from `options.satellite.theming.transparency`.
         '';
       };
+
+      rgba-attrs = lib.mkOption {
+        type = lib.types.functionTo lib.types.attrs;
+        description = "Returns attrset rgba values for a color.)";
+      };
+
+      colorToRgb = lib.mkOption {
+        type = lib.types.functionTo lib.types.str;
+        description = ''
+          Converts a color name (e.g., "base08") to an `rgb()` string.
+          It extracts the hex value from `config.lib.stylix.scheme.withHashtag` and converts it to an RGB string.
+        '';
+      };
+
+      hexWithoutHash = lib.mkOption {
+        type = lib.types.functionTo lib.types.str;
+        description = "remove # from a hex color";
+      };
+
+      hexToRgb = lib.mkOption {
+        type = lib.types.functionTo lib.types.str;
+        description = "Converts a hex color (e.g., '#FF5733') to an `rgb()` string (e.g., 'rgb(255, 87, 51)').";
+      };
     };
   };
 
   config.satellite.theming = {
-    rounding.enable = cfg.rounding.radius > 0.0;
+    rounding.enable = cfg.rounding.radius > 0;
     blur.enable = cfg.blur.passes > 0;
 
     get = themeMap:
@@ -95,5 +133,30 @@ in {
     };
 
     colors.rgba = color: "${cfg.colors.rgb color},${toString config.stylix.opacity.applications}";
+
+    colors.rgba-attrs = color: {
+      r = config.lib.stylix.scheme."${color}-rgb-r";
+      g = config.lib.stylix.scheme."${color}-rgb-g";
+      b = config.lib.stylix.scheme."${color}-rgb-b";
+      a = config.stylix.opacity.applications;
+    };
+
+    colors.hexWithoutHash = hex: let
+      # Remove the leading '#' if it exists
+      hexWithoutHash =
+        if builtins.substring 0 1 hex == "#"
+        then builtins.substring 1 (builtins.stringLength hex - 1) hex
+        else hex;
+    in
+      hexWithoutHash;
+
+    # Convert a hex color code to an RGB string
+    colors.hexToRgb = hex: "rgb(${cfg.colors.hexWithoutHash hex})";
+
+    # Function to convert color name to rgb()
+    colors.colorToRgb = colorName: let
+      hexColor = config.lib.stylix.scheme.withHashtag.${colorName};
+    in
+      cfg.colors.hexToRgb hexColor;
   };
 }

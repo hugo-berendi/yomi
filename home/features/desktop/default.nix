@@ -1,7 +1,9 @@
 {pkgs, ...}: {
   imports = [
-    ./kitty # terminal
-    ./dunst # notifaction handler
+    # ./kitty # terminal
+    ./foot.nix
+    # ./dunst # notifaction handler
+    ./mako.nix
   ];
 
   # Notifies on low battery percentages

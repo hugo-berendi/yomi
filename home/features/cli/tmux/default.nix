@@ -33,11 +33,10 @@ in {
     extraConfig = ''
       # Main config
       source ${./tmux.conf}
-
-      # Theme
-      source ${base16-tmux}
     '';
   };
+
+  stylix.targets.tmux.enable = true;
 
   satellite.persistence.at.state.apps.tmux.directories = [
     ".tmux"

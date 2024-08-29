@@ -7,32 +7,25 @@
 }: {
   # You can import other NixOS modules here
   imports = [
-    # If you want to use modules your own flake exports (from modules/nixos):
-    # outputs.nixosModules.example
-
-    # Or modules from other flakes (such as nixos-hardware):
-    # inputs.hardware.nixosModules.common-cpu-amd
-    # inputs.hardware.nixosModules.common-ssd
-
-    # You can also split up your configuration and import pieces of it here:
-    # ./users.nix
-    ../common/optional/quietboot.nix
-    ../common/optional/desktop/steam.nix
-    ../common/optional/flatpak.nix
-    ../common/optional/greetd.nix
-    ../common/optional/desktop
-    ../common/optional/wayland/hyprland.nix
-    # ../common/optional/services/protonvpn.nix
-
-    ./services/syncthing.nix
-
     ../common/global
-
     ../common/users/pilot.nix
-    ../common/users/guest.nix
 
-    # Import your generated (nixos-generate-config) hardware configuration
+    ../common/optional/bluetooth.nix
+    ../common/optional/greetd.nix
+    ../common/optional/oci.nix
+    ../common/optional/quietboot.nix
+
+    ../common/optional/desktop
+    ../common/optional/desktop/steam.nix
+    ../common/optional/wayland/hyprland.nix
+
+    ../common/optional/services/nginx.nix
+    ../common/optional/services/syncthing.nix
+
+    ./services/snapper.nix
+
     ./hardware
+    ./filesystems
     ./boot.nix
   ];
 
@@ -62,11 +55,6 @@
   in
     blacklist;
   # }}}
-
-  services.mysql = {
-    enable = true;
-    package = pkgs.mysql80;
-  };
 
   programs.dconf.enable = true;
   services.gnome.evolution-data-server.enable = true;

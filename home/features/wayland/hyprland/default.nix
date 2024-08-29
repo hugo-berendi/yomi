@@ -15,7 +15,7 @@ in {
     cliphist
   ];
 
-  stylix.targets.hyprland.enable = true;
+  stylix.targets.hyprland.enable = false;
   wayland.windowManager.hyprland = {
     enable = true;
     package = pkgs.hyprland;
@@ -42,21 +42,20 @@ in {
           passes = config.satellite.theming.blur.passes;
           contrast = config.satellite.theming.blur.contrast;
           brightness = config.satellite.theming.blur.brightness;
-          noise = 0.05;
+          noise = 5.0e-2;
         };
       };
 
-        general = {
-    gaps_in = 5;
-    gaps_out = 20;
-    border_size = 3;
-    col.active_border = $love;
-    col.inactive_border = $base;
-    layout = dwindle;
+      general = {
+        gaps_in = config.satellite.theming.gaps.inner;
+        gaps_out = config.satellite.theming.gaps.outer;
+        border_size = config.satellite.theming.rounding.size;
+        "col.active_border" = config.satellite.theming.colors.colorToRgb "base0D";
+        "col.inactive_border" = config.satellite.theming.colors.colorToRgb "base00";
+        layout = "dwindle";
 
-    allow_tearing = true;
-};
-
+        allow_tearing = true;
+      };
       # }}}
 
       # {{{ Monitors
@@ -73,8 +72,9 @@ in {
 
       # Map monitors to workspaces
       workspace =
-        lib.lists.concatMap
-        (m: lib.lists.optional (m.workspace != null) "${m.name},${m.workspace}")
+        lib.lists.concatMap (
+          m: lib.lists.optional (m.workspace != null) "${m.name},${m.workspace}"
+        )
         config.satellite.monitors;
       # }}}
 

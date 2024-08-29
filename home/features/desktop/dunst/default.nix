@@ -87,5 +87,5 @@
     };
   };
   stylix.targets.dunst.enable = false;
-  stylix.targets.hyprland.enable = true;
+  # stylix.targets.hyprland.enable = true;
 }

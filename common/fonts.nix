@@ -14,6 +14,7 @@
     };
 
     sizes = {
+      terminal = 13;
       desktop = 13;
       applications = 15;
     };
