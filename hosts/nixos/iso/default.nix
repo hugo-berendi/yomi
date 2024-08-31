@@ -7,24 +7,20 @@
   inputs,
   outputs,
   pkgs,
+  lib,
   ...
 }: {
   # {{{ Imports
-  imports =
-    builtins.attrValues outputs.nixosModules
-    ++ [
-      "${modulesPath}/installer/cd-dvd/installation-cd-minimal.nix"
+  imports = [
+    "${modulesPath}/installer/cd-dvd/installation-cd-minimal.nix"
 
-      inputs.sops-nix.nixosModules.sops
-
-      ../common/global/wireless
-      ../common/global/cli/fish.nix
-      # ../common/optional/services/kanata.nix
-    ];
+    ../common/global
+  ];
   # }}}
-  # {{{ Automount hermes
+  # {{{ Automount kagutsuchi
   fileSystems."/kagutsuchi" = {
     device = "/dev/disk/by-uuid/9e2345c6-7c31-4a76-97d8-73adc71c1a19";
+    fsType = "ext4";
     neededForBoot = true;
     options = [
       "nofail"
@@ -32,33 +28,24 @@
     ];
   };
   # }}}
-  # {{{ Nix config
-  nix = {
-    # Flake support and whatnot
-    package = pkgs.lix;
-
-    # Enable flakes and new 'nix' command
-    settings.experimental-features = [
-      "nix-command"
-      "flakes"
-    ];
-  };
-  # }}}
 
   # Tell sops-nix to use the hermes keys for decrypting secrets
-  sops.age.sshKeyPaths = ["/kagutsuchi/secrets/kagutsuchi/ssh_host_ed25519_key"];
+  sops.age.sshKeyPaths = lib.mkForce ["/kagutsuchi/secrets/kagutsuchi/ssh_host_ed25519_key"];
 
   environment.systemPackages = let
     cloneConfig = pkgs.writeShellScriptBin "liftoff" ''
-      git clone git@github.com:hugo-berendi/nix-config.git
+      git clone https://github.com:hugo-berendi/nix-config.git
       cd nix-config
     '';
   in
     with pkgs; [
+      git
       sops # Secret editing
       neovim # Text editor
       cloneConfig # Clones my nixos config from github
     ];
+
+  boot.initrd.systemd.enable = lib.mkForce false;
 
   # Fast but bad compression
   # isoImage.squashfsCompression = "gzip -Xcompression-level 1";

@@ -10,8 +10,8 @@
     # Declarative
     environmentFile = config.sops.secrets.wireless.path;
     networks = {
-      "Susanoo".psk = "@SUSANOO_HOTSPOT_PASS@";
-      "FRITZ!Box 6591 Cable OY".psk = "@HOME_WIFI_PASS@";
+      "Susanoo" = {};
+      "FRITZ!Box 6591 Cable OY" = {psk = "@HOME_WIFI_PASS@";};
     };
 
     # Imperative
