@@ -28,10 +28,15 @@
     unpaywall
     user-agent-string-switcher
     darkreader
-    passff
+    passff # password manager
   ];
   # }}}
   customUrl = "https://hugo-berendi.github.io/startpage/";
+
+  betterfoxUserJS = builtins.fetchurl {
+    url = "https://raw.githubusercontent.com/yokoffing/Betterfox/main/user.js";
+    sha256 = "0sjklyz6zxvcfrqmvfzyyxkrflshzsksgw845qmhw8wnkamxsfb0";
+  };
 in {
   programs.firefox = {
     enable = true;
@@ -82,7 +87,6 @@ in {
           # List of profile-specific extensions
           [
             augmented-steam # Adds more info to steam
-            proton-pass # Password manager
             blocktube # Lets you block youtube channels
             dearrow # Crowdsourced clickbait remover 💀
             leechblock-ng # website blocker
@@ -96,7 +100,6 @@ in {
             vimium-c # vim keybinds
             youtube-shorts-block
             libredirect # redirect to FOSS alternatives
-            new-tab-override # custom new tab page
           ]
         ];
       # }}}
@@ -265,6 +268,9 @@ in {
         # auto-enable all extensions
         "extensions.autoDisableScopes" = 0;
       };
+
+      extraConfig = builtins.readFile betterfoxUserJS;
+
       # }}}
     };
 

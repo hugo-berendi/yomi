@@ -2,6 +2,7 @@
   upkgs,
   inputs,
   pkgs,
+  config,
   ...
 }: let
   transparency = amount: {
@@ -44,10 +45,24 @@
       stylix = {
         image = ./wallpapers/field_diamond.jpg;
         base16Scheme = base16 "catppuccin-latte";
-        opacity = transparency 0.7;
+        opacity = transparency 0.6;
         polarity = "light";
       };
-      satellite.rounding.radius = 8;
+      satellite = {
+        gaps = {
+          outer = 20;
+          inner = 5;
+        };
+        rounding = {
+          enable = true;
+          radius = 10;
+          size = 2;
+        };
+        blur = {
+          passes = 2;
+          size = 7;
+        };
+      };
     };
     # }}}
     # {{{ Catppuccin macchiato
@@ -55,10 +70,24 @@
       stylix = {
         image = ./wallpapers/gabriel.jpg;
         base16Scheme = base16 "catppuccin-macchiato";
-        opacity = transparency 0.7;
+        opacity = transparency 0.4;
         polarity = "dark";
       };
-      satellite.rounding.radius = 8;
+      satellite = {
+        gaps = {
+          outer = 20;
+          inner = 5;
+        };
+        rounding = {
+          enable = true;
+          radius = 8;
+          size = 3;
+        };
+        blur = {
+          passes = 2;
+          size = 7;
+        };
+      };
     };
     # }}}
     # {{{ Rosepine dawn
@@ -93,7 +122,7 @@
     # {{{ Rosepine moon
     rosepine-moon = {
       stylix = {
-        image = ./wallpapers/something-beautiful-in-nature.jpg;
+        image = ./wallpapers/rosepine_creepy_moon.jpg;
         base16Scheme = base16 "rose-pine-moon";
         opacity = transparency 0.5;
         polarity = "dark";
@@ -148,9 +177,32 @@
       satellite.rounding.radius = 8;
     };
     # }}}
+    # {{{ mellow-purple
+    mellow-purple = {
+      stylix = {
+        image = ./wallpapers/synth-city.jpg;
+        base16Scheme = base16 "mellow-purple";
+        opacity = transparency 0.5;
+        polarity = "dark";
+      };
+      satellite = {
+        gaps = {
+          outer = 20;
+          inner = 5;
+        };
+        rounding = {
+          enable = true;
+          radius = 5;
+          size = 2;
+        };
+        blur = {
+          passes = 3;
+          size = 7;
+        };
+      };
+    };
   };
 
-  # Select your current theme here!
   currentTheme = themes.rosepine-moon;
 in {
   # We apply the current theme here.
@@ -163,5 +215,8 @@ in {
   ];
 
   # Requires me to manually turn targets on!
-  stylix.autoEnable = false;
+  stylix = {
+    enable = true;
+    autoEnable = false;
+  };
 }

@@ -38,6 +38,10 @@ in {
   # {{{ Imports
   imports = [
     ./settings.nix
+    ./autocmds.nix
+    ./clipboard.nix
+    ./keymaps.nix
+    ./plugins
   ];
   # }}}
   # {{{ nixvim config
@@ -45,10 +49,10 @@ in {
     enable = true;
     defaultEditor = true;
     vimdiffAlias = true;
-    package =
-      if config.satellite.toggles.neovim-nightly.enable
-      then pkgs.neovim-nightly
-      else upkgs.neovim;
+    # package =
+    #   if config.satellite.toggles.neovim-nightly.enable
+    #   then pkgs.neovim-nightly
+    #   else pkgs.neovim;
   };
   # }}}
   satellite.lua.styluaConfig = ../../../../stylua.toml;
@@ -67,42 +71,11 @@ in {
   ];
   # }}}
   # {{{ nixvim theming
-  programs.nixvim = {
-    colorschemes.base16 = {
-      colorscheme = {
-        inherit
-          (config.lib.stylix.colors.withHashtag)
-          base00
-          base01
-          base02
-          base03
-          base04
-          base05
-          base06
-          base07
-          base08
-          base09
-          base0A
-          base0B
-          base0C
-          base0D
-          base0E
-          base0F
-          ;
-      };
-
-      enable = true;
-    };
-
-    highlight = let
-      transparent = {
-        bg = "none";
-        ctermbg = "none";
-      };
-    in {
-      Normal = transparent;
-      NonText = transparent;
-      SignColumn = transparent;
+  stylix.targets.nixvim = {
+    enable = true;
+    transparentBackground = {
+      main = true;
+      signColumn = true;
     };
   };
   # }}}

@@ -1,13 +1,4 @@
-{
-  config,
-  pkgs,
-  ...
-}: let
-  themeFile = config.lib.stylix.colors {
-    template = ./template.mustache;
-    extension = ".css";
-  };
-in {
+{config, ...}: {
   programs.nixcord = {
     discord.enable = false;
     vesktop.enable = true;
@@ -45,10 +36,7 @@ in {
   };
 
   # {{{ theming
-  # stylix.targets.vesktop.enable = true;
-  home.file."${config.xdg.configHome}/vesktop/settings/quickCss.css" = {
-    source = themeFile;
-  };
+  stylix.targets.vesktop.enable = true;
   # }}}
 
   # {{{ Storage

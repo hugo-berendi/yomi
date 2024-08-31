@@ -195,7 +195,7 @@
 
         # Memory
         "memory" = {
-          "format" = "<span font_desc='Font Awesome 6 Free'> </span>{}% ";
+          "format" = " {}% ";
           "on-click" = "kitty -e htop";
         };
 
