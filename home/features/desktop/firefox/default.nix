@@ -36,7 +36,7 @@ in {
   programs.firefox = {
     enable = true;
 
-    package = pkgs.firefox.override {extraNativeMessagingHosts = [pkgs.passff-host];};
+    package = pkgs.firefox.override {nativeMessagingHosts = [pkgs.passff-host];};
 
     policies = {
       DisableAppUpdate = true;
