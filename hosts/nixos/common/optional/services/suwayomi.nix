@@ -3,7 +3,7 @@
     enable = true;
     openFirewall = true;
     user = config.satellite.pilot.name;
-    setting = {
+    settings = {
       server = {
         port = config.satellite.ports.suwayomi;
         systemTrayEnabled = true;
