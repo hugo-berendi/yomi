@@ -69,8 +69,8 @@ in {
   # {{{ nixvim theming
   stylix.targets.nixvim = {
     enable = true;
-    transparentBackground.signColumn = true;
-    transparentBackground.main = true;
+    # transparentBackground.signColumn = true;
+    # transparentBackground.main = true;
   };
   # }}}
   # {{{ Persistence
