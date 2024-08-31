@@ -7,28 +7,26 @@
 }: {
   # You can import other NixOS modules here
   imports = [
-    # ./users.nix
-    ../common/optional/quietboot.nix
-    ../common/optional/desktop/steam.nix
-    # ../common/optional/flatpak.nix
-    ../common/optional/greetd.nix
-    ../common/optional/desktop
-
-    ../common/optional/wayland/hyprland.nix
-    # ../common/optional/services/protonvpn.nix
-
-    ./services/syncthing.nix
-
-    ../common/optional/services/suwayomi.nix
-
     ../common/global
-
     ../common/users/pilot.nix
-    ../common/users/guest.nix
 
-    # Import your generated (nixos-generate-config) hardware configuration
+    ../common/optional/bluetooth.nix
+    ../common/optional/greetd.nix
+    ../common/optional/oci.nix
+    ../common/optional/quietboot.nix
+
+    ../common/optional/desktop
+    ../common/optional/desktop/steam.nix
+    ../common/optional/wayland/hyprland.nix
+
+    ../common/optional/services/nginx.nix
+    ../common/optional/services/syncthing.nix
+
+    # ./services/snapper.nix # throws wierd error
+
     ./hardware
-    ./boot.nix
+    ./filesystems
+    ../common/optional/grub.nix
   ];
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion

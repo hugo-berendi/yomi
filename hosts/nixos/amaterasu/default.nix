@@ -26,7 +26,7 @@
 
     ./hardware
     ./filesystems
-    ./boot.nix
+    ../common/optional/grub.nix
   ];
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
