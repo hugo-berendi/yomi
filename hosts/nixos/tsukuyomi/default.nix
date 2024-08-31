@@ -19,6 +19,8 @@
 
     ./services/syncthing.nix
 
+    ../common/optional/services/suwayomi.nix
+
     ../common/global
 
     ../common/users/pilot.nix
