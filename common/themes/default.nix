@@ -22,7 +22,21 @@
         opacity = transparency 0.7;
         polarity = "dark";
       };
-      satellite.rounding.radius = 8;
+      satellite = {
+        gaps = {
+          outer = 20;
+          inner = 5;
+        };
+        rounding = {
+          enable = true;
+          radius = 8;
+          size = 3;
+        };
+        blur = {
+          passes = 2;
+          size = 7;
+        };
+      };
     };
     # }}}
     # {{{ Catppuccin latte
@@ -95,7 +109,7 @@
         };
         rounding = {
           enable = true;
-          radius = 8;
+          radius = 15;
           size = 3;
         };
         blur = {
@@ -137,7 +151,7 @@
   };
 
   # Select your current theme here!
-  currentTheme = themes.rosepine-dawn;
+  currentTheme = themes.rosepine-moon;
 in {
   # We apply the current theme here.
   # The rest is handled by the respective modules!

@@ -48,7 +48,7 @@ export NIXPKGS_ALLOW_UNFREE=1
 # Rebuild, output simplified errors, log trackebacks
 # sudo nixos-rebuild switch --upgrade-all --flake ".#${HOSTNAME}" &>nixos-switch.log || (cat nixos-switch.log | grep --color error && git reset && exit 1)
 # nh os switch
-sudo nixos-rebuild switch --flake .#$(hostname) --show-trace --fast
+sudo nixos-rebuild switch --flake .#$(hostname) --show-trace --fast --upgrade-all
 
 # Rebuild home-manager, output simplified errors, log trackebacks
 # home-manager switch --impure -b backup --flake ".#hugob@amaterasu" &>home-manager-switch.log || (cat home-manager-switch.log | grep --color error && git reset && exit 1)

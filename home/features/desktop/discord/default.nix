@@ -2,16 +2,18 @@
   config,
   pkgs,
   ...
-}: {
+}: let
+  themeFile = config.lib.stylix.colors {
+    template = ./template.mustache;
+    extension = ".css";
+  };
+in {
   programs.nixcord = {
-    discord.enable = true;
+    discord.enable = false;
     vesktop.enable = true;
     enable = true; # enable Nixcord. Also installs discord package
     config = {
-      themeLinks = [
-        # or use an online theme
-        "https://raw.githubusercontent.com/rose-pine/discord/main/rose-pine-moon.theme.css"
-      ];
+      useQuickCss = true;
       frameless = true;
       autoUpdate = false;
       transparent = true;
@@ -42,6 +44,13 @@
     };
   };
 
+  # {{{ theming
+  # stylix.targets.vesktop.enable = true;
+  home.file."${config.xdg.configHome}/vesktop/settings/quickCss.css" = {
+    source = themeFile;
+  };
+  # }}}
+
   # {{{ Storage
   # Clean cache older than 10 days
   systemd.user.tmpfiles.rules = [
@@ -50,6 +59,8 @@
 
   satellite.persistence.at.state.apps.discord.directories = [
     "${config.xdg.configHome}/discord" # Why tf does discord store it's state here 💀
+    "${config.xdg.configHome}/Vencord"
+    "${config.xdg.configHome}/vesktop"
   ];
   #}}}
 }

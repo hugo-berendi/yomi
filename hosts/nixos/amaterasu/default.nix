@@ -22,7 +22,7 @@
     ../common/optional/services/nginx.nix
     ../common/optional/services/syncthing.nix
 
-    ./services/snapper.nix
+    # ./services/snapper.nix # throws wierd error
 
     ./hardware
     ./filesystems

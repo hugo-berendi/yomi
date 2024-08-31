@@ -1,4 +1,10 @@
-{...}: let
+{
+  inputs,
+  pkgs,
+  lib,
+  config,
+  ...
+}: let
   # {{{ Client wrapper
   # Wraps a neovim client, providing the dependencies
   # and setting some flags:
@@ -20,11 +26,6 @@
     };
   # }}}
   # {{{ Clients
-  neovim = wrapClient {
-    base = inputs.nixvim.packages.${system}.default;
-    name = "nvim";
-  };
-
   neovide = wrapClient {
     base = pkgs.neovide;
     name = "neovide";
@@ -33,6 +34,22 @@
   };
   # }}}
 in {
+  # {{{ Imports
+  imports = [
+    ./settings.nix
+  ];
+  # }}}
+  # {{{ nixvim config
+  programs.nixvim = {
+    enable = true;
+    defaultEditor = true;
+    vimdiffAlias = true;
+    package =
+      if config.satellite.toggles.neovim-nightly.enable
+      then pkgs.neovim-nightly
+      else upkgs.neovim;
+  };
+  # }}}
   satellite.lua.styluaConfig = ../../../../stylua.toml;
 
   # {{{ Basic config
@@ -44,10 +61,16 @@ in {
   home.sessionVariables.EDITOR = "nvim";
 
   home.packages = [
-    neovim
     neovide
     pkgs.vimclip
   ];
+  # }}}
+  # {{{ nixvim theming
+  stylix.targets.nixvim = {
+    enable = true;
+    transparentBackground.signColumn = true;
+    transparentBackground.main = true;
+  };
   # }}}
   # {{{ Persistence
   satellite.persistence.at.state.apps.neovim.directories = [

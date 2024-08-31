@@ -112,19 +112,6 @@
     "${config.xdg.configHome}/Signal" # Why tf does signal store it's state here 💀
   ];
   # }}}
-  # {{{ Steam
-  satellite.persistence.at.state.apps.steam = {
-    directories = [
-      ".factorio" # TODO: perhaps this should have it's own file?
-      "${config.xdg.dataHome}/Steam"
-      # A couple of games don't play well with bindfs
-      # {
-      #   directory = "${config.xdg.dataHome}/Steam";
-      #   method = "symlink";
-      # }
-    ];
-  };
-  # }}}
   # {{{ Lutris
   # TODO: there might be more to cache in .cache/lutris
   satellite.persistence.at.state.apps.lutris.directories = [
@@ -147,6 +134,10 @@
     "${config.xdg.configHome}/Element"
   ];
   # }}}
+  # {{{ Bitwarden
+  satellite.persistence.at.state.apps.bitwarden.directories = [
+    "${config.xdg.configHome}/Bitwarden"
+  ];
   # }}}
   # {{{ Cli
   # {{{ Sops

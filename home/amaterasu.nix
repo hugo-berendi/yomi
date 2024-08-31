@@ -12,24 +12,18 @@
     # ./features/desktop/spotify.nix
     ./features/desktop/obsidian.nix
     ./features/desktop/zathura.nix
-    # ./features/cli/productivity
-    # ./features/cli/lazygit.nix
-    # ./features/cli/catgirl.nix
-    # ./features/cli/nix-index.nix
-    # ./features/cli/pass.nix
+    ./features/desktop/gaming.nix
     ./features/wayland/hyprland
   ];
   home = {
     file = {};
     sessionVariables = {EDITOR = "nvim";};
     packages = with pkgs; [
-      biome
       localsend
 
       prismlauncher
       thunderbird
       thefuck
-      nodejs
       sxiv
       signal-desktop
       qbittorrent
@@ -40,6 +34,8 @@
       upkgs.nh
       upkgs.nix-output-monitor
       upkgs.nvd
+
+      lutris
 
       gtk3 # needed for gtk-launch
 

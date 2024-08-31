@@ -13,12 +13,12 @@
           sans-serif;
         font-size: ${toString config.stylix.fonts.sizes.desktop};
         min-height: 0;
-        border-radius: ${toString config.satellite.theming.rounding.size};
+        border-radius: ${toString config.satellite.theming.rounding.radius};
       }
 
       window#waybar {
         background: transparent;
-        color: ${config.lib.stylix.scheme.withHashtag.base05};
+        color: ${config.lib.stylix.scheme.withHashtag.base0D};
       }
 
       #workspaces {
@@ -35,24 +35,24 @@
         padding: 0px;
         margin: 0 3px;
         min-width: 30px;
-        color: ${config.lib.stylix.scheme.withHashtag.base05};
-        background: ${config.lib.stylix.scheme.withHashtag.base05};
+        color: ${config.lib.stylix.scheme.withHashtag.base0D};
+        background: ${config.lib.stylix.scheme.withHashtag.base0D};
         transition: all 0.3s ease-in-out;
         opacity: 0.4;
         font-size: 10;
       }
 
       #workspaces button.active {
-        color: ${config.lib.stylix.scheme.withHashtag.base05};
-        background: ${config.lib.stylix.scheme.withHashtag.base05};
+        color: ${config.lib.stylix.scheme.withHashtag.base0D};
+        background: ${config.lib.stylix.scheme.withHashtag.base0D};
         min-width: 50px;
         background-size: 400% 400%;
         opacity: 1;
       }
 
       #workspaces button:hover {
-        background: ${config.lib.stylix.scheme.withHashtag.base05};
-        color: ${config.lib.stylix.scheme.withHashtag.base05};
+        background: ${config.lib.stylix.scheme.withHashtag.base0D};
+        color: ${config.lib.stylix.scheme.withHashtag.base0D};
         min-width: 50px;
         background-size: 400% 400%;
       }
@@ -75,7 +75,7 @@
       #custom-dexcom {
         background:
           linear-gradient(${config.lib.stylix.scheme.withHashtag.base01}, ${config.lib.stylix.scheme.withHashtag.base01}) padding-box,
-          linear-gradient(${config.lib.stylix.scheme.withHashtag.base05}, ${config.lib.stylix.scheme.withHashtag.base05}) border-box;
+          linear-gradient(${config.lib.stylix.scheme.withHashtag.base0D}, ${config.lib.stylix.scheme.withHashtag.base0D}) border-box;
         border-width: ${toString config.satellite.theming.rounding.size};
         border-style: solid;
         border-color: transparent;
@@ -83,6 +83,11 @@
         margin-bottom: 5px;
         padding-top: 5px;
         padding-bottom: 5px;
+      }
+
+      #tray {
+        padding-left: 5px;
+        padding-right: 5px;
       }
 
       tooltip {
@@ -94,7 +99,7 @@
       #network,
       #disk {
         border-right-style: none;
-        border-radius: ${toString config.satellite.theming.rounding.size} 0 0 ${toString config.satellite.theming.rounding.size};
+        border-radius: ${toString config.satellite.theming.rounding.radius} 0 0 ${toString config.satellite.theming.rounding.radius};
         margin-left: 5px;
         padding-left: 15px;
         padding-right: 3px;
@@ -117,7 +122,7 @@
       #custom-weather,
       #memory {
         border-left-style: none;
-        border-radius: 0 ${toString config.satellite.theming.rounding.size} ${toString config.satellite.theming.rounding.size} 0;
+        border-radius: 0 ${toString config.satellite.theming.rounding.radius} ${toString config.satellite.theming.rounding.radius} 0;
         margin-right: 5px;
         padding-right: 15px;
         padding-left: 3px;
@@ -160,7 +165,7 @@
         margin-top: 5px;
         margin-bottom: 5px;
         margin-left: 5px;
-        padding-right: 16px;
+        padding-right: 10px;
         padding-left: 10px;
       }
 

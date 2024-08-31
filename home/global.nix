@@ -30,6 +30,7 @@
     ./features/cli
     ./features/persistence.nix
     ../common
+    ./features/neovim
     # }}}
   ];
 in {
@@ -50,7 +51,7 @@ in {
     config = {
       # Disable if you don't want unfree packages
       allowUnfree = true;
-      allowUnfreePredicate = ["spicetify-Comfy"];
+      allowUnfreePredicate = ["spotify-1.2.42.290.g242057a2"];
       permittedInsecurePackages = [
         "electron-25.9.0"
       ];
@@ -103,5 +104,10 @@ in {
     extraConfig.XDG_SCREENSHOTS_DIR = "${config.xdg.userDirs.pictures}/Screenshots";
     extraConfig.XDG_PROJECTS_DIR = "${config.home.homeDirectory}/Projects";
   };
+
+  systemd.user.tmpfiles.rules = [
+    # Clean screenshots older than a week
+    "d ${config.xdg.userDirs.extraConfig.XDG_SCREENSHOTS_DIR} - - - 7d"
+  ];
   # }}}
 }

@@ -6,11 +6,11 @@
   lib,
   ...
 }: let
-  spicePkgs = inputs.spicetify-nix.legacyPackages.${pkgs.system};
+  spicePkgs = inputs.spicetify-nix.packages.${pkgs.system}.default;
   themeMap = lib.fix (self: {
-    "Rose Pine" = spicePkgs.themes.comfy;
-    "Rose Pine Moon" = spicePkgs.themes.comfy;
-    "Rose Pine Dawn" = spicePkgs.themes.comfy;
+    "Rose Pine" = spicePkgs.themes.Comfy;
+    "Rose Pine Moon" = spicePkgs.themes.Comfy;
+    "Rose Pine Dawn" = spicePkgs.themes.Comfy;
 
     default.light = self."Rose Pine Dawn";
     default.dark = self."Rose Pine Moon";
@@ -34,10 +34,8 @@ in {
   programs.spicetify = {
     enable = true;
 
-    spotifyPackage = upkgs.spotify;
-
-    theme = config.satellite.theming.get themeMap;
-    colorScheme = config.satellite.theming.get colorschemeMap;
+    # theme = config.satellite.theming.get themeMap;
+    # colorScheme = config.satellite.theming.get colorschemeMap;
 
     enabledExtensions = with spicePkgs.extensions; [
       fullAppDisplayMod

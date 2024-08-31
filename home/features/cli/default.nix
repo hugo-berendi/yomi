@@ -12,7 +12,7 @@
     ./tools.nix
     ./tmux
     ./yazi
-    ./neovim
+    # ./neovim
     ./pass.nix
     ./fish
     ./zoxide.nix
@@ -27,7 +27,7 @@
     acpi # Battery stats
     nerdfetch # Display system information
     tokei # Useless but fun line of code counter (sloc alternative)
-    bottom # System monitor
+    btop # System monitor
     # }}}
     # {{{ Storage
     ncdu # TUI disk usage
@@ -61,4 +61,10 @@
 
   xdg.configFile."scripts".source = ./scripts;
   home.sessionPath = ["$HOME/.config/scripts"];
+
+  stylix.targets = {
+    btop.enable = true;
+    fzf.enable = true;
+    mangohud.enable = true;
+  };
 }
