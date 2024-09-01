@@ -36,6 +36,12 @@
   networking.hostName = "amaterasu";
   environment.etc.machine-id.text = "08357db3540c4cd2b76d4bb7f825ec88";
   # }}}
+  # {{{ virtualisation
+  virtualisation.virtualbox = {
+    host.enable = true;
+    guest.enable = true;
+  };
+  # }}}
   # {{{ A few ad-hoc programs
   programs.kdeconnect.enable = true;
   programs.firejail.enable = true;

@@ -6,7 +6,7 @@
   lib,
   ...
 }: let
-  spicePkgs = inputs.spicetify-nix.packages.${pkgs.system}.default;
+  spicePkgs = inputs.spicetify-nix.legacyPackages.${pkgs.system};
   themeMap = lib.fix (self: {
     "Rose Pine" = spicePkgs.themes.Comfy;
     "Rose Pine Moon" = spicePkgs.themes.Comfy;

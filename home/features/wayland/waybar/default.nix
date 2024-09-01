@@ -21,8 +21,7 @@
         # Modules on the left side
         modules-left = [
           "hyprland/workspaces"
-          "tray"
-          "custom/spotify"
+          "custom/music"
         ];
 
         # Modules on the right side
@@ -101,6 +100,24 @@
           "max-length" = 60;
           "exec" = "$HOME/.config/scripts/spotify.sh";
           "return-type" = "json";
+        };
+
+        "custom/music" = {
+          "format" = "{icon}{}";
+          "format-icons" = {
+            # "Playing" = " "; # Uncomment if not using caway
+            "Paused" = " ";
+            "Stopped" = " "; # This stop symbol is RTL. So &#x202d; is left-to-right override.
+          };
+          "escape" = true;
+          "tooltip" = true;
+          "exec" = "~/.config/scripts/caway";
+          "return-type" = "json";
+          "on-click" = "playerctl play-pause";
+          "on-scroll-up" = "playerctl previous";
+          "on-scroll-down" = "playerctl next";
+          "on-click-right" = "g4music";
+          "max-length" = 35;
         };
 
         "clock" = {

@@ -9,7 +9,7 @@
     ./features/desktop/firefox
     ./features/desktop/discord
     ./features/desktop/wakatime
-    # ./features/desktop/spotify.nix
+    ./features/desktop/spotify.nix
     ./features/desktop/obsidian.nix
     ./features/desktop/zathura.nix
     ./features/desktop/gaming.nix

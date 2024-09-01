@@ -72,7 +72,8 @@
       #bluetooth,
       #custom-weather,
       tooltip,
-      #custom-dexcom {
+      #custom-dexcom,
+      #custom-music {
         background:
           linear-gradient(${config.lib.stylix.scheme.withHashtag.base01}, ${config.lib.stylix.scheme.withHashtag.base01}) padding-box,
           linear-gradient(${config.lib.stylix.scheme.withHashtag.base0D}, ${config.lib.stylix.scheme.withHashtag.base0D}) border-box;
@@ -153,7 +154,7 @@
         margin-bottom: 5px;
       }
 
-      #custom-spotify {
+      #custom-spotify, #custom-music {
         margin-top: 5px;
         margin-bottom: 5px;
         margin-left: 5px;

@@ -16,6 +16,8 @@
     # Configure users through nix only
     mutableUsers = false;
 
+    extraGroups.vboxusers.members = [config.satellite.pilot.name];
+
     users.pilot = {
       inherit (config.satellite.pilot) name;
 
@@ -34,8 +36,8 @@
         "audio" # Audio devices
         "video" # Webcam and the like
         "network" # wpa_supplicant
-        "networkmanager"
         "syncthing" # syncthing!
+        "vboxusers"
       ];
 
       hashedPasswordFile = config.sops.secrets.pilot_password.path;

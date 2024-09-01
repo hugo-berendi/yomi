@@ -18,6 +18,8 @@
     ./zoxide.nix
     ./nix-index.nix
     ./lazygit.nix
+    ./cava.nix
+    ./hyfetch.nix
   ];
 
   programs.bash.enable = true;

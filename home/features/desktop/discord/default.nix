@@ -4,6 +4,7 @@
     vesktop.enable = true;
     enable = true; # enable Nixcord. Also installs discord package
     config = {
+      enabledThemes = ["Stylix"];
       useQuickCss = true;
       frameless = true;
       autoUpdate = false;

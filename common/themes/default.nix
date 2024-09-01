@@ -128,7 +128,7 @@
         polarity = "dark";
         cursor = {
           package = upkgs.rose-pine-cursor;
-          name = "BreezeX-RoséPine";
+          # name = "BreezeX-RoséPine";
         };
       };
       satellite = {
