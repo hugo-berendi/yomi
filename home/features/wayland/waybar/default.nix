@@ -111,7 +111,7 @@
           };
           "escape" = true;
           "tooltip" = true;
-          "exec" = "~/.config/scripts/caway";
+          "exec" = "~/.config/scripts/caway -b 15 -f 60";
           "return-type" = "json";
           "on-click" = "playerctl play-pause";
           "on-scroll-up" = "playerctl previous";
