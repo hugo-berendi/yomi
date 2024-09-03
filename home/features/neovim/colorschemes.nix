@@ -25,15 +25,23 @@
   };
 
   # Function to check if any variant of a theme is enabled
-  isThemeEnabled = theme: builtins.elem config.stylix.base16Scheme builtins.attrValues theme.variants;
+  isThemeEnabled = theme: builtins.elem config.stylix.base16Scheme (builtins.attrValues theme.variants);
 
   # Function to get the selected variant for a theme or fallback to the default
   selectedVariant = theme: let
-    variants = builtins.attrValues theme.variants;
-    selected = builtins.getAttr config.stylix.base16Scheme theme.variants;
+    variantKeys = builtins.attrNames theme.variants; # Get the attribute keys (e.g., "moon", "dawn")
+    matchKey =
+      builtins.foldl' (
+        acc: key:
+          if acc != null || config.stylix.base16Scheme == theme.variants.${key}
+          then key
+          else acc
+      )
+      null
+      variantKeys;
   in
-    if builtins.elem selected variants
-    then selected
+    if matchKey != null
+    then matchKey
     else theme.defaultVariant;
 
   # Determine if none of the themes are enabled

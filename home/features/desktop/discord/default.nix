@@ -4,7 +4,7 @@
     vesktop.enable = true;
     enable = true; # enable Nixcord. Also installs discord package
     config = {
-      enabledThemes = ["Stylix"];
+      enabledThemes = ["stylix.theme.css"];
       useQuickCss = true;
       frameless = true;
       autoUpdate = false;
@@ -44,6 +44,8 @@
   # Clean cache older than 10 days
   systemd.user.tmpfiles.rules = [
     "d ${config.xdg.configHome}/discord/Cache/Cache_Data - - - 10d"
+    "d ${config.xdg.configHome}/Vencord/Cache/Cache_Data - - - 10d"
+    "d ${config.xdg.configHome}/vesktop/Cache/Cache_Data - - - 10d"
   ];
 
   satellite.persistence.at.state.apps.discord.directories = [

@@ -77,7 +77,7 @@
             key = "q";
           }
         ];
-        footer = "made with nix :3";
+        footer = ["made with nix :3"];
       };
     };
   };
