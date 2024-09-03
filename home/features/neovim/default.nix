@@ -41,6 +41,7 @@ in {
     ./autocmds.nix
     ./clipboard.nix
     ./keymaps.nix
+    ./colorschemes.nix
     ./plugins
   ];
   # }}}
@@ -69,15 +70,6 @@ in {
     neovide
     pkgs.vimclip
   ];
-  # }}}
-  # {{{ nixvim theming
-  stylix.targets.nixvim = {
-    enable = true;
-    transparentBackground = {
-      main = true;
-      signColumn = true;
-    };
-  };
   # }}}
   # {{{ Persistence
   satellite.persistence.at.state.apps.neovim.directories = [

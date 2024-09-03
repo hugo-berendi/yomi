@@ -13,7 +13,7 @@
 set -e
 
 # cd to your config dir
-pushd ~/Projects/nix-config/
+pushd ~/projects/nix-config/
 
 # Edit your config
 # nvim .

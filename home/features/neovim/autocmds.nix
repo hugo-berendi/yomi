@@ -27,7 +27,7 @@
         callback = {
           __raw = ''
             function()
-              vim.cmd('Startup')
+              vim.cmd('Dashboard')
             end
           '';
         };

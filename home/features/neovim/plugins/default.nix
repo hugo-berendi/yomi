@@ -18,7 +18,7 @@
     # }}}
     # {{{ ui
     ./ui/dressing.nix
-    ./ui/startup.nix
+    ./ui/dashboard.nix
     ./ui/lualine.nix
     # }}}
     # {{{ utils

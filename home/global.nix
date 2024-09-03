@@ -90,19 +90,19 @@ in {
 
   xdg.userDirs = {
     enable = lib.mkDefault true;
-    createDirectories = lib.mkDefault false;
+    createDirectories = lib.mkDefault true;
 
-    desktop = "${config.home.homeDirectory}/Desktop";
+    desktop = null;
     templates = null;
-    download = "${config.home.homeDirectory}/Downloads";
-    publicShare = "${config.home.homeDirectory}/Public";
-    music = "${config.home.homeDirectory}/Music";
-    pictures = "${config.home.homeDirectory}/Pictures";
-    videos = "${config.home.homeDirectory}/Videos";
-    documents = "${config.home.homeDirectory}/Documents";
+    download = "${config.home.homeDirectory}/downloads";
+    publicShare = "${config.home.homeDirectory}/public";
+    music = "${config.home.homeDirectory}/media/music";
+    pictures = "${config.home.homeDirectory}/media/pictures";
+    videos = "${config.home.homeDirectory}/media/videos";
+    documents = "${config.home.homeDirectory}/media/documents";
 
-    extraConfig.XDG_SCREENSHOTS_DIR = "${config.xdg.userDirs.pictures}/Screenshots";
-    extraConfig.XDG_PROJECTS_DIR = "${config.home.homeDirectory}/Projects";
+    extraConfig.XDG_SCREENSHOTS_DIR = "${config.xdg.userDirs.pictures}/screenshots";
+    extraConfig.XDG_PROJECTS_DIR = "${config.home.homeDirectory}/projects";
   };
 
   systemd.user.tmpfiles.rules = [
