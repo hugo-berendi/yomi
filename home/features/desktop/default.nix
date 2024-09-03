@@ -4,6 +4,7 @@
     ./foot.nix
     # ./dunst # notifaction handler
     ./mako.nix
+    ./gaming.nix # for gaming
   ];
 
   # Notifies on low battery percentages

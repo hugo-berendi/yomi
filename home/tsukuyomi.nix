@@ -9,7 +9,7 @@
     ./features/desktop/firefox
     ./features/desktop/discord
     ./features/desktop/wakatime
-    ./features/desktop/spotify.nix
+    # ./features/desktop/spotify.nix
     ./features/desktop/obsidian.nix
     ./features/desktop/zathura.nix
     # ./features/cli/productivity
@@ -63,14 +63,14 @@
     dev.enable = true;
 
     monitors = [
-      # {
-      #   name = "DP-1";
-      #   width = 2260;
-      #   height = 1440;
-      #   refreshRate = 165;
-      #   x = 0;
-      #   y = 0;
-      # }
+      {
+        name = "DP-1";
+        width = 2560;
+        height = 1440;
+        refreshRate = 165;
+        x = 0;
+        y = 0;
+      }
     ];
   };
 }

@@ -15,6 +15,7 @@
     fzf
     fishPlugins.grc
     grc
+    thefuck
   ];
 
   # TODO: find out why neovim needs this

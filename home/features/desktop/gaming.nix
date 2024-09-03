@@ -6,6 +6,8 @@
   home.packages = with pkgs; [
     legendary-gl
     rare
+    mangohud
+    gamemode
     lutris
   ];
   # {{{ Persistence
