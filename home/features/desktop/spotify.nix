@@ -1,29 +1,10 @@
 {
   inputs,
-  upkgs,
   pkgs,
   config,
-  lib,
   ...
 }: let
   spicePkgs = inputs.spicetify-nix.legacyPackages.${pkgs.system};
-  themeMap = lib.fix (self: {
-    "Rose Pine" = spicePkgs.themes.Comfy;
-    "Rose Pine Moon" = spicePkgs.themes.Comfy;
-    "Rose Pine Dawn" = spicePkgs.themes.Comfy;
-
-    default.light = self."Rose Pine Dawn";
-    default.dark = self."Rose Pine Moon";
-  });
-
-  colorschemeMap = lib.fix (self: {
-    "Rose Pine" = "rose-pine";
-    "Rose Pine Moon" = "rose-pine-moon";
-    "Rose Pine Dawn" = "rose-pine-dawn";
-
-    default.light = self."Rose Pine Dawn";
-    default.dark = self."Rose Pine Moon";
-  });
 in {
   imports = [./audio.nix];
   home.packages = [

@@ -1,8 +1,4 @@
-{
-  config,
-  lib,
-  ...
-}: {
+{config, ...}: {
   services.mako = {
     enable = true;
     ignoreTimeout = true;

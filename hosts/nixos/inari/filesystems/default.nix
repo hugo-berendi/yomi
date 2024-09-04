@@ -9,5 +9,5 @@
   fileSystems =
     lib.attrsets.genAttrs
     ["/" "/nix" "/persist/data" "/persist/state" "/persist/local/cache" "/boot"]
-    (p: {neededForBoot = true;});
+    (_p: {neededForBoot = true;});
 }

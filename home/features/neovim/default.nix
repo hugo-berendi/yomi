@@ -1,8 +1,5 @@
 {
-  inputs,
   pkgs,
-  upkgs,
-  lib,
   config,
   ...
 }: let
@@ -14,7 +11,6 @@
     name,
     binName ? name,
     extraArgs ? "",
-    wrapFlags ? lib.id,
   }:
     pkgs.symlinkJoin {
       inherit (base) name meta;
@@ -31,7 +27,7 @@
     base = pkgs.neovide;
     name = "neovide";
     extraArgs = "--set NEOVIDE_MULTIGRID true";
-    wrapFlags = flags: "-- ${flags}";
+    # wrapFlags = flags: "-- ${flags}";
   };
   # }}}
 in {

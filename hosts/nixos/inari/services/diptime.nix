@@ -1,9 +1,5 @@
 # I couldn't find a hosted version of this
-{
-  pkgs,
-  config,
-  ...
-}: {
+{pkgs, ...}: {
   satellite.nginx.at.diptime.files = pkgs.fetchFromGitHub {
     owner = "bhickey";
     repo = "diplomatic-timekeeper";

@@ -15,7 +15,7 @@
       "/persist/local/cache"
       "/boot"
     ]
-    (p: {
+    (_p: {
       neededForBoot = true;
     });
   # }}}

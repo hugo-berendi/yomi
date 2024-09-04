@@ -1,8 +1,4 @@
-{
-  config,
-  pkgs,
-  ...
-}: {
+{config, ...}: {
   # {{{ Main config
   services.prometheus = {
     enable = true;

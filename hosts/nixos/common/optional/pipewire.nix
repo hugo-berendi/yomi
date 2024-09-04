@@ -1,5 +1,5 @@
 # This handles audio stuff
-{pkgs, ...}: {
+{...}: {
   sound.enable = true;
 
   security.rtkit.enable = true;

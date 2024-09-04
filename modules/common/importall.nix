@@ -1,5 +1,5 @@
 {lib, ...}: let
-  importall = inputs @ {
+  importall = {
     path ? null,
     paths ? [],
     include ? [],

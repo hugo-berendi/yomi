@@ -4,8 +4,6 @@
 # nix build .#nixosConfigurations.iso.config.system.build.isoImage
 {
   modulesPath,
-  inputs,
-  outputs,
   pkgs,
   lib,
   ...

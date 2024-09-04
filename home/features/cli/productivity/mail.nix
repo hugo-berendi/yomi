@@ -1,5 +1,6 @@
 {config, ...}: {
   sops.secrets.outlook_mail_pass.sopsFile = ./secrets.yaml;
+  sops.secrets.hugob_mail_pass.sopsFile = ./secrets.yaml;
 
   programs.msmtp.enable = true;
   programs.mbsync.enable = true;
@@ -12,13 +13,13 @@
   };
 
   accounts.email.accounts = {
-    # {{{ Outlook
-    outlook = rec {
+    # {{{ hugob
+    hugob = rec {
       # {{{ Primary config
-      address = "hugo.berendi@outlook.de";
+      address = "hugob@hugo-berendi.de";
       realName = "Hugo Berendi";
       userName = address;
-      # aliases = [];
+      aliases = ["git@hugo-berendi.de" "addy@hugo-berendi.de"];
 
       folders = {
         inbox = "Inbox";
@@ -27,18 +28,23 @@
         trash = "Trash";
       };
 
-      passwordCommand = "cat ${config.sops.secrets.outlook_mail_pass.path}";
+      gpg = {
+        key = "0x702AA7FD444CDC73";
+        signByDefault = true;
+      };
+
+      passwordCommand = "cat ${config.sops.secrets.hugob_mail_pass.path}";
       primary = true;
       # }}}
       # {{{ Imap / smtp configuration
       imap = {
-        host = "outlook.office365.com";
+        host = "imap.migadu.com";
         port = 993;
       };
 
       smtp = {
-        host = "smtp-mail.outlook.com";
-        port = 587;
+        host = "smtp.migadu.com";
+        port = 465;
       };
       # }}}
       # {{{ Auxilliary services

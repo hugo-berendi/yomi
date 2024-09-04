@@ -135,7 +135,6 @@
     self,
     nixpkgs,
     home-manager,
-    nixos-generators,
     ...
   } @ inputs: let
     # {{{ Common helpers
@@ -166,7 +165,7 @@
         in
           myPkgs
           // {
-            octodns = upkgs.octodns.withProviders (ps: [myPkgs.octodns-cloudflare]);
+            octodns = upkgs.octodns.withProviders (_ps: [myPkgs.octodns-cloudflare]);
           }
           // (import ./dns/pkgs.nix) {inherit pkgs self system;}
       );

@@ -92,8 +92,6 @@
 
     mkAttrName = s: let
       # A "good enough" approach to figuring out the correct encoding for attribute names
-      allowedStartingChars = lib.stringToCharacters "abcdefghijklmnopqrstuvwxyz_";
-      allowedChars = allowedStartingChars ++ lib.stringToCharacters "0123456789";
       keywords = ["if" "then" "else" "do" "for" "local" ""];
     in
       if builtins.match "([a-zA-Z_][a-zA-Z_0-9]*)" s != [s] || lib.elem s keywords

@@ -1,8 +1,4 @@
-{
-  inputs,
-  pkgs,
-  ...
-}: {
+{...}: {
   # Bootloader.
   boot.loader = {
     efi = {

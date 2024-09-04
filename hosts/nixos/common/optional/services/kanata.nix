@@ -1,5 +1,4 @@
 {...}: let
-  stickTap = action: "tap-hold-press 0 200 (one-shot-press-pcancel 1000 (${action})) (${action})";
   mkConfig = {
     blueTrigger,
     redTrigger,

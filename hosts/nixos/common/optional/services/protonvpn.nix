@@ -1,11 +1,5 @@
 # Configuration pieces included on all (nixos) hosts
-{
-  inputs,
-  lib,
-  config,
-  outputs,
-  ...
-}: {
+{...}: {
   services.protonvpn = {
     enable = true;
     autostart = true;

@@ -2,9 +2,7 @@
   config,
   pkgs,
   ...
-}: let
-  secretMountpoint = "/hermes";
-in {
+}: {
   # Configure ZFS
   boot.supportedFilesystems = ["zfs"];
   boot.zfs.extraPools = ["zroot"];

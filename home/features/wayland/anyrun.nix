@@ -2,7 +2,6 @@
   inputs,
   pkgs,
   config,
-  osConfig,
   ...
 }: let
   normal-plugins = with inputs.anyrun.packages.${pkgs.system}; [

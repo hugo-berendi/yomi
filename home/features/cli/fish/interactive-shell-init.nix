@@ -1,4 +1,4 @@
-{pkgs, ...}: {
+{...}: {
   programs.fish.interactiveShellInit =
     /*
     fish

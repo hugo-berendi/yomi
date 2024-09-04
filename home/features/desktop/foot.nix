@@ -1,8 +1,4 @@
-{
-  lib,
-  config,
-  ...
-}: let
+{config, ...}: let
   padding = toString config.satellite.theming.gaps.inner;
 in {
   programs.foot = {

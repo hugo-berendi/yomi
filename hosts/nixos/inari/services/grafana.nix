@@ -1,8 +1,4 @@
-{
-  config,
-  pkgs,
-  ...
-}: let
+{config, ...}: let
   port = config.satellite.ports.grafana;
   secret = name: "$__file{${config.sops.secrets.${name}.path}}";
   sopsSettings = {

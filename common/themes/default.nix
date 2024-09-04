@@ -1,10 +1,4 @@
-{
-  upkgs,
-  inputs,
-  pkgs,
-  config,
-  ...
-}: let
+{upkgs, ...}: let
   transparency = amount: {
     desktop = amount;
     applications = amount;

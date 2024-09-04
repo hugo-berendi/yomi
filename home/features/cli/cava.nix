@@ -1,5 +1,4 @@
-{config, ...}: let
-in {
+{config, ...}: {
   programs.cava = {
     enable = true;
     settings = {

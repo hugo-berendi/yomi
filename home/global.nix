@@ -77,10 +77,10 @@ in {
   systemd.user.startServices = lib.mkForce "sd-switch";
 
   # Tell sops-nix to use ssh keys for decrypting secrets
-  sops.age.sshKeyPaths = ["${config.home.homeDirectory}/.ssh/id_ed25519"];
+  sops.age.sshKeyPaths = ["/persist/state/etc/ssh/ssh_host_ed25519_key"];
 
   # By default the paths given by sops contain annoying %r sections
-  # sops.defaultSymlinkPath = "${config.home.homeDirectory}/.nix-sops";
+  sops.defaultSymlinkPath = "${config.home.homeDirectory}/.nix-sops";
 
   # {{{ Ad-hoc stylix targets
   stylix.targets.xresources.enable = true;

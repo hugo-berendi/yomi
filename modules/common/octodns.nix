@@ -21,7 +21,7 @@ in {
           grouped = builtins.groupBy (entry: entry.at) group;
           contents =
             lib.mapAttrs
-            (at: entries:
+            (_at: entries:
               lib.lists.forEach entries
               (
                 entry: let
