@@ -8,7 +8,7 @@
     nixpkgs-old.url = "github:nixos/nixpkgs/nixos-23.11";
     # You can access packages and modules from different nixpkgs revs
     # at the same time. Here's an working example:
-    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     # Also see the 'unstable-packages' overlay at 'overlays/default.nix'.
 
     nixos-generators = {
@@ -128,6 +128,7 @@
 
     nixcord.url = "github:kaylorben/nixcord";
     # }}}
+    pre-commit-hooks.url = "github:cachix/git-hooks.nix";
   };
 
   outputs = {
@@ -169,6 +170,19 @@
           }
           // (import ./dns/pkgs.nix) {inherit pkgs self system;}
       );
+      # }}}
+      # {{{ Pre Commit Hooks
+      checks = forAllSystems (system: {
+        pre-commit-check = inputs.pre-commit-hooks.lib.${system}.run {
+          src = ./.;
+          hooks = {
+            alejandra.enable = true;
+            deadnix.enable = true;
+            flake-checker.enable = true;
+          };
+        };
+      });
+
       # }}}
       # {{{ Bootstrapping and other pinned devshells
       # Accessible through 'nix develop'

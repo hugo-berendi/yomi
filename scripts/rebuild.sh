@@ -41,20 +41,16 @@ sudo git diff -U0
 echo "NixOS Rebuilding..."
 notify-send -e "NixOS Rebuilding..." --icon=software-update-available
 
-# Enable insecure packages
-export NIXPKGS_ALLOW_INSECURE=1
-export NIXPKGS_ALLOW_UNFREE=1
-
 # Rebuild, output simplified errors, log trackebacks
 # sudo nixos-rebuild switch --upgrade-all --flake ".#${HOSTNAME}" &>nixos-switch.log || (cat nixos-switch.log | grep --color error && git reset && exit 1)
-nh os switch
+nh os switch --update -- --accept-flake-config
 # sudo nixos-rebuild switch --flake .#$(hostname) --show-trace --fast --upgrade-all
 
 # Rebuild home-manager, output simplified errors, log trackebacks
 # home-manager switch --impure -b backup --flake ".#hugob@amaterasu" &>home-manager-switch.log || (cat home-manager-switch.log | grep --color error && git reset && exit 1)
 
 # Init ags types
-# ags --init -c /home/hugob/Projects/nix-config/home/features/wayland/ags/config &>/dev/null
+# ags --init -c /home/hugob/projects/nix-config/home/features/wayland/ags/config &>/dev/null
 
 # Get current generation metadata
 current=$(nixos-rebuild list-generations | grep current)

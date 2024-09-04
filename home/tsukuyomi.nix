@@ -1,6 +1,7 @@
 {
   pkgs,
   upkgs,
+  lib,
   ...
 }: {
   imports = [
@@ -9,10 +10,11 @@
     ./features/desktop/firefox
     ./features/desktop/discord
     ./features/desktop/wakatime
-    # ./features/desktop/spotify.nix
+    ./features/desktop/spotify.nix
     ./features/desktop/obsidian.nix
     ./features/desktop/zathura.nix
-    # ./features/cli/productivity
+    ./features/desktop/gaming.nix
+    ./features/cli/productivity
     # ./features/cli/lazygit.nix
     # ./features/cli/catgirl.nix
     # ./features/cli/nix-index.nix

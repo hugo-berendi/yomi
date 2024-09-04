@@ -54,6 +54,7 @@ in {
       allowUnfreePredicate = ["spotify-1.2.42.290.g242057a2"];
       permittedInsecurePackages = [
         "electron-25.9.0"
+        "electron-27.3.11"
       ];
     };
   };

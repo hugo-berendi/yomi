@@ -25,7 +25,7 @@
 
     yolo = "fd --type f --hidden --exclude .git | fzf-tmux -p --reverse | xargs nvim";
 
-    upd = "~/Projects/nix-config/scripts/rebuild.sh";
+    upd = "~/projects/nix-config/scripts/rebuild.sh";
 
     # cd = "zoxide";
   };

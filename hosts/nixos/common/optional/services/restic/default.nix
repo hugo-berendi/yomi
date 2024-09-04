@@ -46,7 +46,7 @@ in {
 
       paths = ["/persist/data"];
       exclude = [
-        # Projects are available on github and in my own forge already
+        # projects are available on github and in my own forge already
         "/persist/data${config.users.users.pilot.home}/projects"
       ];
     };

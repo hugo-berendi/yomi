@@ -82,7 +82,7 @@
             # ]
             [
               "󰧑 Stellar Sanctum"
-              "edit ~/Projects/stellar-sanctum"
+              "edit ~/projects/stellar-sanctum"
               "sb"
             ]
           ];
