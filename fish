@@ -1,1 +1,0 @@
-/etc/profiles/per-user/hugob/bin/fish

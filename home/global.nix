@@ -80,7 +80,7 @@ in {
   sops.age.sshKeyPaths = ["${config.home.homeDirectory}/.ssh/id_ed25519"];
 
   # By default the paths given by sops contain annoying %r sections
-  sops.defaultSymlinkPath = "${config.home.homeDirectory}/.nix-sops";
+  # sops.defaultSymlinkPath = "${config.home.homeDirectory}/.nix-sops";
 
   # {{{ Ad-hoc stylix targets
   stylix.targets.xresources.enable = true;
