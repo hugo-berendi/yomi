@@ -5,14 +5,14 @@
   ...
 }: let
   format = pkgs.formats.yaml {};
-  cfg = config.satellite.dns;
+  cfg = config.yomi.dns;
 in {
-  options.satellite.dns.octodns = lib.mkOption {
+  options.yomi.dns.octodns = lib.mkOption {
     description = "Derivation building a directory containing all the zone files";
     type = lib.types.path;
   };
 
-  config.satellite.dns.octodns = let
+  config.yomi.dns.octodns = let
     grouped = builtins.groupBy (entry: entry.zone) cfg.records;
     cpLines =
       lib.mapAttrsToList

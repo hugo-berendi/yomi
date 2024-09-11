@@ -4,11 +4,11 @@
   config,
   ...
 }: let
-  cfg = config.satellite.persistence;
+  cfg = config.yomi.persistence;
 in {
   # {{{ Option definition
-  options.satellite.persistence = {
-    enable = lib.mkEnableOption "satellite persistence";
+  options.yomi.persistence = {
+    enable = lib.mkEnableOption "yomi persistence";
 
     at = lib.mkOption {
       default = {};

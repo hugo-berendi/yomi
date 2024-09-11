@@ -26,13 +26,13 @@ in {
   # Configure pounce
   services.pounce = {
     enable = true;
-    externalHost = "irc.${config.satellite.dns.domain}";
-    bindHost = "irc.${config.satellite.dns.domain}";
+    externalHost = "irc.${config.yomi.dns.domain}";
+    bindHost = "irc.${config.yomi.dns.domain}";
     certDir = "/var/lib/acme/wildcard-irc.moonythm.dev";
     networks.tilde.config = config.sops.templates."pounce-tilde.cfg".path;
   };
 
-  satellite.dns.records = [
+  yomi.dns.records = [
     {
       type = "CNAME";
       at = "*.irc";

@@ -1,6 +1,6 @@
 # I couldn't find a hosted version of this
 {pkgs, ...}: {
-  satellite.nginx.at.diptime.files = pkgs.fetchFromGitHub {
+  yomi.nginx.at.diptime.files = pkgs.fetchFromGitHub {
     owner = "bhickey";
     repo = "diplomatic-timekeeper";
     rev = "d6ea7b9d9e94ee6d2db8e4e7cff5f8f1c3f04464";

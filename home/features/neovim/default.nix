@@ -47,21 +47,21 @@ in {
     defaultEditor = true;
     vimdiffAlias = true;
     # package =
-    #   if config.satellite.toggles.neovim-nightly.enable
+    #   if config.yomi.toggles.neovim-nightly.enable
     #   then pkgs.neovim-nightly
     #   else pkgs.neovim;
     viAlias = true;
     vimAlias = true;
   };
   # }}}
-  satellite.lua.styluaConfig = ../../../../stylua.toml;
+  yomi.lua.styluaConfig = ../../../../stylua.toml;
 
   # {{{ Basic config
   # We want other modules to know that we are using neovim!
-  satellite.toggles.neovim.enable = true;
+  yomi.toggles.neovim.enable = true;
 
   # Link files in the appropriate places
-  # xdg.configFile.nvim.source = config.satellite.dev.path "home/features/cli/neovim/config";
+  # xdg.configFile.nvim.source = config.yomi.dev.path "home/features/cli/neovim/config";
   home.sessionVariables.EDITOR = "nvim";
 
   home.packages = [
@@ -70,12 +70,12 @@ in {
   ];
   # }}}
   # {{{ Persistence
-  satellite.persistence.at.state.apps.neovim.directories = [
+  yomi.persistence.at.state.apps.neovim.directories = [
     ".local/state/nvim"
     "${config.xdg.dataHome}/nvim"
   ];
 
-  satellite.persistence.at.cache.apps.neovim.directories = [
+  yomi.persistence.at.cache.apps.neovim.directories = [
     "${config.xdg.cacheHome}/nvim"
     # mirosSnippetCache
   ];

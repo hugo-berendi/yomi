@@ -21,7 +21,7 @@
         opacity = transparency 0.7;
         polarity = "dark";
       };
-      satellite = {
+      yomi = {
         gaps = {
           outer = 20;
           inner = 5;
@@ -46,7 +46,7 @@
         opacity = transparency 0.6;
         polarity = "light";
       };
-      satellite = {
+      yomi = {
         gaps = {
           outer = 20;
           inner = 5;
@@ -71,7 +71,7 @@
         opacity = transparency 0.4;
         polarity = "dark";
       };
-      satellite = {
+      yomi = {
         gaps = {
           outer = 20;
           inner = 5;
@@ -100,7 +100,7 @@
           name = "BreezeX-RoséPineDawn";
         };
       };
-      satellite = {
+      yomi = {
         gaps = {
           outer = 20;
           inner = 5;
@@ -129,7 +129,7 @@
           # name = "BreezeX-RoséPine";
         };
       };
-      satellite = {
+      yomi = {
         gaps = {
           outer = 20;
           inner = 5;
@@ -158,7 +158,7 @@
           name = "Graphite dark nord Cursors";
         };
       };
-      satellite = {
+      yomi = {
         gaps = {
           outer = 20;
           inner = 5;
@@ -183,10 +183,10 @@
         opacity = transparency 0.7;
         polarity = "light";
       };
-      satellite.rounding.radius = 8;
+      yomi.rounding.radius = 8;
 
       # For this one, I went with a big size, which means the blur just adds a slight gradient to the backgrounds.
-      satellite.blur = {
+      yomi.blur = {
         brightness = 1.05;
         size = 25.0;
       };
@@ -200,7 +200,7 @@
         opacity = transparency 0.7;
         polarity = "dark";
       };
-      satellite.rounding.radius = 8;
+      yomi.rounding.radius = 8;
     };
     # }}}
     # {{{ mellow-purple
@@ -211,7 +211,7 @@
         opacity = transparency 0.5;
         polarity = "dark";
       };
-      satellite = {
+      yomi = {
         gaps = {
           outer = 20;
           inner = 5;
@@ -236,7 +236,7 @@ in {
   imports = [
     {
       stylix = currentTheme.stylix;
-      satellite.theming = currentTheme.satellite;
+      yomi.theming = currentTheme.yomi;
     }
   ];
 

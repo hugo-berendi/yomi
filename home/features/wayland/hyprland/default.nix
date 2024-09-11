@@ -31,28 +31,28 @@ in {
     settings = {
       # {{{ Decoration
       decoration = {
-        rounding = config.satellite.theming.rounding.radius;
+        rounding = config.yomi.theming.rounding.radius;
         active_opacity = 1;
         inactive_opacity = 1;
 
         blur = {
-          enabled = config.satellite.theming.blur.enable;
+          enabled = config.yomi.theming.blur.enable;
           ignore_opacity = true;
           xray = true;
-          size = config.satellite.theming.blur.size;
-          passes = config.satellite.theming.blur.passes;
-          contrast = config.satellite.theming.blur.contrast;
-          brightness = config.satellite.theming.blur.brightness;
+          size = config.yomi.theming.blur.size;
+          passes = config.yomi.theming.blur.passes;
+          contrast = config.yomi.theming.blur.contrast;
+          brightness = config.yomi.theming.blur.brightness;
           noise = 5.0e-2;
         };
       };
 
       general = {
-        gaps_in = config.satellite.theming.gaps.inner;
-        gaps_out = config.satellite.theming.gaps.outer;
-        border_size = config.satellite.theming.rounding.size;
-        "col.active_border" = config.satellite.theming.colors.colorToRgb "base0D";
-        "col.inactive_border" = config.satellite.theming.colors.colorToRgb "base00";
+        gaps_in = config.yomi.theming.gaps.inner;
+        gaps_out = config.yomi.theming.gaps.outer;
+        border_size = config.yomi.theming.rounding.size;
+        "col.active_border" = config.yomi.theming.colors.colorToRgb "base0D";
+        "col.inactive_border" = config.yomi.theming.colors.colorToRgb "base00";
         layout = "dwindle";
 
         allow_tearing = true;
@@ -60,7 +60,7 @@ in {
       # }}}
       # {{{ Monitors
       # Configure monitor properties
-      monitor = lib.forEach config.satellite.monitors (
+      monitor = lib.forEach config.yomi.monitors (
         m:
           lib.concatStringsSep "," [
             m.name
@@ -75,7 +75,7 @@ in {
         lib.lists.concatMap (
           m: lib.lists.optional (m.workspace != null) "${m.name},${m.workspace}"
         )
-        config.satellite.monitors;
+        config.yomi.monitors;
       # }}}
       # {{{ autostart
       # Without this, xdg-open doesn't work

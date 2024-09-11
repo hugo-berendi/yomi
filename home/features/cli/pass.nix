@@ -34,7 +34,7 @@ in {
     tessen
   ];
 
-  satellite.persistence.at.data.apps.pass.directories = [storePath];
+  yomi.persistence.at.data.apps.pass.directories = [storePath];
 
   # Activation script to clone the repo automatically using SSH
   home.activation.clone-password-store = lib.hm.dag.entryAfter ["writeBoundary"] ''

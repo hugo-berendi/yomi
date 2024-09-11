@@ -2,10 +2,10 @@
   services.suwayomi-server = {
     enable = true;
     openFirewall = true;
-    user = config.satellite.pilot.name;
+    user = config.yomi.pilot.name;
     settings = {
       server = {
-        port = config.satellite.ports.suwayomi;
+        port = config.yomi.ports.suwayomi;
         systemTrayEnabled = true;
         downloadAsCbz = true;
         extensionRepos = [

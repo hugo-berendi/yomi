@@ -25,7 +25,7 @@
 
   stylix.targets.tmux.enable = true;
 
-  satellite.persistence.at.state.apps.tmux.directories = [
+  yomi.persistence.at.state.apps.tmux.directories = [
     ".tmux"
   ];
 }

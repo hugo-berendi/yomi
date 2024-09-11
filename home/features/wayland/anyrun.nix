@@ -79,14 +79,14 @@ in {
         list#main,
         row#match:selected {
           box-shadow: 0.5px 0.5px 1.5px 1.5px rgba(0, 0, 0, 0.5);
-          border-radius: ${toString config.satellite.theming.rounding.radius}px;
+          border-radius: ${toString config.yomi.theming.rounding.radius}px;
           border: 3px solid ${config.lib.stylix.scheme.withHashtag.base0D};
         }
 
         #entry,
         list#main {
           margin: 1rem;
-          background: rgba(${config.satellite.theming.colors.rgba "base00"});
+          background: rgba(${config.yomi.theming.colors.rgba "base00"});
           min-height: 1rem;
         }
         /* }}} */
@@ -95,7 +95,7 @@ in {
           font-size: 1rem;
           padding: 1rem;
           border: 3px solid ${config.lib.stylix.scheme.withHashtag.base0D};
-          border-radius: ${toString config.satellite.theming.rounding.radius}px;
+          border-radius: ${toString config.yomi.theming.rounding.radius}px;
 
         }
         /* }}} */
@@ -115,7 +115,7 @@ in {
         #match:selected {
           padding: 0.5rem;
           color: ${config.lib.stylix.scheme.withHashtag.base05};
-          background: rgba(${config.satellite.theming.colors.rgb "base03"}, 0.2);
+          background: rgba(${config.yomi.theming.colors.rgb "base03"}, 0.2);
         }
         /* }}} */
       '';

@@ -2,8 +2,8 @@
   # {{{ Main config
   services.prometheus = {
     enable = true;
-    port = config.satellite.ports.prometheus;
-    webExternalUrl = config.satellite.nginx.at.prometheus.url;
+    port = config.yomi.ports.prometheus;
+    webExternalUrl = config.yomi.nginx.at.prometheus.url;
 
     # {{{ Base exporters
     exporters = {
@@ -11,12 +11,12 @@
       node = {
         enable = true;
         enabledCollectors = ["systemd"];
-        port = config.satellite.ports.prometheus-node-exporter;
+        port = config.yomi.ports.prometheus-node-exporter;
       };
 
       nginx = {
         enable = true;
-        port = config.satellite.ports.prometheus-nginx-exporter;
+        port = config.yomi.ports.prometheus-nginx-exporter;
       };
     };
 
@@ -37,7 +37,7 @@
   };
   # }}}
   # {{{ Networking & storage
-  satellite.nginx.at.prometheus.port = config.services.prometheus.port;
+  yomi.nginx.at.prometheus.port = config.services.prometheus.port;
 
   environment.persistence."/persist/state".directories = [
     {

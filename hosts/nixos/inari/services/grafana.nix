@@ -1,5 +1,5 @@
 {config, ...}: let
-  port = config.satellite.ports.grafana;
+  port = config.yomi.ports.grafana;
   secret = name: "$__file{${config.sops.secrets.${name}.path}}";
   sopsSettings = {
     sopsFile = ../secrets.yaml;
@@ -15,7 +15,7 @@ in {
 
     settings = {
       server = rec {
-        domain = config.satellite.nginx.at.grafana.host;
+        domain = config.yomi.nginx.at.grafana.host;
         root_url = "https://${domain}";
         http_port = port;
       };
@@ -90,7 +90,7 @@ in {
   };
   # }}}
   # {{{ Networking & storage
-  satellite.nginx.at.grafana.port = port;
+  yomi.nginx.at.grafana.port = port;
 
   environment.persistence."/persist/state".directories = [
     {

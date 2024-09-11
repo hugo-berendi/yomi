@@ -22,7 +22,7 @@
   iconPath = ../../../../common/icons;
   icon = file: "assets/${iconPath}/${file}";
 in {
-  satellite.nginx.at.lab.files = pkgs.homer.withAssets {
+  yomi.nginx.at.lab.files = pkgs.homer.withAssets {
     extraAssets = [iconPath];
     config = {
       title = "✨ The celestial citadel ✨";

@@ -9,7 +9,7 @@
     group = config.services.forgejo.group;
   };
 
-  satellite.cloudflared.at.git.port = config.satellite.ports.forgejo;
+  yomi.cloudflared.at.git.port = config.yomi.ports.forgejo;
 
   services.forgejo = {
     enable = true;
@@ -28,9 +28,9 @@
       default.APP_NAME = "moonforge";
 
       server = {
-        DOMAIN = config.satellite.cloudflared.at.git.host;
-        HTTP_PORT = config.satellite.cloudflared.at.git.port;
-        ROOT_URL = config.satellite.cloudflared.at.git.url;
+        DOMAIN = config.yomi.cloudflared.at.git.host;
+        HTTP_PORT = config.yomi.cloudflared.at.git.port;
+        ROOT_URL = config.yomi.cloudflared.at.git.url;
         LANDING_PAGE = "prescientmoon"; # Make my profile the landing page
       };
 

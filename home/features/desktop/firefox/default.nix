@@ -375,11 +375,11 @@ in {
   # }}}
 
   # {{{ Persistence
-  satellite.persistence.at.state.apps.firefox.directories = [
+  yomi.persistence.at.state.apps.firefox.directories = [
     ".mozilla/firefox" # More important stuff
   ];
 
-  satellite.persistence.at.cache.apps.firefox.directories = [
+  yomi.persistence.at.cache.apps.firefox.directories = [
     "${config.xdg.cacheHome}/mozilla/firefox" # Non important cache
   ];
   # }}}

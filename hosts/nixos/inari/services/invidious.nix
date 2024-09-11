@@ -9,12 +9,12 @@
     mode = "0444"; # I don't care about this key that much, as I'm the only user of this instance
   };
 
-  satellite.nginx.at.yt.port = config.satellite.ports.invidious;
+  yomi.nginx.at.yt.port = config.yomi.ports.invidious;
 
   services.invidious = {
     enable = true;
-    domain = config.satellite.nginx.at.yt.host;
-    port = config.satellite.nginx.at.yt.port;
+    domain = config.yomi.nginx.at.yt.host;
+    port = config.yomi.nginx.at.yt.port;
     hmacKeyFile = config.sops.templates."invidious_hmac_key.json".path;
 
     settings = {

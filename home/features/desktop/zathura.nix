@@ -11,7 +11,7 @@
       set font "${config.stylix.fonts.sansSerif.name}"
       # }}}
       # {{{ Default foreground/background color
-      set default-bg rgba(${config.satellite.theming.colors.rgba "base00"})
+      set default-bg rgba(${config.yomi.theming.colors.rgba "base00"})
       set default-fg ${base05}
       # }}}
       # {{{ Recolor
@@ -88,7 +88,7 @@
   home.shellAliases.pdf = "zathura --fork";
 
   # {{{ Persistence
-  satellite.persistence.at.state.apps.zathura.directories = [
+  yomi.persistence.at.state.apps.zathura.directories = [
     "${config.xdg.dataHome}/zathura"
   ];
   # }}}

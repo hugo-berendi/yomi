@@ -376,6 +376,6 @@
   # }}}
   # {{{ Storage & persistence
   accounts.email.maildirBasePath = "${config.xdg.dataHome}/maildir";
-  satellite.persistence.at.data.apps.mail.directories = [config.accounts.email.maildirBasePath];
+  yomi.persistence.at.data.apps.mail.directories = [config.accounts.email.maildirBasePath];
   # }}}
 }

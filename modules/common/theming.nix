@@ -4,9 +4,9 @@
   config,
   ...
 }: let
-  cfg = config.satellite.theming;
+  cfg = config.yomi.theming;
 in {
-  options.satellite.theming = {
+  options.yomi.theming = {
     gaps = {
       enable = lib.mkEnableOption "gaps (padding / margin) for apps";
       inner = lib.mkOption {
@@ -80,7 +80,7 @@ in {
         type = lib.types.functionTo lib.types.str;
         description = ''
           Returns comma separated rgba values for a color.
-          The transparency is taken from `options.satellite.theming.transparency`.
+          The transparency is taken from `options.yomi.theming.transparency`.
         '';
       };
 
@@ -109,7 +109,7 @@ in {
     };
   };
 
-  config.satellite.theming = {
+  config.yomi.theming = {
     rounding.enable = cfg.rounding.radius > 0;
     blur.enable = cfg.blur.passes > 0;
 

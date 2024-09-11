@@ -1,5 +1,5 @@
 {config, ...}: let
-  padding = toString config.satellite.theming.gaps.inner;
+  padding = toString config.yomi.theming.gaps.inner;
 in {
   programs.foot = {
     enable = true;

@@ -4,8 +4,8 @@
   ...
 }: let
   username = "prescientmoon";
-  apiPort = config.satellite.ports.intray-api;
-  webPort = config.satellite.ports.intray-client;
+  apiPort = config.yomi.ports.intray-api;
+  webPort = config.yomi.ports.intray-client;
 in {
   imports = [inputs.intray.nixosModules.x86_64-linux.default];
 
@@ -20,13 +20,13 @@ in {
     web-server = {
       enable = true;
       port = webPort;
-      api-url = config.satellite.nginx.at."api.intray".url;
+      api-url = config.yomi.nginx.at."api.intray".url;
     };
   };
   # }}}
   # {{{ Networking & storage
-  satellite.nginx.at."intray".port = webPort;
-  satellite.nginx.at."api.intray".port = apiPort;
+  yomi.nginx.at."intray".port = webPort;
+  yomi.nginx.at."api.intray".port = apiPort;
 
   environment.persistence."/persist/state".directories = [
     "/www/intray/production/data"

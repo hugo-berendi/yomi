@@ -13,7 +13,7 @@
           sans-serif;
         font-size: ${toString config.stylix.fonts.sizes.desktop}pt;
         min-height: 0;
-        border-radius: ${toString config.satellite.theming.rounding.radius}px;
+        border-radius: ${toString config.yomi.theming.rounding.radius}px;
       }
 
       window#waybar {
@@ -77,7 +77,7 @@
         background:
           linear-gradient(${config.lib.stylix.scheme.withHashtag.base01}, ${config.lib.stylix.scheme.withHashtag.base01}) padding-box,
           linear-gradient(${config.lib.stylix.scheme.withHashtag.base0D}, ${config.lib.stylix.scheme.withHashtag.base0D}) border-box;
-        border-width: ${toString config.satellite.theming.rounding.size}px;
+        border-width: ${toString config.yomi.theming.rounding.size}px;
         border-style: solid;
         border-color: transparent;
         margin-top: 5px;
@@ -100,7 +100,7 @@
       #network,
       #disk {
         border-right-style: none;
-        border-radius: ${toString config.satellite.theming.rounding.radius} 0 0 ${toString config.satellite.theming.rounding.radius};
+        border-radius: ${toString config.yomi.theming.rounding.radius} 0 0 ${toString config.yomi.theming.rounding.radius};
         margin-left: 5px;
         padding-left: 15px;
         padding-right: 3px;
@@ -123,7 +123,7 @@
       #custom-weather,
       #memory {
         border-left-style: none;
-        border-radius: 0 ${toString config.satellite.theming.rounding.radius} ${toString config.satellite.theming.rounding.radius} 0;
+        border-radius: 0 ${toString config.yomi.theming.rounding.radius} ${toString config.yomi.theming.rounding.radius} 0;
         margin-right: 5px;
         padding-right: 15px;
         padding-left: 3px;

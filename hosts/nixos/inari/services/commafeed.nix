@@ -1,9 +1,9 @@
 {config, ...}: let
-  port = config.satellite.ports.commafeed;
+  port = config.yomi.ports.commafeed;
   dataDir = "/persist/state/var/lib/commafeed";
 in {
   systemd.tmpfiles.rules = ["d ${dataDir}"];
-  satellite.nginx.at.rss.port = port;
+  yomi.nginx.at.rss.port = port;
 
   virtualisation.oci-containers.containers.commafeed = {
     image = "athou/commafeed:latest";
@@ -18,7 +18,7 @@ in {
 
     # https://github.com/Athou/commafeed/blob/master/commafeed-server/config.yml.example
     environment = {
-      CF_APP_PUBLICURL = "https://${config.satellite.nginx.at.rss.host}";
+      CF_APP_PUBLICURL = "https://${config.yomi.nginx.at.rss.host}";
       CF_APP_ALLOWREGISTRATIONS = "false"; # I already made an account
       CF_APP_MAXENTRIESAGEDAYS = "0"; # Fetch old entries
 

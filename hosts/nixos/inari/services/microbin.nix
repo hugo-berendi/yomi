@@ -4,7 +4,7 @@
   ...
 }: {
   sops.secrets.microbin_env.sopsFile = ../secrets.yaml;
-  satellite.cloudflared.at.bin.port = config.satellite.ports.microbin;
+  yomi.cloudflared.at.bin.port = config.yomi.ports.microbin;
 
   services.microbin = {
     enable = true;
@@ -15,8 +15,8 @@
     settings = {
       # High level settings
       MICROBIN_ADMIN_USERNAME = "prescientmoon";
-      MICROBIN_PORT = toString config.satellite.cloudflared.at.bin.port;
-      MICROBIN_PUBLIC_PATH = config.satellite.cloudflared.at.bin.url;
+      MICROBIN_PORT = toString config.yomi.cloudflared.at.bin.port;
+      MICROBIN_PUBLIC_PATH = config.yomi.cloudflared.at.bin.url;
       MICROBIN_DEFAULT_EXPIRY = "1week";
 
       # Disable online features

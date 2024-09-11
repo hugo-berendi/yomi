@@ -59,12 +59,12 @@ in {
     overlays =
       builtins.attrValues outputs.overlays
       ++ lib.lists.optional
-      config.satellite.toggles.neovim-nightly.enable
+      config.yomi.toggles.neovim-nightly.enable
       inputs.neovim-nightly-overlay.overlays.default;
 
     config.allowUnfree = true;
   };
 
   # Root domain used throughout my config
-  satellite.dns.domain = "hugo-berendi.de";
+  yomi.dns.domain = "hugo-berendi.de";
 }

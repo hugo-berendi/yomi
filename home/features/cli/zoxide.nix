@@ -7,7 +7,7 @@
     ];
   };
   # {{{ Persistence
-  satellite.persistence.at.state.apps.zoxide = {
+  yomi.persistence.at.state.apps.zoxide = {
     directories = [
       "${config.xdg.dataHome}/zoxide"
     ];

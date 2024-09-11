@@ -19,12 +19,12 @@ in {
     }
 
     window {
-      background-color: rgba(${config.satellite.theming.colors.rgba "base00"});
+      background-color: rgba(${config.yomi.theming.colors.rgba "base00"});
     }
 
     button {
-      color: rgb(${config.satellite.theming.colors.rgb "base05"});
-      background: rgba(${config.satellite.theming.colors.rgb "base01"}, 0.2);
+      color: rgb(${config.yomi.theming.colors.rgb "base05"});
+      background: rgba(${config.yomi.theming.colors.rgb "base01"}, 0.2);
       border-radius: 8px;
       box-shadow: .5px .5px 1.5px 1.5px rgba(0, 0, 0, .5);
       margin: 1rem;
@@ -34,7 +34,7 @@ in {
     }
 
     button:focus, button:active, button:hover {
-      background-color: rgba(${config.satellite.theming.colors.rgb "base02"}, 0.5);
+      background-color: rgba(${config.yomi.theming.colors.rgb "base02"}, 0.5);
       outline-style: none;
     }
 

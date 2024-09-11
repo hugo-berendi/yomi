@@ -1,7 +1,7 @@
 {config, ...}: let
   # Using `config.users.users.pilot.name` causes an infinite recursion error
   # due to the way the syncthing module is written
-  user = config.satellite.pilot.name;
+  user = config.yomi.pilot.name;
   group = "syncthing";
   dataDir = "/persist/state/var/lib/syncthing";
 in {

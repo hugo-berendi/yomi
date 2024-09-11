@@ -6,7 +6,7 @@
   octodns-zones = let
     nixosConfigModules =
       pkgs.lib.mapAttrsToList
-      (_: current: {satellite.dns = current.config.satellite.dns;})
+      (_: current: {yomi.dns = current.config.yomi.dns;})
       self.nixosConfigurations;
 
     evaluated = pkgs.lib.evalModules {
@@ -20,7 +20,7 @@
         ++ nixosConfigModules;
     };
   in
-    evaluated.config.satellite.dns.octodns;
+    evaluated.config.yomi.dns.octodns;
   octodns-sync = pkgs.symlinkJoin {
     name = "octodns-sync";
     paths = [self.packages.${pkgs.system}.octodns];

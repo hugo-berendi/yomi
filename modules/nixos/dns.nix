@@ -5,9 +5,9 @@
   ...
 }: let
   format = pkgs.formats.yaml {};
-  cfg = config.satellite.dns;
+  cfg = config.yomi.dns;
 in {
-  options.satellite.dns = {
+  options.yomi.dns = {
     domain = lib.mkOption {
       description = "Default zone to include records in";
       type = lib.types.str;

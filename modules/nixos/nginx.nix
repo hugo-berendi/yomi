@@ -3,13 +3,13 @@
   lib,
   ...
 }: let
-  cfg = config.satellite.nginx;
+  cfg = config.yomi.nginx;
 in {
-  options.satellite.nginx = {
+  options.yomi.nginx = {
     domain = lib.mkOption {
       description = "Root domain to use as a default for configurations.";
       type = lib.types.str;
-      default = config.satellite.dns.domain;
+      default = config.yomi.dns.domain;
     };
 
     at = lib.mkOption {
@@ -63,8 +63,8 @@ in {
       assertSingleTarget = config: {
         assertion = (config.port == null) == (config.files != null);
         message = ''
-          Precisely one of the options 'satellite.nginx.at.${config.subdomain}.port'
-          and 'satellite.nginx.at.${config.subdomain}.files' must be specified.
+          Precisely one of the options 'yomi.nginx.at.${config.subdomain}.port'
+          and 'yomi.nginx.at.${config.subdomain}.files' must be specified.
         '';
       };
     in
@@ -101,7 +101,7 @@ in {
     in
       lib.attrsets.mapAttrs' (_: mkNginxConfig) cfg.at;
 
-    satellite.dns.records = let
+    yomi.dns.records = let
       mkDnsRecord = {subdomain, ...}: {
         type = "CNAME";
         zone = cfg.domain;

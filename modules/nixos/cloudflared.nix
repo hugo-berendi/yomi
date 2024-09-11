@@ -3,18 +3,18 @@
   lib,
   ...
 }: let
-  cfg = config.satellite.cloudflared;
+  cfg = config.yomi.cloudflared;
 in {
-  options.satellite.cloudflared = {
+  options.yomi.cloudflared = {
     tunnel = lib.mkOption {
       type = lib.types.str;
-      description = "Cloudflare tunnel id to use for the `satellite.cloudflared.at` helper";
+      description = "Cloudflare tunnel id to use for the `yomi.cloudflared.at` helper";
     };
 
     domain = lib.mkOption {
       description = "Root domain to use as a default for configurations.";
       type = lib.types.str;
-      default = config.satellite.dns.domain;
+      default = config.yomi.dns.domain;
     };
 
     at = lib.mkOption {
@@ -69,7 +69,7 @@ in {
     })
     cfg.at;
 
-  config.satellite.dns.records = let
+  config.yomi.dns.records = let
     mkDnsRecord = {subdomain, ...}: {
       type = "CNAME";
       at = subdomain;

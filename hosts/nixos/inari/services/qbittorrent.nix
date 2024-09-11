@@ -2,12 +2,12 @@
 # https://github.com/nickkjolsing/dockerMullvadVPN
 # https://www.reddit.com/r/HomeServer/comments/xapl93/a_minimal_configuration_stepbystep_guide_to_media/
 {config, ...}: let
-  port = config.satellite.ports.qbittorrent;
+  port = config.yomi.ports.qbittorrent;
   dataDir = "/persist/data/media";
   configDir = "/persist/state/var/lib/qbittorrent";
 in {
   # {{{ Networking & storage
-  satellite.nginx.at.qbit.port = port;
+  yomi.nginx.at.qbit.port = port;
   sops.secrets.vpn_env.sopsFile = ../secrets.yaml;
   systemd.tmpfiles.rules = [
     "d ${dataDir} 777 ${config.users.users.pilot.name} users"

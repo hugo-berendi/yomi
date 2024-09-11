@@ -59,7 +59,7 @@
 
   home.sessionVariables.QT_SCREEN_SCALE_FACTORS = 1.4; # Bigger text in qt apps
 
-  satellite = {
+  yomi = {
     # Symlink some commonly modified dotfiles outside the nix store
     dev.enable = true;
 

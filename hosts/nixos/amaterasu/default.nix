@@ -122,5 +122,5 @@
     };
   };
 
-  satellite.pilot.name = "hugob";
+  yomi.pilot.name = "hugob";
 }

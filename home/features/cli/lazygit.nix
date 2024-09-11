@@ -7,5 +7,5 @@
     };
   };
 
-  satellite.persistence.at.state.apps.lazygit.directories = ["${config.xdg.configHome}/lazygit"];
+  yomi.persistence.at.state.apps.lazygit.directories = ["${config.xdg.configHome}/lazygit"];
 }

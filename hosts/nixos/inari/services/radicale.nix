@@ -1,5 +1,5 @@
 {config, ...}: let
-  port = config.satellite.ports.radicale;
+  port = config.yomi.ports.radicale;
   dataDir = "/persist/data/radicale";
 in {
   services.radicale = {
@@ -12,5 +12,5 @@ in {
   };
 
   systemd.tmpfiles.rules = ["d ${dataDir} 0700 radicale radicale"];
-  satellite.nginx.at.cal.port = port;
+  yomi.nginx.at.cal.port = port;
 }

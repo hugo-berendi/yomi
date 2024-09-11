@@ -52,7 +52,7 @@
   boot.loader.systemd-boot.enable = true;
 
   # Tailscale internal IP DNS records
-  # satellite.dns.records = [
+  # yomi.dns.records = [
   #   {
   #     at = config.networking.hostName;
   #     type = "A";

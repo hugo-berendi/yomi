@@ -5,12 +5,12 @@
   inputs,
   ...
 }: {
-  options.satellite.colorscheme.lua = lib.mkOption {
+  options.yomi.colorscheme.lua = lib.mkOption {
     type = lib.types.lines;
     description = "Lua file containing the current colorscheme";
   };
 
-  config.satellite.colorscheme.lua = let
+  config.yomi.colorscheme.lua = let
     e = import ./korora-lua.nix {
       inherit lib;
       korora = inputs.korora.lib;
@@ -18,7 +18,7 @@
 
     mkTransparencyTarget = name: let
       color = index: "rgba(${
-        config.satellite.theming.colors.rgb "base${index}"
+        config.yomi.theming.colors.rgb "base${index}"
       },${
         toString config.stylix.opacity.${name}
       })";
@@ -77,8 +77,8 @@
         popups = mkTransparencyTarget "popups";
       };
       rounding = {
-        enable = config.satellite.theming.rounding.enable;
-        radius = config.satellite.theming.rounding.radius;
+        enable = config.yomi.theming.rounding.enable;
+        radius = config.yomi.theming.rounding.radius;
       };
     };
   in

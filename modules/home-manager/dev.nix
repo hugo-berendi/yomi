@@ -3,7 +3,7 @@
   config,
   ...
 }: {
-  options.satellite.dev = {
+  options.yomi.dev = {
     enable = lib.mkOption {
       type = lib.types.bool;
       default = false;
@@ -13,7 +13,7 @@
     root = lib.mkOption {
       type = lib.types.str;
       default = "${config.xdg.userDirs.extraConfig.XDG_PROJECTS_DIR}/nix-config";
-      description = "Where the satellite repo is cloned";
+      description = "Where the yomi repo is cloned";
     };
 
     path = lib.mkOption {
@@ -22,8 +22,8 @@
     };
   };
 
-  config.satellite.dev.path = path:
-    if config.satellite.dev.enable
-    then config.lib.file.mkOutOfStoreSymlink "${config.satellite.dev.root}/${path}"
+  config.yomi.dev.path = path:
+    if config.yomi.dev.enable
+    then config.lib.file.mkOutOfStoreSymlink "${config.yomi.dev.root}/${path}"
     else "${../..}/${path}";
 }

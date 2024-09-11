@@ -12,7 +12,7 @@
     auto_update = true
   '';
 
-  satellite.persistence.at.cache.apps.tealdeer.directories = [
+  yomi.persistence.at.cache.apps.tealdeer.directories = [
     "${config.xdg.cacheHome}/tealdeer" # page cache
   ];
 }

@@ -15,8 +15,8 @@ in {
   programs.spicetify = {
     enable = true;
 
-    # theme = config.satellite.theming.get themeMap;
-    # colorScheme = config.satellite.theming.get colorschemeMap;
+    # theme = config.yomi.theming.get themeMap;
+    # colorScheme = config.yomi.theming.get colorschemeMap;
 
     enabledExtensions = with spicePkgs.extensions; [
       fullAppDisplayMod
@@ -41,11 +41,11 @@ in {
   };
 
   # {{{ Persistence
-  satellite.persistence.at.state.apps.spotify.directories = [
+  yomi.persistence.at.state.apps.spotify.directories = [
     "${config.xdg.configHome}/spotify"
   ];
 
-  satellite.persistence.at.cache.apps.spotify.directories = [
+  yomi.persistence.at.cache.apps.spotify.directories = [
     "${config.xdg.cacheHome}/spotify"
   ];
   # }}}

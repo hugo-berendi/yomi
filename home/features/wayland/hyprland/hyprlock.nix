@@ -29,7 +29,7 @@ in {
         size = 150; # lesser side if not 1:1 ratio
         rounding = -1; # negative values mean circle
         border_size = 4;
-        border_color = "rgb(${config.satellite.theming.colors.rgb "base0D"})";
+        border_color = "rgb(${config.yomi.theming.colors.rgb "base0D"})";
         rotate = 0; # degrees, counter-clockwise
         reload_time = -1; # seconds between reloading, 0 to reload with SIGUSR2
         reload_cmd = ""; # command to get new path. if empty, old path will be used. don't run "follow" commands like tail -F
@@ -46,16 +46,16 @@ in {
         dots_spacing = 0.15; # Scale of dots' absolute size, 0.0 - 1.0
         dots_center = false;
         dots_rounding = -1; # -1 default circle, -2 follow input-field rounding
-        outer_color = "rgb(${config.satellite.theming.colors.rgb "base0D"})";
-        inner_color = "rgb(${config.satellite.theming.colors.rgb "base01"})";
-        font_color = "rgb(${config.satellite.theming.colors.rgb "base06"})";
+        outer_color = "rgb(${config.yomi.theming.colors.rgb "base0D"})";
+        inner_color = "rgb(${config.yomi.theming.colors.rgb "base01"})";
+        font_color = "rgb(${config.yomi.theming.colors.rgb "base06"})";
         fade_on_empty = false;
         fade_timeout = 1000; # Milliseconds before fade_on_empty is triggered.
         placeholder_text = "<span foreground='#${config.lib.stylix.scheme.withHashtag.base06}' style='italic'>Input Password...</span>"; # Text rendered in the input box when it's empty.
         hide_input = false;
         rounding = -1; # -1 means complete rounding (circle/oval)
-        check_color = "rgb(${config.satellite.theming.colors.rgb "base09"})";
-        fail_color = "rgb(${config.satellite.theming.colors.rgb "base08"})"; # if authentication failed, changes outer_color and fail message color
+        check_color = "rgb(${config.yomi.theming.colors.rgb "base09"})";
+        fail_color = "rgb(${config.yomi.theming.colors.rgb "base08"})"; # if authentication failed, changes outer_color and fail message color
         fail_text = "<i>$FAIL <b>($ATTEMPTS)</b></i>"; # can be set to empty
         fail_timeout = 2000; # milliseconds before fail_text and fail_color disappears
         fail_transition = 300; # transition time in ms between normal outer_color and fail_color

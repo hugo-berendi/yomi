@@ -1,5 +1,5 @@
 {config, ...}: {
-  satellite.nginx.at.warden.port = config.satellite.ports.vaultwarden;
+  yomi.nginx.at.warden.port = config.yomi.ports.vaultwarden;
 
   # {{{ Secrets
   sops.secrets.vaultwarden_env = {
@@ -13,8 +13,8 @@
     enable = true;
     environmentFile = config.sops.secrets.vaultwarden_env.path;
     config = {
-      DOMAIN = "https://${config.satellite.nginx.at.warden.host}";
-      ROCKET_PORT = config.satellite.nginx.at.warden.port;
+      DOMAIN = "https://${config.yomi.nginx.at.warden.host}";
+      ROCKET_PORT = config.yomi.nginx.at.warden.port;
       ROCKET_ADDRESS = "127.0.0.1";
 
       SIGNUPS_ALLOWED = false;

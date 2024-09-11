@@ -3,9 +3,9 @@
   config,
   ...
 }: let
-  cfg = config.satellite;
+  cfg = config.yomi;
 in {
-  options.satellite = {
+  options.yomi = {
     themes = lib.mkOption {
       description = "List of all themes";
       type = lib.types.lazyAttrsOf lib.types.any;

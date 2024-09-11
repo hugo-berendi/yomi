@@ -9,7 +9,7 @@
       preload = ["${config.stylix.image}"];
       wallpaper =
         [",${config.stylix.image}"]
-        ++ lib.forEach config.satellite.monitors (
+        ++ lib.forEach config.yomi.monitors (
           {name, ...}: "${name},${config.stylix.image}"
         );
     };

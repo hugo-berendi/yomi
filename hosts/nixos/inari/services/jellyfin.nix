@@ -1,6 +1,6 @@
 {config, ...}: {
   # This is the default port, and can only be changed via the GUI
-  satellite.nginx.at.media.port = 8096;
+  yomi.nginx.at.media.port = 8096;
   services.jellyfin.enable = true;
 
   # {{{ Storage
