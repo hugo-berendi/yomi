@@ -11,9 +11,9 @@
       * {
         font-family: "${config.stylix.fonts.sansSerif.name}", "Font Awesome 6 Free", Roboto, Helvetica, Arial,
           sans-serif;
-        font-size: ${toString config.stylix.fonts.sizes.desktop};
+        font-size: ${toString config.stylix.fonts.sizes.desktop}pt;
         min-height: 0;
-        border-radius: ${toString config.satellite.theming.rounding.radius};
+        border-radius: ${toString config.satellite.theming.rounding.radius}px;
       }
 
       window#waybar {
@@ -77,7 +77,7 @@
         background:
           linear-gradient(${config.lib.stylix.scheme.withHashtag.base01}, ${config.lib.stylix.scheme.withHashtag.base01}) padding-box,
           linear-gradient(${config.lib.stylix.scheme.withHashtag.base0D}, ${config.lib.stylix.scheme.withHashtag.base0D}) border-box;
-        border-width: ${toString config.satellite.theming.rounding.size};
+        border-width: ${toString config.satellite.theming.rounding.size}px;
         border-style: solid;
         border-color: transparent;
         margin-top: 5px;

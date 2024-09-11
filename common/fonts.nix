@@ -9,13 +9,13 @@
       package = upkgs.maple-mono-NF;
     };
     serif = {
-      name = "Maple Mono NF";
-      package = upkgs.maple-mono-NF;
+      name = "Quicksand";
+      package = upkgs.quicksand;
     };
 
     sizes = {
       terminal = 13;
-      desktop = 18;
+      desktop = 15;
       applications = 15;
     };
   };

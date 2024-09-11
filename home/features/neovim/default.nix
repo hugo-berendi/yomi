@@ -50,6 +50,8 @@ in {
     #   if config.satellite.toggles.neovim-nightly.enable
     #   then pkgs.neovim-nightly
     #   else pkgs.neovim;
+    viAlias = true;
+    vimAlias = true;
   };
   # }}}
   satellite.lua.styluaConfig = ../../../../stylua.toml;

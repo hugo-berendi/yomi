@@ -43,7 +43,7 @@ notify-send -e "NixOS Rebuilding..." --icon=software-update-available
 
 # Rebuild, output simplified errors, log trackebacks
 # sudo nixos-rebuild switch --upgrade-all --flake ".#${HOSTNAME}" &>nixos-switch.log || (cat nixos-switch.log | grep --color error && git reset && exit 1)
-nh os switch -- --accept-flake-config
+nh os switch -- --accept-flake-config --show-trace --impure
 # sudo nixos-rebuild switch --flake .#$(hostname) --show-trace --fast --upgrade-all
 
 # Rebuild home-manager, output simplified errors, log trackebacks

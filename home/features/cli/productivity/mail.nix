@@ -28,10 +28,10 @@
         trash = "Trash";
       };
 
-      gpg = {
-        key = "0x702AA7FD444CDC73";
-        signByDefault = true;
-      };
+      # gpg = {
+      #   key = "0x702AA7FD444CDC73";
+      #   signByDefault = true;
+      # };
 
       passwordCommand = "cat ${config.sops.secrets.hugob_mail_pass.path}";
       primary = true;

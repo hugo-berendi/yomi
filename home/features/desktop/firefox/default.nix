@@ -37,6 +37,10 @@
     url = "https://raw.githubusercontent.com/yokoffing/Betterfox/main/user.js";
     sha256 = "0sjklyz6zxvcfrqmvfzyyxkrflshzsksgw845qmhw8wnkamxsfb0";
   };
+
+  ffUltimaRepo = builtins.fetchGit {
+    url = "https://github.com/soulhotel/FF-ULTIMA.git";
+  };
 in {
   programs.firefox = {
     enable = true;
@@ -75,7 +79,7 @@ in {
       search.default = "Startpage";
 
       # Set styles applied to firefox itself
-      userChrome = builtins.readFile ./userChrome.css;
+      # userChrome = builtins.readFile ./userChrome.css;
       # userContent = builtins.readFile ./userContent.css;
 
       # }}}
@@ -267,10 +271,11 @@ in {
 
         # auto-enable all extensions
         "extensions.autoDisableScopes" = 0;
+
+        "user.theme.catppuccin" = true;
       };
 
-      extraConfig = builtins.readFile betterfoxUserJS;
-
+      extraConfig = builtins.readFile betterfoxUserJS + "\n" + builtins.readFile "${ffUltimaRepo}/user.js";
       # }}}
     };
 
@@ -338,9 +343,22 @@ in {
     # }}}
   };
 
+  # Copy FF-ULTIMA files to the chrome folder
+  home.file = {
+    ".mozilla/firefox/${config.home.username}/chrome/userChrome.css" = {
+      source = "${ffUltimaRepo}/userChrome.css";
+    };
+    ".mozilla/firefox/${config.home.username}/chrome/userContent.css" = {
+      source = "${ffUltimaRepo}/userContent.css";
+    };
+    ".mozilla/firefox/${config.home.username}/chrome/theme" = {
+      source = "${ffUltimaRepo}/theme";
+    };
+  };
+
   stylix.targets.firefox = {
     enable = true;
-    profileNames = [config.home.username "desmos" "monkey-type" "syncthing" "clockify" "proton-mail" "proton-drive" "excalidraw"];
+    profileNames = ["desmos" "monkey-type" "syncthing" "clockify" "proton-mail" "proton-drive" "excalidraw"];
   };
 
   # {{{ Make firefox the default

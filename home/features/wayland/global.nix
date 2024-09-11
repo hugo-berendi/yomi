@@ -53,5 +53,6 @@
       grimblast # Screenshot tool
       brightnessctl # Adjust screen brightness
       pamixer # Adjust audio volume
+      xwaylandvideobridge # screen sharing for xwayland apps like discord
     ];
 }

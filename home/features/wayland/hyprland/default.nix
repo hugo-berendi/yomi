@@ -13,6 +13,7 @@ in {
     hyprcursor
     rosePineCursor
     cliphist
+    inputs.pyprland.packages."x86_64-linux".pyprland
   ];
 
   stylix.targets.hyprland.enable = false;
@@ -80,9 +81,10 @@ in {
       # Without this, xdg-open doesn't work
       exec = ["systemctl --user import-environment PATH && systemctl --user restart xdg-desktop-portal.service"];
       exec-once = [
-        "foot & firefox & vesktop & spotify & obsidiantui"
-        "wl-paste --type text --watch cliphist store" # Stores only text data
-        "wl-paste --type image --watch cliphist store" # Stores only image data
+        "foot & firefox & vesktop & spotify & obsidiantui & pypr & xwaylandvideobridge"
+        "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
+        # "wl-paste --type text --watch cliphist store" # Stores only text data
+        # "wl-paste --type image --watch cliphist store" # Stores only image data
       ];
       # }}}
 
@@ -90,8 +92,41 @@ in {
       "$mod" = "SUPER";
       bind = [
         "$mod, C, exec, cliphist list | anyrun --plugins ${inputs.anyrun.packages.${pkgs.system}.stdin}/lib/libstdin.so | cliphist decode | wl-copy"
+        "$mod, V, exec, pypr toggle volume"
+        "$mod Shift, Return, exec, pypr toggle term"
+        "$mod, Y, exec, pypr attach"
       ];
       # }}}
     };
   };
+
+  services.cliphist = {
+    enable = true;
+    allowImages = true;
+    systemdTarget = "graphical-session.target";
+  };
+
+  home.file.".config/hypr/pyprland.toml".text =
+    /*
+    toml
+    */
+    ''
+      [pyprland]
+        plugins = ["scratchpads"]
+
+      [scratchpads.term]
+        animation = "fromTop"
+        command = "foot -a foot-dropterm"
+        class = "foot-dropterm"
+        size = "75% 60%"
+        margin = 50
+
+      [scratchpads.volume]
+        animation = "fromRight"
+        command = "pwvucontrol"
+        class = "com.saivert.pwvucontrol"
+        size = "20% 90%"
+        unfocus = "hide"
+        lazy = true
+    '';
 }

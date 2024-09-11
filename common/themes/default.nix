@@ -1,4 +1,8 @@
-{upkgs, ...}: let
+{
+  upkgs,
+  pkgs,
+  ...
+}: let
   transparency = amount: {
     desktop = amount;
     applications = amount;
@@ -142,7 +146,35 @@
       };
     };
     # }}}
-
+    # {{{ ashes
+    ashes = {
+      stylix = {
+        image = ./wallpapers/samurai-dark.jpg;
+        base16Scheme = base16 "ashes";
+        opacity = transparency 0.5;
+        polarity = "dark";
+        cursor = {
+          package = pkgs.graphite-cursors;
+          name = "Graphite dark nord Cursors";
+        };
+      };
+      satellite = {
+        gaps = {
+          outer = 20;
+          inner = 5;
+        };
+        rounding = {
+          enable = true;
+          radius = 15;
+          size = 3;
+        };
+        blur = {
+          passes = 2;
+          size = 7;
+        };
+      };
+    };
+    # }}}
     # {{{ Gruvbox light
     gruvbox-light = {
       stylix = {
@@ -197,7 +229,7 @@
     };
   };
 
-  currentTheme = themes.rosepine-moon;
+  currentTheme = themes.ashes;
 in {
   # We apply the current theme here.
   # The rest is handled by the respective modules!
