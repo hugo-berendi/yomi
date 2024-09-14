@@ -2,3 +2,4 @@
 
 based on [everything-nix](https://github.com/prescientmoon/everything-nix)
 
+## Features
