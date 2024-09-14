@@ -22,6 +22,8 @@ in {
     package = pkgs.hyprland;
     extraConfig = builtins.readFile ./hyprland.conf;
 
+    systemd.variables = ["--all"];
+
     plugins = [
       # {{{ Plugins
       # inputs.hy3.packages.x86_64-linux.hy3

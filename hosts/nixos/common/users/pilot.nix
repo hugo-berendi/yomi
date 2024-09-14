@@ -16,8 +16,6 @@
     # Configure users through nix only
     mutableUsers = false;
 
-    extraGroups.vboxusers.members = [config.yomi.pilot.name];
-
     users.pilot = {
       inherit (config.yomi.pilot) name;
 

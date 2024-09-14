@@ -5,6 +5,7 @@
       vim_enter = {};
       indentscope = {};
       restore_cursor = {};
+      autosave = {};
     };
 
     autoCmd = [
@@ -60,6 +61,41 @@
           '';
         };
       }
+      # {
+      #   group = "autosave";
+      #   event = ["TextChangedI"];
+      #   pattern = "*";
+      #   callback = {
+      #     __raw =
+      #       /*
+      #       lua
+      #       */
+      #       ''
+      #         function()
+      #           -- Define a set of filetypes to be checked
+      #           local excluded_filetypes = {
+      #             ["help"] = true,
+      #             ["Startup"] = true,
+      #             ["startup"] = true,
+      #             ["neo-tree"] = true,
+      #             ["Trouble"] = true,
+      #             ["trouble"] = true,
+      #             ["notify"] = true,
+      #             ["Telescope"] = true,
+      #             ["telescope"] = true,
+      #           }
+
+      #           -- Check if the current filetype is in the excluded set
+      #           if excluded_filetypes[vim.bo.filetype] then
+      #             return
+      #           end
+
+      #           -- execute command
+      #           vim.cmd 'silent write'
+      #         end
+      #       '';
+      #   };
+      # }
     ];
   };
 }

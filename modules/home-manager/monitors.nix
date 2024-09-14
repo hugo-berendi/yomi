@@ -1,4 +1,4 @@
-# Taken from [misterio's config](https://github.com/Misterio77/nix-config/blob/main/modules/home-manager/monitors.nix)
+# Taken from [misterio's config](https://github.com/Misterio77/yomi/blob/main/modules/home-manager/monitors.nix)
 # This is meant to provide a wm-independent way of specifying the monitor configuration of each machine.
 {lib, ...}: {
   options.yomi.monitors = lib.mkOption {

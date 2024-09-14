@@ -36,12 +36,6 @@
   networking.hostName = "amaterasu";
   environment.etc.machine-id.text = "08357db3540c4cd2b76d4bb7f825ec88";
   # }}}
-  # {{{ virtualisation
-  virtualisation.virtualbox = {
-    host.enable = true;
-    guest.enable = true;
-  };
-  # }}}
   # {{{ A few ad-hoc programs
   programs.kdeconnect.enable = true;
   programs.firejail.enable = true;
@@ -83,8 +77,6 @@
     fd
     btop
     home-manager
-    dunst
-    dunst
     libnotify
     ugrep
     cargo
@@ -95,7 +87,7 @@
 
   environment.sessionVariables = {
     NIXOS_OZONE_WL = "1";
-    FLAKE = "/home/hugob/projects/nix-config";
+    FLAKE = "/home/hugob/projects/yomi";
     ENVFS_RESOLVE_ALWAYS = "1";
     LD_LIBRARY_PATH = lib.mkForce "${pkgs.stdenv.cc.cc.lib}/lib";
   };

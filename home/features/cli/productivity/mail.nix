@@ -349,7 +349,7 @@
   };
 
   # {{{ Neomutt desktop entry
-  # Taken from here: https://github.com/Misterio77/nix-config/blob/main/home/misterio/features/productivity/neomutt.nix
+  # Taken from here: https://github.com/Misterio77/yomi/blob/main/home/misterio/features/productivity/neomutt.nix
   xdg = {
     desktopEntries = {
       neomutt = {

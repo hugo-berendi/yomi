@@ -13,7 +13,7 @@
 set -e
 
 # cd to your config dir
-pushd ~/projects/nix-config/
+pushd ~/projects/yomi/
 
 # Edit your config
 # nvim .
@@ -50,7 +50,7 @@ nh os switch -- --accept-flake-config --show-trace --impure
 # home-manager switch --impure -b backup --flake ".#hugob@amaterasu" &>home-manager-switch.log || (cat home-manager-switch.log | grep --color error && git reset && exit 1)
 
 # Init ags types
-# ags --init -c /home/hugob/projects/nix-config/home/features/wayland/ags/config &>/dev/null
+# ags --init -c /home/hugob/projects/yomi/home/features/wayland/ags/config &>/dev/null
 
 # Get current generation metadata
 current=$(nixos-rebuild list-generations | grep current)

@@ -12,7 +12,7 @@
 
     root = lib.mkOption {
       type = lib.types.str;
-      default = "${config.xdg.userDirs.extraConfig.XDG_PROJECTS_DIR}/nix-config";
+      default = "${config.xdg.userDirs.extraConfig.XDG_PROJECTS_DIR}/yomi";
       description = "Where the yomi repo is cloned";
     };
 

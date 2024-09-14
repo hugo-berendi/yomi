@@ -150,12 +150,12 @@
     ashes = {
       stylix = {
         image = ./wallpapers/samurai-dark.jpg;
-        base16Scheme = base16 "ashes";
         opacity = transparency 0.5;
         polarity = "dark";
         cursor = {
-          package = pkgs.graphite-cursors;
-          name = "Graphite dark nord Cursors";
+          package = pkgs.phinger-cursors;
+          name = "phinger-cursors-dark";
+          size = 20;
         };
       };
       yomi = {

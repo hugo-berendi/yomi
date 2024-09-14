@@ -32,8 +32,8 @@
 
   environment.systemPackages = let
     cloneConfig = pkgs.writeShellScriptBin "liftoff" ''
-      git clone https://github.com:hugo-berendi/nix-config.git
-      cd nix-config
+      git clone https://github.com:hugo-berendi/yomi.git
+      cd yomi
     '';
   in
     with pkgs; [

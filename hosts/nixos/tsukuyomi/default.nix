@@ -108,7 +108,7 @@
 
   environment.sessionVariables = {
     NIXOS_OZONE_WL = "1";
-    FLAKE = "/home/hugob/projects/nix-config";
+    FLAKE = "/home/hugob/projects/yomi";
     ENVFS_RESOLVE_ALWAYS = "1";
     LD_LIBRARY_PATH = lib.mkForce "${pkgs.stdenv.cc.cc.lib}/lib";
   };
