@@ -14,6 +14,7 @@
     ../common/optional/greetd.nix
     ../common/optional/oci.nix
     ../common/optional/quietboot.nix
+    ../common/optional/yubikey.nix
 
     ../common/optional/desktop
     ../common/optional/desktop/steam.nix

@@ -7,7 +7,7 @@
     package = pkgs.gitFull;
 
     userName = "hugo-berendi";
-    userEmail = "hugo.berendi@outlook.de";
+    userEmail = "git@hugo-berendi.de";
 
     # {{{ Delta pager
     delta = {
@@ -52,7 +52,7 @@
       # {{{ Signing
       # Sign commits using ssh
       gpg.format = "ssh";
-      user.signingkey = "~/.ssh/id_ed25519.pub";
+      user.signingkey = "~/.ssh/yubikey.pub";
 
       # Sign everything by default
       commit.gpgsign = true;

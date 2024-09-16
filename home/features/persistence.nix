@@ -29,6 +29,9 @@
   #   "${config.xdg.configHome}/OpenTabletDriver"
   # ];
   # }}}
+  # {{{ yubikey
+  yomi.persistence.at.state.apps.yubico.directories = ["${config.home.homeDirectory}/.yubico"];
+  # }}}
   # {{{ Programming tooling
   # {{{ Elm
   # yomi.persistence.at.cache.apps.elm.directories = [".elm"];

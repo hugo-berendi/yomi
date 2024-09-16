@@ -23,6 +23,7 @@
     # }}}
     # {{{ utils
     ./utils/telescope.nix
+    ./utils/obsidian.nix
     # }}}
     # {{{ filetypes
     ./filetypes/markdown.nix

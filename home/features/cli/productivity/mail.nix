@@ -16,10 +16,10 @@
     # {{{ hugob
     hugob = rec {
       # {{{ Primary config
-      address = "hugob@hugo-berendi.de";
+      address = "personal@hugo-berendi.de";
       realName = "Hugo Berendi";
       userName = address;
-      aliases = ["git@hugo-berendi.de" "addy@hugo-berendi.de"];
+      aliases = ["git@hugo-berendi.de"];
 
       folders = {
         inbox = "Inbox";
