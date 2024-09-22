@@ -19,7 +19,11 @@ in {
     export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
   '';
 
-  users.users.pilot.packages = [pkgs.yubioath-flutter pkgs.yubikey-personalization];
+  users.users.pilot.packages = [
+    pkgs.yubioath-flutter
+    pkgs.yubikey-personalization
+    pkgs.yubikey-manager-qt
+  ];
 
   security.pam = {
     yubico = {

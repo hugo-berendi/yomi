@@ -21,3 +21,9 @@ creation_rules:
           - *hugob
           - *amaterasu
           - *tsukuyomi
+  - path_regex: home/features/cli/secrets.yaml
+    key_groups:
+      - age:
+          - *hugob
+          - *amaterasu
+          - *tsukuyomi

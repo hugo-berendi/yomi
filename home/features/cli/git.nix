@@ -1,4 +1,8 @@
-{pkgs, ...}: {
+{
+  pkgs,
+  config,
+  ...
+}: {
   home.packages = [pkgs.josh]; # Just One Single History
 
   # https://github.com/lilyinstarlight/foosteros/blob/main/config/base.nix#L163
@@ -67,4 +71,8 @@
     settings.git_protocol = "ssh";
   };
   # }}}
+
+  sops.secrets.GITHUB_TOKEN.sopsFile = ./secrets.yaml;
+
+  home.shellAliases.ghub = "GH_TOKEN=$(cat ${config.sops.secrets.GITHUB_TOKEN.path}) gh";
 }
