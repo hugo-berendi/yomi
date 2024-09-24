@@ -50,6 +50,11 @@
       # peek # GIF recorder
       # obs-studio # video recorder
       # }}}
+
+      # {{{ java development
+      jetbrains.idea-ultimate
+      jetbrains.jdk
+      # }}}
     ];
   };
 

@@ -15,6 +15,8 @@
     ./cmp/cmp.nix
     ./cmp/lspkind.nix
     ./cmp/autopairs.nix
+    ./cmp/cmp-copilot.nix
+    ./cmp/schemastore.nix
     # }}}
     # {{{ ui
     ./ui/dressing.nix

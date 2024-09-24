@@ -9,4 +9,8 @@
   };
 
   home.packages = [pkgs.wakatime];
+
+  home.shellAliases = {
+    wakatime = "wakatime-cli";
+  };
 }

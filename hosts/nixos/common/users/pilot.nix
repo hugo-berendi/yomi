@@ -16,6 +16,9 @@
     # Configure users through nix only
     mutableUsers = false;
 
+    # Sync up root and `pilot` shell
+    users.root.shell = config.users.users.pilot.shell;
+
     users.pilot = {
       inherit (config.yomi.pilot) name;
 

@@ -4,8 +4,18 @@
     fish
     */
     ''
-      # Hide welcome message & ensure we are reporting fish as shell
+      # {{{ Sets cursor based on vim mode
+      set fish_cursor_default block # Set the normal and visual mode cursors to a block
+      set fish_cursor_insert line # Set the insert mode cursor to a line
+      set fish_cursor_replace_one underscore # Set the replace mode cursor to an underscore
+
+      # Force fish to skip some checks (I think?)
+      set fish_vi_force_cursor
+      # }}}
+      # {{{ Disable greeting
       set fish_greeting
+      # }}}
+
       set VIRTUAL_ENV_DISABLE_PROMPT 1
       set -x MANPAGER "sh -c 'col -bx | bat -l man -p'"
       set -x SHELL /usr/bin/fish

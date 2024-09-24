@@ -59,5 +59,12 @@
       ''
         starship module character
       '';
+    take =
+      /*
+      fish
+      */
+      ''
+        mkdir $argv; and cd $argv
+      '';
   };
 }
