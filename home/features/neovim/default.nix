@@ -64,7 +64,7 @@ in {
     enable = true;
     defaultEditor = true;
     vimdiffAlias = true;
-    package = neovim;
+    # package = neovim;
     viAlias = true;
     vimAlias = true;
   };
@@ -93,7 +93,6 @@ in {
       frame = "full"
       idle = true
       maximized = false
-      neovim-bin = lib.getExe neovim # in reality found dynamically on $PATH if unset
       no-multigrid = false
       srgb = false
       tabs = true

@@ -82,7 +82,7 @@ in {
         if status is-interactive
         and not set -q TMUX
         and not set -q NO_TMUX
-            exec tmux attach -t Welcome || tmux || echo "Something went wrong trying to start tmux"
+            exec tmux new-session -A -s default || tmux || echo "Something went wrong trying to start tmux"
         end
         # }}}
         source (starship init fish --print-full-init | psub)
