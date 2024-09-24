@@ -19,7 +19,7 @@ pushd ~/projects/yomi/
 # nvim .
 
 # Early return if no changes were detected (thanks @singiamtel!)
-if sudo git diff --quiet HEAD -- .; then
+if git diff --quiet HEAD -- .; then
 	echo "No changes detected, exiting."
 	popd
 	exit 0
@@ -33,10 +33,10 @@ alejandra . &>/dev/null ||
 	)
 
 # add all changes for commit
-sudo git add .
+git add .
 
 # Shows your changes
-sudo git diff -U0
+git diff -U0
 
 echo "NixOS Rebuilding..."
 notify-send -e "NixOS Rebuilding..." --icon=software-update-available
@@ -56,7 +56,7 @@ sudo nixos-rebuild switch --flake .#$(hostname) --show-trace --fast --upgrade-al
 current=$(nixos-rebuild list-generations | grep current)
 
 # Commit all changes witih the generation metadata
-sudo git commit -m "$current"
+git commit -m "$current"
 
 # Back to where you were
 popd
