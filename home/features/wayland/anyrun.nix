@@ -33,7 +33,7 @@ in {
       hidePluginInfo = true;
       closeOnClick = true;
       showResultsImmediately = true;
-      maxEntries = null;
+      maxEntries = 10;
       layer = "overlay";
     };
 

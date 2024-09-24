@@ -82,7 +82,6 @@ in {
         if status is-interactive
         and not set -q TMUX
         and not set -q NO_TMUX
-        and set -q ALWAYS_TMUX
             exec tmux attach -t Welcome || tmux || echo "Something went wrong trying to start tmux"
         end
         # }}}
@@ -111,10 +110,6 @@ in {
         inherit (plugin) src;
       });
     # }}}
-  };
-
-  home.sessionVariables = {
-    ALWAYS_TMUX = "true";
   };
 
   home.packages = [pkgs.grc];

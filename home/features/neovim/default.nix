@@ -1,6 +1,8 @@
 {
   pkgs,
+  upkgs,
   config,
+  lib,
   ...
 }: let
   # {{{ Client wrapper
@@ -11,13 +13,24 @@
     name,
     binName ? name,
     extraArgs ? "",
-  }:
+    wrapFlags ? lib.id,
+  }: let
+    startupScript =
+      config.yomi.lib.lua.writeFile "." "startup" # lua
+      
+      ''
+        vim.g.nix_theme = ${config.yomi.colorscheme.lua}
+      '';
+
+    extraFlags = lib.escapeShellArg (wrapFlags ''--cmd "lua dofile('${startupScript}/startup.lua')"'');
+  in
     pkgs.symlinkJoin {
       inherit (base) name meta;
       paths = [base];
       nativeBuildInputs = [pkgs.makeWrapper];
       postBuild = ''
         wrapProgram $out/bin/${binName} \
+          --add-flags ${extraFlags} \
           ${extraArgs}
       '';
     };
@@ -29,6 +42,11 @@
     extraArgs = "--set NEOVIDE_MULTIGRID true";
     # wrapFlags = flags: "-- ${flags}";
   };
+
+  neovim =
+    if config.yomi.toggles.neovim-nightly.enable
+    then pkgs.neovim-nightly
+    else upkgs.neovim-unwrapped;
   # }}}
 in {
   # {{{ Imports
@@ -46,15 +64,12 @@ in {
     enable = true;
     defaultEditor = true;
     vimdiffAlias = true;
-    # package =
-    #   if config.yomi.toggles.neovim-nightly.enable
-    #   then pkgs.neovim-nightly
-    #   else pkgs.neovim;
+    package = neovim;
     viAlias = true;
     vimAlias = true;
   };
   # }}}
-  yomi.lua.styluaConfig = ../../../../stylua.toml;
+  yomi.lua.styluaConfig = ../../../stylua.toml;
 
   # {{{ Basic config
   # We want other modules to know that we are using neovim!
@@ -68,6 +83,32 @@ in {
     neovide
     pkgs.vimclip
   ];
+
+  home.file.".config/neovide/config.toml".text =
+    /*
+    toml
+    */
+    ''
+      fork = false
+      frame = "full"
+      idle = true
+      maximized = false
+      neovim-bin = lib.getExe neovim # in reality found dynamically on $PATH if unset
+      no-multigrid = false
+      srgb = false
+      tabs = true
+      theme = "auto"
+      title-hidden = true
+      vsync = true
+      wsl = false
+
+      [font]
+      normal      = ["${config.stylix.fonts.monospace.name}"]
+      bold        = ["${config.stylix.fonts.monospace.name}"]
+      italic      = ["${config.stylix.fonts.monospace.name}"]
+      bold_italic = ["${config.stylix.fonts.monospace.name}"]
+      size        = ${builtins.toString config.stylix.fonts.sizes.terminal}
+    '';
   # }}}
   # {{{ Persistence
   yomi.persistence.at.state.apps.neovim.directories = [

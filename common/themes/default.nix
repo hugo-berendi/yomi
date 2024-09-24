@@ -229,7 +229,7 @@
     };
   };
 
-  currentTheme = themes.ashes;
+  currentTheme = themes.rosepine-moon;
 in {
   # We apply the current theme here.
   # The rest is handled by the respective modules!

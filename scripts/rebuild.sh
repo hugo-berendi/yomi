@@ -18,6 +18,13 @@ pushd ~/projects/yomi/
 # Edit your config
 # nvim .
 
+# Autoformat your nix files
+alejandra . &>/dev/null ||
+	(
+		alejandra .
+		echo "formatting failed!" && exit 1
+	)
+
 # Early return if no changes were detected (thanks @singiamtel!)
 if git diff --quiet HEAD -- .; then
 	echo "No changes detected, exiting."
@@ -25,12 +32,7 @@ if git diff --quiet HEAD -- .; then
 	exit 0
 fi
 
-# Autoformat your nix files
-alejandra . &>/dev/null ||
-	(
-		alejandra .
-		echo "formatting failed!" && exit 1
-	)
+git diff
 
 # add all changes for commit
 git add .
