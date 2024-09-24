@@ -1,8 +1,12 @@
 {pkgs, ...}: {
   boot.plymouth = {
     enable = true;
-    themePackages = [pkgs.plymouthThemeLone];
-    theme = "lone";
+    # themePackages = [pkgs.plymouthThemeLone];
+    # theme = "lone";
+  };
+  stylix.targets.plymouth = {
+    enable = true;
+    logoAnimated = true;
   };
 
   console = {
