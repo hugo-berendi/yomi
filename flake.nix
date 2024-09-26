@@ -98,6 +98,9 @@
     anyrun-nixos-options.url = "github:n3oney/anyrun-nixos-options";
     anyrun-nixos-options.inputs.nixpkgs.follows = "nixpkgs";
 
+    anyrun-rbw.url = "github:uttarayan21/anyrun-rbw";
+    anyrun-rbw.inputs.nixpkgs.follows = "nixpkgs";
+
     nix-flatpak.url = "github:gmodena/nix-flatpak";
 
     miros.url = "github:prescientmoon/miros";

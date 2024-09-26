@@ -22,6 +22,7 @@ in {
       plugins =
         normal-plugins
         ++ [
+          inputs.anyrun-rbw.packages.${pkgs.system}.default
         ];
       # }}}
       # {{{ Geometry
@@ -52,6 +53,12 @@ in {
         prefix: ":t",
         language_delimiter: ">",
         max_entries: 3,
+      )
+    '';
+
+    extraConfigFiles."rbw.ron".text = ''
+      Config(
+        prefix: ":p",
       )
     '';
 

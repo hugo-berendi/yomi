@@ -20,6 +20,7 @@
     ./lazygit.nix
     ./cava.nix
     ./hyfetch.nix
+    ./rbw.nix
   ];
 
   programs.bash.enable = true;

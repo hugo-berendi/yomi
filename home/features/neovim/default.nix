@@ -40,7 +40,7 @@
     base = pkgs.neovide;
     name = "neovide";
     extraArgs = "--set NEOVIDE_MULTIGRID true";
-    # wrapFlags = flags: "-- ${flags}";
+    wrapFlags = flags: "-- ${flags}";
   };
 
   neovim =
@@ -106,7 +106,7 @@ in {
       bold        = ["${config.stylix.fonts.monospace.name}"]
       italic      = ["${config.stylix.fonts.monospace.name}"]
       bold_italic = ["${config.stylix.fonts.monospace.name}"]
-      size        = ${builtins.toString config.stylix.fonts.sizes.terminal}
+      size        = ${builtins.toString config.stylix.fonts.sizes.applications}
     '';
   # }}}
   # {{{ Persistence

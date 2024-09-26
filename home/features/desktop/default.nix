@@ -4,6 +4,8 @@
     ./foot.nix
     # ./dunst # notifaction handler
     ./mako.nix
+
+    ./calibre.nix
   ];
 
   # Notifies on low battery percentages
