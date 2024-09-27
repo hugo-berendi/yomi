@@ -1,7 +1,5 @@
 # This handles audio stuff
 {...}: {
-  sound.enable = true;
-
   security.rtkit.enable = true;
   hardware.pulseaudio.enable = false;
 

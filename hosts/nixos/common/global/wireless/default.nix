@@ -8,10 +8,10 @@
     fallbackToWPA2 = false;
 
     # Declarative
-    environmentFile = config.sops.secrets.wireless.path;
+    secretsFile = config.sops.secrets.wireless.path;
     networks = {
       "Susanoo" = {};
-      "FRITZ!Box 6591 Cable OY" = {psk = "@HOME_WIFI_PASS@";};
+      "FRITZ!Box 6591 Cable OY".pskRaw = "ext:HOME_WIFI_PASS";
     };
 
     # Imperative

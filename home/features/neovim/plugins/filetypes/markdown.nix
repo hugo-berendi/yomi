@@ -1,17 +1,12 @@
 {
   programs.nixvim = {
     plugins = {
-      # markview = { # Does not work as of 24.05, only in unstable
-      #   enable = true;
-      #   settings = {
-      #     hybrid_modes = ["i" "v"];
-      #     modes = ["n" "no"];
-      #   };
-      # };
-      markdown-preview = {
+      markview = {
+        # Does not work as of 24.05, only in unstable
         enable = true;
         settings = {
-          auto_start = true;
+          hybrid_modes = ["i" "v"];
+          modes = ["n" "no"];
         };
       };
     };

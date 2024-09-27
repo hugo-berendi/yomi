@@ -38,7 +38,7 @@
   # }}}
   # {{{ A few ad-hoc hardware settings
   hardware.enableAllFirmware = true;
-  hardware.opengl.enable = true;
+  hardware.graphics.enable = true;
   # hardware.opentabletdriver.enable = true;
   # hardware.keyboard.qmk.enable = true;
   powerManagement.cpuFreqGovernor = "ondemand";

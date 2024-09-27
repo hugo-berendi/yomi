@@ -27,7 +27,7 @@
     hexyl
     exiftool
     ouch
-    transmission
+    transmission_4
     ripgrep
   ];
 }
