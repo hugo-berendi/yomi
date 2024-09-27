@@ -10,6 +10,7 @@
     # }}}
     # {{{ editor
     ./editor/treesitter.nix
+    ./editor/icons.nix
     # }}}
     # {{{ cmp
     ./cmp/cmp.nix
