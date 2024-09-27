@@ -53,8 +53,8 @@ in {
     enable = noThemesEnabled;
 
     transparentBackground = {
-      main = true;
-      signColumn = true;
+      main = noThemesEnabled;
+      signColumn = noThemesEnabled;
     };
   };
 

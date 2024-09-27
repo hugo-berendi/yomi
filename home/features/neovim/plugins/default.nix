@@ -32,4 +32,17 @@
     ./filetypes/markdown.nix
     # }}}
   ];
+
+  programs.nixvim.plugins = {
+    noice = {
+      enable = true;
+    };
+    ts-comments = {
+      enable = true;
+    };
+    which-key = {
+      enable = true;
+      settings = {};
+    };
+  };
 }
