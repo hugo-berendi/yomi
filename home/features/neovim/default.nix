@@ -89,7 +89,7 @@ in {
     package = neovide;
     settings = {
       fork = false;
-      frame = "transparent";
+      frame = "full";
       idle = true;
       maximized = false;
       no-multigrid = false;
