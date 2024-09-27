@@ -56,6 +56,10 @@ in {
       )
     '';
 
+    extraConfigFiles."rbw.ron".text = ''
+      Config()
+    ''; # idk why it needs a empty config
+
     extraCss =
       /*
       css

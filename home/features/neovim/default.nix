@@ -3,6 +3,7 @@
   upkgs,
   config,
   lib,
+  inputs,
   ...
 }: let
   # {{{ Client wrapper
@@ -45,7 +46,7 @@
 
   neovim =
     if config.yomi.toggles.neovim-nightly.enable
-    then pkgs.neovim-nightly
+    then inputs.neovim-nightly-overlay.packages.${pkgs.system}.default
     else upkgs.neovim-unwrapped;
   # }}}
 in {
@@ -64,7 +65,7 @@ in {
     enable = true;
     defaultEditor = true;
     vimdiffAlias = true;
-    # package = neovim;
+    package = neovim;
     viAlias = true;
     vimAlias = true;
   };
@@ -80,34 +81,34 @@ in {
   home.sessionVariables.EDITOR = "nvim";
 
   home.packages = [
-    neovide
     pkgs.vimclip
   ];
 
-  home.file.".config/neovide/config.toml".text =
-    /*
-    toml
-    */
-    ''
-      fork = false
-      frame = "full"
-      idle = true
-      maximized = false
-      no-multigrid = false
-      srgb = false
-      tabs = true
-      theme = "auto"
-      title-hidden = true
-      vsync = true
-      wsl = false
+  programs.neovide = {
+    enable = true;
+    package = neovide;
+    settings = {
+      fork = false;
+      frame = "transparent";
+      idle = true;
+      maximized = false;
+      no-multigrid = false;
+      srgb = false;
+      tabs = true;
+      theme = "auto";
+      title-hidden = true;
+      vsync = true;
+      wsl = false;
 
-      [font]
-      normal      = ["${config.stylix.fonts.monospace.name}"]
-      bold        = ["${config.stylix.fonts.monospace.name}"]
-      italic      = ["${config.stylix.fonts.monospace.name}"]
-      bold_italic = ["${config.stylix.fonts.monospace.name}"]
-      size        = ${builtins.toString config.stylix.fonts.sizes.applications}
-    '';
+      font = {
+        normal = ["${config.stylix.fonts.monospace.name}"];
+        bold = ["${config.stylix.fonts.monospace.name}"];
+        italic = ["${config.stylix.fonts.monospace.name}"];
+        bold_italic = ["${config.stylix.fonts.monospace.name}"];
+        size = config.stylix.fonts.sizes.terminal;
+      };
+    };
+  };
   # }}}
   # {{{ Persistence
   yomi.persistence.at.state.apps.neovim.directories = [
