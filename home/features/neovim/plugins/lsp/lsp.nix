@@ -6,7 +6,7 @@
       helm = {enable = true;};
       lsp = {
         enable = true;
-        # inlayHints = true;
+        inlayHints = true;
         servers = {
           html = {enable = true;};
           lua-ls = {enable = true;};
