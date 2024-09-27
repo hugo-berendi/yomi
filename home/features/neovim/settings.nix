@@ -18,7 +18,7 @@
       neovide_padding_bottom = 6;
       neovide_padding_right = 12;
       neovide_padding_left = 12;
-      neovide_transparency = 0;
+      # neovide_transparency = 1;
       # transparency = config.stylix.opacity.terminal;
       neovide_theme = "auto";
       neovide_refresh_rate = 165;
