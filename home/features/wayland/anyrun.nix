@@ -56,9 +56,6 @@ in {
       )
     '';
 
-    extraConfigFiles."rbw.ron".text = ''
-    '';
-
     extraCss =
       /*
       css
