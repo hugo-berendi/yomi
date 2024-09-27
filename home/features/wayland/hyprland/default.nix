@@ -83,7 +83,7 @@ in {
       # Without this, xdg-open doesn't work
       exec = ["systemctl --user import-environment PATH && systemctl --user restart xdg-desktop-portal.service"];
       exec-once = [
-        "foot & firefox & vesktop & spotify & obsidiantui & pypr & xwaylandvideobridge"
+        "kitty & firefox & vesktop & spotify & obsidiantui & pypr & xwaylandvideobridge"
         "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
         # "wl-paste --type text --watch cliphist store" # Stores only text data
         # "wl-paste --type image --watch cliphist store" # Stores only image data

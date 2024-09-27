@@ -6,7 +6,7 @@
   vaultDir = "${config.xdg.userDirs.extraConfig.XDG_PROJECTS_DIR}/stellar-sanctum/stellar-sanctum";
 
   obsidiantui = pkgs.writeShellScriptBin "obsidiantui" ''
-    foot -a Obsidian -D ${vaultDir} nvim
+    neovide ${vaultDir}
   '';
 in {
   home.packages = [pkgs.obsidian obsidiantui];
