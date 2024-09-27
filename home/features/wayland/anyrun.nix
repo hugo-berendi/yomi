@@ -57,9 +57,6 @@ in {
     '';
 
     extraConfigFiles."rbw.ron".text = ''
-      Config(
-        prefix: ":p",
-      )
     '';
 
     extraCss =
