@@ -11,6 +11,7 @@
     # {{{ editor
     ./editor/treesitter.nix
     ./editor/icons.nix
+    ./editor/vim-css-colors.nix
     # }}}
     # {{{ cmp
     ./cmp/cmp.nix
@@ -23,10 +24,12 @@
     ./ui/dressing.nix
     ./ui/dashboard.nix
     ./ui/lualine.nix
+    ./ui/rainbow-delimiters.nix
     # }}}
     # {{{ utils
     ./utils/telescope.nix
     ./utils/obsidian.nix
+    ./utils/ts-autotag.nix
     # }}}
     # {{{ filetypes
     ./filetypes/markdown.nix
@@ -37,7 +40,7 @@
     noice = {
       enable = true;
     };
-    ts-comments = {
+    todo-comments = {
       enable = true;
     };
     which-key = {
