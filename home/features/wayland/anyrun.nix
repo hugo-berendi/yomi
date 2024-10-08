@@ -23,7 +23,7 @@ in {
         ++ [
           # inputs.anyrun-rbw.packages.${pkgs.system}.default
           inputs.anyrun-plugins.packages.${pkgs.system}.cliphist
-          inputs.anyrun-plugins.packages.${pkgs.system}.hyprwin
+          inputs.anyrun-hyprwin.packages.${pkgs.system}.default
           inputs.anyrun-plugins.packages.${pkgs.system}.applications
           inputs.anyrun-plugins.packages.${pkgs.system}.symbols
         ];

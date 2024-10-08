@@ -109,6 +109,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    anyrun-hyprwin = {
+      url = "github:uttarayan21/anyrun-hyprwin";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     anyrun-plugins = {
       url = "github:wuliuqii/anyrun-plugins";
       inputs.nixpkgs.follows = "nixpkgs";
