@@ -67,7 +67,7 @@
           "format-icons" = {
             "default" = "";
             "urgent" = "";
-            "focused" = "";
+            "active" = "";
           };
           "persistent-workspaces" = {
             "*" = 10;

@@ -23,7 +23,7 @@ in {
         ++ [
           # inputs.anyrun-rbw.packages.${pkgs.system}.default
           inputs.anyrun-plugins.packages.${pkgs.system}.cliphist
-          inputs.anyrun-hyprwin.packages.${pkgs.system}.default
+          # inputs.anyrun-hyprwin.packages.${pkgs.system}.default
           inputs.anyrun-plugins.packages.${pkgs.system}.applications
           inputs.anyrun-plugins.packages.${pkgs.system}.symbols
         ];
@@ -36,7 +36,7 @@ in {
 
       hidePluginInfo = true;
       closeOnClick = true;
-      showResultsImmediately = true;
+      showResultsImmediately = false;
       maxEntries = 10;
       layer = "overlay";
     };
