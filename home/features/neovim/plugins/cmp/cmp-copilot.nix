@@ -5,7 +5,7 @@
     };
     plugins.copilot-lua = {
       enable = true;
-      suggestion = {enabled = true;};
+      suggestion = {enabled = false;};
       panel = {enabled = false;};
     };
 

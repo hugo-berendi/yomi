@@ -25,63 +25,55 @@
         sections = {
           lualine_a = [
             {
-              name = "mode";
+              __unkeyed-1 = "mode";
               icon = " ";
             }
           ];
           lualine_b = [
             {
-              name = "branch";
+              __unkeyed-1 = "branch";
               icon = "";
             }
             {
-              name = "diff";
-              extraConfig = {
-                symbols = {
-                  added = " ";
-                  modified = " ";
-                  removed = " ";
-                };
+              __unkeyed-1 = "diff";
+              symbols = {
+                added = " ";
+                modified = " ";
+                removed = " ";
               };
             }
           ];
           lualine_c = [
             {
-              name = "diagnostics";
-              extraConfig = {
-                sources = ["nvim_lsp"];
-                symbols = {
-                  error = " ";
-                  warn = " ";
-                  info = " ";
-                  hint = "󰝶 ";
-                };
+              __unkeyed-1 = "diagnostics";
+              sources = ["nvim_lsp"];
+              symbols = {
+                error = " ";
+                warn = " ";
+                info = " ";
+                hint = "󰝶 ";
               };
             }
             {
-              name = "navic";
+              __unkeyed-1 = "navic";
             }
           ];
           lualine_x = [
             {
-              name = "filetype";
-              extraConfig = {
-                icon_only = true;
-                separator = "";
-                padding = {
-                  left = 1;
-                  right = 0;
-                };
+              __unkeyed-1 = "filetype";
+              icon_only = true;
+              separator = "";
+              padding = {
+                left = 1;
+                right = 0;
               };
             }
             {
-              name = "filename";
-              extraConfig = {
-                path = 1;
-              };
+              __unkeyed-1 = "filename";
+              path = 1;
             }
             {
-              name.__raw = ''
+              __unkeyed-1.__raw = ''
                 function()
                   local icon = " "
                   local status = require("copilot.api").status.data
@@ -97,12 +89,12 @@
           ];
           lualine_y = [
             {
-              name = "progress";
+              __unkeyed-1 = "progress";
             }
           ];
           lualine_z = [
             {
-              name = "location";
+              __unkeyed-1 = "location";
             }
           ];
         };
