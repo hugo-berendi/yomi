@@ -10,7 +10,7 @@
     # }}}
     # {{{ editor
     ./editor/treesitter.nix
-    ./editor/icons.nix
+    ./editor/wakatime.nix
     ./editor/vim-css-colors.nix
     # }}}
     # {{{ cmp
@@ -30,6 +30,8 @@
     ./utils/telescope.nix
     ./utils/obsidian.nix
     ./utils/ts-autotag.nix
+    ./utils/yazi.nix
+    ./utils/mini.nix
     # }}}
     # {{{ filetypes
     ./filetypes/markdown.nix
