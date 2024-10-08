@@ -182,22 +182,6 @@
           desc = "Document diagnostics";
         };
       }
-      {
-        mode = "n";
-        key = "<leader>fe";
-        action = "<cmd>Telescope file_browser<cr>";
-        options = {
-          desc = "File browser";
-        };
-      }
-      {
-        mode = "n";
-        key = "<leader>fE";
-        action = "<cmd>Telescope file_browser path=%:p:h select_buffer=true<cr>";
-        options = {
-          desc = "File browser";
-        };
-      }
     ];
     extraConfigLua = ''
       require("telescope").setup{

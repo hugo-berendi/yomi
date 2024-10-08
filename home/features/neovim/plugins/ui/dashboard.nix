@@ -59,7 +59,7 @@
             key = "fg";
           }
           {
-            action = "Telescope file_browser";
+            action = "Yazi";
             desc = " File Browser";
             icon = " ";
             key = "fe";
