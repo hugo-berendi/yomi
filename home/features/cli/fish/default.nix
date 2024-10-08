@@ -63,7 +63,7 @@ in {
   # {{{ fish
   programs.fish = {
     enable = true;
-    package = pkgs.fish;
+    # package = pkgs.fish;
 
     interactiveShellInit =
       /*

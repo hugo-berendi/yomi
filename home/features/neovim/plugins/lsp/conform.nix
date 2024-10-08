@@ -127,6 +127,7 @@
             "shfmt"
           ];
           json = ["jq"];
+          java = ["astyle"];
           "_" = ["trim_whitespace"];
         };
 
@@ -160,6 +161,9 @@
           };
           bicep = {
             command = "${lib.getExe pkgs.bicep}";
+          };
+          astyle = {
+            command = "${lib.getExe pkgs.astyle}";
           };
           #yamlfmt = {
           #  command = "${lib.getExe pkgs.yamlfmt}";

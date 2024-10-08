@@ -22,6 +22,7 @@
     config.xdg.userDirs.music
     config.xdg.userDirs.videos
     config.xdg.userDirs.extraConfig.XDG_PROJECTS_DIR
+    config.xdg.userDirs.extraConfig.XDG_BOOKS_DIR
   ];
   # }}}
   # {{{ OpenTabletDriver

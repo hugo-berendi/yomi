@@ -3,7 +3,9 @@
   lib,
   pkgs,
   ...
-}: {
+}: let
+  current_wm = lib.getExe config.programs.hyprland.package;
+in {
   services.greetd = {
     enable = true;
     vt = 1;
@@ -11,8 +13,9 @@
       default_session = {
         command = ''
           ${lib.getExe pkgs.greetd.tuigreet} \
-            -c ${lib.getExe config.programs.hyprland.package} \
+            -c ${current_wm} \
             -g " (.>_>.) Welcome to ${config.networking.hostName}! (.<_<.)" \
+            --user-menu \
             --remember \
             --asterisks \
             --theme border=magenta;text=white;prompt=white;time=white;action=white;button=magenta;container=black;input=white \

@@ -35,7 +35,7 @@
 
   betterfoxUserJS = builtins.fetchurl {
     url = "https://raw.githubusercontent.com/yokoffing/Betterfox/main/user.js";
-    sha256 = "0sjklyz6zxvcfrqmvfzyyxkrflshzsksgw845qmhw8wnkamxsfb0";
+    sha256 = "1jb0mxb0aabxn7wzd1y773p4ayil9xkp3r2k832cwbmzzbkpipkv";
   };
   # ffUltimaRepo = builtins.fetchGit {
   #   url = "https://github.com/soulhotel/FF-ULTIMA.git";

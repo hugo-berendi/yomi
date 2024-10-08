@@ -69,7 +69,6 @@
     vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
     wget
     git
-    gcc
     go
     python3
     python3.pkgs.pip
@@ -83,6 +82,8 @@
     cargo
     rustc
 
+    gcc13
+
     envfs
   ];
 
@@ -90,7 +91,7 @@
     NIXOS_OZONE_WL = "1";
     FLAKE = "/home/hugob/projects/yomi";
     ENVFS_RESOLVE_ALWAYS = "1";
-    LD_LIBRARY_PATH = lib.mkForce "${pkgs.stdenv.cc.cc.lib}/lib";
+    # LD_LIBRARY_PATH = lib.mkForce "${pkgs.stdenv.cc.cc.lib}/lib";
   };
 
   environment.etc."fuse.conf".text = lib.mkForce ''

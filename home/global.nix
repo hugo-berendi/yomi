@@ -105,8 +105,11 @@ in {
     videos = "${config.home.homeDirectory}/media/videos";
     documents = "${config.home.homeDirectory}/media/documents";
 
-    extraConfig.XDG_SCREENSHOTS_DIR = "${config.xdg.userDirs.pictures}/screenshots";
-    extraConfig.XDG_PROJECTS_DIR = "${config.home.homeDirectory}/projects";
+    extraConfig = {
+      XDG_SCREENSHOTS_DIR = "${config.xdg.userDirs.pictures}/screenshots";
+      XDG_PROJECTS_DIR = "${config.home.homeDirectory}/projects";
+      XDG_BOOKS_DIR = "${config.home.homeDirectory}/media/books";
+    };
   };
 
   systemd.user.tmpfiles.rules = [

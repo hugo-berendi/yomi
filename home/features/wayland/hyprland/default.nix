@@ -1,5 +1,6 @@
 {
   pkgs,
+  opkgs,
   lib,
   config,
   inputs,
@@ -13,13 +14,13 @@ in {
     hyprcursor
     rosePineCursor
     cliphist
-    inputs.pyprland.packages."x86_64-linux".pyprland
+    inputs.pyprland.packages.${pkgs.system}.pyprland
   ];
 
   stylix.targets.hyprland.enable = false;
   wayland.windowManager.hyprland = {
     enable = true;
-    package = pkgs.hyprland;
+    package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
     extraConfig = builtins.readFile ./hyprland.conf;
 
     systemd.variables = ["--all"];
@@ -83,7 +84,7 @@ in {
       # Without this, xdg-open doesn't work
       exec = ["systemctl --user import-environment PATH && systemctl --user restart xdg-desktop-portal.service"];
       exec-once = [
-        "kitty & firefox & vesktop & spotify & obsidiantui & pypr & xwaylandvideobridge"
+        "foot --server & footclient & firefox & vesktop & spotify & obsidiantui & pypr & xwaylandvideobridge"
         "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
         # "wl-paste --type text --watch cliphist store" # Stores only text data
         # "wl-paste --type image --watch cliphist store" # Stores only image data
@@ -92,12 +93,52 @@ in {
 
       # {{{ Keybindings
       "$mod" = "SUPER";
-      bind = [
-        "$mod, C, exec, cliphist list | anyrun --plugins ${inputs.anyrun.packages.${pkgs.system}.stdin}/lib/libstdin.so | cliphist decode | wl-copy"
-        "$mod, V, exec, pypr toggle volume"
-        "$mod Shift, Return, exec, pypr toggle term"
-        "$mod, Y, exec, pypr attach"
+      bind =
+        [
+          "$mod, C, exec, cliphist list | anyrun --plugins ${inputs.anyrun.packages.${pkgs.system}.stdin}/lib/libstdin.so | cliphist decode | wl-copy"
+          "$mod, V, exec, pypr toggle volume"
+          "$mod Shift, Return, exec, pypr toggle term"
+          "$mod, Y, exec, pypr attach"
+
+          ", XF86AudioMute, exec, volume --toggle"
+          ", XF86AudioStop, exec, volume --stop"
+          ", XF86AudioPrev, exec, volume --previous"
+          ", XF86AudioNext, exec, volume --next"
+          ", XF86AudioPlay, exec, volume --play-pause"
+        ]
+        ++ (
+          # workspaces
+          # binds $mod + [shift +] {1..10} to [move to] workspace {1..10}
+          builtins.concatLists (
+            builtins.genList (
+              i: let
+                ws =
+                  if i == 0
+                  then 10
+                  else i + 1;
+              in [
+                "$mod, code:1${toString i}, workspace, ${toString ws}"
+                "$mod SHIFT, code:1${toString i}, movetoworkspace, ${toString ws}"
+              ]
+            )
+            10
+          )
+        );
+      # {{{ binds that repeat when held
+      binde = [
+        ", XF86AudioRaiseVolume, exec, volume --inc"
+        ", XF86AudioLowerVolume, exec, volume --dec"
+        ", XF86MonBrightnessDown, exec, backlight --dec"
+        ", XF86MonBrightnessUp, exec, backlight --inc"
       ];
+      # }}}
+      # {{{ Mouse move/resize
+      # Move/resize windows with mod + LMB/RMB and dragging
+      bindm = [
+        "$mod, mouse:272, movewindow"
+        "$mod, mouse:273, resizewindow"
+      ];
+      # }}}
       # }}}
     };
   };

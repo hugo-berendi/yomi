@@ -11,6 +11,8 @@
     ./wlsunset.nix
     ./anyrun.nix
 
+    ./sway
+
     ../desktop
   ];
 

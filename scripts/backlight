@@ -13,32 +13,33 @@ get_backlight() {
 # Get icons
 get_icon() {
 	current="$(get_backlight)"
-	if [[ ("$current" -ge "0") && ("$current" -le "19200") ]]; then
-		icon="$iDIR/brightness-20.png"
-	elif [[ ("$current" -ge "19200") && ("$current" -le "38400") ]]; then
-		icon="$iDIR/brightness-40.png"
-	elif [[ ("$current" -ge "38400") && ("$current" -le "57600") ]]; then
-		icon="$iDIR/brightness-60.png"
-	elif [[ ("$current" -ge "57600") && ("$current" -le "76800") ]]; then
-		icon="$iDIR/brightness-80.png"
-	elif [[ ("$current" -ge "76800") && ("$current" -le "96000") ]]; then
-		icon="$iDIR/brightness-100.png"
+	if [[ "$current" -le 20 ]]; then
+		echo "$iDIR/brightness-20.png"
+	elif [[ "$current" -le 40 ]]; then
+		echo "$iDIR/brightness-40.png"
+	elif [[ "$current" -le 60 ]]; then
+		echo "$iDIR/brightness-60.png"
+	elif [[ "$current" -le 80 ]]; then
+		echo "$iDIR/brightness-80.png"
+	else
+		echo "$iDIR/brightness-100.png"
 	fi
 }
 
 # Notify
 notify_user() {
-	dunstify -h string:x-canonical-private-synchronous:sys-notify -u low -i "$icon" "Brightness: $(get_backlight)%" -h int:value:"$(get_backlight)"
+	local brightness=$(get_backlight)
+	notify-send -u low -i "$(get_icon)" "Brightness: $brightness%" -h int:value:"$brightness"
 }
 
 # Increase brightness
 inc_backlight() {
-	brightnessctl s +5% && get_icon && notify_user
+	brightnessctl s +5% && notify_user
 }
 
 # Decrease brightness
 dec_backlight() {
-	brightnessctl s 5%- && get_icon && notify_user
+	brightnessctl s 5%- && notify_user
 }
 
 # Execute accordingly

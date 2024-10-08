@@ -14,7 +14,6 @@
 in {
   services.wlsunset = {
     enable = true;
-    systemdTarget = "hyprland-session.target";
 
     # Random German coordinates
     latitude = "51.23";

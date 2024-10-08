@@ -55,10 +55,14 @@
       jetbrains.idea-ultimate
       jetbrains.jdk
       # }}}
+
+      trayscale
     ];
   };
 
   home.sessionVariables.QT_SCREEN_SCALE_FACTORS = 1.4; # Bigger text in qt apps
+
+  services.trayscale.enable = true;
 
   yomi = {
     # Symlink some commonly modified dotfiles outside the nix store

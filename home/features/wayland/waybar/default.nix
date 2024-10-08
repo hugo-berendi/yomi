@@ -20,7 +20,8 @@
 
         # Modules on the left side
         modules-left = [
-          "hyprland/workspaces"
+          "sway/workspaces"
+          "tray"
           "custom/music"
         ];
 
@@ -58,15 +59,15 @@
 
         # Configuration for modules
         "hyprland/workspaces" = {
-          "on-click" = "activate";
           "active-only" = false;
+          "disable-click" = false;
           "disable-scroll" = true;
           "all-outputs" = true;
           "format" = "{icon}";
           "format-icons" = {
             "default" = "";
             "urgent" = "";
-            "active" = "";
+            "focused" = "";
           };
           "persistent-workspaces" = {
             "*" = 10;

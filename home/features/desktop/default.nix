@@ -1,7 +1,7 @@
 {pkgs, ...}: {
   imports = [
-    ./kitty # terminal
-    # ./foot.nix
+    # ./kitty # terminal
+    ./foot.nix
     # ./dunst # notifaction handler
     ./mako.nix
 

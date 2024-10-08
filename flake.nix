@@ -5,7 +5,7 @@
   inputs = {
     # Nixpkgs
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    nixpkgs-old.url = "github:nixos/nixpkgs/nixos-23.11";
+    nixpkgs-old.url = "github:nixos/nixpkgs/nixos-24.05";
     # You can access packages and modules from different nixpkgs revs
     # at the same time. Here's an working example:
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
@@ -22,7 +22,8 @@
 
     # {{{ Hyprland
     hyprland = {
-      url = "github:hyprwm/Hyprland";
+      url = "github:hyprwm/Hyprland"; # ?ref=v0.42.0";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
     # Hyprland plugins
@@ -92,14 +93,32 @@
     # intray.inputs.home-manager.follows = "home-manager";
     # }}}
 
-    anyrun.url = "github:Kirottu/anyrun";
-    anyrun.inputs.nixpkgs.follows = "nixpkgs";
+    # {{{ anyrun
+    anyrun = {
+      url = "github:Kirottu/anyrun";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
-    anyrun-nixos-options.url = "github:n3oney/anyrun-nixos-options";
-    anyrun-nixos-options.inputs.nixpkgs.follows = "nixpkgs";
+    anyrun-nixos-options = {
+      url = "github:n3oney/anyrun-nixos-options";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
-    anyrun-rbw.url = "github:uttarayan21/anyrun-rbw";
-    anyrun-rbw.inputs.nixpkgs.follows = "nixpkgs";
+    anyrun-rbw = {
+      url = "github:uttarayan21/anyrun-rbw";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    anyrun-plugins = {
+      url = "github:wuliuqii/anyrun-plugins";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # anyrun-spotify = {
+    #   url = "github:hugo-berendi/anyrun-spotify";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
+    # }}}
 
     nix-flatpak.url = "github:gmodena/nix-flatpak";
 
@@ -155,6 +174,7 @@
       inherit inputs outputs;
 
       upkgs = inputs.nixpkgs-unstable.legacyPackages.${system};
+      opkgs = inputs.nixpkgs-old.legacyPackages.${system};
     };
   in
     # }}}
@@ -165,7 +185,8 @@
         system: let
           pkgs = nixpkgs.legacyPackages.${system};
           upkgs = inputs.nixpkgs-unstable.legacyPackages.${system};
-          myPkgs = import ./pkgs {inherit pkgs upkgs;};
+          opkgs = inputs.nixpkgs-old.legacyPackages.${system};
+          myPkgs = import ./pkgs {inherit pkgs upkgs opkgs;};
         in
           myPkgs
           // {

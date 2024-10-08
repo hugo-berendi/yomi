@@ -1,6 +1,10 @@
 {pkgs, ...}: let
   uptimes = pkgs.writeShellScriptBin "uptimes" (builtins.readFile ./uptimes.sh);
 
+  volume = pkgs.writeShellScriptBin "volume" (builtins.readFile ./volume.sh);
+
+  backlight = pkgs.writeShellScriptBin "backlight" (builtins.readFile ./backlight.sh);
+
   rplc =
     pkgs.writeShellScriptBin "rplc"
     /*
@@ -30,5 +34,5 @@
       fd -t f "$dir" -x sd "$search" "$replace" {}
     '';
 in {
-  home.packages = [uptimes rplc];
+  home.packages = [uptimes rplc volume backlight];
 }

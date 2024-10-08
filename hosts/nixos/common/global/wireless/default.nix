@@ -10,7 +10,7 @@
     # Declarative
     secretsFile = config.sops.secrets.wireless.path;
     networks = {
-      "Susanoo" = {};
+      "Susanoo".pskRaw = "ext:SUSANOO_HOTSPOT_PASS";
       "FRITZ!Box 6591 Cable OY".pskRaw = "ext:HOME_WIFI_PASS";
     };
 

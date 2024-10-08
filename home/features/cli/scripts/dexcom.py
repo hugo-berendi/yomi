@@ -1,7 +1,8 @@
-from pydexcom import Dexcom
-import pydexcom
-import os
 import json
+import os
+
+import pydexcom
+from pydexcom import Dexcom
 
 mapping = {
     "": ["", "none"],  # Empty string
@@ -21,7 +22,7 @@ def send(message: str):
     os.system(f"notify-send 'Dexcom' '{message}' --urgency=critical")
 
 
-dexcom = Dexcom("HugoBerendi", "destiny2", ous=True)
+dexcom = Dexcom(username="HugoBerendi", password="destiny2", ous=True)
 
 glucose_reading: pydexcom.GlucoseReading | None = dexcom.get_current_glucose_reading()
 

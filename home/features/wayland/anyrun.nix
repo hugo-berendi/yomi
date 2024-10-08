@@ -1,15 +1,14 @@
 {
   inputs,
+  lib,
   pkgs,
   config,
   ...
 }: let
   normal-plugins = with inputs.anyrun.packages.${pkgs.system}; [
-    applications
     dictionary
     rink
     stdin
-    # symbols # Looks ugly atm
     websearch
     translate
     kidex
@@ -22,7 +21,11 @@ in {
       plugins =
         normal-plugins
         ++ [
-          inputs.anyrun-rbw.packages.${pkgs.system}.default
+          # inputs.anyrun-rbw.packages.${pkgs.system}.default
+          inputs.anyrun-plugins.packages.${pkgs.system}.cliphist
+          inputs.anyrun-plugins.packages.${pkgs.system}.hyprwin
+          inputs.anyrun-plugins.packages.${pkgs.system}.applications
+          inputs.anyrun-plugins.packages.${pkgs.system}.symbols
         ];
       # }}}
       # {{{ Geometry
@@ -59,6 +62,21 @@ in {
     extraConfigFiles."rbw.ron".text = ''
       Config()
     ''; # idk why it needs a empty config
+
+    extraConfigFiles."cliphist.ron".text = ''
+      Config(
+        cliphist_path: "${lib.getExe pkgs.cliphist}",
+        max_entries: 10,
+        prefix: ":v",
+      )
+    '';
+
+    extraConfigFiles."hyprwin.ron".text = ''
+      Config(
+        max_entries: 5,
+        prefix: ":w",
+      )
+    '';
 
     extraCss =
       /*
