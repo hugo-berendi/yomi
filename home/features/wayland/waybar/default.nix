@@ -20,7 +20,7 @@
 
         # Modules on the left side
         modules-left = [
-          "sway/workspaces"
+          "hyprland/workspaces"
           "tray"
           "custom/music"
         ];
