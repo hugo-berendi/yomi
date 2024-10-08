@@ -125,8 +125,9 @@
         opacity = transparency 0.5;
         polarity = "dark";
         cursor = {
-          package = upkgs.rose-pine-cursor;
-          # name = "BreezeX-RoséPine";
+          package = pkgs.phinger-cursors;
+          name = "phinger-cursors-dark";
+          size = 20;
         };
       };
       yomi = {
