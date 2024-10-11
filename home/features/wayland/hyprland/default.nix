@@ -46,7 +46,7 @@ in {
           passes = config.yomi.theming.blur.passes;
           contrast = config.yomi.theming.blur.contrast;
           brightness = config.yomi.theming.blur.brightness;
-          noise = 5.0e-2;
+          noise = 0;
         };
       };
 

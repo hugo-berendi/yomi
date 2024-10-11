@@ -35,6 +35,9 @@
     # ./services/vaultwarden.nix
     # ./services/whoogle.nix
     # ./services/zfs.nix
+    # {{{ game servers
+    ./services/valheim.nix
+    # }}}
 
     ./filesystems
     ./hardware
