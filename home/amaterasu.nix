@@ -14,7 +14,7 @@
     ./features/desktop/zathura.nix
     ./features/desktop/gaming.nix
     ./features/wayland/hyprland
-    ./features/cli/productivity
+    ./features/productivity
   ];
   home = {
     file = {};
