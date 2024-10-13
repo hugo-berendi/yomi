@@ -76,7 +76,7 @@
       #custom-music {
         background:
           linear-gradient(${config.lib.stylix.scheme.withHashtag.base01}, ${config.lib.stylix.scheme.withHashtag.base01}) padding-box,
-          linear-gradient(${config.lib.stylix.scheme.withHashtag.base0D}, ${config.lib.stylix.scheme.withHashtag.base0D}) border-box;
+          linear-gradient(${config.lib.stylix.scheme.withHashtag.base0D}80, ${config.lib.stylix.scheme.withHashtag.base0D}80) border-box;
         border-width: ${toString config.yomi.theming.rounding.size}px;
         border-style: solid;
         border-color: transparent;
