@@ -50,13 +50,21 @@
   };
 
   # {{{ HACK: workaround for some scripts not using #!/usr/bin/env 🥲
-  system.activationScripts = ''
-    ln -sf ${pkgs.fish}/bin/fish /usr/bin/fish
-  '';
-  environment.persistence."/persist/state".files = [
-    "/usr/bin/fish"
-  ];
+  system.activationScripts = {
+    stdio =
+      lib.mkForce
+      {
+        text =
+          lib.mkForce ''
+          '';
+      };
+  };
+  # environment.persistence."/persist/state".files = [
+  #   "/usr/bin/fish"
+  # ];
   # }}}
+
+  programs.nix-ld.enable = true;
 
   # {{{ Set user-specific ssh permissions
   # This is mainly useful because home-manager can often fail if the perms on

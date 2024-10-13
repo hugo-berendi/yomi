@@ -19,6 +19,10 @@
             {name = "nvim_lsp";}
             {name = "emoji";}
             {
+              name = "latex_symbols";
+              option.strategy = 0;
+            }
+            {
               name = "buffer"; # text within current buffer
               option.get_bufnrs.__raw = "vim.api.nvim_list_bufs";
               keywordLength = 3;

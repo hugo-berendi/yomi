@@ -12,6 +12,7 @@
     ./editor/treesitter.nix
     ./editor/wakatime.nix
     ./editor/vim-css-colors.nix
+    ./editor/presence.nix
     # }}}
     # {{{ cmp
     ./cmp/cmp.nix
@@ -35,6 +36,7 @@
     # }}}
     # {{{ filetypes
     ./filetypes/markdown.nix
+    ./filetypes/latex.nix
     # }}}
   ];
 
