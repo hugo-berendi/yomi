@@ -32,7 +32,7 @@ else
 	mount /dev/disk/by-uuid/9e2345c6-7c31-4a76-97d8-73adc71c1a19 /kagutsuchi
 fi
 
-if [ "$mode" = "mount" ] && [ "$host" = "lapetus" ]; then
+if [ "$mode" = "mount" ] && [ "$host" = "inari" ]; then
 	echo "🏊 Importing zpool"
 	zpool import -lfR /mnt zroot
 fi

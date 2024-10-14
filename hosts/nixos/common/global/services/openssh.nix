@@ -19,7 +19,7 @@ in {
 
     settings = {
       PermitRootLogin = lib.mkDefault "no"; # Forbid root login through SSH.
-      PasswordAuthentication = lib.mkDefault false; # Use keys only.
+      PasswordAuthentication = lib.mkDefault true; # Use keys only.
     };
 
     # Automatically remove stale sockets

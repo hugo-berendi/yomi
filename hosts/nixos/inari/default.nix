@@ -4,11 +4,11 @@
     ../common/users/pilot.nix
     ../common/users/guest.nix
     ../common/optional/oci.nix
-    ../common/optional/services/acme.nix
+    # ../common/optional/services/acme.nix
     # ../common/optional/services/kanata.nix
-    ../common/optional/services/nginx.nix
-    ../common/optional/services/postgres.nix
-    ../common/optional/services/syncthing.nix
+    # ../common/optional/services/nginx.nix
+    # ../common/optional/services/postgres.nix
+    # ../common/optional/services/syncthing.nix
     # ../common/optional/services/restic
 
     # # ./services/commafeed.nix
@@ -34,9 +34,9 @@
     # ./services/smos.nix
     # ./services/vaultwarden.nix
     # ./services/whoogle.nix
-    # ./services/zfs.nix
+    ./services/zfs.nix
     # {{{ game servers
-    ./services/valheim.nix
+    # ./services/valheim.nix
     # }}}
 
     ./filesystems
@@ -45,8 +45,8 @@
 
   # Machine ids
   networking.hostName = "inari";
-  networking.hostId = "930f432a";
-  environment.etc.machine-id.text = "d9571439c8a34e34b89727b73bad3587";
+  networking.hostId = "14725dd3";
+  # environment.etc.machine-id.text = "d9571439c8a34e34b89727b73bad3587";
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
   system.stateVersion = "24.05";

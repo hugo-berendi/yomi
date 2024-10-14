@@ -286,7 +286,7 @@
           hostname = "tsukuyomi";
         };
         inari = nixos {
-          system = "aarch64-linux";
+          system = "x86_64-linux";
           hostname = "inari";
         };
         iso = nixos {

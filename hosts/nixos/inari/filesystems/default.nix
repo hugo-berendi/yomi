@@ -1,8 +1,7 @@
 {lib, ...}: {
   imports = [
-    # ./zfs.nix
-    # (import ./partitions.nix {})
-    (import ./partitions-safe.nix {})
+    ./zfs.nix
+    (import ./partitions.nix {})
   ];
 
   # Mark a bunch of paths as needed for boot
