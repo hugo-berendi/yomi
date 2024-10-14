@@ -666,18 +666,18 @@
       },
       "locked": {
         "dir": "pkgs/firefox-addons",
-        "lastModified": 1728360193,
-        "narHash": "sha256-UpN2xQiIzHLD3WZcr51BKtJTDLbjzB5H8cdg4Zn/LX4=",
+        "lastModified": 1728903803,
+        "narHash": "sha256-D6j/0rNY6BSAkKPrtU5cQWCnylEZZs2khnmz0BH7GM4=",
         "ref": "refs/heads/master",
-        "rev": "4728d8775b311938b985c1b8ba07e077990d2a4b",
-        "revCount": 3828,
+        "rev": "bc25a8982de641c4388299f7fb4f22a0e42f99f7",
+        "revCount": 3845,
         "type": "git",
-        "url": "https://gitlab.com/rycee/nur-expressions"
+        "url": "https://gitlab.com/rycee/nur-expressions?dir=pkgs/firefox-addons"
       },
       "original": {
         "dir": "pkgs/firefox-addons",
         "type": "git",
-        "url": "https://gitlab.com/rycee/nur-expressions"
+        "url": "https://gitlab.com/rycee/nur-expressions?dir=pkgs/firefox-addons"
       }
     },
     "flake-compat": {
