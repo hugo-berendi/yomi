@@ -74,7 +74,7 @@
       tooltip,
       #custom-dexcom,
       #custom-music {
-        background: ${config.lib.stylix.scheme.withHashtag.base0D}08;
+        background: rgba(${config.yomi.theming.colors.rgba "base00"});
         // linear-gradient(${config.lib.stylix.scheme.withHashtag.base01}, ${config.lib.stylix.scheme.withHashtag.base01}) padding-box,
         // linear-gradient(${config.lib.stylix.scheme.withHashtag.base0D}, ${config.lib.stylix.scheme.withHashtag.base0D}) border-box;
         border-width: ${toString config.yomi.theming.rounding.size}px;
