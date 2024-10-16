@@ -77,7 +77,7 @@
         background: rgba(${config.yomi.theming.colors.rgba "base00"});
         border-width: ${toString config.yomi.theming.rounding.size}px;
         border-style: solid;
-        border-color: transparent;
+        border-color: ${config.lib.stylix.scheme.withHashtag.base0D};
         margin-top: 5px;
         margin-bottom: 5px;
         padding-top: 5px;
