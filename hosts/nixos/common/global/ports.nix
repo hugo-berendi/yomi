@@ -3,5 +3,6 @@
 {
   yomi.ports = {
     suwayomi = 8400;
+    warden = 8401;
   };
 }

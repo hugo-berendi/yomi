@@ -5,7 +5,7 @@
     group = config.services.cloudflared.group;
   };
 
-  yomi.cloudflared.tunnel = "347d9ead-a523-4f8b-bca7-3066e31e2952";
+  yomi.cloudflared.tunnel = "bacb68ec-218f-4135-9e88-888b366ac83e";
   services.cloudflared = {
     enable = true;
     tunnels.${config.yomi.cloudflared.tunnel} = {

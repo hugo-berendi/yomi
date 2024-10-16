@@ -4,17 +4,17 @@
     ../common/users/pilot.nix
     ../common/users/guest.nix
     ../common/optional/oci.nix
-    # ../common/optional/services/acme.nix
+    ../common/optional/services/acme.nix
     # ../common/optional/services/kanata.nix
-    # ../common/optional/services/nginx.nix
-    # ../common/optional/services/postgres.nix
-    # ../common/optional/services/syncthing.nix
+    ../common/optional/services/nginx.nix
+    ../common/optional/services/postgres.nix
+    ../common/optional/services/syncthing.nix
     # ../common/optional/services/restic
 
     # # ./services/commafeed.nix
     # # ./services/ddclient.nix
     # ./services/actual.nix
-    # ./services/cloudflared.nix
+    ./services/cloudflared.nix
     # ./services/diptime.nix
     # ./services/forgejo.nix
     # ./services/grafana.nix
@@ -32,7 +32,7 @@
     # ./services/radicale.nix
     # ./services/redlib.nix
     # ./services/smos.nix
-    # ./services/vaultwarden.nix
+    ./services/vaultwarden.nix
     # ./services/whoogle.nix
     ./services/zfs.nix
     # {{{ game servers

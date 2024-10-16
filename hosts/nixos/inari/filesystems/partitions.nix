@@ -12,24 +12,25 @@
             # {{{ Boot
             ESP = {
               # name = "ESP";
-              start = "0";
-              end = "512MiB";
+              # start = "0";
+              size = "512M";
               type = "EF00";
               # bootable = true;
-              priority = 1;
+              # priority = 1;
               content = {
                 type = "filesystem";
                 format = "vfat";
                 mountpoint = "/boot";
+                mountOptions = ["umask=0077"];
               };
             };
             # }}}
             # {{{ Main
             zfs = {
               # name = "zfs";
-              start = "1GiB";
-              end = "100%";
-              priority = 2;
+              # start = "1GiB";
+              size = "100%";
+              # priority = 2;
               content = {
                 type = "zfs";
                 pool = "zroot";
@@ -55,10 +56,10 @@
         rootFsOptions = {
           compression = "lz4";
           "com.sun:auto-snapshot" = "false";
-          # encryption = "aes-256-gcm";
-          # keyformat = "passphrase";
-          # keylocation = "file:///hermes/secrets/inari/disk.key";
-          keylocation = "none";
+          encryption = "aes-256-gcm";
+          keyformat = "passphrase";
+          keylocation = "file:///kagutsuchi/secrets/inari/disk.key";
+          # keylocation = "none";
         };
 
         # {{{ Datasets

@@ -23,8 +23,8 @@
       SMTP_SECURITY = "force_tls";
       SMTP_PORT = 465;
       SMTP_HOST = "smtp.migadu.com";
-      SMTP_FROM = "vaultwarden@orbit.moonythm.dev";
-      SMTP_USERNAME = "vaultwarden@orbit.moonythm.dev";
+      SMTP_FROM = "vaultwarden@hugo-berendi.de";
+      SMTP_USERNAME = "vaultwarden@hugo-berendi.de";
     };
   };
   # }}}
