@@ -22,7 +22,7 @@
     enable = true;
     publicKeys = [
       {
-        source = ./yubikey.gpg;
+        source = ./yubikey_pub;
         trust = "ultimate";
       }
     ];

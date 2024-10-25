@@ -19,7 +19,7 @@
 
     settings = {
       captcha_enabled = false;
-      admins = ["prescientmoon"];
+      admins = ["hugo-berendi"];
       default_user_preferences = {
         default_home = "Subscriptions";
         comments = ["youtube" "reddit"];

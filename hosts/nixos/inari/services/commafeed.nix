@@ -6,7 +6,7 @@ in {
   yomi.nginx.at.rss.port = port;
 
   virtualisation.oci-containers.containers.commafeed = {
-    image = "athou/commafeed:latest";
+    image = "athou/commafeed:master-postgresql-jvm";
 
     ports = ["${toString port}:8082"]; # server:docker
     volumes = ["${dataDir}:/commafeed/data"]; # server:docker
@@ -19,7 +19,7 @@ in {
     # https://github.com/Athou/commafeed/blob/master/commafeed-server/config.yml.example
     environment = {
       CF_APP_PUBLICURL = "https://${config.yomi.nginx.at.rss.host}";
-      CF_APP_ALLOWREGISTRATIONS = "false"; # I already made an account
+      CF_APP_ALLOWREGISTRATIONS = "true"; # I already made an account
       CF_APP_MAXENTRIESAGEDAYS = "0"; # Fetch old entries
 
       # I randomly generated an user agent for this

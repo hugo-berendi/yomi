@@ -13,7 +13,7 @@ providers:
     token: "env/CLOUDFLARE_TOKEN"
 
 zones:
-  moonythm.dev.:
+  hugo-berendi.de.:
     sources:
       - zones
     targets:

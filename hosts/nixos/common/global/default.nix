@@ -14,6 +14,10 @@
     inputs.sops-nix.nixosModules.sops
     inputs.nix-flatpak.nixosModules.nix-flatpak
     # }}}
+    # {{{ Satellite subprojects
+    ../../../../dns/implementation/nixos-module.nix
+    ../../../../dns/implementation/nixos-module-assertions.nix
+    # }}}
     # {{{ global configuration
     ./cli/fish.nix
     ./services/openssh.nix

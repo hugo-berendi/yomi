@@ -1,4 +1,4 @@
-{
+{pkgs,config,...}:{
   imports = [
     ../common/global
     ../common/users/pilot.nix
@@ -11,32 +11,32 @@
     ../common/optional/services/syncthing.nix
     # ../common/optional/services/restic
 
-    # # ./services/commafeed.nix
+    ./services/commafeed.nix
     # # ./services/ddclient.nix
-    # ./services/actual.nix
+    ./services/actual.nix
     ./services/cloudflared.nix
     # ./services/diptime.nix
-    # ./services/forgejo.nix
-    # ./services/grafana.nix
-    # ./services/guacamole
-    # ./services/homer.nix
+    ./services/forgejo.nix
+    ./services/grafana.nix
+    ./services/guacamole
+    ./services/homer.nix
     # ./services/intray.nix
-    # ./services/invidious.nix
-    # ./services/jellyfin.nix
-    # ./services/jupyter.nix
-    # ./services/microbin.nix
+    ./services/invidious.nix
+    ./services/jellyfin.nix
+    ./services/jupyter.nix
+    ./services/microbin.nix
     # ./services/pounce.nix
-    # ./services/prometheus.nix
-    # ./services/prometheus.nix
+    ./services/prometheus.nix
     # ./services/qbittorrent.nix # turned on/off depending on whether my vpn is paid for
-    # ./services/radicale.nix
-    # ./services/redlib.nix
+    ./services/radicale.nix
+    ./services/redlib.nix
     # ./services/smos.nix
     ./services/vaultwarden.nix
-    # ./services/whoogle.nix
+    ./services/whoogle.nix
     ./services/zfs.nix
     # {{{ game servers
     # ./services/valheim.nix
+    ./services/minecraft.nix
     # }}}
 
     ./filesystems
@@ -55,16 +55,16 @@
   boot.loader.systemd-boot.enable = true;
 
   # Tailscale internal IP DNS records
-  # yomi.dns.records = [
-  #   {
-  #     at = config.networking.hostName;
-  #     type = "A";
-  #     value = "100.93.136.59";
-  #   }
-  #   {
-  #     at = config.networking.hostName;
-  #     type = "AAAA";
-  #     value = "fd7a:115c:a1e0::e75d:883b";
-  #   }
-  # ];
+  yomi.dns.records = [
+    {
+      at = config.networking.hostName;
+      type = "A";
+      value = "100.83.158.40";
+    }
+    {
+      at = config.networking.hostName;
+      type = "AAAA";
+      value = "fd7a:115c:a1e0::2401:9e28";
+    }
+  ];
 }

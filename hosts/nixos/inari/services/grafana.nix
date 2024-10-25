@@ -24,7 +24,7 @@ in {
       smtp = rec {
         enabled = true;
 
-        user = "grafana@orbit.moonythm.dev";
+        user = "grafana@tengu.hugo-berendi.de";
         from_name = "Grafana";
         from_address = user;
 
@@ -58,7 +58,7 @@ in {
               {
                 uid = "main_email";
                 type = "email";
-                settings.addresses = "colimit@moonythm.dev";
+                settings.addresses = "colimit@hugo-berendi.de";
               }
             ];
           }
@@ -81,7 +81,7 @@ in {
             name = "Prometheus";
             type = "prometheus";
             access = "proxy";
-            url = "https://prometheus.moonythm.dev";
+            url = "https://prometheus.hugo-berendi.de";
           }
         ];
       };

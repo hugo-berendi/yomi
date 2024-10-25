@@ -71,7 +71,7 @@
       user.signingkey = "~/.ssh/yubikey.pub";
 
       # Sign everything by default
-      commit.gpgsign = true;
+      commit.gpgsign = false;
       tag.gpgsign = true;
       # }}}
     };

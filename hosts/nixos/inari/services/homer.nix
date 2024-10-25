@@ -45,25 +45,25 @@ in {
               type = "Prometheus";
               subtitle = "Monitoring system";
               logo = icon "prometheus.png";
-              url = "https://prometheus.moonythm.dev";
+              url = "https://prometheus.hugo-berendi.de";
             }
             {
               name = "Grafana";
               subtitle = "Pretty dashboards :3";
               logo = icon "grafana.png";
-              url = "https://grafana.moonythm.dev";
+              url = "https://grafana.hugo-berendi.de";
             }
             {
               name = "Syncthing";
               subtitle = "File synchronization";
               logo = icon "syncthing.png";
-              url = "https://syncthing.lapetus.moonythm.dev";
+              url = "https://syncthing.lapetus.hugo-berendi.de";
             }
             {
               name = "Guacamole";
               subtitle = "Server remote access";
               logo = icon "guacamole.png";
-              url = "https://guacamole.moonythm.dev";
+              url = "https://guacamole.hugo-berendi.de";
             }
           ];
         }
@@ -89,7 +89,7 @@ in {
               name = "Cloudflare";
               subtitle = "Domain management";
               logo = icon "cloudflare.png";
-              url = "https://dash.cloudflare.com/761d3e81b3e42551e33c4b73274ecc82/moonythm.dev/";
+              url = "https://dash.cloudflare.com/761d3e81b3e42551e33c4b73274ecc82/hugo-berendi.de/";
             }
           ];
         }
@@ -103,19 +103,19 @@ in {
               name = "Intray";
               subtitle = "GTD capture tool";
               icon = fa "inbox";
-              url = "https://intray.moonythm.dev";
+              url = "https://intray.hugo-berendi.de";
             }
             {
               name = "Smos";
               subtitle = "A comprehensive self-management system.";
               icon = fa "cubes-stacked";
-              url = "https://smos.moonythm.dev";
+              url = "https://smos.hugo-berendi.de";
             }
             {
               name = "Actual";
               subtitle = "Budgeting tool";
               logo = icon "actual.png";
-              url = "https://actual.moonythm.dev";
+              url = "https://actual.hugo-berendi.de";
             }
           ];
         }
@@ -129,37 +129,37 @@ in {
               name = "Vaultwarden";
               subtitle = "Password manager";
               logo = icon "bitwarden.png";
-              url = "https://warden.moonythm.dev";
+              url = "https://warden.hugo-berendi.de";
             }
             {
               name = "Whoogle";
               subtitle = "Search engine";
               logo = icon "whoogle.webp";
-              url = "https://search.moonythm.dev";
+              url = "https://search.hugo-berendi.de";
             }
             {
               name = "Radicale";
               subtitle = "Calendar server";
               logo = icon "radicale.svg";
-              url = "https://cal.moonythm.dev";
+              url = "https://cal.hugo-berendi.de";
             }
             {
               name = "Microbin";
               subtitle = "Code & file sharing";
               logo = icon "microbin.png";
-              url = "https://bin.moonythm.dev";
+              url = "https://bin.hugo-berendi.de";
             }
             {
               name = "Forgejo";
               subtitle = "Git forge";
               logo = icon "forgejo.svg";
-              url = "https://git.moonythm.dev";
+              url = "https://git.hugo-berendi.de";
             }
             {
               name = "Jupyterhub";
               subtitle = "Notebook collaboration suite";
               logo = icon "jupyter.png";
-              url = "https://jupyter.moonythm.dev";
+              url = "https://jupyter.hugo-berendi.de";
             }
           ];
         }
@@ -173,37 +173,37 @@ in {
               name = "Invidious";
               subtitle = "Youtube client";
               logo = icon "invidious.png";
-              url = "https://yt.moonythm.dev";
+              url = "https://yt.hugo-berendi.de";
             }
             {
               name = "Redlib";
               subtitle = "Reddit client";
               logo = icon "libreddit.png";
-              url = "https://redlib.moonythm.dev";
+              url = "https://redlib.hugo-berendi.de";
             }
             {
               name = "Diptime";
               subtitle = "Diplomacy timer";
               icon = fa "globe";
-              url = "https://diptime.moonythm.dev";
+              url = "https://diptime.hugo-berendi.de";
             }
             {
               name = "Commafeed";
               subtitle = "RSS reader";
               logo = icon "commafeed.png";
-              url = "https://rss.moonythm.dev";
+              url = "https://rss.hugo-berendi.de";
             }
             {
               name = "Qbittorrent";
               subtitle = "Torrent client";
               logo = icon "qbittorrent.png";
-              url = "https://qbit.moonythm.dev";
+              url = "https://qbit.hugo-berendi.de";
             }
             {
               name = "Jellyfin";
               subtitle = "Media server";
               logo = icon "jellyfin.png";
-              url = "https://media.moonythm.dev";
+              url = "https://media.hugo-berendi.de";
             }
           ];
         }

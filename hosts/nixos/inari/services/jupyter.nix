@@ -28,8 +28,8 @@ in {
 
     # {{{ Spwaner & auth config
     extraConfig = ''
-      c.Authenticator.allowed_users = {'adrielus', 'javi'}
-      c.Authenticator.admin_users = {'adrielus'}
+      c.Authenticator.allowed_users = {'hugob'}
+      c.Authenticator.admin_users = {'hugob'}
 
       c.Spawner.notebook_dir='${config.users.users.pilot.home}/projects/notebooks'
       c.SystemdSpawner.mem_limit = '2G'
@@ -62,17 +62,6 @@ in {
     # }}}
   };
 
-  # {{{ Javi user
-  sops.secrets.javi_password = {
-    sopsFile = ../secrets.yaml;
-    neededForUsers = true;
-  };
-
-  users.users.javi = {
-    isNormalUser = true;
-    hashedPasswordFile = config.sops.secrets.javi_password.path;
-  };
-  # }}}
   # {{{ Networking & storage
   yomi.cloudflared.at.jupyter.port = config.yomi.ports.jupyterhub;
 

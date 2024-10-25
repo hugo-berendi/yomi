@@ -4,8 +4,8 @@
   # Helper template for networks
   makeNetworkConfig = host: port: join: secret: {
     content = ''
-      sasl-plain = prescientmoon:${config.sops.placeholder.${secret}}
-      nick = prescientmoon
+      sasl-plain = hugo-berendi:${config.sops.placeholder.${secret}}
+      nick = hugo-berendi
       host = ${host}
       port = ${toString port}
       join = ${join}
@@ -14,9 +14,9 @@
   };
 in {
   # Generate cert
-  security.acme.certs."wildcard-irc.moonythm.dev" = {
+  security.acme.certs."wildcard-irc.hugo-berendi.dev" = {
     group = user;
-    domain = "*.irc.moonythm.dev";
+    domain = "*.irc.hugo-berendi.dev";
   };
 
   # Handle secrets using sops
@@ -28,7 +28,7 @@ in {
     enable = true;
     externalHost = "irc.${config.yomi.dns.domain}";
     bindHost = "irc.${config.yomi.dns.domain}";
-    certDir = "/var/lib/acme/wildcard-irc.moonythm.dev";
+    certDir = "/var/lib/acme/wildcard-irc.hugo-berendi.de";
     networks.tilde.config = config.sops.templates."pounce-tilde.cfg".path;
   };
 

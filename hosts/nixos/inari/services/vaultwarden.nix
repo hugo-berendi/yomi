@@ -17,14 +17,14 @@
       ROCKET_PORT = config.yomi.nginx.at.warden.port;
       ROCKET_ADDRESS = "127.0.0.1";
 
-      SIGNUPS_ALLOWED = false;
+      SIGNUPS_ALLOWED = true;
       SHOW_PASSWORD_HINT = false;
 
       SMTP_SECURITY = "force_tls";
       SMTP_PORT = 465;
       SMTP_HOST = "smtp.migadu.com";
-      SMTP_FROM = "vaultwarden@hugo-berendi.de";
-      SMTP_USERNAME = "vaultwarden@hugo-berendi.de";
+      SMTP_FROM = "vaultwarden@tengu.hugo-berendi.de";
+      SMTP_USERNAME = "vaultwarden@tengu.hugo-berendi.de";
     };
   };
   # }}}

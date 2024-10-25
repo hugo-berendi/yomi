@@ -14,7 +14,7 @@
     # {{{ Settings
     settings = {
       # High level settings
-      MICROBIN_ADMIN_USERNAME = "prescientmoon";
+      MICROBIN_ADMIN_USERNAME = "hugo-berendi";
       MICROBIN_PORT = toString config.yomi.cloudflared.at.bin.port;
       MICROBIN_PUBLIC_PATH = config.yomi.cloudflared.at.bin.url;
       MICROBIN_DEFAULT_EXPIRY = "1week";

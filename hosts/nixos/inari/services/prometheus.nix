@@ -22,7 +22,7 @@
 
     scrapeConfigs = [
       {
-        job_name = "lapetus";
+        job_name = "inari";
         static_configs = [
           {
             targets = [

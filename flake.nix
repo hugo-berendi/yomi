@@ -16,6 +16,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    nix-minecraft.url = "github:Infinidoge/nix-minecraft";
+
     # Home manager
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
@@ -184,20 +186,22 @@
   in
     # }}}
     {
-      # {{{ Packages
+       # {{{ Packages
       # Accessible through 'nix build', 'nix shell', etc
       packages = forAllSystems (
-        system: let
+        system:
+        let
           pkgs = nixpkgs.legacyPackages.${system};
           upkgs = inputs.nixpkgs-unstable.legacyPackages.${system};
-          opkgs = inputs.nixpkgs-old.legacyPackages.${system};
-          myPkgs = import ./pkgs {inherit pkgs upkgs opkgs;};
+          myPkgs = import ./pkgs { inherit pkgs; };
         in
-          myPkgs
-          // {
-            octodns = upkgs.octodns.withProviders (_ps: [myPkgs.octodns-cloudflare]);
-          }
-          // (import ./dns/pkgs.nix) {inherit pkgs self system;}
+        myPkgs
+        // (import ./dns/implementation) {
+          inherit pkgs;
+          extraModules = [ ./dns/config/common.nix ];
+          octodnsConfig = ./dns/config/octodns.yaml;
+          nixosConfigurations = builtins.removeAttrs self.nixosConfigurations [ "iso" ];
+        }
       );
       # }}}
       # {{{ Pre Commit Hooks

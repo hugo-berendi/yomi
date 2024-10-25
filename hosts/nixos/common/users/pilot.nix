@@ -78,6 +78,7 @@
     "z ${root}/.ssh/id_*.pub   0755 ${user.name} ${user.group}"
     "z ${root}/.ssh/id_rsa     0700 ${user.name} ${user.group}"
     "z ${root}/.ssh/id_ed25519 0700 ${user.name} ${user.group}"
+    "d /home/hugob/.gnupg      0755 ${user.name} ${user.group}"
   ];
   # }}}
 }
