@@ -13,7 +13,6 @@ in {
   home.packages = with pkgs; [
     hyprcursor
     rosePineCursor
-    cliphist
     inputs.pyprland.packages.${pkgs.system}.pyprland
   ];
 
@@ -146,6 +145,7 @@ in {
 
   services.cliphist = {
     enable = true;
+    package = pkgs.cliphist;
     allowImages = true;
     systemdTarget = "graphical-session.target";
   };

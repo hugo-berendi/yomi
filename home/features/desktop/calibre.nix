@@ -6,7 +6,7 @@
   calibre_config_dir = "${config.xdg.configHome}/calibre"; # Config options
 in {
   home = {
-    packages = with pkgs; [calibre qt5ct];
+    packages = with pkgs; [calibre libsForQt5.qt5ct];
     sessionVariables = {
       CALIBRE_USE_SYSTEM_THEME = 1;
       QT_QPA_PLATFORM = "wayland";

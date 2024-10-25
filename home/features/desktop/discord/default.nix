@@ -2,7 +2,7 @@
   programs.nixcord = {
     discord.enable = false;
     vesktop.enable = true;
-    enable = true; # enable Nixcord. Also installs discord package
+    enable = false; # enable Nixcord. Also installs discord package
     config = {
       enabledThemes = ["stylix.theme.css"];
       useQuickCss = true;

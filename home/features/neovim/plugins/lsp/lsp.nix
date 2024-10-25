@@ -9,20 +9,30 @@
         inlayHints = true;
         servers = {
           html = {enable = true;};
-          lua-ls = {enable = true;};
-          nil-ls = {enable = true;};
+          lua_ls = {enable = true;};
+          nixd = {
+            enable = true;
+            settings = {
+              formatting.command = ["alejandra"];
+              nixpkgs.expr = "import <nixpkgs> { }";
+              options = {
+                nixos.expr = "(builtins.getFlake \"/home/hugob/projects/yomi\").nixosConfigurations.amaterasu.options";
+                home-manager.expr = "(builtins.getFlake \"/home/hugob/projects/yomi\").homeConfigurations.amaterasu.options";
+              };
+            };
+          };
           marksman = {enable = true;};
           pyright = {enable = true;};
           gopls = {enable = true;};
           terraformls = {enable = true;};
-          ts-ls = {enable = true;};
+          ts_ls = {enable = true;};
           ansiblels = {enable = true;};
           jsonls = {enable = true;};
-          helm-ls = {
+          helm_ls = {
             enable = true;
             extraOptions = {
               settings = {
-                "helm-ls" = {
+                "helm_ls" = {
                   yamlls = {
                     path = "${pkgs.yaml-language-server}/bin/yaml-language-server";
                   };

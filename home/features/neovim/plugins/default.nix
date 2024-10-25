@@ -31,7 +31,7 @@
     ./utils/telescope.nix
     ./utils/obsidian.nix
     ./utils/ts-autotag.nix
-    ./utils/yazi.nix
+    # ./utils/yazi.nix
     ./utils/mini.nix
     # }}}
     # {{{ filetypes
