@@ -16,7 +16,7 @@ in {
   # }}}
   # {{{ Qbit
   virtualisation.oci-containers.containers.qbittorrent = {
-    image = "linuxserver/qbittorrent:latest";
+    image = "linuxserver/qbittorrent:amd64-latest";
     extraOptions = ["--network=container:gluetun"];
     dependsOn = ["gluetun"];
     volumes = ["${dataDir}:/downloads" "${configDir}:/config"];

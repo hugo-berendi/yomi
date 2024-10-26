@@ -56,6 +56,7 @@
   # `~/.ssh` are incorrect.
   systemd.tmpfiles.rules = let
     user = config.users.users.pilot;
+    root-user = config.users.users.root;
     root = "/persist/state/${user.home}/ssh";
     etc_root = "/persist/state/etc/ssh";
   in [
@@ -67,6 +68,7 @@
     "z ${root}/.ssh/id_rsa     0700 ${user.name} ${user.group}"
     "z ${root}/.ssh/id_ed25519 0700 ${user.name} ${user.group}"
     "d /home/hugob/.gnupg      0755 ${user.name} ${user.group}"
+    "d /var/lib/private        0700 ${root-user.name} ${root-user.group}"
   ];
   # }}}
 }

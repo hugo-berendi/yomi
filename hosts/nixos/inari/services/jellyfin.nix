@@ -10,6 +10,10 @@
       directory = "/var/lib/jellyfin";
       mode = "u=rwx,g=r,o=r";
     }
+    {
+      directory = "/var/lib/media";
+      mode = "u=rwx,g=rwx,o=rwx";
+    }
   ];
 
   environment.persistence."/persist/local/cache".directories = [

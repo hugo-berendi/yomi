@@ -5,6 +5,7 @@
 }: {
   imports = [
     ./global.nix
+    ./features/desktop/wakatime
   ];
   home = {
     file = {};
