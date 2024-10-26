@@ -18,7 +18,7 @@
       jvmOpts = "-Xms2048M -Xmx2048M";
 
       serverProperties = {
-        server-port = config.yomi.cloudflared.at.minecraft.port;
+        server-port = config.yomi.ports.minecraft;
         difficulty = 2;
         gamemode = 0;
         max-players = 10;
@@ -29,7 +29,7 @@
   };
 
   # {{{ Networking & storage
-  yomi.cloudflared.at.minecraft.port = config.yomi.ports.minecraft;
+  services.playit.runOverride."09a00c32-a378-4cf5-8437-8dc8abefa1f6".port = config.yomi.ports.minecraft;
 
   environment.persistence."/persist/state".directories = [
     "/var/lib/${config.services.minecraft-servers.dataDir}"

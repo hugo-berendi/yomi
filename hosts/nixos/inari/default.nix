@@ -1,4 +1,8 @@
-{pkgs,config,...}:{
+{
+  pkgs,
+  config,
+  ...
+}: {
   imports = [
     ../common/global
     ../common/users/pilot.nix
@@ -27,13 +31,15 @@
     ./services/microbin.nix
     # ./services/pounce.nix
     ./services/prometheus.nix
-    # ./services/qbittorrent.nix # turned on/off depending on whether my vpn is paid for
+    ./services/qbittorrent.nix # turned on/off depending on whether my vpn is paid for
     ./services/radicale.nix
     ./services/redlib.nix
     # ./services/smos.nix
     ./services/vaultwarden.nix
     ./services/whoogle.nix
     ./services/zfs.nix
+    ./services/sonarr.nix
+    ./services/playit.nix
     # {{{ game servers
     # ./services/valheim.nix
     ./services/minecraft.nix

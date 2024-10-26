@@ -1,4 +1,8 @@
-{pkgs,upkgs,...}: {
+{
+  pkgs,
+  upkgs,
+  ...
+}: {
   imports = [
     ./global.nix
   ];
@@ -28,4 +32,6 @@
       # }}}
     ];
   };
+
+  yomi.toggles.isServer.enable = true;
 }

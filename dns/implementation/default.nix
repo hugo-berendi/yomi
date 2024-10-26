@@ -12,7 +12,7 @@ let
       owner = "octodns";
       repo = "octodns";
       rev = "e30d91783eb0b85507605eb51fcfb75b0773fb26";
-      sha256 = "192hbxhb0ghcbzqy3h8q194n4iy7bqfj9ra9qqjff3x2z223czxb";
+      sha256 = "Yl7266I8aH9cEsu+/6yYn6TJPKsmhHotC3y+/cYpK3M=";
     };
   });
 
