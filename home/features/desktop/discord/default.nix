@@ -1,4 +1,12 @@
-{config, ...}: {
+{
+  config,
+  pkgs,
+  ...
+}: {
+  home.packages = with pkgs; [
+    discord
+  ];
+
   programs.nixcord = {
     discord.enable = false;
     vesktop.enable = true;
