@@ -1,6 +1,11 @@
-{config,pkgs,inputs,...}: {
-  imports = [ inputs.nix-minecraft.nixosModules.minecraft-servers ];
-  nixpkgs.overlays = [ inputs.nix-minecraft.overlay ];
+{
+  config,
+  pkgs,
+  inputs,
+  ...
+}: {
+  imports = [inputs.nix-minecraft.nixosModules.minecraft-servers];
+  nixpkgs.overlays = [inputs.nix-minecraft.overlay];
 
   services.minecraft-servers = {
     enable = true;
@@ -15,7 +20,7 @@
       openFirewall = true;
       restart = "always";
       enableReload = true;
-      jvmOpts = "-Xms2048M -Xmx2048M";
+      jvmOpts = "-Xms4096M -Xmx4096M";
 
       serverProperties = {
         server-port = config.yomi.ports.minecraft;
@@ -29,7 +34,7 @@
   };
 
   # {{{ Networking & storage
-  services.playit.runOverride."09a00c32-a378-4cf5-8437-8dc8abefa1f6".port = config.yomi.ports.minecraft;
+  services.playit.runOverride."62c4be83-2a4e-4833-873b-1d3cb2e21414".port = config.yomi.ports.minecraft;
 
   environment.persistence."/persist/state".directories = [
     "/var/lib/${config.services.minecraft-servers.dataDir}"

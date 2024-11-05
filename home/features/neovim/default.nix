@@ -47,7 +47,7 @@
   neovim =
     if config.yomi.toggles.neovim-nightly.enable
     then inputs.neovim-nightly-overlay.packages.${pkgs.system}.default
-    else upkgs.neovim-unwrapped;
+    else pkgs.neovim-unwrapped;
   # }}}
 in {
   # {{{ Imports

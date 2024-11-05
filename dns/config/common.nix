@@ -82,7 +82,7 @@ in
         {
           at = "classattack";
           type = "CNAME";
-          value = "movies-superb.gl.at.ply.gg.";
+          value = "expected-bite.gl.at.ply.gg.";
           ttl = 600;
         }
       ]

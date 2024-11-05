@@ -27,5 +27,7 @@
     forgejo-ssh = 8423;
     minecraft = 8424;
     flaresolverr = 8425;
+    jellyseerr = 8426;
+    uptime-kuma = 8427;
   };
 }

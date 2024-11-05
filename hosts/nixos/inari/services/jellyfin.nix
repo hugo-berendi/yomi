@@ -1,7 +1,16 @@
 {config, ...}: {
   # This is the default port, and can only be changed via the GUI
-  yomi.nginx.at.media.port = 8096;
-  services.jellyfin.enable = true;
+  yomi.cloudflared.at.media.port = 8096;
+  yomi.cloudflared.at.jellyseerr.port = config.yomi.ports.jellyseerr;
+
+  services = {
+    jellyfin.enable = true;
+    jellyseerr = {
+      enable = true;
+      port = config.yomi.cloudflared.at.jellyseerr.port;
+      openFirewall = true;
+    };
+  };
 
   # {{{ Storage
   environment.persistence."/persist/state".directories = [

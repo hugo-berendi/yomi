@@ -1,14 +1,13 @@
-{ config, ... }:
-{
-  # sops.secrets.guacamole_users.sopsFile = ../../secrets.yaml;
+{config, ...}: {
+  sops.secrets.guacamole_users.sopsFile = ../../secrets.yaml;
   yomi.nginx.at.guacamole.port = config.yomi.ports.guacamole;
 
   virtualisation.oci-containers.containers.guacamole = {
     image = "flcontainers/guacamole";
-    ports = [ "${toString config.yomi.nginx.at.guacamole.port}:8080" ];
+    ports = ["${toString config.yomi.nginx.at.guacamole.port}:8080"];
     volumes = [
       "/etc/localtime:/etc/localtime"
-      # "${config.sops.secrets.guacamole_users.path}:/etc/guacamole/user-mapping.xml"
+      "${config.sops.secrets.guacamole_users.path}:/etc/guacamole/user-mapping.xml"
       "/var/lib/guacamole:/config"
     ];
 
@@ -16,5 +15,5 @@
   };
 
   # Allow ssh-ing using the provided key
-  users.users.pilot.openssh.authorizedKeys.keyFiles = [ ./ed25519.pub ];
+  users.users.pilot.openssh.authorizedKeys.keyFiles = [./ed25519.pub];
 }

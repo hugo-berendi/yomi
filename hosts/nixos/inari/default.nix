@@ -39,7 +39,9 @@
     ./services/whoogle.nix
     ./services/zfs.nix
     ./services/sonarr.nix
+    ./services/radarr.nix
     ./services/prowlarr.nix
+    ./services/uptime.nix
     # {{{ game servers
     ./services/playit.nix # tunnel for minecraft
     # ./services/valheim.nix
