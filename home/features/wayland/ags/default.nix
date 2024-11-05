@@ -4,7 +4,7 @@
   ];
 
   programs.ags = {
-    enable = true;
+    enable = false;
 
     configDir = ./config;
 

@@ -52,9 +52,11 @@ in {
     # Enable only if none of the themes are enabled
     enable = noThemesEnabled;
 
+    plugin = "mini.base16";
+
     transparentBackground = {
-      main = noThemesEnabled;
-      signColumn = noThemesEnabled;
+      main = true;
+      signColumn = true;
     };
   };
 

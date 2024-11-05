@@ -42,7 +42,7 @@
         font-size: 10;
       }
 
-      #workspaces button.focused {
+      #workspaces button.active {
         color: ${config.lib.stylix.scheme.withHashtag.base0D};
         background: ${config.lib.stylix.scheme.withHashtag.base0D};
         min-width: 50px;

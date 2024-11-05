@@ -1,6 +1,5 @@
 {
   pkgs,
-  opkgs,
   lib,
   config,
   inputs,
@@ -40,7 +39,7 @@ in {
         blur = {
           enabled = config.yomi.theming.blur.enable;
           ignore_opacity = true;
-          xray = true;
+          xray = false; # looks ugly
           size = config.yomi.theming.blur.size;
           passes = config.yomi.theming.blur.passes;
           contrast = config.yomi.theming.blur.contrast;

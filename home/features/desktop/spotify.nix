@@ -19,24 +19,22 @@ in {
     # colorScheme = config.yomi.theming.get colorschemeMap;
 
     enabledExtensions = with spicePkgs.extensions; [
+      adblock
+      betterGenres
+      bookmark
+      fullAlbumDate
       fullAppDisplayMod
-      shuffle # Working shuffle
+      groupSession
       keyboardShortcut
-      skipStats # Track my skips
       listPlaylistsWithSong # Adds button to show playlists which contain a song
       playlistIntersection # Shows stuff that's in two different playlists
-      fullAlbumDate
-      bookmark
-      trashbin
-      groupSession
-      wikify # Shows an artist's wikipedia entry
-      songStats
-      showQueueDuration
-      # REASON: broken
-      # https://github.com/the-argus/spicetify-nix/issues/50
-      # genre
-      adblock
       savePlaylists # Adds a button to duplicate playlists
+      showQueueDuration
+      shuffle # Working shuffle
+      skipStats # Track my skips
+      songStats
+      trashbin
+      wikify # Shows an artist's wikipedia entry
     ];
   };
 

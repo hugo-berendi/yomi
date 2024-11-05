@@ -156,7 +156,7 @@
       flake = false;
     };
 
-    nixcord.url = "github:kaylorben/nixcord";
+    nixcord.url = "github:AwesomeQubic/nixcord";
     # }}}
     pre-commit-hooks.url = "github:cachix/git-hooks.nix";
 
@@ -190,22 +190,21 @@
   in
     # }}}
     {
-       # {{{ Packages
+      # {{{ Packages
       # Accessible through 'nix build', 'nix shell', etc
       packages = forAllSystems (
-        system:
-        let
+        system: let
           pkgs = nixpkgs.legacyPackages.${system};
           upkgs = inputs.nixpkgs-unstable.legacyPackages.${system};
-          myPkgs = import ./pkgs { inherit pkgs; };
+          myPkgs = import ./pkgs {inherit pkgs;};
         in
-        myPkgs
-        // (import ./dns/implementation) {
-          inherit pkgs;
-          extraModules = [ ./dns/config/common.nix ];
-          octodnsConfig = ./dns/config/octodns.yaml;
-          nixosConfigurations = builtins.removeAttrs self.nixosConfigurations [ "iso" ];
-        }
+          myPkgs
+          // (import ./dns/implementation) {
+            inherit pkgs;
+            extraModules = [./dns/config/common.nix];
+            octodnsConfig = ./dns/config/octodns.yaml;
+            nixosConfigurations = builtins.removeAttrs self.nixosConfigurations ["iso"];
+          }
       );
       # }}}
       # {{{ Pre Commit Hooks

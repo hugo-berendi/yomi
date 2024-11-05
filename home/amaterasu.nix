@@ -62,6 +62,8 @@
 
   home.sessionVariables.QT_SCREEN_SCALE_FACTORS = 1.4; # Bigger text in qt apps
 
+  yomi.toggles.isServer.enable = false;
+
   services.trayscale.enable = true;
 
   yomi = {
