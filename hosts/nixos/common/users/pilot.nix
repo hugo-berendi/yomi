@@ -56,14 +56,13 @@
   # `~/.ssh` are incorrect.
   systemd.tmpfiles.rules = let
     user = config.users.users.pilot;
-    root-user = config.users.users.root;
     root = "/persist/state/${user.home}/ssh";
     etc_root = "/persist/state/etc/ssh";
   in [
     "d ${root}                 0755 ${user.name} ${user.group}"
     "d ${root}/.ssh            0755 ${user.name} ${user.group}"
     "z ${etc_root}/ssh*        0700 ${user.name} ${user.group}"
-    "z ${etc_root}/ssh*.pu     0755 ${user.name} ${user.group}"
+    "z ${etc_root}/ssh*.pub    0755 ${user.name} ${user.group}"
     "z ${root}/.ssh/id_*.pub   0755 ${user.name} ${user.group}"
     "z ${root}/.ssh/id_rsa     0700 ${user.name} ${user.group}"
     "z ${root}/.ssh/id_ed25519 0700 ${user.name} ${user.group}"

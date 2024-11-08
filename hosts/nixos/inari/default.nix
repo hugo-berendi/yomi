@@ -17,7 +17,7 @@
 
     ./services/commafeed.nix
     # # ./services/ddclient.nix
-    ./services/actual.nix
+    # ./services/actual.nix
     ./services/cloudflared.nix
     # ./services/diptime.nix
     ./services/forgejo.nix
@@ -45,7 +45,7 @@
     # {{{ game servers
     ./services/playit.nix # tunnel for minecraft
     # ./services/valheim.nix
-    ./services/minecraft.nix
+    # ./services/minecraft.nix
     # }}}
 
     ./filesystems

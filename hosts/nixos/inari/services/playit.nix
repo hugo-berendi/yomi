@@ -1,4 +1,8 @@
-{inputs,config,...}: {
+{
+  inputs,
+  config,
+  ...
+}: {
   imports = [inputs.playit-nixos-module.nixosModules.default];
 
   sops.secrets.playit_secret = {
@@ -12,7 +16,5 @@
     user = "playit";
     group = "playit";
     secretPath = config.sops.secrets.playit_secret.path;
-    runOverride = {
-      };
   };
 }
