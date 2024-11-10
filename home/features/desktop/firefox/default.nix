@@ -185,6 +185,12 @@ in {
           aliases = ["@sp" "@startpage"];
         };
 
+        "Whoogle" = mkBasicSearchEngine {
+          url = "https://search.hugo-berendi.de/search";
+          param = "q";
+          aliases = ["@wo" "@whoogle"];
+        };
+
         "Warframe Wiki" = mkBasicSearchEngine {
           url = "https://warframe.fandom.com/wiki/Special:Search";
           param = "query";
