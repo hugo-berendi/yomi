@@ -6,4 +6,9 @@
     dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
     gamescopeSession.enable = true;
   };
+  environment.persistence."/persist/state".directories = [
+    "/home/hugob/.local/share/Steam"
+    "/home/hugob/.steam"
+  ];
+
 }

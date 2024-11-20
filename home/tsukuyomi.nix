@@ -13,13 +13,16 @@
     ./features/desktop/obsidian.nix
     ./features/desktop/zathura.nix
     ./features/desktop/gaming.nix
-    ./features/cli/productivity
+    ./features/productivity
     # ./features/cli/lazygit.nix
     # ./features/cli/catgirl.nix
     # ./features/cli/nix-index.nix
     # ./features/cli/pass.nix
     ./features/wayland/hyprland
   ];
+
+
+  yomi.toggles.isServer.enable = false;
   home = {
     file = {};
     sessionVariables = {EDITOR = "nvim";};
