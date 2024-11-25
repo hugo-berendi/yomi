@@ -29,5 +29,8 @@
     flaresolverr = 8425;
     jellyseerr = 8426;
     uptime-kuma = 8427;
+    glance = 8428;
+    ntfy = 8429;
+    sabnzbd = 8430;
   };
 }

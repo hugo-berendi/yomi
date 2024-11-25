@@ -85,7 +85,7 @@ in {
   ];
 
   programs.neovide = {
-    enable = true;
+    enable = false;
     package = neovide;
     settings = {
       fork = false;

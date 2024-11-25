@@ -69,7 +69,7 @@ in {
   home = {
     username = lib.mkDefault "hugob";
     homeDirectory = lib.mkDefault "/home/${config.home.username}";
-    stateVersion = lib.mkDefault "24.05"; # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
+    stateVersion = lib.mkDefault "24.11"; # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
   };
   # }}}
   # {{{ Ad-hoc settings

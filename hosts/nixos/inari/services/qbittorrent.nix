@@ -5,9 +5,11 @@
   port = config.yomi.ports.qbittorrent;
   dataDir = "/persist/data/media";
   configDir = "/persist/state/var/lib/qbittorrent";
+  usenetConfigDir = "/persist/state/var/lib/sabnzbd";
 in {
   # {{{ Networking & storage
   yomi.nginx.at.qbit.port = port;
+  yomi.nginx.at.sabnzbd.port = config.yomi.ports.sabnzbd;
   sops.secrets.vpn_env.sopsFile = ../secrets.yaml;
   systemd.tmpfiles.rules = [
     "d ${dataDir} 777 ${config.users.users.pilot.name} users"
@@ -29,6 +31,23 @@ in {
     };
   };
   # }}}
+  # {{{
+  virtualisation.oci-containers.containers.sabnzbd = {
+    image = "linuxserver/sabnzbd:amd64-unstable";
+    extraOptions = ["--network=container:gluetun"];
+    dependsOn = ["gluetun"];
+    environment = {
+      PUID = toString config.users.users.pilot.uid;
+      PGID = toString config.users.groups.users.gid;
+      TZ = config.time.timeZone;
+    };
+    volumes = [
+      "${dataDir}:/downloads:rw"
+      "${usenetConfigDir}:/config:rw"
+    ];
+    log-driver = "journald";
+  };
+  # }}}
   # {{{ Vpn
   virtualisation.oci-containers.containers.gluetun = {
     image = "qmcgaw/gluetun";
@@ -39,6 +58,7 @@ in {
       "--sysctl=net.ipv4.conf.all.forwarding=1"
     ];
     ports = [
+      "${toString config.yomi.ports.sabnzbd}:8080/tcp"
       "${toString port}:${toString port}"
       "6881:6881"
       "6881:6881/udp"

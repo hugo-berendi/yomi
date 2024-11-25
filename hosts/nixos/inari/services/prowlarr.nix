@@ -22,10 +22,12 @@
   # This is the default port, and can only be changed via the GUI
   yomi.nginx.at.prowlarr.port = 9696;
 
-  # environment.persistence."/persist/state".directories = [
-  #   {
-  #     directory = "/var/lib/prowlarr";
-  #     mode = "u=rwx,g=r,o=rwx";
-  #   }
-  # ];
+  systemd.tmpfiles.rules = ["z /var/lib/private 0700 root"];
+
+  environment.persistence."/persist/state".directories = [
+    {
+      directory = "/var/lib/private";
+      mode = "0700";
+    }
+  ];
 }

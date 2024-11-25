@@ -1,9 +1,13 @@
 {config, ...}: {
-  services.calibre-web = {
-    enable = true;
-    listen = {
-      port = config.yomi.ports.calibre-web;
-      ip = "0.0.0.0";
+  services = {
+    calibre-server = {
+      enable = true;
+      port = config.yomi.ports.calibre-server;
+      libraries = [
+        "/var/lib/media/books"
+      ];
+    };
+    calibre-web = {
     };
   };
 }

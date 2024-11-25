@@ -1,15 +1,15 @@
 {config, ...}: {
   # This is the default port, and can only be changed via the GUI
-  yomi.nginx.at.readarr.port = 8787;
+  yomi.nginx.at.bazarr.port = config.services.bazarr.listenPort;
 
-  services.readarr = {
+  services.bazarr = {
     enable = true;
   };
 
   environment.persistence."/persist/state".directories = [
     {
-      inherit (config.services.readarr) user group;
-      directory = config.services.readarr.dataDir;
+      inherit (config.services.bazarr) user group;
+      directory = "/var/lib/bazarr";
       mode = "u=rwx,g=r,o=r";
     }
   ];

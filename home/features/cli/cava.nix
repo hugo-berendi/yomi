@@ -1,6 +1,6 @@
 {config, ...}: {
   programs.cava = {
-    enable = true;
+    enable = false;
     settings = {
       general.framerate = 60;
       input.method = "pipewire";

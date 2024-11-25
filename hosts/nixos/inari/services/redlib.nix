@@ -6,8 +6,9 @@
 }: let
   port = config.yomi.ports.redlib;
 in {
-  services.redlib.enable = true;
+  services.redlib = {
+    enable = true;
+    port = port;
+  };
   yomi.nginx.at.redlib.port = port;
-  systemd.services.redlib.serviceConfig.ExecStart =
-    lib.mkForce "${upkgs.redlib}/bin/redlib --port ${toString port}";
 }
