@@ -55,6 +55,7 @@ in {
       permittedInsecurePackages = [
         "electron-25.9.0"
         "electron-27.3.11"
+        "dotnet-sdk-6.0.428"
       ];
     };
   };

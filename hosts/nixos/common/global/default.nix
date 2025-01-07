@@ -67,6 +67,10 @@ in {
       inputs.neovim-nightly-overlay.overlays.default;
 
     config.allowUnfree = true;
+    config.permittedInsecurePackages = [
+      "dotnet-sdk-6.0.428"
+      "aspnetcore-runtime-6.0.36"
+    ];
   };
 
   # Root domain used throughout my config

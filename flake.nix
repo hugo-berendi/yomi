@@ -68,6 +68,8 @@
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
 
     korora.url = "github:adisbladis/korora";
+
+    authentik-nix.url = "github:nix-community/authentik-nix";
     # }}}
     # {{{ Standalone software
     # {{{ Nightly versions of things

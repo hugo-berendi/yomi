@@ -22,14 +22,14 @@
     # ./services/diptime.nix
     ./services/forgejo.nix
     ./services/grafana.nix
-    ./services/guacamole
+    # ./services/guacamole
     ./services/homer.nix
     # ./services/intray.nix
     # ./services/invidious.nix
     ./services/jellyfin.nix
     ./services/jupyter.nix
     ./services/microbin.nix
-    ./services/glance.nix
+    # ./services/glance.nix
     # ./services/pounce.nix
     ./services/prometheus.nix
     ./services/qbittorrent.nix # turned on/off depending on whether my vpn is paid for
@@ -39,7 +39,8 @@
     ./services/vaultwarden.nix
     ./services/whoogle.nix
     ./services/zfs.nix
-    ./services/ntfy.nix
+    # ./services/ntfy.nix
+    ./services/suwayomi.nix
     # {{{ *arr suite
     ./services/sonarr.nix
     ./services/radarr.nix
@@ -47,9 +48,10 @@
     ./services/bazarr.nix
     ./services/prowlarr.nix
     # }}}
-    ./services/uptime.nix
+    # ./services/uptime.nix
+    ./services/home-assistant.nix
     # {{{ game servers
-    ./services/playit.nix # tunnel for minecraft
+    # ./services/playit.nix # tunnel for minecraft
     # ./services/valheim.nix
     # ./services/minecraft.nix
     # }}}

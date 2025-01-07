@@ -32,5 +32,7 @@
     glance = 8428;
     ntfy = 8429;
     sabnzbd = 8430;
+    suwayomi = 8431;
+    home-assistant = 8123;
   };
 }
