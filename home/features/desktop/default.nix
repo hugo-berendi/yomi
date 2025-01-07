@@ -2,6 +2,7 @@
   imports = [
     # ./kitty # terminal
     ./foot.nix
+    ./ghostty.nix
     # ./dunst # notifaction handler
     ./mako.nix
 

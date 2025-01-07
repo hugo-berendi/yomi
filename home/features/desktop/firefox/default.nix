@@ -35,16 +35,24 @@
 
   betterfoxUserJS = builtins.fetchurl {
     url = "https://raw.githubusercontent.com/yokoffing/Betterfox/main/user.js";
+<<<<<<< Updated upstream
     sha256 = "1ghh8hpkh7q5q5bss4yd0xf7gakw6zh9ips5rc3g25sb6rsmdfij";
+=======
+    sha256 = "1fr0ia7zjszy31sdp05h746b88761wswrwr61zw7hvn1a8dkvhaw";
+>>>>>>> Stashed changes
   };
   ffUltimaRepo = builtins.fetchGit {
     url = "https://github.com/soulhotel/FF-ULTIMA.git";
   };
 in {
+  home.packages = [inputs.zen-browser.packages."${builtins.currentSystem}".default];
+  home.file.".zen/hugob".source = config.lib.file.mkOutOfStoreSymlink "/home/hugob/.mozilla/firefox/hugob";
+
   programs.firefox = {
     enable = true;
 
     package = pkgs.firefox.override {nativeMessagingHosts = [pkgs.passff-host];};
+    # package = inputs.zen-browser.packages."${builtins.currentSystem}".default;
 
     policies = {
       DisableAppUpdate = true;
@@ -287,66 +295,66 @@ in {
     };
 
     # {{{ Standalone "apps" which actually run inside a browser.
-    apps.extensions = extensions;
-    apps.app = {
-      # TODO: auto increment ids
-      # {{{ Desmos
-      desmos = {
-        url = "https://www.desmos.com/calculator";
-        icon = ../../../../common/icons/desmos.png;
-        displayName = "Desmos";
-        id = 1;
-      };
-      # }}}
-      # {{{ Monkey type
-      monkey-type = {
-        url = "https://monkeytype.com/";
-        icon = ../../../../common/icons/monkeytype.png;
-        displayName = "Monkeytype";
-        id = 2;
-      };
-      # }}}
-      # {{{ Clockify
-      clockify = {
-        url = "https://app.clockify.me/";
-        icon = ../../../../common/icons/clockify.png;
-        displayName = "Clockify";
-        id = 3;
-      };
-      # }}}
-      #{{{ Proton Mail
-      proton-mail = {
-        url = "https://mail.protonmail.com/";
-        icon = ../../../../common/icons/protonmail.png;
-        displayName = "Proton Mail";
-        id = 4;
-      };
-      #}}}
-      # {{{ Proton Drive
-      proton-drive = {
-        url = "https://drive.protonmail.com/";
-        icon = ../../../../common/icons/protondrive.png;
-        displayName = "Proton Drive";
-        id = 5;
-      };
-      # }}}
-      # {{{ Excalidraw
-      excalidraw = {
-        url = "https://excalidraw.com/";
-        icon = ../../../../common/icons/excalidraw.png;
-        displayName = "Excalidraw";
-        id = 6;
-      };
-      # }}}
-      # {{{ Syncthing
-      syncthing = {
-        url = "http://127.0.0.1:8384/";
-        icon = ../../../../common/icons/syncthing.png;
-        displayName = "Syncthing";
-        id = 7;
-      };
-      # }}}
-    };
+    # apps.extensions = extensions;
+    # apps.app = {
+    #   # TODO: auto increment ids
+    #   # {{{ Desmos
+    #   desmos = {
+    #     url = "https://www.desmos.com/calculator";
+    #     icon = ../../../../common/icons/desmos.png;
+    #     displayName = "Desmos";
+    #     id = 1;
+    #   };
+    #   # }}}
+    #   # {{{ Monkey type
+    #   monkey-type = {
+    #     url = "https://monkeytype.com/";
+    #     icon = ../../../../common/icons/monkeytype.png;
+    #     displayName = "Monkeytype";
+    #     id = 2;
+    #   };
+    #   # }}}
+    #   # {{{ Clockify
+    #   clockify = {
+    #     url = "https://app.clockify.me/";
+    #     icon = ../../../../common/icons/clockify.png;
+    #     displayName = "Clockify";
+    #     id = 3;
+    #   };
+    #   # }}}
+    #   #{{{ Proton Mail
+    #   proton-mail = {
+    #     url = "https://mail.protonmail.com/";
+    #     icon = ../../../../common/icons/protonmail.png;
+    #     displayName = "Proton Mail";
+    #     id = 4;
+    #   };
+    #   #}}}
+    #   # {{{ Proton Drive
+    #   proton-drive = {
+    #     url = "https://drive.protonmail.com/";
+    #     icon = ../../../../common/icons/protondrive.png;
+    #     displayName = "Proton Drive";
+    #     id = 5;
+    #   };
+    #   # }}}
+    #   # {{{ Excalidraw
+    #   excalidraw = {
+    #     url = "https://excalidraw.com/";
+    #     icon = ../../../../common/icons/excalidraw.png;
+    #     displayName = "Excalidraw";
+    #     id = 6;
+    #   };
+    #   # }}}
+    #   # {{{ Syncthing
+    #   syncthing = {
+    #     url = "http://127.0.0.1:8384/";
+    #     icon = ../../../../common/icons/syncthing.png;
+    #     displayName = "Syncthing";
+    #     id = 7;
+    #   };
+    #   # }}}
+    # };
     # }}}
   };
 

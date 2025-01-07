@@ -1,6 +1,38 @@
 {
   programs.nixvim = {
     plugins = {
+      # blink-cmp = {
+      #   enable = true;
+      #   settings = {
+      #     nerd_font_variant = "mono";
+      #     accept = {
+      #       auto_brackets = {
+      #         enabled = true;
+      #       };
+      #     };
+      #     windows.documentation = {
+      #       auto_show = true;
+      #     };
+      #     highlight = {
+      #       use_nvim_cmp_as_default = true;
+      #     };
+      #     keymap = {
+      #       preset = "super-tab";
+      #       "<C-k>" = ["select_prev" "fallback"];
+      #       "<C-j>" = ["select_next" "fallback"];
+      #     };
+      #     trigger = {
+      #       signature_help = {
+      #         enabled = true;
+      #       };
+      #     };
+      #     sources.completion.enabled_providers = [
+      #       "lsp"
+      #       "path"
+      #       "buffer"
+      #     ];
+      #   };
+      # };
       cmp-emoji = {enable = true;};
       cmp = {
         enable = true;

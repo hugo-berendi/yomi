@@ -32,8 +32,8 @@ in {
   };
 
   # Expose gui interface via nginx
-  yomi.nginx.at."syncthing.${config.networking.hostName}".port =
-    config.yomi.ports.syncthing;
+  # yomi.nginx.at."syncthing.${config.networking.hostName}".port =
+  #   config.yomi.ports.syncthing;
 
   # Syncthing seems to leak memory, so we want to restart it daily.
   systemd.services.syncthing.serviceConfig.RuntimeMaxSec = "1d";

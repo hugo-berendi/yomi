@@ -3,6 +3,7 @@
   description = "Your new nix config";
 
   inputs = {
+    zen-browser.url = "github:MarceColl/zen-browser-flake";
     # Nixpkgs
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nixpkgs-old.url = "github:nixos/nixpkgs/nixos-24.05";
@@ -39,6 +40,9 @@
       inputs.hyprland.follows = "hyprland";
     };
     # }}}
+
+    ghostty.url = "github:clo4/ghostty-hm-module";
+    ghostty-pkg.url = "github:ghostty-org/ghostty";
 
     # {{{ AGS
     ags.url = "github:Aylur/ags";

@@ -19,6 +19,7 @@
     inputs.ags.homeManagerModules.default
     inputs.nixvim.homeManagerModules.nixvim
     inputs.nixcord.homeManagerModules.nixcord
+    inputs.ghostty.homeModules.default
     # {{{ self management
     # NOTE: using `pkgs.system` before `module.options` is evaluated
     # leads to infinite recursion!
