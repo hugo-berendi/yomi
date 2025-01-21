@@ -3,12 +3,10 @@
   pkgs,
   lib,
   ...
-}:
-let
-  format = pkgs.formats.yaml { };
+}: let
+  format = pkgs.formats.yaml {};
   cfg = config.yomi.dns;
-in
-{
+in {
   options.yomi.dns = {
     domain = lib.mkOption {
       description = "Default zone to include records in";
@@ -17,11 +15,10 @@ in
 
     records = lib.mkOption {
       description = "List of records to create";
-      default = [ ];
+      default = [];
       type = lib.types.listOf (
         lib.types.submodule (
-          { config, ... }:
-          {
+          {config, ...}: {
             options = {
               at = lib.mkOption {
                 description = "Subdomain to use for entry";

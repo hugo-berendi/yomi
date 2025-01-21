@@ -1,5 +1,4 @@
 {config, ...}: let
-  
 in {
   programs.nixvim.plugins = {
     obsidian = {

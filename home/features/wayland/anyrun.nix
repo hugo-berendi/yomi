@@ -21,7 +21,7 @@ in {
       plugins =
         normal-plugins
         ++ [
-          inputs.anyrun-rbw.packages.${pkgs.system}.default
+          # inputs.anyrun-rbw.packages.${pkgs.system}.default
           inputs.anyrun-plugins.packages.${pkgs.system}.cliphist
           # inputs.anyrun-hyprwin.packages.${pkgs.system}.default
           inputs.anyrun-plugins.packages.${pkgs.system}.applications
@@ -59,11 +59,11 @@ in {
       )
     '';
 
-    extraConfigFiles."rbw.ron".text = ''
-      Config(
-        prefix: ":p",
-      )
-    ''; # idk why it needs a empty config
+    # extraConfigFiles."rbw.ron".text = ''
+    #   Config(
+    #     prefix: ":p",
+    #   )
+    # ''; # idk why it needs a empty config
 
     extraConfigFiles."cliphist.ron".text = ''
       Config(

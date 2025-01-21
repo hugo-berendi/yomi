@@ -35,19 +35,14 @@
 
   betterfoxUserJS = builtins.fetchurl {
     url = "https://raw.githubusercontent.com/yokoffing/Betterfox/main/user.js";
-<<<<<<< Updated upstream
-    sha256 = "1ghh8hpkh7q5q5bss4yd0xf7gakw6zh9ips5rc3g25sb6rsmdfij";
-=======
     sha256 = "1fr0ia7zjszy31sdp05h746b88761wswrwr61zw7hvn1a8dkvhaw";
->>>>>>> Stashed changes
   };
   ffUltimaRepo = builtins.fetchGit {
     url = "https://github.com/soulhotel/FF-ULTIMA.git";
+    ref = "main";
+    rev = "ab481d82dadb7699f757949f4c11a0d26595c0b3";
   };
 in {
-  home.packages = [inputs.zen-browser.packages."${builtins.currentSystem}".default];
-  home.file.".zen/hugob".source = config.lib.file.mkOutOfStoreSymlink "/home/hugob/.mozilla/firefox/hugob";
-
   programs.firefox = {
     enable = true;
 

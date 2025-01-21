@@ -37,13 +37,13 @@ in {
   yomi.persistence.at.data.apps.pass.directories = [storePath];
 
   # Activation script to clone the repo automatically using SSH
-# home.activation.clone-password-store = lib.hm.dag.entryAfter ["writeBoundary"] ''
-#     # Clone the repo if it doesn't already exist
-#     if [ ! -d ${storePath}/.git ]; then
-#       echo "Cloning password store repository using SSH..."
-#       ${lib.getExe pkgs.gitFull} clone ${gitRepoUrl} ${storePath}
-#     else
-#       echo "Password store repository already exists."
-#     fi
-#   '';
+  # home.activation.clone-password-store = lib.hm.dag.entryAfter ["writeBoundary"] ''
+  #     # Clone the repo if it doesn't already exist
+  #     if [ ! -d ${storePath}/.git ]; then
+  #       echo "Cloning password store repository using SSH..."
+  #       ${lib.getExe pkgs.gitFull} clone ${gitRepoUrl} ${storePath}
+  #     else
+  #       echo "Password store repository already exists."
+  #     fi
+  #   '';
 }

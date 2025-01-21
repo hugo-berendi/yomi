@@ -21,7 +21,6 @@
     ./features/wayland/hyprland
   ];
 
-
   yomi.toggles.isServer.enable = false;
   home = {
     file = {};

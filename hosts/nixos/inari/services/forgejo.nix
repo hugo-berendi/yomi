@@ -14,7 +14,7 @@
   services.forgejo = {
     enable = true;
     stateDir = "/persist/state/var/lib/forgejo";
-    secrets.mailer ={
+    secrets.mailer = {
       PASSWD = config.sops.secrets.forgejo_mail_password.path;
     };
 

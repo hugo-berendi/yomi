@@ -1,8 +1,12 @@
-{inputs,config,...}: {
+{
+  inputs,
+  config,
+  ...
+}: {
   imports = [inputs.ngrok.nixosModules.ngrok];
 
   sops.secrets.ngrok_authtoken.sopsFile = ../secrets.yaml;
-  sops.secrets.ngrok_api_key.sopsFile = ../secrets.yaml; 
+  sops.secrets.ngrok_api_key.sopsFile = ../secrets.yaml;
 
   sops.templates."ngrok.yml" = {
     content = ''

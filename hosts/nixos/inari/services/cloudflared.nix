@@ -1,5 +1,9 @@
-{config, pkgs, ...}: {
- environment.systemPackages = [pkgs.cloudflared]; 
+{
+  config,
+  pkgs,
+  ...
+}: {
+  environment.systemPackages = [pkgs.cloudflared];
   sops.secrets.cloudflare_tunnel_credentials = {
     sopsFile = ../secrets.yaml;
     owner = config.services.cloudflared.user;

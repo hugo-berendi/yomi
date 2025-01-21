@@ -10,5 +10,4 @@
     "/home/hugob/.local/share/Steam"
     "/home/hugob/.steam"
   ];
-
 }

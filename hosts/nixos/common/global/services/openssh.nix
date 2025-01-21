@@ -18,7 +18,7 @@ in {
     enable = true;
 
     settings = {
-      PermitRootLogin = lib.mkDefault "no"; # Forbid root login through SSH.
+      PermitRootLogin = lib.mkForce "no"; # Forbid root login through SSH.
       PasswordAuthentication = lib.mkDefault true; # Use keys only.
     };
 

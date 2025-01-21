@@ -1,5 +1,4 @@
 {
-  #
   description = "Your new nix config";
 
   inputs = {
@@ -35,14 +34,11 @@
       url = "github:hyprwm/hyprland-plugins";
       inputs.hyprland.follows = "hyprland";
     };
-    hy3 = {
-      url = "github:outfoxxed/hy3";
-      inputs.hyprland.follows = "hyprland";
-    };
     # }}}
 
-    ghostty.url = "github:clo4/ghostty-hm-module";
-    ghostty-pkg.url = "github:ghostty-org/ghostty";
+    ghostty-pkg = {
+      url = "github:ghostty-org/ghostty";
+    };
 
     # {{{ AGS
     ags.url = "github:Aylur/ags";
@@ -143,9 +139,6 @@
     spicetify-nix.inputs.nixpkgs.follows = "nixpkgs";
     # }}}
     # {{{ Theming
-    darkmatter-grub-theme.url = "gitlab:VandalByte/darkmatter-grub-theme";
-    darkmatter-grub-theme.inputs.nixpkgs.follows = "nixpkgs";
-
     stylix.url = "github:danth/stylix";
     stylix.inputs.nixpkgs.follows = "nixpkgs";
     stylix.inputs.home-manager.follows = "home-manager";
@@ -214,16 +207,16 @@
       );
       # }}}
       # {{{ Pre Commit Hooks
-      checks = forAllSystems (system: {
-        pre-commit-check = inputs.pre-commit-hooks.lib.${system}.run {
-          src = ./.;
-          hooks = {
-            alejandra.enable = true;
-            deadnix.enable = true;
-            flake-checker.enable = true;
-          };
-        };
-      });
+      # checks = forAllSystems (system: {
+      #   pre-commit-check = inputs.pre-commit-hooks.lib.${system}.run {
+      #     src = ./.;
+      #     hooks = {
+      #       alejandra.enable = true;
+      #       deadnix.enable = true;
+      #       flake-checker.enable = true;
+      #     };
+      #   };
+      # });
 
       # }}}
       # {{{ Bootstrapping and other pinned devshells

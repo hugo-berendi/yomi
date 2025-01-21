@@ -9,7 +9,6 @@
   requests,
   requests-mock,
 }:
-
 buildPythonPackage {
   pname = "octodns-cloudflare";
   version = "unstable-2024-10-09";
@@ -24,7 +23,7 @@ buildPythonPackage {
     sha256 = "0kcih4dxgl9ihh22j6d7dbd0d1ylrjp6f60w1p5gzyini1c0a0x1";
   };
 
-  nativeBuildInputs = [ setuptools ];
+  nativeBuildInputs = [setuptools];
 
   propagatedBuildInputs = [
     octodns
@@ -34,7 +33,7 @@ buildPythonPackage {
 
   env.OCTODNS_RELEASE = 1;
 
-  pythonImportsCheck = [ "octodns_cloudflare" ];
+  pythonImportsCheck = ["octodns_cloudflare"];
 
   nativeCheckInputs = [
     pytestCheckHook
