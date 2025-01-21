@@ -10,6 +10,7 @@
     email = "acme@hugo-berendi.de";
     dnsProvider = "cloudflare";
     environmentFile = config.sops.templates."acme.env".path;
+    renewInterval = "monthly";
   };
 
   environment.persistence."/persist/state".directories = [

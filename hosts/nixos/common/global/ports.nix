@@ -34,5 +34,6 @@
     sabnzbd = 8430;
     suwayomi = 8431;
     home-assistant = 8123;
+    authentik = 8432;
   };
 }

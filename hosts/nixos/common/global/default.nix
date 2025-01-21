@@ -13,6 +13,7 @@
     inputs.stylix.nixosModules.stylix
     inputs.sops-nix.nixosModules.sops
     inputs.nix-flatpak.nixosModules.nix-flatpak
+    inputs.authentik-nix.nixosModules.default
     # }}}
     # {{{ Satellite subprojects
     ../../../../dns/implementation/nixos-module.nix
