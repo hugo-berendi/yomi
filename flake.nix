@@ -5,7 +5,7 @@
     zen-browser.url = "github:MarceColl/zen-browser-flake";
     # Nixpkgs
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    nixpkgs-old.url = "github:nixos/nixpkgs/nixos-24.05";
+    nixpkgs-old.url = "github:nixos/nixpkgs/nixos-24.11";
     # You can access packages and modules from different nixpkgs revs
     # at the same time. Here's an working example:
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
@@ -71,7 +71,7 @@
 
     authentik-nix = {
       url = "github:nix-community/authentik-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-old";
     };
     # }}}
     # {{{ Standalone software
