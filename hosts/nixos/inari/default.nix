@@ -37,7 +37,7 @@
     ./services/redlib.nix
     # ./services/smos.nix
     ./services/vaultwarden.nix
-    # ./services/authentik.nix
+    ./services/keycloak.nix
     ./services/whoogle.nix
     ./services/zfs.nix
     # ./services/ntfy.nix
