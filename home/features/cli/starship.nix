@@ -5,7 +5,7 @@
     enableTransience = true;
     settings = {
       format = ''
-        $username$directory$git_branch$git_status$fill$nix_shell$c$elixir$elm$golang$haskell$java$julia$nodejs$nim$rust$scala$conda$python$time
+        $username$hostname$directory$git_branch$git_status$fill$nix_shell$c$elixir$elm$golang$haskell$java$julia$nodejs$nim$rust$scala$conda$python$time
         $character'';
       palette = "rose-pine-moon";
 
@@ -79,6 +79,14 @@
         show_always = true;
         style_root = "bg:overlay fg:iris";
         style_user = "bg:overlay fg:iris";
+      };
+
+      hostname = {
+        disabled = false;
+        ssh_only = false;
+        ssh_symbol = "󰢹 ";
+        format = "[](fg:overlay)[ $ssh_symbol$hostname ]($style)[](fg:overlay) ";
+        style = "bg:overlay fg:iris";
       };
 
       nix_shell = {
