@@ -5,7 +5,7 @@
     enableTransience = true;
     settings = {
       format = ''
-        $username$hostname$directory$git_branch$git_status$fill$nix_shell$c$elixir$elm$golang$haskell$java$julia$nodejs$nim$rust$scala$conda$python$time
+        $username$directory$git_branch$git_status$nix_shell$fill$c$elixir$elm$golang$haskell$java$julia$nodejs$nim$rust$scala$conda$python$time
         $character'';
       palette = "rose-pine-moon";
 
@@ -67,7 +67,7 @@
 
       time = {
         disabled = false;
-        format = "[](fg:overlay)[ $time 󰴈 ]($style)[](fg:overlay)";
+        format = "[](fg:overlay)[ $time  ]($style)[](fg:overlay)";
         style = "bg:overlay fg:rose";
         time_format = "%I:%M%P";
         use_12hr = true;
@@ -83,19 +83,19 @@
 
       hostname = {
         disabled = false;
-        ssh_only = false;
+        ssh_only = true;
         ssh_symbol = "󰢹 ";
-        format = "[](fg:overlay)[ $ssh_symbol$hostname ]($style)[](fg:overlay) ";
+        format = "[](fg:overlay)[ $hostname ]($style)[](fg:overlay) ";
         style = "bg:overlay fg:iris";
       };
 
       nix_shell = {
         disabled = false;
-        format = "[](fg:overlay)[ ❄ $state( \($name\)) ]($style)[](fg:overlay) ";
+        format = "[](fg:overlay)[ ❄ $state ]($style)[](fg:overlay) ";
         style = "bg:overlay fg:foam";
-        impure_msg = "✗ ";
-        pure_msg = "✓ ";
-        unknown_msg = "? ";
+        impure_msg = "✗";
+        pure_msg = "✓";
+        unknown_msg = "?";
       };
 
       # Language-specific configurations
