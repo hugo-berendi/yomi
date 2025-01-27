@@ -35,5 +35,6 @@
     suwayomi = 8431;
     home-assistant = 8123;
     authentik = 8432;
+    keycloak = 8433;
   };
 }

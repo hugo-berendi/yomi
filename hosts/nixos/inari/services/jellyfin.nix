@@ -20,10 +20,6 @@
       mode = "u=rwx,g=r,o=r";
     }
     {
-      directory = "/var/lib/media";
-      mode = "u=rwx,g=rwx,o=rwx";
-    }
-    {
       directory = "/var/lib/private/jellyseerr";
       defaultPerms.mode = "0700";
     }
