@@ -30,7 +30,7 @@
     ./ports.nix
     ./wireless
 
-    ../../../../common
+    ../../../../common/default.nix
     # }}}
   ];
   # }}}
@@ -58,21 +58,6 @@ in {
     Defaults lecture = never
   '';
   # }}}
-
-  nixpkgs = {
-    # Add all overlays defined in the overlays directory
-    overlays =
-      builtins.attrValues outputs.overlays
-      ++ lib.lists.optional
-      config.yomi.toggles.neovim-nightly.enable
-      inputs.neovim-nightly-overlay.overlays.default;
-
-    config.allowUnfree = true;
-    config.permittedInsecurePackages = [
-      "dotnet-sdk-6.0.428"
-      "aspnetcore-runtime-6.0.36"
-    ];
-  };
 
   # Root domain used throughout my config
   yomi.dns.domain = "hugo-berendi.de";

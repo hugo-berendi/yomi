@@ -30,7 +30,7 @@
     # {{{ global configuration
     ./features/cli
     ./features/persistence.nix
-    ../common
+    ../common/default.nix
     ./features/neovim
     # }}}
   ];
@@ -38,29 +38,6 @@ in {
   # Import all modules defined in modules/home-manager
   imports = builtins.attrValues outputs.homeManagerModules ++ imports;
 
-  # {{{ Nixpkgs
-  nixpkgs = {
-    # You can add overlays here
-    # Add all overlays defined in the overlays directory
-    overlays =
-      builtins.attrValues outputs.overlays
-      ++ lib.lists.optional
-      config.yomi.toggles.neovim-nightly.enable
-      inputs.neovim-nightly-overlay.overlays.default;
-
-    # Configure your nixpkgs instance
-    config = {
-      # Disable if you don't want unfree packages
-      allowUnfree = true;
-      allowUnfreePredicate = ["spotify-1.2.42.290.g242057a2"];
-      permittedInsecurePackages = [
-        "electron-25.9.0"
-        "electron-27.3.11"
-        "dotnet-sdk-6.0.428"
-      ];
-    };
-  };
-  # }}}
   # {{{ Enable the home-manager and git clis
   programs = {
     home-manager.enable = true;

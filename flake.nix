@@ -198,7 +198,7 @@
         system: let
           pkgs = nixpkgs.legacyPackages.${system};
           upkgs = inputs.nixpkgs-unstable.legacyPackages.${system};
-          myPkgs = import ./pkgs {inherit pkgs;};
+          myPkgs = import ./pkgs {inherit pkgs upkgs;};
         in
           myPkgs
           // (import ./dns/implementation) {

@@ -1,7 +1,4 @@
 {config, ...}: {
-  nixpkgs.config.permittedInsecurePackages = [
-    "openssl-1.1.1w"
-  ];
   yomi.nginx.at.home.port = config.yomi.ports.home-assistant;
   services.home-assistant = {
     enable = true;

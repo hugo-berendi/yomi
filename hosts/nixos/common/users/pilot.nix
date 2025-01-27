@@ -52,7 +52,6 @@
   # virtualisation.virtualbox.host.enable = true;
   # users.extraGroups.vboxusers.members = [config.users.users.pilot.name];
   #
-  nixpkgs.config.allowUnfree = true;
   # virtualisation.virtualbox.host.enableExtensionPack = true;
   #
   # virtualisation.virtualbox.guest.enable = true;
