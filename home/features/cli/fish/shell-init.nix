@@ -1,4 +1,4 @@
-{
+{pkgs, ...}: {
   programs.fish.shellInit =
     /*
     fish
@@ -18,7 +18,7 @@
 
       set VIRTUAL_ENV_DISABLE_PROMPT 1
       set -x MANPAGER "sh -c 'col -bx | bat -l man -p'"
-      set -x SHELL /usr/bin/fish
+      set -x SHELL ${pkgs.fish}/bin/fish
 
       ## Export variable needed for qt-theme
       if type qtile >>/dev/null 2>&1
