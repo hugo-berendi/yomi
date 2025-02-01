@@ -10,7 +10,7 @@
     buster-captcha-solver
     # REASON: returns 404 for now
     # bypass-paywalls-clean
-    clearurls # removes ugly args from urls
+    # clearurls # removes ugly args from urls
     cliget # Generates curl commands for downloading account-protected things
     don-t-fuck-with-paste # disallows certain websites from disabling pasting
     decentraleyes # Serves local copies of a bunch of things instead of reaching a CDN
