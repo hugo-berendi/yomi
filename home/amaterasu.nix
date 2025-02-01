@@ -13,6 +13,7 @@
     ./features/desktop/obsidian.nix
     ./features/desktop/zathura.nix
     ./features/desktop/gaming.nix
+    ./features/desktop/unity.nix
     ./features/wayland/hyprland
     ./features/productivity
   ];

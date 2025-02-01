@@ -128,6 +128,7 @@
           ];
           json = ["jq"];
           java = ["astyle"];
+          cs = ["csharpier"];
           "_" = ["trim_whitespace"];
         };
 
@@ -168,6 +169,9 @@
           #yamlfmt = {
           #  command = "${lib.getExe pkgs.yamlfmt}";
           #};
+          csharpier = {
+            command = "${lib.getExe pkgs.csharpier}";
+          };
         };
       };
     };

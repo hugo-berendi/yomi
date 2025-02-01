@@ -61,6 +61,15 @@
               };
             };
           };
+          omnisharp = {
+            enable = true;
+            settings = {
+              analyzeOpenDocumentsOnly = false;
+              enableEditorConfigSupport = true;
+              enableImportCompletion = true;
+              organizeImportsOnFormat = true;
+            };
+          };
         };
 
         keymaps = {
