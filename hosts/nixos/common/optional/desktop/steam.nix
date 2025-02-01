@@ -7,7 +7,7 @@
     gamescopeSession.enable = true;
   };
   environment.persistence."/persist/state".directories = [
-    "/home/hugob/.local/share/Steam"
+    # "/home/hugob/.local/share/Steam"
     "/home/hugob/.steam"
   ];
 }
