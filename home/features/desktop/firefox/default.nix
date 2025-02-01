@@ -976,5 +976,12 @@ in {
   yomi.persistence.at.cache.apps.firefox.directories = [
     "${config.xdg.cacheHome}/mozilla/firefox" # Non important cache
   ];
+  yomi.persistence.at.state.apps.zen.directories = [
+    ".zen" # More important stuff
+  ];
+
+  yomi.persistence.at.cache.apps.zen.directories = [
+    "${config.xdg.cacheHome}/zen" # Non important cache
+  ];
   # }}}
 }
