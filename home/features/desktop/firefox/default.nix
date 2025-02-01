@@ -37,17 +37,18 @@
     url = "https://raw.githubusercontent.com/yokoffing/Betterfox/main/user.js";
     sha256 = "1fr0ia7zjszy31sdp05h746b88761wswrwr61zw7hvn1a8dkvhaw";
   };
-  ffUltimaRepo = builtins.fetchGit {
-    url = "https://github.com/soulhotel/FF-ULTIMA.git";
-    ref = "main";
-    rev = "ab481d82dadb7699f757949f4c11a0d26595c0b3";
-  };
+  # ffUltimaRepo = builtins.fetchGit {
+  #   url = "https://github.com/soulhotel/FF-ULTIMA.git";
+  #   ref = "main";
+  #   rev = "ab481d82dadb7699f757949f4c11a0d26595c0b3";
+  # };
 in {
-  programs.firefox = {
+  programs.zen = {
     enable = true;
 
-    package = pkgs.firefox.override {nativeMessagingHosts = [pkgs.passff-host];};
-    # package = inputs.zen-browser.packages."${builtins.currentSystem}".default;
+    # package = pkgs.firefox.override {nativeMessagingHosts = [pkgs.passff-host];};
+    # package = inputs.zen-browser.packages."${pkgs.system}".twilight;
+    package = pkgs.zen-browser-bin;
 
     policies = {
       DisableAppUpdate = true;
@@ -285,7 +286,7 @@ in {
         "ultima.sidebar.autohide" = true;
       };
 
-      extraConfig = builtins.readFile betterfoxUserJS + "\n" + builtins.readFile "${ffUltimaRepo}/user.js";
+      extraConfig = builtins.readFile betterfoxUserJS; # + "\n" + builtins.readFile "${ffUltimaRepo}/user.js";
       # }}}
     };
 
@@ -355,16 +356,16 @@ in {
 
   # Copy FF-ULTIMA files to the chrome folder
   home.file = {
-    ".mozilla/firefox/${config.home.username}/chrome/userChrome.css" = {
-      source = "${ffUltimaRepo}/userChrome.css";
-    };
-    ".mozilla/firefox/${config.home.username}/chrome/userContent.css" = {
-      source = "${ffUltimaRepo}/userContent.css";
-    };
-    ".mozilla/firefox/${config.home.username}/chrome/theme" = {
-      source = "${ffUltimaRepo}/theme";
-      recursive = true;
-    };
+    # ".mozilla/firefox/${config.home.username}/chrome/userChrome.css" = {
+    #   source = "${ffUltimaRepo}/userChrome.css";
+    # };
+    # ".mozilla/firefox/${config.home.username}/chrome/userContent.css" = {
+    #   source = "${ffUltimaRepo}/userContent.css";
+    # };
+    # ".mozilla/firefox/${config.home.username}/chrome/theme" = {
+    #   source = "${ffUltimaRepo}/theme";
+    #   recursive = true;
+    # };
     base16Theme = {
       target = ".mozilla/firefox/${config.home.username}/chrome/theme/all-global-theme-base16.css";
       text =
