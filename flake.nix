@@ -2,7 +2,7 @@
   description = "Your new nix config";
 
   inputs = {
-    zen-browser.url = "github:MarceColl/zen-browser-flake";
+    zen-browser.url = "github:0xc000022070/zen-browser-flake";
     # Nixpkgs
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nixpkgs-old.url = "github:nixos/nixpkgs/nixos-24.11";
@@ -19,7 +19,7 @@
     nix-minecraft.url = "github:Infinidoge/nix-minecraft";
 
     # Home manager
-    home-manager.url = "github:nix-community/home-manager";
+    home-manager.url = "github:0x006E/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
     # {{{ Hyprland

@@ -82,7 +82,7 @@ in {
       # Without this, xdg-open doesn't work
       exec = ["systemctl --user import-environment PATH && systemctl --user restart xdg-desktop-portal.service"];
       exec-once = [
-        "foot --server & footclient & firefox & vesktop & spotify & obsidiantui & pypr & xwaylandvideobridge"
+        "${config.yomi.settings.terminal-cmd} & firefox & vesktop & spotify & obsidiantui & pypr & xwaylandvideobridge"
         "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
         # "wl-paste --type text --watch cliphist store" # Stores only text data
         # "wl-paste --type image --watch cliphist store" # Stores only image data
@@ -104,6 +104,8 @@ in {
           ", XF86AudioPrev, exec, volume --previous"
           ", XF86AudioNext, exec, volume --next"
           ", XF86AudioPlay, exec, volume --play-pause"
+
+          "bind = $mod, Return, exec, ${config.yomi.settings.terminal}"
         ]
         ++ (
           # workspaces
