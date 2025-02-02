@@ -10,8 +10,22 @@
     # Declarative
     secretsFile = config.sops.secrets.wireless.path;
     networks = {
-      "Susanoo".pskRaw = "ext:SUSANOO_HOTSPOT_PASS";
-      "FRITZ!Box 6591 Cable OY".pskRaw = "ext:HOME_WIFI_PASS";
+      "Susanoo" = {
+        pskRaw = "ext:SUSANOO_HOTSPOT_PASS";
+        priority = 0;
+        authProtocols = [
+          "WPA-PSK"
+          "SAE"
+        ];
+      };
+      "FRITZ!Box 6591 Cable OY" = {
+        pskRaw = "ext:HOME_WIFI_PASS";
+        priority = 1;
+        authProtocols = [
+          "WPA-PSK"
+          "SAE"
+        ];
+      };
     };
 
     # Imperative
