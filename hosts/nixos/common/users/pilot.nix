@@ -28,7 +28,7 @@
       isNormalUser = true;
 
       # Picked up by our persistence module
-      homeMode = "700";
+      homeMode = "0700";
 
       # Add user to the following groups
       extraGroups = [
@@ -41,7 +41,8 @@
         "vboxusers"
       ];
 
-      hashedPasswordFile = config.sops.secrets.pilot_password.path;
+      # hashedPasswordFile = config.sops.secrets.pilot_password.path;
+      password = "12345678";
       shell = pkgs.fish;
 
       openssh.authorizedKeys.keyFiles =
