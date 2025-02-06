@@ -6,7 +6,7 @@
   # Configure ZFS
   boot.supportedFilesystems = ["zfs"];
   boot.zfs.extraPools = ["zroot"];
-  boot.kernelPackages = pkgs.linuxPackages_zen; # config.boot.zfs.package.latestCompatibleLinuxPackages;
+  boot.kernelPackages = config.boot.zfs.package.latestCompatibleLinuxPackages;
   boot.kernelParams = ["nohibernate"];
 
   # {{{ Rollback
