@@ -5,7 +5,7 @@
 }: {
   # Configure ZFS
   boot.supportedFilesystems = ["zfs"];
-  boot.zfs.extraPools = ["zroot"];
+  boot.zfs.extraPools = ["zroot" "raid5pool"];
   boot.kernelPackages = config.boot.zfs.package.latestCompatibleLinuxPackages;
   boot.kernelParams = ["nohibernate"];
 

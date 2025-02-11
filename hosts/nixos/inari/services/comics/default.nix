@@ -1,4 +1,6 @@
-{config, ...}: {
+{config, ...}: let
+  comicDir = "/raid5pool/media/comics";
+in {
   yomi.cloudflared.at.suwayomi.port = 4567;
 
   sops.secrets.suwayomi = {
@@ -10,6 +12,7 @@
   services.suwayomi-server = {
     enable = true;
     user = "root";
+    dataDir = comicDir;
     settings = {
       server = {
         port = config.yomi.cloudflared.at.suwayomi.port;
@@ -22,13 +25,13 @@
   };
 
   # {{{ Storage
-  environment.persistence."/persist/state".directories = [
-    {
-      inherit (config.services.suwayomi-server) user group;
-      directory = config.services.suwayomi-server.dataDir;
-      mode = "u=rwx,g=r,o=r";
-    }
-  ];
+  # environment.persistence."/persist/state".directories = [
+  #   {
+  #     inherit (config.services.suwayomi-server) user group;
+  #     directory = config.services.suwayomi-server.dataDir;
+  #     mode = "u=rwx,g=r,o=r";
+  #   }
+  # ];
 
   systemd.tmpfiles.rules = let
     dataDir = config.services.suwayomi-server.dataDir;

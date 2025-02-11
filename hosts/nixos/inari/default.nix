@@ -41,7 +41,7 @@
     ./services/whoogle.nix
     ./services/zfs.nix
     # ./services/ntfy.nix
-    ./services/suwayomi.nix
+    ./services/comics/default.nix
     # {{{ *arr suite
     ./services/sonarr.nix
     ./services/radarr.nix
