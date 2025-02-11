@@ -41,8 +41,8 @@
         "vboxusers"
       ];
 
-      # hashedPasswordFile = config.sops.secrets.pilot_password.path;
-      password = "12345678";
+      hashedPasswordFile = config.sops.secrets.pilot_password.path;
+      # password = "12345678";
       shell = pkgs.fish;
 
       openssh.authorizedKeys.keyFiles =
