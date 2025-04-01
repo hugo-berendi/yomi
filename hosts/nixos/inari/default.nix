@@ -22,7 +22,7 @@
     # ./services/diptime.nix
     ./services/forgejo.nix
     ./services/grafana.nix
-    # ./services/guacamole
+    ./services/guacamole
     ./services/homer.nix
     # ./services/intray.nix
     # ./services/invidious.nix
@@ -38,6 +38,7 @@
     # ./services/smos.nix
     ./services/vaultwarden.nix
     # ./services/keycloak.nix
+    # ./services/immich.nix
     ./services/whoogle.nix
     ./services/zfs.nix
     # ./services/ntfy.nix

@@ -36,5 +36,6 @@
     home-assistant = 8123;
     authentik = 8432;
     keycloak = 8433;
+    immich = 8434;
   };
 }
