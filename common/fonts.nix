@@ -2,11 +2,11 @@
   stylix.fonts = {
     monospace = {
       name = "Maple Mono NF";
-      package = upkgs.maple-mono-NF;
+      package = upkgs.maple-mono.NF;
     };
     sansSerif = {
       name = "Maple Mono NF";
-      package = upkgs.maple-mono-NF;
+      package = upkgs.maple-mono.NF;
     };
     serif = {
       name = "Quicksand";

@@ -37,5 +37,6 @@
     authentik = 8432;
     keycloak = 8433;
     immich = 8434;
+    paperless = 8435;
   };
 }

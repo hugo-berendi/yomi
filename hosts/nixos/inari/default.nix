@@ -23,6 +23,7 @@
     ./services/forgejo.nix
     ./services/grafana.nix
     ./services/guacamole
+    ./services/paperless.nix
     ./services/homer.nix
     # ./services/intray.nix
     # ./services/invidious.nix

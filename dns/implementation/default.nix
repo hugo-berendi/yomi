@@ -15,7 +15,7 @@
     };
   });
 
-  octodns-cloudflare = pkgs.python3Packages.callPackage (import ./octodns-cloudflare.nix) {
+  octodns-cloudflare = pkgs.pythonPackages.callPackage (import ./octodns-cloudflare.nix) {
     inherit octodns;
   };
 
