@@ -93,7 +93,7 @@ in {
         type = lib.types.functionTo lib.types.str;
         description = ''
           Converts a color name (e.g., "base08") to an `rgb()` string.
-          It extracts the hex value from `config.lib.stylix.scheme.withHashtag` and converts it to an RGB string.
+          It extracts the hex value from `config.lib.stylix.colors.withHashtag` and converts it to an RGB string.
         '';
       };
 
@@ -155,7 +155,7 @@ in {
 
     # Function to convert color name to rgb()
     colors.colorToRgb = colorName: let
-      hexColor = config.lib.stylix.scheme.withHashtag.${colorName};
+      hexColor = config.lib.stylix.colors.withHashtag.${colorName};
     in
       cfg.colors.hexToRgb hexColor;
   };

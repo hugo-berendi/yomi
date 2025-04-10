@@ -105,7 +105,7 @@ in {
         row#match:selected {
           box-shadow: 0.5px 0.5px 1.5px 1.5px rgba(0, 0, 0, 0.5);
           border-radius: ${toString config.yomi.theming.rounding.radius}px;
-          border: 3px solid ${config.lib.stylix.scheme.withHashtag.base0D};
+          border: 3px solid ${config.lib.stylix.colors.withHashtag.base0D};
         }
 
         #entry,
@@ -119,7 +119,7 @@ in {
         #entry {
           font-size: 1rem;
           padding: 1rem;
-          border: 3px solid ${config.lib.stylix.scheme.withHashtag.base0D};
+          border: 3px solid ${config.lib.stylix.colors.withHashtag.base0D};
           border-radius: ${toString config.yomi.theming.rounding.radius}px;
 
         }
@@ -128,7 +128,7 @@ in {
         row#match {
           margin: 0.7rem;
           margin-bottom: 0.3rem;
-          color: ${config.lib.stylix.scheme.withHashtag.base05};
+          color: ${config.lib.stylix.colors.withHashtag.base05};
           padding: 0.5rem;
           transition: none;
         }
@@ -139,7 +139,7 @@ in {
 
         #match:selected {
           padding: 0.5rem;
-          color: ${config.lib.stylix.scheme.withHashtag.base05};
+          color: ${config.lib.stylix.colors.withHashtag.base05};
           background: rgba(${config.yomi.theming.colors.rgb "base03"}, 0.2);
         }
         /* }}} */

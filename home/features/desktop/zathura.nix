@@ -2,7 +2,7 @@
 {config, ...}: {
   programs.zathura = {
     enable = true;
-    extraConfig = with config.lib.stylix.scheme.withHashtag; ''
+    extraConfig = with config.lib.stylix.colors.withHashtag; ''
       # {{{ Some arbitrary settings
       # Open document in fit-width mode by default
       set adjust-open "best-fit"

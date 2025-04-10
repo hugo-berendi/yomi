@@ -18,7 +18,7 @@
 
       window#waybar {
         background: transparent;
-        color: ${config.lib.stylix.scheme.withHashtag.base0D};
+        color: ${config.lib.stylix.colors.withHashtag.base0D};
       }
 
       #workspaces {
@@ -35,24 +35,24 @@
         padding: 0px;
         margin: 0 3px;
         min-width: 30px;
-        color: ${config.lib.stylix.scheme.withHashtag.base0D};
-        background: ${config.lib.stylix.scheme.withHashtag.base0D};
+        color: ${config.lib.stylix.colors.withHashtag.base0D};
+        background: ${config.lib.stylix.colors.withHashtag.base0D};
         transition: all 0.3s ease-in-out;
         opacity: 0.4;
         font-size: 10;
       }
 
       #workspaces button.active {
-        color: ${config.lib.stylix.scheme.withHashtag.base0D};
-        background: ${config.lib.stylix.scheme.withHashtag.base0D};
+        color: ${config.lib.stylix.colors.withHashtag.base0D};
+        background: ${config.lib.stylix.colors.withHashtag.base0D};
         min-width: 50px;
         background-size: 400% 400%;
         opacity: 1;
       }
 
       #workspaces button:hover {
-        background: ${config.lib.stylix.scheme.withHashtag.base0D};
-        color: ${config.lib.stylix.scheme.withHashtag.base0D};
+        background: ${config.lib.stylix.colors.withHashtag.base0D};
+        color: ${config.lib.stylix.colors.withHashtag.base0D};
         min-width: 50px;
         background-size: 400% 400%;
       }
@@ -77,7 +77,7 @@
         background: rgba(${config.yomi.theming.colors.rgba "base00"});
         border-width: ${toString config.yomi.theming.rounding.size}px;
         border-style: solid;
-        border-color: ${config.lib.stylix.scheme.withHashtag.base0D};
+        border-color: ${config.lib.stylix.colors.withHashtag.base0D};
         margin-top: 5px;
         margin-bottom: 5px;
         padding-top: 5px;
@@ -205,16 +205,16 @@
 
       #custom-dexcom .doubleup,
       #custom-dexcom .doubledown {
-        color: ${config.lib.stylix.scheme.withHashtag.base08};
+        color: ${config.lib.stylix.colors.withHashtag.base08};
       }
 
       #custom-dexcom .up,
       #custom-dexcom .down {
-        color: ${config.lib.stylix.scheme.withHashtag.base0A};
+        color: ${config.lib.stylix.colors.withHashtag.base0A};
       }
 
       #custom-dexcom .right {
-        color: ${config.lib.stylix.scheme.withHashtag.base0C};
+        color: ${config.lib.stylix.colors.withHashtag.base0C};
       }
 
       #custom-dexcom {
