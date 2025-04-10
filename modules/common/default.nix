@@ -6,5 +6,4 @@
   theming = import ./theming.nix;
   themes = import ./themes.nix;
   toggles = import ./toggles.nix;
-  # importall = import ./importall.nix;
 }
