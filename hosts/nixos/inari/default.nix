@@ -25,6 +25,7 @@
     ./services/guacamole
     ./services/paperless.nix
     ./services/homer.nix
+    ./services/msmtp.nix
     # ./services/intray.nix
     # ./services/invidious.nix
     ./services/jellyfin.nix
