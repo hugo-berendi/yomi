@@ -15,13 +15,13 @@
   #     sha256 = "192hbxhb0ghcbzqy3h8q194n4iy7bqfj9ra9qqjff3x2z223czxb";
   #   };
   # });
-  #
+
   octodns-cloudflare = pkgs.python312Packages.callPackage (import ./octodns-cloudflare.nix) {
     inherit octodns;
   };
 
-  # fullOctodns = octodns.withProviders (ps: [octodns-cloudflare]);
-  fullOctodns = octodns.withProviders (ps: [pkgs.octodns-providers.cloudflare]);
+  fullOctodns = octodns.withProviders (ps: [octodns-cloudflare]);
+  # fullOctodns = octodns.withProviders (ps: [pkgs.octodns-providers.cloudflare]);
 in
   #  }}}
   rec {
@@ -63,10 +63,14 @@ in
                 --decrypt \
                 --extract "[\"cloudflare_dns_api_token\"]" \
                 ./hosts/nixos/common/secrets.yaml \
-            ) && export CLOUDFLARE_EMAIL=hugo.berendi@proton.me' \
+            )' \
           --add-flags "--config-file $out/config.yaml"
       '';
     };
     #  }}}
+<<<<<<< HEAD
     octodns-full = fullOctodns;
+=======
+    octodns-full = octodns;
+>>>>>>> 66600b6 (try fixing octodns)
   }

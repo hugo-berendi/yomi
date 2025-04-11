@@ -11,7 +11,7 @@
 }:
 buildPythonPackage {
   pname = "octodns-cloudflare";
-  version = "unstable-2024-10-09";
+  version = "unstable-2024-10-08";
   pyproject = true;
 
   disabled = pythonOlder "3.8";
