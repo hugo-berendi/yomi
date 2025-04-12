@@ -955,6 +955,15 @@ in {
     profileNames = ["desmos" "monkey-type" "syncthing" "clockify" "proton-mail" "proton-drive" "excalidraw"];
   };
 
+  # xdg.desktopEntries.zen = {
+  #   name = "Zen Browser";
+  #   genericName = "Web Browser";
+  #   exec = "zen %U";
+  #   terminal = false;
+  #   categories = ["Application" "Network" "WebBrowser"];
+  #   mimeType = ["text/html" "text/xml" "x-scheme-handler/http" "x-scheme-handler/https"];
+  # };
+
   # {{{ Make firefox the default
   # Use firefox as the default browser to open stuff.
   xdg.mimeApps.defaultApplications = {

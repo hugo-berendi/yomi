@@ -1,5 +1,6 @@
 {
   pkgs,
+  upkgs,
   config,
   ...
 }: {
@@ -11,6 +12,6 @@
   yomi.persistence.at.state.apps.unity.directories = [
     "${config.home.homeDirectory}/Unity"
     "${config.home.homeDirectory}/.config/unity3d/"
-    "${config.home.homeDirectory}/.cache/unity3d/"
+    # "${config.home.homeDirectory}/.cache/unity3d/"
   ];
 }

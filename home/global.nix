@@ -57,6 +57,7 @@ in {
 
   # Enable default application management
   xdg.mimeApps.enable = true;
+  xdg.portal.xdgOpenUsePortal = true;
 
   # Tell sops-nix to use ssh keys for decrypting secrets
   sops.age.sshKeyPaths = ["/persist/state/etc/ssh/ssh_host_ed25519_key"];
