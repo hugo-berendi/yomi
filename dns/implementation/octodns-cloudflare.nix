@@ -23,15 +23,15 @@ buildPythonPackage {
     sha256 = "0kcih4dxgl9ihh22j6d7dbd0d1ylrjp6f60w1p5gzyini1c0a0x1";
   };
 
-  nativeBuildInputs = [setuptools];
+  build-system = [
+    setuptools
+  ];
 
-  propagatedBuildInputs = [
+  dependencies = [
     octodns
     dnspython
     requests
   ];
-
-  env.OCTODNS_RELEASE = 1;
 
   pythonImportsCheck = ["octodns_cloudflare"];
 
