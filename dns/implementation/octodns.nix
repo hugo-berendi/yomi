@@ -29,7 +29,9 @@ buildPythonPackage rec {
     sha256 = "Yl7266I8aH9cEsu+/6yYn6TJPKsmhHotC3y+/cYpK3M=";
   };
 
-  build-system = [setuptools];
+  build-system = [
+    setuptools
+  ];
 
   dependencies = [
     dnspython
@@ -40,13 +42,17 @@ buildPythonPackage rec {
     pyyaml
   ];
 
-  nativeCheckInputs = [pytestCheckHook];
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
+  pythonImportsCheck = ["octodns"];
 
   passthru.withProviders = ps: let
     pyEnv = python.withPackages ps;
   in
     runCommand "octodns-with-providers" {} ''
       mkdir -p $out/bin
-      ln -st $out/bon ${pyEnv}/bin/octodns-*
+      ln -st $out/bin ${pyEnv}/bin/octodns-*
     '';
 }
