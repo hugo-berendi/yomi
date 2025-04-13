@@ -52,28 +52,20 @@ in
       paths = [fullOctodns];
       buildInputs = [
         pkgs.makeWrapper
+        pkgs.yq
       ];
 
       postBuild = ''
-        sed '/^providers:/,/^[^ ]/ s|^\( *zones:\)$|\1\n  directory: "${octodns-zones}"|' ${octodnsConfig} > $out/config.yaml
-
+        cat ${octodnsConfig} | yq '.providers.zones.directory="${octodns-zones}"' > $out/config.yaml
         wrapProgram $out/bin/octodns-sync \
           --run 'export CLOUDFLARE_TOKEN=$( \
-            sops \
-              --decrypt \
-              --extract "[\"cloudflare_dns_api_token\"]" \
-              ./hosts/nixos/common/secrets.yaml \
-          )'
+              sops \
+                --decrypt \
+                --extract "[\"cloudflare_dns_api_token\"]" \
+                ./hosts/nixos/common/secrets.yaml \
+            )' \
+          --add-flags "--config-file $out/config.yaml"
       '';
     };
     #  }}}
-<<<<<<< Updated upstream
-<<<<<<< HEAD
-    octodns-full = fullOctodns;
-=======
-    octodns-full = octodns;
->>>>>>> 66600b6 (try fixing octodns)
-=======
-    octodns-pkg = fullOctodns;
->>>>>>> Stashed changes
   }
