@@ -40,7 +40,8 @@
     # ./services/smos.nix
     ./services/vaultwarden.nix
     # ./services/keycloak.nix
-    # ./services/immich.nix
+    ./services/authentik.nix
+    ./services/immich.nix
     ./services/whoogle.nix
     ./services/zfs.nix
     # ./services/ntfy.nix
