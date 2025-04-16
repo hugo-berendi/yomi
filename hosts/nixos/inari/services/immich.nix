@@ -5,7 +5,7 @@
     group = config.services.immich.group;
   };
 
-  yomi.cloudflared.at.immich.port = config.yomi.ports.immich;
+  yomi.nginx.at.immich.port = config.yomi.ports.immich;
 
   services.immich = {
     enable = true;
