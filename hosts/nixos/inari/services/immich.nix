@@ -10,6 +10,13 @@
   };
 
   yomi.nginx.at.immich.port = config.yomi.ports.immich;
+  yomi.cloudflared.at.immich-shared.port = config.yomi.ports.ipp;
+
+  services.immich-public-proxy = {
+    enable = true;
+    immichUrl = config.yomi.nginx.at.immich.url;
+    port = config.yomi.ports.ipp;
+  };
 
   services.immich = {
     enable = true;

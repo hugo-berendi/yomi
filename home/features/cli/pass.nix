@@ -5,11 +5,9 @@
   pkgs,
   upkgs,
   config,
-  lib,
   ...
 }: let
   storePath = "${config.home.homeDirectory}/.password-store";
-  gitRepoUrl = "git@github.com:hugo-berendi/pwd-store.git";
 in {
   programs.password-store = {
     enable = true;

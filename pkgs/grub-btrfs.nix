@@ -1,12 +1,9 @@
 {
-  lib,
   stdenv,
   fetchFromGitHub,
   pkg-config,
   cmake,
   ninja,
-  wayland,
-  pkgs,
   debug ? false,
 }:
 stdenv.mkDerivation (finalAttrs: {

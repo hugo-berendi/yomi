@@ -38,5 +38,6 @@
     keycloak = 8433;
     immich = 8434;
     paperless = 8435;
+    ipp = 8436;
   };
 }

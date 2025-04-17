@@ -1,6 +1,5 @@
 {
   inputs,
-  config,
   ...
 }: {
   yomi.settings = {

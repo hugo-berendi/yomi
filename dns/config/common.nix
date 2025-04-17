@@ -1,13 +1,6 @@
 # DNS entries which do not belong to a particular host
 {lib, ...}: let
   # {{{ Github pages helper
-  ghPage = at: [
-    {
-      inherit at;
-      type = "CNAME";
-      value = "hugo-berendi.github.io.";
-    }
-  ];
   # }}}
   # {{{ Migadu mail DNS setup
   migaduMail = at: verifyKey: let

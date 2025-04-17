@@ -1,5 +1,4 @@
-{config, ...}: let
-in {
+{config, ...}: {
   programs.nixvim.plugins = {
     obsidian = {
       enable = true;

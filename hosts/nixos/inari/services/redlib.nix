@@ -1,7 +1,5 @@
 {
   config,
-  lib,
-  upkgs,
   ...
 }: let
   port = config.yomi.ports.redlib;

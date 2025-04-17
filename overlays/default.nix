@@ -5,7 +5,7 @@
 
   # You can change versions, add patches, set compilation flags, anything really.
   # https://nixos.wiki/wiki/Overlays
-  modifications = final: _prev: {
+  modifications = _final: _prev: {
     # example = prev.example.overrideAttrs (oldAttrs: rec {
     # ...
     # });

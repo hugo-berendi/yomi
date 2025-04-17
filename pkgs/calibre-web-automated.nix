@@ -1,14 +1,11 @@
 {
-  lib,
   fetchFromGitHub,
-  nixosTests,
-  nix-update-script,
   python3,
   buildPythonPackage,
 }: let
   python = python3.override {
     self = python;
-    packageOverrides = self: super: {
+    packageOverrides = _self: super: {
       sqlalchemy = super.sqlalchemy_1_4;
     };
   };

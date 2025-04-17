@@ -1,7 +1,5 @@
 {
   outputs,
-  lib,
-  pkgs,
   ...
 }: {
   nixpkgs = {

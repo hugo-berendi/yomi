@@ -20,7 +20,7 @@
     inherit octodns;
   };
 
-  fullOctodns = octodns.withProviders (ps: [octodns-cloudflare]);
+  fullOctodns = octodns.withProviders (_ps: [octodns-cloudflare]);
   # fullOctodns = octodns.withProviders (ps: [pkgs.octodns-providers.cloudflare]);
 in
   #  }}}

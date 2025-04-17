@@ -2,7 +2,6 @@
   lib,
   stdenv,
   fetchurl,
-  config,
   wrapGAppsHook3,
   autoPatchelfHook,
   alsa-lib,
@@ -14,7 +13,6 @@
   pciutils,
   pipewire,
   adwaita-icon-theme,
-  writeText,
   patchelfUnstable, # have to use patchelfUnstable to support --no-clobber-old-sections
 }: let
   mozillaPlatforms = {

@@ -66,7 +66,6 @@
   systemd.tmpfiles.rules = let
     user = config.users.users.pilot;
     root = "/persist/state/${user.home}/ssh";
-    etc_root = "/persist/state/etc/ssh";
   in [
     "d ${root}                 0755 ${user.name} ${user.group}"
     "d ${root}/.ssh            0755 ${user.name} ${user.group}"
