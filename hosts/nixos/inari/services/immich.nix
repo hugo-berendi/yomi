@@ -17,21 +17,21 @@
     host = "localhost";
     mediaLocation = "/raid5pool/media/photos";
     secretsFile = config.sops.secrets.immich_secrets.path;
-    settings = {
-      server = {
-        externalDomain = "https://immich.hugo-berendi.de/";
-        loginPageMessage = "Hello traveler ^_^";
-      };
-      oauth = {
-        enabled = true;
-        autoLaunch = false;
-        autoRegister = true;
-        buttonText = "Login with Authentik";
-        clientId = "crp82kCIMkscBZYMoEv3a18fmun1m9k8enomNGgU";
-        clientSecret = builtins.readFile config.sops.secrets.immich_oauth_client_secret.path; # "";
-        issuerUrl = "https://authentik.hugo-berendi.de/application/o/immich/";
-        scope = "openid email profile";
-      };
-    };
+    # settings = {
+    #   server = {
+    #     externalDomain = "https://immich.hugo-berendi.de/";
+    #     loginPageMessage = "Hello traveler ^_^";
+    #   };
+    #   oauth = {
+    #     enabled = true;
+    #     autoLaunch = false;
+    #     autoRegister = true;
+    #     buttonText = "Login with Authentik";
+    #     clientId = "crp82kCIMkscBZYMoEv3a18fmun1m9k8enomNGgU";
+    #     # clientSecret = builtins.readFile config.sops.secrets.immich_oauth_client_secret.path; # "";
+    #     issuerUrl = "https://authentik.hugo-berendi.de/application/o/immich/";
+    #     scope = "openid email profile";
+    #   };
+    # };
   };
 }

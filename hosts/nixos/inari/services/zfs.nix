@@ -39,12 +39,12 @@ Jc6qtzWXREoIQIoJNw02W7Pcudkoi6dgd5rfFTICNqa8Q+3RakcJ2zfA07OiTj/4mPo+3LpOY4U4CxkF
 0phohHiBvKlqcJYFROG1jXUeB71rde7w1iDvikrOIwhhLt8/KEOZ2aujAtM+vQ== openpgp:0x5972AAD9"
       ];
     };
-    postCommands = ''
-      # Import all pools
-      zpool import -a
-      # Add the load-key command to the .profile
-      echo "zfs load-key -a; killall zfs" >> /root/.profile
-    '';
+    # postCommands = ''
+    #   # Import all pools
+    #   zpool import -a
+    #   # Add the load-key command to the .profile
+    #   echo "zfs load-key -a; killall zfs" >> /root/.profile
+    # '';
   };
   # }}}
   # {{{ Sanoid config
