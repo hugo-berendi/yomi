@@ -19,6 +19,7 @@ echo "Uptimes:"
 
 {
 	print_uptime "amaterasu" "🔥"
+	print_uptime "inari" "🛰️"
 } |
 	column --table -R 2 -s "~"
 # ^ We use the column command to align things nicely:
