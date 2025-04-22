@@ -18,15 +18,13 @@ in {
     enable = true;
     config = {
       # {{{ Plugins
-      plugins =
-        normal-plugins
-        ++ [
-          # inputs.anyrun-rbw.packages.${pkgs.system}.default
-          inputs.anyrun-plugins.packages.${pkgs.system}.cliphist
-          # inputs.anyrun-hyprwin.packages.${pkgs.system}.default
-          inputs.anyrun-plugins.packages.${pkgs.system}.applications
-          inputs.anyrun-plugins.packages.${pkgs.system}.symbols
-        ];
+      plugins = [
+        # inputs.anyrun-rbw.packages.${pkgs.system}.default
+        inputs.anyrun-plugins.packages.${pkgs.system}.cliphist
+        # inputs.anyrun-hyprwin.packages.${pkgs.system}.default
+        inputs.anyrun-plugins.packages.${pkgs.system}.applications
+        inputs.anyrun-plugins.packages.${pkgs.system}.symbols
+      ];
       # }}}
       # {{{ Geometry
       x.fraction = 0.5;

@@ -273,7 +273,7 @@
                         };
                       home-manager.useUserPackages = true;
                       home-manager.backupFileExtension = "backy";
-
+              
                       stylix.homeManagerIntegration.followSystem = false;
                       stylix.homeManagerIntegration.autoImport = false;
                     }

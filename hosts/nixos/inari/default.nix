@@ -1,7 +1,4 @@
-{
-  config,
-  ...
-}: {
+{config, ...}: {
   imports = [
     ../common/global
     ../common/users/pilot.nix
@@ -41,6 +38,7 @@
     # ./services/keycloak.nix
     ./services/authentik.nix
     ./services/immich.nix
+    ./services/music
     ./services/whoogle.nix
     ./services/zfs.nix
     # ./services/ntfy.nix
