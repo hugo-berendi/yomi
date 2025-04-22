@@ -39,5 +39,6 @@
     immich = 8434;
     paperless = 8435;
     ipp = 8436;
+    navidrome = 8437;
   };
 }

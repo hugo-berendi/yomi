@@ -5,7 +5,7 @@
   ...
 }: {
   sops.secrets.navidrome_env = {
-    sopsFile = ../secrets.yaml;
+    sopsFile = ../../secrets.yaml;
     owner = config.services.navidrome.user;
     group = config.services.navidrome.group;
   };
