@@ -21,6 +21,15 @@
   fa = name: "fas fa-${name}";
   iconPath = ../../../../common/icons;
   icon = file: "assets/${iconPath}/${file}";
+  fetchIcon = name: "https://cdn.jsdelivr.net/gh/selfhst/icons/png/${name}.png";
+
+  mkHomerService = name: subtitle: logo: url: {
+    name = name;
+    type = name;
+    subtitle = subtitle;
+    logo = logo;
+    url = url;
+  };
 in {
   yomi.nginx.at.lab.files = pkgs.homer.withAssets {
     extraAssets = [iconPath];
@@ -40,13 +49,11 @@ in {
           name = "Infrastructure";
           icon = fa "code";
           items = [
-            {
-              name = "Prometheus";
-              type = "Prometheus";
-              subtitle = "Monitoring system";
-              logo = icon "prometheus.png";
-              url = "https://prometheus.hugo-berendi.de";
-            }
+            (mkHomerService
+              "Prometheus"
+              "Monitoring system"
+              (fetchIcon "prometheus")
+              "https://prometheus.hugo-berendi.de")
             {
               name = "Grafana";
               subtitle = "Pretty dashboards :3";
