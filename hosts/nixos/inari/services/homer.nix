@@ -21,7 +21,7 @@
   fa = name: "fas fa-${name}";
   iconPath = ../../../../common/icons;
   icon = file: "assets/${iconPath}/${file}";
-  fetchIcon = name: "https://cdn.jsdelivr.net/gh/selfhst/icons/png/${name}.png";
+  getIconUrl = name: "https://cdn.jsdelivr.net/gh/selfhst/icons/${name}.png";
 
   mkHomerService = name: subtitle: logo: url: {
     name = name;
@@ -52,26 +52,23 @@ in {
             (mkHomerService
               "Prometheus"
               "Monitoring system"
-              (fetchIcon "prometheus")
+              (getIconUrl "prometheus")
               "https://prometheus.hugo-berendi.de")
-            {
-              name = "Grafana";
-              subtitle = "Pretty dashboards :3";
-              logo = icon "grafana.png";
-              url = "https://grafana.hugo-berendi.de";
-            }
-            {
-              name = "Syncthing";
-              subtitle = "File synchronization";
-              logo = icon "syncthing.png";
-              url = "https://syncthing.lapetus.hugo-berendi.de";
-            }
-            {
-              name = "Guacamole";
-              subtitle = "Server remote access";
-              logo = icon "guacamole.png";
-              url = "https://guacamole.hugo-berendi.de";
-            }
+            (mkHomerService
+              "Grafana"
+              "Pretty dashboards :3"
+              (getIconUrl "grafana")
+              "https://grafana.hugo-berendi.de")
+            (mkHomerService
+              "Syncthing"
+              "File synchronization"
+              (getIconUrl "syncthing")
+              "https://syncthing.lapetus.hugo-berendi.de")
+            (mkHomerService
+              "Guacamole"
+              "Server remote access"
+              (getIconUrl "guacamole")
+              "https://guacamole.hugo-berendi.de")
           ];
         }
         # }}}
@@ -80,24 +77,21 @@ in {
           name = "External";
           icon = fa "arrow-up-right-from-square";
           items = [
-            {
-              name = "Tailscale";
-              subtitle = "Access this homelab from anywhere";
-              logo = icon "tailscale.png";
-              url = "https://tailscale.com/";
-            }
-            {
-              name = "Dotfiles";
-              subtitle = "Configuration for all my machines";
-              logo = icon "github.png";
-              url = "https://github.com/prescientmoon/everything-nix";
-            }
-            {
-              name = "Cloudflare";
-              subtitle = "Domain management";
-              logo = icon "cloudflare.png";
-              url = "https://dash.cloudflare.com/761d3e81b3e42551e33c4b73274ecc82/hugo-berendi.de/";
-            }
+            (mkHomerService
+              "Tailscale"
+              "Access this homelab from anywhere"
+              (getIconUrl "tailscale")
+              "https://tailscale.com/")
+            (mkHomerService
+              "Dotfiles"
+              "Configuration for all my machines"
+              (getIconUrl "github")
+              "https://github.com/prescientmoon/everything-nix")
+            (mkHomerService
+              "Cloudflare"
+              "Domain management"
+              (getIconUrl "cloudflare")
+              "https://dash.cloudflare.com/761d3e81b3e42551e33c4b73274ecc82/hugo-berendi.de/")
           ];
         }
         # }}}
@@ -106,24 +100,21 @@ in {
           name = "Productivity";
           icon = fa "rocket";
           items = [
-            {
-              name = "Intray";
-              subtitle = "GTD capture tool";
-              icon = fa "inbox";
-              url = "https://intray.hugo-berendi.de";
-            }
-            {
-              name = "Smos";
-              subtitle = "A comprehensive self-management system.";
-              icon = fa "cubes-stacked";
-              url = "https://smos.hugo-berendi.de";
-            }
-            {
-              name = "Actual";
-              subtitle = "Budgeting tool";
-              logo = icon "actual.png";
-              url = "https://actual.hugo-berendi.de";
-            }
+            (mkHomerService
+              "Intray"
+              "GTD capture tool"
+              (fa "inbox")
+              "https://intray.hugo-berendi.de")
+            (mkHomerService
+              "Smos"
+              "A comprehensive self-management system."
+              (fa "cubes-stacked")
+              "https://smos.hugo-berendi.de")
+            (mkHomerService
+              "Actual"
+              "Budgeting tool"
+              (getIconUrl "actual")
+              "https://actual.hugo-berendi.de")
           ];
         }
         # }}}
@@ -132,42 +123,36 @@ in {
           name = "Tooling";
           icon = fa "toolbox";
           items = [
-            {
-              name = "Vaultwarden";
-              subtitle = "Password manager";
-              logo = icon "bitwarden.png";
-              url = "https://warden.hugo-berendi.de";
-            }
-            {
-              name = "Whoogle";
-              subtitle = "Search engine";
-              logo = icon "whoogle.webp";
-              url = "https://search.hugo-berendi.de";
-            }
-            {
-              name = "Radicale";
-              subtitle = "Calendar server";
-              logo = icon "radicale.svg";
-              url = "https://cal.hugo-berendi.de";
-            }
-            {
-              name = "Microbin";
-              subtitle = "Code & file sharing";
-              logo = icon "microbin.png";
-              url = "https://bin.hugo-berendi.de";
-            }
-            {
-              name = "Forgejo";
-              subtitle = "Git forge";
-              logo = icon "forgejo.svg";
-              url = "https://git.hugo-berendi.de";
-            }
-            {
-              name = "Jupyterhub";
-              subtitle = "Notebook collaboration suite";
-              logo = icon "jupyter.png";
-              url = "https://jupyter.hugo-berendi.de";
-            }
+            (mkHomerService
+              "Vaultwarden"
+              "Password manager"
+              (getIconUrl "bitwarden")
+              "https://warden.hugo-berendi.de")
+            (mkHomerService
+              "Whoogle"
+              "Search engine"
+              (getIconUrl "whoogle.webp")
+              "https://search.hugo-berendi.de")
+            (mkHomerService
+              "Radicale"
+              "Calendar server"
+              (getIconUrl "radicale")
+              "https://cal.hugo-berendi.de")
+            (mkHomerService
+              "Microbin"
+              "Code & file sharing"
+              (getIconUrl "microbin")
+              "https://bin.hugo-berendi.de")
+            (mkHomerService
+              "Forgejo"
+              "Git forge"
+              (getIconUrl "forgejo")
+              "https://git.hugo-berendi.de")
+            (mkHomerService
+              "Jupyterhub"
+              "Notebook collaboration suite"
+              (getIconUrl "jupyter")
+              "https://jupyter.hugo-berendi.de")
           ];
         }
         # }}}
@@ -176,42 +161,36 @@ in {
           name = "Entertainment";
           icon = fa "gamepad";
           items = [
-            {
-              name = "Invidious";
-              subtitle = "Youtube client";
-              logo = icon "invidious.png";
-              url = "https://yt.hugo-berendi.de";
-            }
-            {
-              name = "Redlib";
-              subtitle = "Reddit client";
-              logo = icon "libreddit.png";
-              url = "https://redlib.hugo-berendi.de";
-            }
-            {
-              name = "Diptime";
-              subtitle = "Diplomacy timer";
-              icon = fa "globe";
-              url = "https://diptime.hugo-berendi.de";
-            }
-            {
-              name = "Commafeed";
-              subtitle = "RSS reader";
-              logo = icon "commafeed.png";
-              url = "https://rss.hugo-berendi.de";
-            }
-            {
-              name = "Qbittorrent";
-              subtitle = "Torrent client";
-              logo = icon "qbittorrent.png";
-              url = "https://qbit.hugo-berendi.de";
-            }
-            {
-              name = "Jellyfin";
-              subtitle = "Media server";
-              logo = icon "jellyfin.png";
-              url = "https://media.hugo-berendi.de";
-            }
+            (mkHomerService
+              "Invidious"
+              "Youtube client"
+              (getIconUrl "invidious")
+              "https://yt.hugo-berendi.de")
+            (mkHomerService
+              "Redlib"
+              "Reddit client"
+              (getIconUrl "libreddit")
+              "https://redlib.hugo-berendi.de")
+            (mkHomerService
+              "Diptime"
+              "Diplomacy timer"
+              (fa "globe")
+              "https://diptime.hugo-berendi.de")
+            (mkHomerService
+              "Commafeed"
+              "RSS reader"
+              (getIconUrl "commafeed")
+              "https://rss.hugo-berendi.de")
+            (mkHomerService
+              "Qbittorrent"
+              "Torrent client"
+              (getIconUrl "qbittorrent")
+              "https://qbit.hugo-berendi.de")
+            (mkHomerService
+              "Jellyfin"
+              "Media server"
+              (getIconUrl "jellyfin")
+              "https://media.hugo-berendi.de")
           ];
         }
         # }}}
