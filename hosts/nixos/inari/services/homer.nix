@@ -21,7 +21,7 @@
   fa = name: "fas fa-${name}";
   iconPath = ../../../../common/icons;
   icon = file: "assets/${iconPath}/${file}";
-  getIconUrl = name: "https://cdn.jsdelivr.net/gh/selfhst/icons/${name}.png";
+  getIconUrl = name: "https://cdn.jsdelivr.net/gh/selfhst/icons/png/${name}.png";
 
   mkHomerService = name: subtitle: logo: url: {
     name = name;
