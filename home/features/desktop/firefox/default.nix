@@ -35,7 +35,7 @@
 
   betterfoxUserJS = builtins.fetchurl {
     url = "https://raw.githubusercontent.com/yokoffing/Betterfox/main/user.js";
-    sha256 = "1fr0ia7zjszy31sdp05h746b88761wswrwr61zw7hvn1a8dkvhaw";
+    sha256 = "1bckfh2zxssmwpg0p1c537lb6jvnicwxccncyy10yips9bvxqa52";
   };
   # ffUltimaRepo = builtins.fetchGit {
   #   url = "https://github.com/soulhotel/FF-ULTIMA.git";
@@ -87,7 +87,7 @@ in {
 
       # }}}
       # {{{ Extensions
-      extensions = with inputs.firefox-addons.packages.${pkgs.system};
+      extensions.packages = with inputs.firefox-addons.packages.${pkgs.system};
       with lib.lists;
         flatten [
           extensions

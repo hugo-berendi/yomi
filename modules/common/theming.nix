@@ -114,30 +114,30 @@ in {
     blur.enable = cfg.blur.passes > 0;
 
     get = themeMap:
-      themeMap.${config.lib.stylix.scheme.scheme}
+      themeMap.${config.lib.stylix.colors.scheme}
       or themeMap.default.${config.stylix.polarity or "dark"}
       or themeMap.default
-      or (throw "Theme ${config.lib.stylix.scheme.scheme} not found in theme map!");
+      or (throw "Theme ${config.lib.stylix.colors.scheme} not found in theme map!");
 
     colors.rgb = color:
       builtins.concatStringsSep "," [
-        config.lib.stylix.scheme."${color}-rgb-r"
-        config.lib.stylix.scheme."${color}-rgb-g"
-        config.lib.stylix.scheme."${color}-rgb-b"
+        config.lib.stylix.colors."${color}-rgb-r"
+        config.lib.stylix.colors."${color}-rgb-g"
+        config.lib.stylix.colors."${color}-rgb-b"
       ];
 
     colors.rgb-attrs = color: {
-      r = config.lib.stylix.scheme."${color}-rgb-r";
-      g = config.lib.stylix.scheme."${color}-rgb-g";
-      b = config.lib.stylix.scheme."${color}-rgb-b";
+      r = config.lib.stylix.colors."${color}-rgb-r";
+      g = config.lib.stylix.colors."${color}-rgb-g";
+      b = config.lib.stylix.colors."${color}-rgb-b";
     };
 
     colors.rgba = color: "${cfg.colors.rgb color},${toString config.stylix.opacity.applications}";
 
     colors.rgba-attrs = color: {
-      r = config.lib.stylix.scheme."${color}-rgb-r";
-      g = config.lib.stylix.scheme."${color}-rgb-g";
-      b = config.lib.stylix.scheme."${color}-rgb-b";
+      r = config.lib.stylix.colors."${color}-rgb-r";
+      g = config.lib.stylix.colors."${color}-rgb-g";
+      b = config.lib.stylix.colors."${color}-rgb-b";
       a = config.stylix.opacity.applications;
     };
 

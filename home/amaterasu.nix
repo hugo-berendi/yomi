@@ -53,8 +53,8 @@
       # }}}
 
       # {{{ java development
-      jetbrains.idea-ultimate
-      jetbrains.jdk
+      # jetbrains.idea-ultimate
+      # jetbrains.jdk
       # }}}
 
       trayscale

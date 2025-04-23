@@ -151,7 +151,7 @@ in {
     enable = true;
     package = pkgs.cliphist;
     allowImages = true;
-    systemdTarget = "graphical-session.target";
+    systemdTargets = ["graphical-session.target"];
   };
 
   home.file.".config/hypr/pyprland.toml".text =

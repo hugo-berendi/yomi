@@ -26,6 +26,14 @@
           "SAE"
         ];
       };
+      "KROKOnet" = {
+        pskRaw = "ext:KROKOnet_WIFI_PASS";
+        priority = 2;
+        authProtocols = [
+          "WPA-PSK"
+          "SAE"
+        ];
+      };
     };
 
     # Imperative

@@ -21,6 +21,7 @@
   };
 in
   stdenv.mkDerivation rec {
+    applicationName = "zen-browser";
     pname = "zen-browser-bin-unwrapped";
     version = "1.0.2-b.3";
 

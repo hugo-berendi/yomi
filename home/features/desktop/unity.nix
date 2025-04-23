@@ -4,7 +4,7 @@
   ...
 }: {
   home.packages = [
-    pkgs.unityhub
+    # pkgs.unityhub
     pkgs.dotnet-sdk
   ];
 
