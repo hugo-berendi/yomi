@@ -23,9 +23,15 @@
   icon = file: "assets/${iconPath}/${file}";
   getIconUrl = name: "https://cdn.jsdelivr.net/gh/selfhst/icons/png/${name}.png";
 
-  mkHomerService = name: subtitle: logo: url: {
+  mkHomerService = {
+    name,
+    subtitle,
+    logo,
+    url,
+    type ? "",
+  }: {
     name = name;
-    type = name;
+    type = type;
     subtitle = subtitle;
     logo = logo;
     url = url;
@@ -49,11 +55,13 @@ in {
           name = "Infrastructure";
           icon = fa "code";
           items = [
-            (mkHomerService
-              "Prometheus"
-              "Monitoring system"
-              (getIconUrl "prometheus")
-              "https://prometheus.hugo-berendi.de")
+            (mkHomerService {
+              name = "Prometheus";
+              subtitle = "Monitoring system";
+              logo = getIconUrl "prometheus";
+              url = "https://prometheus.hugo-berendi.de";
+              type = "Prometheus";
+            })
             (mkHomerService
               "Grafana"
               "Pretty dashboards :3"
@@ -65,19 +73,6 @@ in {
               (getIconUrl "syncthing")
               "https://syncthing.lapetus.hugo-berendi.de")
             (mkHomerService
-              "Guacamole"
-              "Server remote access"
-              (getIconUrl "guacamole")
-              "https://guacamole.hugo-berendi.de")
-          ];
-        }
-        # }}}
-        # {{{ External
-        {
-          name = "External";
-          icon = fa "arrow-up-right-from-square";
-          items = [
-            (mkHomerService
               "Tailscale"
               "Access this homelab from anywhere"
               (getIconUrl "tailscale")
@@ -86,35 +81,17 @@ in {
               "Dotfiles"
               "Configuration for all my machines"
               (getIconUrl "github")
-              "https://github.com/prescientmoon/everything-nix")
+              "https://github.com/hugo-berendi/yomi")
             (mkHomerService
               "Cloudflare"
               "Domain management"
               (getIconUrl "cloudflare")
               "https://dash.cloudflare.com/761d3e81b3e42551e33c4b73274ecc82/hugo-berendi.de/")
-          ];
-        }
-        # }}}
-        # {{{ Productivity
-        {
-          name = "Productivity";
-          icon = fa "rocket";
-          items = [
             (mkHomerService
-              "Intray"
-              "GTD capture tool"
-              (fa "inbox")
-              "https://intray.hugo-berendi.de")
-            (mkHomerService
-              "Smos"
-              "A comprehensive self-management system."
-              (fa "cubes-stacked")
-              "https://smos.hugo-berendi.de")
-            (mkHomerService
-              "Actual"
-              "Budgeting tool"
-              (getIconUrl "actual")
-              "https://actual.hugo-berendi.de")
+              "Authentik"
+              "OAuth, OICD, SSO and more"
+              (getIconUrl "authentik")
+              "https://authentik.hugo-berendi.de")
           ];
         }
         # }}}
@@ -131,7 +108,7 @@ in {
             (mkHomerService
               "Whoogle"
               "Search engine"
-              (getIconUrl "whoogle.webp")
+              (getIconUrl "whoogle")
               "https://search.hugo-berendi.de")
             (mkHomerService
               "Radicale"
@@ -169,13 +146,8 @@ in {
             (mkHomerService
               "Redlib"
               "Reddit client"
-              (getIconUrl "libreddit")
+              (getIconUrl "redlib")
               "https://redlib.hugo-berendi.de")
-            (mkHomerService
-              "Diptime"
-              "Diplomacy timer"
-              (fa "globe")
-              "https://diptime.hugo-berendi.de")
             (mkHomerService
               "Commafeed"
               "RSS reader"
@@ -191,6 +163,16 @@ in {
               "Media server"
               (getIconUrl "jellyfin")
               "https://media.hugo-berendi.de")
+            (mkHomerService
+              "Navidrome"
+              "Music server"
+              (getIconUrl "navidrome")
+              "https://navidrome.hugo-berendi.de")
+            (mkHomerService
+              "Suwayomi"
+              "Comic server"
+              (getIconUrl "suwayomi")
+              "https://suwayomi.hugo-berendi.de")
           ];
         }
         # }}}
