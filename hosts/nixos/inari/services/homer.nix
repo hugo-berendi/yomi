@@ -62,36 +62,42 @@ in {
               url = "https://prometheus.hugo-berendi.de";
               type = "Prometheus";
             })
-            (mkHomerService
-              "Grafana"
-              "Pretty dashboards :3"
-              (getIconUrl "grafana")
-              "https://grafana.hugo-berendi.de")
-            (mkHomerService
-              "Syncthing"
-              "File synchronization"
-              (getIconUrl "syncthing")
-              "https://syncthing.lapetus.hugo-berendi.de")
-            (mkHomerService
-              "Tailscale"
-              "Access this homelab from anywhere"
-              (getIconUrl "tailscale")
-              "https://tailscale.com/")
-            (mkHomerService
-              "Dotfiles"
-              "Configuration for all my machines"
-              (getIconUrl "github")
-              "https://github.com/hugo-berendi/yomi")
-            (mkHomerService
-              "Cloudflare"
-              "Domain management"
-              (getIconUrl "cloudflare")
-              "https://dash.cloudflare.com/761d3e81b3e42551e33c4b73274ecc82/hugo-berendi.de/")
-            (mkHomerService
-              "Authentik"
-              "OAuth, OICD, SSO and more"
-              (getIconUrl "authentik")
-              "https://authentik.hugo-berendi.de")
+            (mkHomerService {
+              name = "Grafana";
+              subtitle = "Pretty dashboards :3";
+              logo = getIconUrl "grafana";
+              url = "https://grafana.hugo-berendi.de";
+            })
+            (mkHomerService {
+              name = "Syncthing";
+              subtitle = "File synchronization";
+              logo = getIconUrl "syncthing";
+              url = "https://syncthing.lapetus.hugo-berendi.de";
+            })
+            (mkHomerService {
+              name = "Tailscale";
+              subtitle = "Access this homelab from anywhere";
+              logo = getIconUrl "tailscale";
+              url = "https://tailscale.com/";
+            })
+            (mkHomerService {
+              name = "Dotfiles";
+              subtitle = "Configuration for all my machines";
+              logo = getIconUrl "github";
+              url = "https://github.com/hugo-berendi/yomi";
+            })
+            (mkHomerService {
+              name = "Cloudflare";
+              subtitle = "Domain management";
+              logo = getIconUrl "cloudflare";
+              url = "https://dash.cloudflare.com/761d3e81b3e42551e33c4b73274ecc82/hugo-berendi.de/";
+            })
+            (mkHomerService {
+              name = "Authentik";
+              subtitle = "OAuth, OICD, SSO and more";
+              logo = getIconUrl "authentik";
+              url = "https://authentik.hugo-berendi.de";
+            })
           ];
         }
         # }}}
@@ -100,36 +106,42 @@ in {
           name = "Tooling";
           icon = fa "toolbox";
           items = [
-            (mkHomerService
-              "Vaultwarden"
-              "Password manager"
-              (getIconUrl "bitwarden")
-              "https://warden.hugo-berendi.de")
-            (mkHomerService
-              "Whoogle"
-              "Search engine"
-              (getIconUrl "whoogle")
-              "https://search.hugo-berendi.de")
-            (mkHomerService
-              "Radicale"
-              "Calendar server"
-              (getIconUrl "radicale")
-              "https://cal.hugo-berendi.de")
-            (mkHomerService
-              "Microbin"
-              "Code & file sharing"
-              (getIconUrl "microbin")
-              "https://bin.hugo-berendi.de")
-            (mkHomerService
-              "Forgejo"
-              "Git forge"
-              (getIconUrl "forgejo")
-              "https://git.hugo-berendi.de")
-            (mkHomerService
-              "Jupyterhub"
-              "Notebook collaboration suite"
-              (getIconUrl "jupyter")
-              "https://jupyter.hugo-berendi.de")
+            (mkHomerService {
+              name = "Vaultwarden";
+              subtitle = "Password manager";
+              logo = getIconUrl "bitwarden";
+              url = "https://warden.hugo-berendi.de";
+            })
+            (mkHomerService {
+              name = "Whoogle";
+              subtitle = "Search engine";
+              logo = getIconUrl "whoogle";
+              url = "https://search.hugo-berendi.de";
+            })
+            (mkHomerService {
+              name = "Radicale";
+              subtitle = "Calendar server";
+              logo = getIconUrl "radicale";
+              url = "https://cal.hugo-berendi.de";
+            })
+            (mkHomerService {
+              name = "Microbin";
+              subtitle = "Code & file sharing";
+              logo = getIconUrl "microbin";
+              url = "https://bin.hugo-berendi.de";
+            })
+            (mkHomerService {
+              name = "Forgejo";
+              subtitle = "Git forge";
+              logo = getIconUrl "forgejo";
+              url = "https://git.hugo-berendi.de";
+            })
+            (mkHomerService {
+              name = "Jupyterhub";
+              subtitle = "Notebook collaboration suite";
+              logo = getIconUrl "jupyter";
+              url = "https://jupyter.hugo-berendi.de";
+            })
           ];
         }
         # }}}
@@ -138,41 +150,48 @@ in {
           name = "Entertainment";
           icon = fa "gamepad";
           items = [
-            (mkHomerService
-              "Invidious"
-              "Youtube client"
-              (getIconUrl "invidious")
-              "https://yt.hugo-berendi.de")
-            (mkHomerService
-              "Redlib"
-              "Reddit client"
-              (getIconUrl "redlib")
-              "https://redlib.hugo-berendi.de")
-            (mkHomerService
-              "Commafeed"
-              "RSS reader"
-              (getIconUrl "commafeed")
-              "https://rss.hugo-berendi.de")
-            (mkHomerService
-              "Qbittorrent"
-              "Torrent client"
-              (getIconUrl "qbittorrent")
-              "https://qbit.hugo-berendi.de")
-            (mkHomerService
-              "Jellyfin"
-              "Media server"
-              (getIconUrl "jellyfin")
-              "https://media.hugo-berendi.de")
-            (mkHomerService
-              "Navidrome"
-              "Music server"
-              (getIconUrl "navidrome")
-              "https://navidrome.hugo-berendi.de")
-            (mkHomerService
-              "Suwayomi"
-              "Comic server"
-              (getIconUrl "suwayomi")
-              "https://suwayomi.hugo-berendi.de")
+            (mkHomerService {
+              name = "Invidious";
+              subtitle = "Youtube client";
+              logo = getIconUrl "invidious";
+              url = "https://yt.hugo-berendi.de";
+            })
+            (mkHomerService {
+              name = "Redlib";
+              subtitle = "Reddit client";
+              logo = getIconUrl "redlib";
+              url = "https://redlib.hugo-berendi.de";
+            })
+            (mkHomerService {
+              name = "Commafeed";
+              subtitle = "RSS reader";
+              logo = getIconUrl "commafeed";
+              url = "https://rss.hugo-berendi.de";
+            })
+            (mkHomerService {
+              name = "Qbittorrent";
+              subtitle = "Torrent client";
+              logo = getIconUrl "qbittorrent";
+              url = "https://qbit.hugo-berendi.de";
+            })
+            (mkHomerService {
+              name = "Jellyfin";
+              subtitle = "Media server";
+              logo = getIconUrl "jellyfin";
+              url = "https://media.hugo-berendi.de";
+            })
+            (mkHomerService {
+              name = "Navidrome";
+              subtitle = "Music server";
+              logo = getIconUrl "navidrome";
+              url = "https://navidrome.hugo-berendi.de";
+            })
+            (mkHomerService {
+              name = "Suwayomi";
+              subtitle = "Comic server";
+              logo = getIconUrl "suwayomi";
+              url = "https://suwayomi.hugo-berendi.de";
+            })
           ];
         }
         # }}}
