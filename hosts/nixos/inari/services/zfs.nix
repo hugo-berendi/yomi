@@ -6,8 +6,13 @@
 }: {
   # {{{ Zfs config
   services.zfs = {
-    trim.enable = true;
-    autoScrub.enable = true;
+    trim = {
+      enable = true;
+    };
+    autoScrub = {
+      enable = true;
+      interval = "weekly";
+    };
     zed = {
       # enableMail = true;
 

@@ -29,10 +29,10 @@
     use=web, web=checkip.dyndns.com/, web-skip='Current IP Address: '
 
     # Protocols
-    protocol=porkbun
+    protocol=cloudflare
     apikey=${config.sops.placeholder.porkbun_api_key}
     secretapikey=${config.sops.placeholder.porkbun_secret_api_key}
-    root-domain=moonythm.dev # The root domain detection doesn't work properly
-    real.lapetus.moonythm.dev
+    root-domain=hugo-berendi.de # The root domain detection doesn't work properly
+    node1.pelican.hugo-berendi.de
   '';
 }
