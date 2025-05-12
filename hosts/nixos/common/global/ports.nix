@@ -40,5 +40,7 @@
     paperless = 8435;
     ipp = 8436;
     navidrome = 8437;
+    pelican-panel = 8438;
+    pelican-node1 = 8439;
   };
 }
