@@ -78,6 +78,12 @@ in
           value = "expected-bite.gl.at.ply.gg.";
           ttl = 600;
         }
+        {
+          at = "node1.pelican";
+          type = "CNAME";
+          value = "dynamic.hugo-berendi.de.";
+          ttl = 300;
+        }
       ]
     ];
   }

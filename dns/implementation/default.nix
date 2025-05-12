@@ -20,7 +20,11 @@
     inherit octodns;
   };
 
-  fullOctodns = octodns.withProviders (_ps: [octodns-cloudflare]);
+  octodns-ddns = pkgs.python312Packages.callPackage (import ./octodns-ddns.nix) {
+    inherit octodns;
+  };
+
+  fullOctodns = octodns.withProviders (_ps: [octodns-cloudflare octodns-ddns]);
   # fullOctodns = octodns.withProviders (ps: [pkgs.octodns-providers.cloudflare]);
 in
   #  }}}

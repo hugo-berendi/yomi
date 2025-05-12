@@ -8,6 +8,9 @@ providers:
     enforce_order: true
     directory: this is set by nix :3
 
+  dynamic:
+    class: octodns_ddns.DdnsSource
+
   cloudflare:
     class: octodns_cloudflare.CloudflareProvider
     token: "env/CLOUDFLARE_TOKEN"
@@ -16,5 +19,6 @@ zones:
   hugo-berendi.de.:
     sources:
       - zones
+      - dynamic
     targets:
       - cloudflare
