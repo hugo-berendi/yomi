@@ -16,15 +16,15 @@
   #   };
   # });
 
-  octodns-cloudflare = pkgs.python312Packages.callPackage (import ./octodns-cloudflare.nix) {
+  octodns-cloudflare = pkgs.python3Packages.callPackage (import ./octodns-cloudflare.nix) {
     inherit octodns;
   };
 
-  octodns-ddns = pkgs.python312Packages.callPackage (import ./octodns-ddns.nix) {
-    inherit octodns;
-  };
+  # octodns-ddns = pkgs.python312Packages.callPackage (import ./octodns-ddns.nix) {
+  #   inherit octodns;
+  # };
 
-  fullOctodns = octodns.withProviders (_ps: [octodns-cloudflare octodns-ddns]);
+  fullOctodns = octodns.withProviders (_ps: [octodns-cloudflare]);
   # fullOctodns = octodns.withProviders (ps: [pkgs.octodns-providers.cloudflare]);
 in
   #  }}}

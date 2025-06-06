@@ -14,6 +14,14 @@
     ]);
   # }}}
 in {
+  # {{{ Secrets
+  sops.secrets.jupyter_user_password = {
+    sopsFile = ../secrets.yaml;
+  };
+  sops.secrets.jupyter_admin_password = {
+    sopsFile = ../secrets.yaml;
+  };
+  # }}}
   systemd.services.jupyterhub.path = [
     pkgs.texlive.combined.scheme-full # LaTeX stuff is useful for matplotlib
     pkgs.git # Required by the git extension
@@ -28,14 +36,14 @@ in {
 
     # {{{ Spwaner & auth config
     extraConfig = ''
-      c.Authenticator.allowed_users = {'hugob'}
-      c.Authenticator.admin_users = {'hugob'}
+      c.Authenticator.allow_all = True
 
       c.Spawner.notebook_dir='${config.users.users.pilot.home}/projects/notebooks'
       c.SystemdSpawner.mem_limit = '2G'
       c.SystemdSpawner.cpu_limit = 2.0
     '';
     # }}}
+    authentication = "null";
     # {{{ Python 3 kernel
     kernels.python3 = let
       env = pkgs.python3.withPackages (p:
@@ -45,6 +53,9 @@ in {
           scipy
           matplotlib
           tabulate
+          # torch
+          # torchvision
+          # torchaudio
         ]);
     in {
       displayName = "Numerical mathematics setup";

@@ -42,5 +42,9 @@
     navidrome = 8437;
     pelican-panel = 8438;
     pelican-node1 = 8439;
+    ollama = 8440;
+    open-webui = 8441;
+    searxng = 8442;
+    jupyter-ai = 8443;
   };
 }

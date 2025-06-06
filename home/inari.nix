@@ -11,7 +11,7 @@
     file = {};
     sessionVariables = {EDITOR = "nvim";};
     packages = with pkgs; [
-      thefuck
+      pay-respects
       sxiv
       # upkgs.unityhub
       upkgs.overskride

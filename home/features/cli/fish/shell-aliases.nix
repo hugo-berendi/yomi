@@ -19,7 +19,7 @@
     dir = "dir --color=auto";
 
     tldr = "tldr --color always";
-    bruh = "thefuck";
+    bruh = "pay-respects";
 
     jctl = "journalctl -p 3 -xb"; #get error messages from journalctl
 

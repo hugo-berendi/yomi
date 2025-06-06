@@ -9,7 +9,7 @@
 }: let
   imports = [
     # {{{ flake inputs
-    inputs.stylix.homeManagerModules.stylix
+    inputs.stylix.homeModules.stylix
     inputs.impermanence.nixosModules.home-manager.impermanence
     inputs.spicetify-nix.homeManagerModules.spicetify
     # inputs.anyrun.homeManagerModules.default

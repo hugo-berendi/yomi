@@ -83,7 +83,7 @@
       # Direnv hook
       direnv hook fish | source
 
-      # setup thefuck
-      thefuck --alias | source
+      # setup pay-respects
+      pay-respects --alias | source
     '';
 }

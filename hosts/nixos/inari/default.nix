@@ -11,6 +11,7 @@
     ../common/optional/services/syncthing.nix
     # ../common/optional/services/restic
 
+    ./services/ollama.nix
     ./services/commafeed.nix
     # # ./services/ddclient.nix
     ./services/actual.nix
@@ -36,7 +37,7 @@
     # ./services/keycloak.nix
     ./services/immich.nix
     ./services/music
-    ./services/whoogle.nix
+    ./services/searxng.nix
     ./services/zfs.nix
     # ./services/ntfy.nix
     ./services/comics/default.nix
@@ -55,7 +56,7 @@
     ./services/grafana.nix
     # }}}
     # {{{ game servers
-    ./services/pelican
+    # ./services/pelican
     # ./services/playit.nix # tunnel for minecraft
     # ./services/valheim.nix
     # ./services/minecraft.nix

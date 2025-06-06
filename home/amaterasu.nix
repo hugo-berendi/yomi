@@ -25,7 +25,7 @@
 
       prismlauncher
       thunderbird
-      thefuck
+      pay-respects
       sxiv
       signal-desktop
       qbittorrent

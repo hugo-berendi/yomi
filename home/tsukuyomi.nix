@@ -31,7 +31,7 @@
 
       # prismlauncher
       # thunderbird
-      # thefuck
+      # pay-respects
       # nodejs
       # sxiv
       signal-desktop
