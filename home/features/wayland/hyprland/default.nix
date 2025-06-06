@@ -97,18 +97,38 @@ in {
       "$mod" = "SUPER";
       bind =
         [
+          # {{{ misc keybinds
           "$mod, C, exec, cliphist list | anyrun --plugins ${inputs.anyrun.packages.${pkgs.system}.stdin}/lib/libstdin.so | cliphist decode | wl-copy"
+
+          # }}}
+          # {{{ pyprland plugins
           "$mod, V, exec, pypr toggle volume"
           "$mod Shift, Return, exec, pypr toggle term"
           "$mod, Y, exec, pypr attach"
-
+          # }}}
+          # {{{ control media
           ", XF86AudioMute, exec, volume --toggle"
           ", XF86AudioStop, exec, volume --stop"
           ", XF86AudioPrev, exec, volume --previous"
           ", XF86AudioNext, exec, volume --next"
           ", XF86AudioPlay, exec, volume --play-pause"
-
+          # }}}
+          # {{{ Execute external things
+          "$mod, Space, exec, $menu"
+          "$mod, T, exec, wl-ocr"
+          "$mod SHIFT, T, exec, wl-qr"
+          "$mod CONTROL, T, exec, hyprpicker | wl-copy && notify-send 'Copied color $(wp-paste)'" # Color picker
+          "$mod, B, exec, wlsunset-toggle" # Toggle blue light filter thingy
           "bind = $mod, Return, exec, ${config.yomi.settings.terminal}"
+          # }}}
+          # {{{ Screenshotting
+          "$mod, PRINT, exec, grimblast --notify copysave area"
+          "$mod SHIFT, PRINT, exec, grimblast --notify copysave active"
+          "$mod CONTROL, PRINT, exec, grimblast --notify copysave screen"
+          # }}}
+          # {{{ Power
+          "$mod, Escape, exec, wlogout"
+          # }}}
         ]
         ++ (
           # workspaces
@@ -130,10 +150,14 @@ in {
         );
       # {{{ binds that repeat when held
       binde = [
+        # {{{ control volume
         ", XF86AudioRaiseVolume, exec, volume --inc"
         ", XF86AudioLowerVolume, exec, volume --dec"
+        # }}}
+        # {{{ control backlight
         ", XF86MonBrightnessDown, exec, backlight --dec"
         ", XF86MonBrightnessUp, exec, backlight --inc"
+        # }}}
       ];
       # }}}
       # {{{ Mouse move/resize
@@ -141,6 +165,34 @@ in {
       bindm = [
         "$mod, mouse:272, movewindow"
         "$mod, mouse:273, resizewindow"
+      ];
+      # }}}
+      # {{{ windowrules
+      windowrule = [
+        # {{{ Automatically move stuff to workspaces
+        "workspace 2 silent, title:^(.*Zen Browser.*)$"
+        "workspace 3 silent, title:^(.*((Disc|WebC|Venc)ord)|Vesktop.*)$"
+        "workspace 3 silent, title:^(.*Element.*)$"
+        "workspace 5 silent, title:^(.*(S|s)pot(ify)?.*)$"
+        "workspace 4 silent, class:^(.*Obsidian.*)$"
+        "workspace 4 silent, title:^(.*stellar-sanctum)$"
+        "workspace 4 silent, class:^(org\.wezfurlong\.wezterm\.obsidian)$"
+        "workspace 8 silent, class:^(org\.wezfurlong\.wezterm\.smos)$"
+        # }}}
+        # {{{ xwaylandvideobridge
+        "opacity 0.0 override, class:^(xwaylandvideobridge)$"
+        "noanim, class:^(xwaylandvideobridge)$"
+        "noinitialfocus, class:^(xwaylandvideobridge)$"
+        "maxsize 1 1, class:^(xwaylandvideobridge)$"
+        "noblur, class:^(xwaylandvideobridge)$"
+        # }}}
+        # {{{ Idleinhibit rules
+        # - while firefox is fullscreen
+        "idleinhibit fullscreen, title:^(.*Zen Browser.*)$"
+        # - while watching videos
+        "idleinhibit focus, class:^(mpv|.+exe)$"
+        "idleinhibit focus, title:^(.*Zen Browser.*)$, title:^(.*YouTube.*)$"
+        # }}}
       ];
       # }}}
       # }}}
