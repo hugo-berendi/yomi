@@ -1,6 +1,7 @@
-# logs
-nixos-switch.log
-home-manager-switch.log
-
 # nix build
 result/
+
+*.log
+.luarc.json
+*.idea
+!.envrc

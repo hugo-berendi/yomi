@@ -3,15 +3,9 @@
 in {
   programs.direnv = {
     enable = true;
+    silent = true;
     nix-direnv.enable = true;
     # enableFishIntegration = true; # is enabled by default
-  };
-
-  home.sessionVariables = {
-    # No more long command warnings
-    DIRENV_WARN_TIMEOUT = "24h";
-    # No more usesless logs
-    DIRENV_LOG_FORMAT = "";
   };
 
   # Only save allowed paths for 30d

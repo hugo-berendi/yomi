@@ -3,5 +3,10 @@
 pkgs.mkShell {
   # Enable experimental features without having to specify the argument
   NIX_CONFIG = "experimental-features = nix-command flakes";
-  packages = with pkgs; [nix home-manager git];
+  packages = with pkgs; [
+    nix
+    home-manager
+    git
+    python3
+  ];
 }

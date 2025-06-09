@@ -7,18 +7,28 @@
 }: let
   rosePineCursor = import ./rose-pine-cursor.nix {inherit pkgs;};
 in {
-  imports = [../global.nix ./hyprpaper.nix ./hyprlock.nix ./hypridle.nix];
+  imports = [
+    ../global.nix
+    ./hyprpaper.nix
+    ./hyprlock.nix
+    ./hypridle.nix
+  ];
 
   home.packages = with pkgs; [
     hyprcursor
     rosePineCursor
+    qt6ct
     inputs.pyprland.packages.${pkgs.system}.pyprland
   ];
 
   stylix.targets.hyprland.enable = false;
   wayland.windowManager.hyprland = {
     enable = true;
-    package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
+
+    # set the Hyprland and XDPH packages to null to use the ones from the NixOS module
+    package = null;
+    portalPackage = null;
+
     extraConfig = builtins.readFile ./hyprland.conf;
 
     systemd = {

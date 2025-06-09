@@ -8,7 +8,7 @@
     sshKeys = [
       "67D63C5F40CC55DA"
     ];
-    pinentryPackage =
+    pinentry.package =
       if config.gtk.enable
       then pkgs.pinentry-gnome3
       else pkgs.pinentry-curses;

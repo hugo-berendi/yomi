@@ -18,14 +18,13 @@
   };
   # }}}
   # {{{ Persistence
-  yomi.persistence.at.state.apps.steam = {
-    directories = [
+  yomi.persistence.at.state.apps = {
+    steam.directories = [
       ".factorio"
       "${config.xdg.dataHome}/Terraria"
+      "${config.xdg.dataHome}/Steam"
     ];
-  };
-  yomi.persistence.at.state.apps.heroic = {
-    directories = [
+    heroic.directories = [
       "media/games/heroic"
     ];
   };

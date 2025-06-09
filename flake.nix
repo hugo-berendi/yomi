@@ -3,13 +3,18 @@
 
   inputs = {
     zen-browser.url = "github:0xc000022070/zen-browser-flake";
-    # Nixpkgs
+    # {{{ Nixpkgs instances
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    nixpkgs-old.url = "github:nixos/nixpkgs/nixos-24.11";
-    # You can access packages and modules from different nixpkgs revs
-    # at the same time. Here's an working example:
+    nixpkgs-old.url = "github:nixos/nixpkgs/nixos-25.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-    # Also see the 'unstable-packages' overlay at 'overlays/default.nix'.
+    # }}}
+    # {{{ Additional package repositories
+    nixos-hardware.url = "github:NixOS/nixos-hardware/master";
+
+    # Firefox addons
+    firefox-addons.url = "git+https://gitlab.com/rycee/nur-expressions?dir=pkgs/firefox-addons";
+    firefox-addons.inputs.nixpkgs.follows = "nixpkgs";
+    # }}}
 
     nixos-generators = {
       url = "github:nix-community/nixos-generators";
@@ -48,10 +53,6 @@
     yazi.url = "github:sxyazi/yazi";
     # }}}
 
-    # Firefox addons
-    firefox-addons.url = "git+https://gitlab.com/rycee/nur-expressions?dir=pkgs/firefox-addons";
-    firefox-addons.inputs.nixpkgs.follows = "nixpkgs";
-    # }}}
     # {{{ Nix-related tooling
     # {{{ Storage
     impermanence.url = "github:nix-community/impermanence";
@@ -59,10 +60,10 @@
     # Declarative partitioning
     disko.url = "github:nix-community/disko";
     disko.inputs.nixpkgs.follows = "nixpkgs";
-    # }}}
 
     nix-index-database.url = "github:Mic92/nix-index-database";
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
+    # }}}
 
     sops-nix.url = "github:Mic92/sops-nix";
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
@@ -85,19 +86,6 @@
       # If using a stable channel you can use `url = "github:nix-community/nixvim/nixos-<version>"`
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    # }}}
-    # {{{ Self management
-    # Smos
-    smos.url = "github:NorfairKing/smos";
-    smos.inputs.nixpkgs.url = "github:NixOS/nixpkgs/b8dd8be3c790215716e7c12b247f45ca525867e2";
-    # REASON: smos fails to build this way
-    # smos.inputs.nixpkgs.follows = "nixpkgs";
-    # smos.inputs.home-manager.follows = "home-manager";
-
-    # Intray
-    intray.url = "github:NorfairKing/intray";
-    intray.inputs.nixpkgs.url = "github:NixOS/nixpkgs/cf28ee258fd5f9a52de6b9865cdb93a1f96d09b7";
-    # intray.inputs.home-manager.follows = "home-manager";
     # }}}
 
     # {{{ anyrun
@@ -134,9 +122,6 @@
 
     nix-flatpak.url = "github:gmodena/nix-flatpak";
 
-    miros.url = "github:prescientmoon/miros";
-    miros.inputs.nixpkgs.follows = "nixpkgs";
-
     # Spotify client with theming support
     spicetify-nix.url = "github:Gerg-L/spicetify-nix";
     spicetify-nix.inputs.nixpkgs.follows = "nixpkgs";
@@ -149,19 +134,11 @@
     base16-schemes.url = "github:tinted-theming/schemes";
     base16-schemes.flake = false;
 
-    nixos-hardware.url = "github:nixos/nixos-hardware";
-
-    nix-mineral = {
-      url = "github:cynicsketch/nix-mineral"; # Refers to the main branch and is updated to the latest commit when you use "nix flake update"
-      # url = "github:cynicsketch/nix-mineral/v0.1.6-alpha" # Refers to a specific tag and follows that tag until you change it
-      # url = "github:cynicsketch/nix-mineral/cfaf4cf15c7e6dc7f882c471056b57ea9ea0ee61" # Refers to a specific commit and follows that until you change it
-      flake = false;
-    };
+    rose-pine-hyprcursor.url = "github:ndom91/rose-pine-hyprcursor";
+    rose-pine-hyprcursor.inputs.nixpkgs.follows = "nixpkgs";
 
     nixcord.url = "github:AwesomeQubic/nixcord";
     # }}}
-    pre-commit-hooks.url = "github:cachix/git-hooks.nix";
-
     ngrok.url = "github:ngrok/ngrok-nix";
 
     playit-nixos-module.url = "github:pedorich-n/playit-nixos-module";
@@ -273,7 +250,7 @@
                         };
                       home-manager.useUserPackages = true;
                       home-manager.backupFileExtension = "backy";
-              
+
                       stylix.homeManagerIntegration.followSystem = false;
                       stylix.homeManagerIntegration.autoImport = false;
                     }

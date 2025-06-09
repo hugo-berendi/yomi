@@ -20,12 +20,6 @@
     inputs.nixvim.homeManagerModules.nixvim
     inputs.nixcord.homeManagerModules.nixcord
     # inputs.ghostty.homeModules.default
-    # {{{ self management
-    # NOTE: using `pkgs.system` before `module.options` is evaluated
-    # leads to infinite recursion!
-    inputs.intray.homeManagerModules.x86_64-linux.default
-    inputs.smos.homeManagerModules.x86_64-linux.default
-    # }}}
     # }}}
     # {{{ global configuration
     ./features/cli

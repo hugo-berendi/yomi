@@ -11,8 +11,6 @@
     ./wlsunset.nix
     ./anyrun.nix
 
-    ./sway
-
     ../desktop
   ];
 
@@ -56,5 +54,6 @@
       brightnessctl # Adjust screen brightness
       pamixer # Adjust audio volume
       kdePackages.xwaylandvideobridge # screen sharing for xwayland apps like discord
+      wl-screenrec # video recorder (with daemon support!)
     ];
 }

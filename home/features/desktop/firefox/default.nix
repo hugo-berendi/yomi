@@ -4,50 +4,10 @@
   pkgs,
   inputs,
   ...
-}: let
-  # {{{ Global extensions
-  extensions = with inputs.firefox-addons.packages.${pkgs.system}; [
-    buster-captcha-solver
-    # REASON: returns 404 for now
-    # bypass-paywalls-clean
-    # clearurls # removes ugly args from urls
-    cliget # Generates curl commands for downloading account-protected things
-    don-t-fuck-with-paste # disallows certain websites from disabling pasting
-    decentraleyes # Serves local copies of a bunch of things instead of reaching a CDN
-    gesturefy # mouse gestures
-    indie-wiki-buddy # redirects fandom wiki urls to the proper wikis
-    i-dont-care-about-cookies
-    localcdn # caches libraries locally
-    privacy-badger # blocks some trackers
-    privacy-pass # captcha stuff
-    # privacy-redirect # allows redirecting to my own instances for certain apps
-    skip-redirect # attempts to skip to the final reddirect for certain urls
-    terms-of-service-didnt-read
-    translate-web-pages
-    ublock-origin
-    unpaywall
-    user-agent-string-switcher
-    darkreader
-    bitwarden # password manager
-  ];
-  # }}}
-  customUrl = "https://lab.hugo-berendi.de";
-
-  betterfoxUserJS = builtins.fetchurl {
-    url = "https://raw.githubusercontent.com/yokoffing/Betterfox/main/user.js";
-    sha256 = "1bckfh2zxssmwpg0p1c537lb6jvnicwxccncyy10yips9bvxqa52";
-  };
-  # ffUltimaRepo = builtins.fetchGit {
-  #   url = "https://github.com/soulhotel/FF-ULTIMA.git";
-  #   ref = "main";
-  #   rev = "ab481d82dadb7699f757949f4c11a0d26595c0b3";
-  # };
-in {
+}: {
   programs.zen = {
     enable = true;
 
-    # package = pkgs.firefox.override {nativeMessagingHosts = [pkgs.passff-host];};
-    # package = inputs.zen-browser.packages."${pkgs.system}".twilight;
     package = pkgs.zen-browser-bin;
 
     policies = {
@@ -79,7 +39,7 @@ in {
 
       # Forcefully replace the search configuration
       search.force = true;
-      search.default = "Startpage";
+      search.default = "searxng";
 
       # Set styles applied to firefox itself
       # userChrome = builtins.readFile ./userChrome.css;
@@ -90,117 +50,69 @@ in {
       extensions.packages = with inputs.firefox-addons.packages.${pkgs.system};
       with lib.lists;
         flatten [
-          extensions
-          # List of profile-specific extensions
           [
             augmented-steam # Adds more info to steam
             blocktube # Lets you block youtube channels
+            bitwarden # password manager
+            buster-captcha-solver
+            clearurls # removes ugly args from urls
+            cliget # Generates curl commands for downloading account-protected things
+            darkreader
             dearrow # Crowdsourced clickbait remover 💀
+            decentraleyes # Serves local copies of a bunch of things instead of reaching a CDN
+            don-t-fuck-with-paste # disallows certain websites from disabling pasting
+            gesturefy # mouse gestures
+            i-dont-care-about-cookies
+            indie-wiki-buddy # redirects fandom wiki urls to the proper wikis
             leechblock-ng # website blocker
-            lovely-forks # displays forks on github
+            localcdn # caches libraries locally
             octolinker # github import to link thingy
-            octotree # github file tree
+            privacy-badger # blocks some trackers
+            privacy-pass # captcha stuff
+            privacy-redirect # allows redirecting to my own instances for certain websites
             refined-github # a bunch of github modifications
             return-youtube-dislikes
-            steam-database # adds info from steamdb on storepages
             sponsorblock # skip youtube sponsors
+            skip-redirect # attempts to skip to the final reddirect for certain urls
+            steam-database # adds info from steamdb on storepages
+            terms-of-service-didnt-read
+            translate-web-pages
+            ublock-origin
+            unpaywall
+            user-agent-string-switcher
             vimium-c # vim keybinds
             youtube-shorts-block
-            libredirect # redirect to FOSS alternatives
           ]
         ];
       # }}}
-
       # {{{ Search engines
       search.engines = let
-        # {{{ Search engine creation helpers
         mkBasicSearchEngine = {
           aliases,
           url,
           param,
-          icon ? null,
-        }:
-          {
-            urls = [
-              {
-                template = url;
-                params = [
-                  {
-                    name = param;
-                    value = "{searchTerms}";
-                  }
-                ];
-              }
-            ];
-
-            definedAliases = aliases;
-          }
-          // (
-            if icon == null
-            then {}
-            else {inherit icon;}
-          );
-
-        mkNixPackagesEngine = {
-          aliases,
-          type,
-        }:
-          mkBasicSearchEngine {
-            aliases = aliases;
-            url = "https://search.nixos.org/${type}";
-            param = "query";
-            icon = "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake.svg";
-          };
-        # }}}
-        # {{{ Engine declarations
-      in {
-        "Nix Packages" = mkNixPackagesEngine {
-          aliases = ["@np" "@nix-packages"];
-          type = "packages";
+          icon,
+        }: {
+          inherit icon;
+          definedAliases = aliases;
+          urls = [
+            {
+              template = url;
+              params = [
+                {
+                  name = param;
+                  value = "{searchTerms}";
+                }
+              ];
+            }
+          ];
         };
-
-        "Nix Options" = mkNixPackagesEngine {
-          aliases = ["@no" "@nix-options"];
-          type = "options";
-        };
-
-        "Home-Manager Options" = mkBasicSearchEngine {
-          url = "https://home-manager-options.extranix.com/";
-          param = "query";
-          aliases = ["@hmo" "@home-manager-options"];
-          icon = "${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake.svg";
-        };
-
-        "Wikipedia" = mkBasicSearchEngine {
-          url = "https://en.wikipedia.org/wiki/Special:Search";
-          param = "search";
-          aliases = ["@wk" "@wikipedia"];
-        };
-
-        "Github" = mkBasicSearchEngine {
-          url = "https://github.com/search";
-          param = "q";
-          aliases = ["@gh" "@github"];
-        };
-
-        "Startpage" = mkBasicSearchEngine {
-          url = "https://www.startpage.com/sp/search";
-          param = "query";
-          aliases = ["@sp" "@startpage"];
-        };
-
-        "Whoogle" = mkBasicSearchEngine {
-          url = "https://search.hugo-berendi.de/search";
-          param = "q";
-          aliases = ["@wo" "@whoogle"];
-        };
-
-        "Warframe Wiki" = mkBasicSearchEngine {
-          url = "https://warframe.fandom.com/wiki/Special:Search";
-          param = "query";
-          aliases = ["@wf" "@warframe-wiki"];
-        };
-      };
+      in
+        {
+          google.metaData.alias = "@g";
+        }
+        // lib.attrsets.mapAttrs (_: mkBasicSearchEngine) (lib.importTOML ./engines.toml);
+      # }}}
       # }}}
       # }}}
       # {{{ Other lower level settings
@@ -232,7 +144,7 @@ in {
         "media.ffmpeg.vaapi.enabled" = true;
         "widget.dmabuf.force-enabled" = true; # Required in recent Firefoxes
         # }}}
-        "browser.startup.homepage" = "${customUrl}";
+        "browser.startup.homepage" = "https://lab.hugo-berendi.de";
         # {{{ New tab page
         "browser.newtabpage.activity-stream.asrouter.userprefs.cfr.addons" =
           false;
@@ -285,8 +197,6 @@ in {
 
         "ultima.sidebar.autohide" = true;
       };
-
-      extraConfig = builtins.readFile betterfoxUserJS; # + "\n" + builtins.readFile "${ffUltimaRepo}/user.js";
       # }}}
     };
 

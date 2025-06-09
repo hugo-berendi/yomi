@@ -1,6 +1,7 @@
 {
   upkgs,
   pkgs,
+  inputs,
   ...
 }: let
   transparency = amount: {
@@ -125,9 +126,9 @@
         opacity = transparency 0.5;
         polarity = "dark";
         cursor = {
-          package = pkgs.phinger-cursors;
-          name = "phinger-cursors-dark";
-          size = 20;
+          package = inputs.rose-pine-hyprcursor.packages.${pkgs.system}.default;
+          name = "BreezX-RosePine-Linux";
+          size = 36;
         };
       };
       yomi = {

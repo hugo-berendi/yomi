@@ -13,7 +13,7 @@
     ./tmux
     ./yazi
     # ./neovim
-    ./pass.nix
+    # ./pass.nix
     ./fish
     ./zoxide.nix
     ./nix-index.nix
@@ -23,7 +23,15 @@
     ./rbw.nix
   ];
 
+  # Enable basic CLI thingiesMore actions
   programs.bash.enable = true;
+  programs.broot.enable = true;
+  programs.starship.enable = true;
+
+  # Enable nix-index
+  programs.nix-index-database.comma.enable = true;
+  programs.nix-index.enable = true;
+  programs.command-not-found.enable = false;
 
   home.packages = with pkgs; [
     # {{{ System information
@@ -33,8 +41,9 @@
     btop # System monitor
     # }}}
     # {{{ Storage
-    ncdu # TUI disk usage
-    du-dust # Similar to du and ncdu in purpose.
+    dua # du + ncdu replacement
+    dust # Similar to du, but with prettier output
+    dysk # Similar to df, but with prettier output
     # }}}
     # {{{ Alternatives to usual commands
     ripgrep # Better grep
