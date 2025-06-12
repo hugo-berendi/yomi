@@ -5,7 +5,6 @@
     zen-browser.url = "github:0xc000022070/zen-browser-flake";
     # {{{ Nixpkgs instances
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    nixpkgs-old.url = "github:nixos/nixpkgs/nixos-25.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     # }}}
     # {{{ Additional package repositories
@@ -72,7 +71,7 @@
 
     authentik-nix = {
       url = "github:nix-community/authentik-nix";
-      inputs.nixpkgs.follows = "nixpkgs-old";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     # }}}
     # {{{ Standalone software
@@ -164,7 +163,6 @@
       inherit inputs outputs;
 
       upkgs = inputs.nixpkgs-unstable.legacyPackages.${system};
-      opkgs = inputs.nixpkgs-old.legacyPackages.${system};
     };
   in
     # }}}
@@ -185,19 +183,6 @@
             nixosConfigurations = builtins.removeAttrs self.nixosConfigurations ["iso"];
           }
       );
-      # }}}
-      # {{{ Pre Commit Hooks
-      # checks = forAllSystems (system: {
-      #   pre-commit-check = inputs.pre-commit-hooks.lib.${system}.run {
-      #     src = ./.;
-      #     hooks = {
-      #       alejandra.enable = true;
-      #       deadnix.enable = true;
-      #       flake-checker.enable = true;
-      #     };
-      #   };
-      # });
-
       # }}}
       # {{{ Bootstrapping and other pinned devshells
       # Accessible through 'nix develop'

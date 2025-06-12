@@ -3,13 +3,9 @@
   pkgs,
   ...
 }: {
-  home.packages = with pkgs; [
-    discord
-  ];
-
   programs.nixcord = {
-    discord.enable = false;
-    vesktop.enable = false;
+    discord.enable = true;
+    vesktop.enable = true;
     enable = true; # enable Nixcord. Also installs discord package
     config = {
       enabledThemes = ["stylix.theme.css"];
