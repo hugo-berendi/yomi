@@ -29,16 +29,6 @@
         automatic_instance_redirect = true;
       };
     };
-
-    # REASON: the current invidious is broken, and cannot play videos
-    package = pkgs.invidious.overrideAttrs (_oldAttrs: {
-      src = pkgs.fetchFromGitHub {
-        owner = "iv-org";
-        repo = "invidious";
-        fetchSubmodules = true;
-        rev = "eda7444ca46dbc3941205316baba8030fe0b2989";
-        sha256 = "0iafxgb93jxx9ams6ll2yx8il4d7h89a630hcx9y8jj4gn3ax7v1";
-      };
-    });
+    package = pkgs.invidious;
   };
 }

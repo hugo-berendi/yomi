@@ -23,7 +23,7 @@
     ./services/homer.nix
     ./services/msmtp.nix
     # ./services/intray.nix
-    # ./services/invidious.nix
+    ./services/invidious.nix
     ./services/jellyfin.nix
     ./services/jupyter.nix
     ./services/microbin.nix
