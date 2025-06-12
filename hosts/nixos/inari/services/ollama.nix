@@ -4,10 +4,11 @@
     enable = true;
     port = config.yomi.ports.ollama;
     user = "ollama";
+    acceleration = "rocm";
     loadModels = [
       "mistral:7b"
-      "llama4:16x17b"
       "deepseek-r1:7b"
+      "qwen3:14b"
     ];
   };
 

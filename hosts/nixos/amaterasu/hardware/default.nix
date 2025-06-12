@@ -12,6 +12,7 @@
   # {{{ Misc
   hardware.enableAllFirmware = true;
   hardware.graphics.enable = true;
+  hardware.amdgpu.initrd.enable = true;
   # }}}
   powerManagement.cpuFreqGovernor = "performance";
 }

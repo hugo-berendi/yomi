@@ -11,9 +11,5 @@
   # Do not suspend on lid closing
   services.logind.lidSwitch = "ignore";
 
-  hardware.amdgpu = {
-    opencl.enable = true;
-    initrd.enable = true;
-  };
-  hardware.graphics.enable = true;
+  hardware.amdgpu.opencl.enable = true;
 }
