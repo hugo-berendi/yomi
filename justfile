@@ -45,12 +45,14 @@ nixos-rebuild action="switch" host=hostname ng="1":
     print("🚀 All done!")
   except KeyboardInterrupt:
     print("🪓 Command cancelled")
+  except:
+    print("💢 Something went wrong")
 # }}}
 # {{{ Miscellaneous nix commands
 [doc("Build the custom ISO provided by the flake")]
 [group("nix")]
 build-iso:
-  nix build .#nixosConfigurations.iso.config.system.build.isoImage
+  nix build .#nixosConfigurations.iso.config.system.build.isoImage --accept-flake-config
 
 [doc("Bumps flake inputs that usually need to be as up to date as possible")]
 [group("nix")]
@@ -65,7 +67,9 @@ bump-common:
     rose-pine-hyprcursor \
     darkmatter-grub-theme \
     home-manager \
-    stylix
+    stylix \
+    nixcord \
+    --accept-flake-config
 # }}}
 # {{{ Age / sops related thingies
 [doc("Save the user's SSH key as a key usable by sops")]
@@ -117,12 +121,12 @@ export-keys:
 [doc("Prints the differences between the current and desired DNS records")]
 [group("dns")]
 dns-diff:
-  nix run .#octodns-sync --
+  nix run .#octodns-sync --accept-flake-config --
 
 [doc("Syncs DNS records using octodns")]
 [group("dns")]
 dns-push:
-  nix run .#octodns-sync -- --doit
+  nix run .#octodns-sync --accept-flake-config -- --doit
 
 [doc("Clears every DNS record")]
 [group("dns")]
