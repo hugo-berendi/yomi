@@ -3,6 +3,7 @@
   inputs,
   lib,
   outputs,
+  config,
   ...
 }: let
   # {{{ Imports
@@ -41,6 +42,30 @@ in {
   sops.age.sshKeyPaths = ["/persist/state/etc/ssh/ssh_host_ed25519_key"];
 
   # {{{ ad-hoc options
+  # /etc/hosts
+  networking.extraHosts = let
+    hosts = hostnames:
+      lib.concatStringsSep "\n" (
+        lib.flatten (
+          lib.mapAttrsToList
+          (ip: recordsList: map (record: "${ip} ${record.at}") recordsList)
+          (
+            lib.groupBy
+            (record: record.value)
+            (
+              lib.filter
+              (record: record.type == "A" && lib.elem record.at hostnames)
+              (lib.flatten (lib.forEach
+                hostnames
+                (hostname:
+                  inputs.self.nixosConfigurations.${hostname}.config.yomi.dns.records)))
+            )
+          )
+        )
+      );
+  in
+    hosts ["inari" "amaterasu"];
+
   # Customize tty colors
   stylix.targets.console.enable = true;
 

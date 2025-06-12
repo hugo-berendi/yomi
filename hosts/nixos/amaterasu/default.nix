@@ -3,6 +3,7 @@
 {
   lib,
   pkgs,
+  config,
   ...
 }: {
   # You can import other NixOS modules here
@@ -37,6 +38,20 @@
   networking.hostName = "amaterasu";
   environment.etc.machine-id.text = "08357db3540c4cd2b76d4bb7f825ec88";
   # }}}
+  # {{{ Tailscale internal IP DNS records
+  yomi.dns.records = [
+    {
+      at = config.networking.hostName;
+      type = "A";
+      value = "100.127.234.94";
+    }
+    {
+      at = config.networking.hostName;
+      type = "AAAA";
+      value = "fd7a:115c:a1e0::501:ea5f";
+    }
+  ];
+  # }}}
   # {{{ A few ad-hoc programs
   programs.kdeconnect.enable = true;
   programs.firejail.enable = true;
@@ -44,17 +59,6 @@
   virtualisation.docker.enable = true;
   virtualisation.waydroid.enable = true;
   # virtualisation.spiceUSBRedirection.enable = true; # This was required for the vm usb passthrough tomfoolery
-  # }}}
-  # {{{ Some ad-hoc site blocking
-  networking.extraHosts = let
-    blacklisted = [
-      # "twitter.com"
-      # "www.reddit.com"
-      "minesweeper.online"
-    ];
-    blacklist = lib.concatStringsSep "\n" (lib.forEach blacklisted (host: "127.0.0.1 ${host}"));
-  in
-    blacklist;
   # }}}
 
   programs.dconf.enable = true;
