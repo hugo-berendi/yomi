@@ -18,7 +18,7 @@
     inputs.hyprland.homeManagerModules.default
     inputs.ags.homeManagerModules.default
     inputs.nixvim.homeManagerModules.nixvim
-    inputs.nixcord.homeManagerModules.nixcord
+    inputs.nixcord.homeModules.nixcord
     # inputs.ghostty.homeModules.default
     # }}}
     # {{{ global configuration

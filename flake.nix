@@ -136,7 +136,7 @@
     rose-pine-hyprcursor.url = "github:ndom91/rose-pine-hyprcursor";
     rose-pine-hyprcursor.inputs.nixpkgs.follows = "nixpkgs";
 
-    nixcord.url = "github:AwesomeQubic/nixcord";
+    nixcord.url = "github:kaylorben/nixcord";
     # }}}
     ngrok.url = "github:ngrok/ngrok-nix";
 

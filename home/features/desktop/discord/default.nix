@@ -4,9 +4,8 @@
   ...
 }: {
   programs.nixcord = {
-    discord.enable = true;
-    vesktop.enable = true;
     enable = true; # enable Nixcord. Also installs discord package
+    vesktop.enable = true;
     config = {
       enabledThemes = ["stylix.theme.css"];
       useQuickCss = true;
@@ -30,7 +29,6 @@
         dearrow.enable = true;
         fakeNitro.enable = true;
         imageLink.enable = true;
-        nsfwGateBypass.enable = true;
         plainFolderIcon.enable = true;
         platformIndicators.enable = true;
         readAllNotificationsButton.enable = true;
@@ -41,7 +39,7 @@
   };
 
   # {{{ theming
-  stylix.targets.vesktop.enable = true;
+  stylix.targets.nixcord.enable = true;
   # }}}
 
   # {{{ Storage
