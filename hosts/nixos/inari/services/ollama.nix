@@ -5,6 +5,7 @@
     port = config.yomi.ports.ollama;
     user = "ollama";
     acceleration = "rocm";
+    models = "/persist/data/models";
     loadModels = [
       "mistral:7b"
       "deepseek-r1:7b"
@@ -22,11 +23,11 @@
       OLLAMA_API_BASE_URL = "http://${config.services.ollama.host}:${toString config.services.ollama.port}";
       WEBUI_AUTH = "True";
       ENABLE_CODE_INTERPRETER = "True";
-      CODE_EXECUTION_ENGINE = "juypter";
+      CODE_EXECUTION_ENGINE = "jupyter";
       CODE_EXECUTION_JUPYTER_URL = "http://127.0.0.1:${toString config.yomi.ports.jupyter-ai}";
       CODE_EXECUTION_JUPYTER_AUTH = "token";
       CODE_EXECUTION_JUPYTER_AUTH_TOKEN = "123456";
-      CODE_INTERPRETER_ENGINE = "juypter";
+      CODE_INTERPRETER_ENGINE = "jupyter";
       CODE_INTERPRETER_JUPYTER_URL = "http://127.0.0.1:${toString config.yomi.ports.jupyter-ai}";
       CODE_INTERPRETER_JUPYTER_AUTH = "token";
       CODE_INTERPRETER_JUPYTER_AUTH_TOKEN = "123456";
@@ -47,16 +48,4 @@
     ];
     log-driver = "journald";
   };
-
-  environment.persistence."/persist/state".directories = [
-    {
-      inherit (config.services.ollama) user group;
-      directory = config.services.ollama.home;
-      mode = "u=rwx,g=,o=";
-    }
-    {
-      directory = config.services.open-webui.stateDir;
-      mode = "u=rwx,g=rwx,o=rwx";
-    }
-  ];
 }
