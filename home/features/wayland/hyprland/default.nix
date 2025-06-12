@@ -124,7 +124,7 @@ in {
           ", XF86AudioPlay, exec, volume --play-pause"
           # }}}
           # {{{ Execute external things
-          "$mod, Space, exec, $menu"
+          "$mod, Space, exec, ${lib.getExe inputs.anyrun.packages.${pkgs.system}.default}"
           "$mod, T, exec, wl-ocr"
           "$mod SHIFT, T, exec, wl-qr"
           "$mod CONTROL, T, exec, hyprpicker | wl-copy && notify-send 'Copied color $(wp-paste)'" # Color picker
