@@ -4,7 +4,6 @@
     enable = true;
     port = config.yomi.ports.ollama;
     user = "ollama";
-    acceleration = "rocm";
     models = "/persist/data/models";
     loadModels = [
       "mistral:7b"
