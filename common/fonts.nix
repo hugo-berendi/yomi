@@ -19,4 +19,9 @@
       applications = 15;
     };
   };
+
+  stylix.targets = {
+    fontconfig.enable = true;
+    font-packages.enable = true;
+  };
 }

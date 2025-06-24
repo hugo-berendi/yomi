@@ -11,7 +11,7 @@
   # }}}
   # {{{ General config
   services.authentik = {
-    enable = false;
+    enable = true;
     environmentFile = config.sops.secrets.authentik_env.path;
     settings = {
       email = {

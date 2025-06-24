@@ -130,19 +130,60 @@ dns-push:
 
 [doc("Clears every DNS record")]
 [group("dns")]
-dns-clear zoneid bearer:
-  #!/usr/bin/env bash
-  set -euo pipefail # Fail on errors and whatnot
+dns-clear zoneid bearerfile="/run/secrets/cloudflare_dns_api_token":
+  #!/usr/bin/env python3
+  import subprocess
+  import requests
+  import sys
+  import os
 
-  # Taken from https://developers.cloudflare.com/dns/zone-setups/troubleshooting/delete-all-records/
-  curl --silent "https://api.cloudflare.com/client/v4/zones/{{zoneid}}/dns_records?per_page=50000" \
-  --header "Authorization: Bearer {{bearer}}" \
-  | jq --raw-output '.result[].id' | while read id
-  do
-    echo "🧹 Deleting '$id' record in zone '{{zoneid}}'"
-    curl --silent --request DELETE "https://api.cloudflare.com/client/v4/zones/{{zoneid}}/dns_records/$id" \
-  --header "Authorization: Bearer {{bearer}}"
-  done
+  zoneid = "{{zoneid}}"
+  bearerfile = "{{bearerfile}}"
 
-  echo "🚀 All done!"
+  def load_bearer_token(filepath: str) -> str:
+      try:
+          with open(filepath, 'r') as f:
+              return f.read().strip()
+      except FileNotFoundError:
+          print(f"❌ Bearer token file '{filepath}' not found.")
+          sys.exit(1)
+
+  def get_dns_record_ids(zone_id: str, bearer: str):
+      url = f"https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records?per_page=50000"
+      headers = {
+          "Authorization": f"Bearer {bearer}",
+          "Content-Type": "application/json"
+      }
+      response = requests.get(url, headers=headers)
+      response.raise_for_status()
+      records = response.json().get("result", [])
+      return [record["id"] for record in records]
+
+  def delete_dns_record(zone_id: str, record_id: str, bearer: str):
+      url = f"https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records/{record_id}"
+      headers = {
+          "Authorization": f"Bearer {bearer}",
+          "Content-Type": "application/json"
+      }
+      response = requests.delete(url, headers=headers)
+      if response.ok:
+          print(f"🧹 Deleted record '{record_id}'")
+      else:
+          print(f"⚠️ Failed to delete record '{record_id}': {response.status_code} {response.text}")
+
+  if os.geteuid() != 0:
+    os.execvp('sudo', ['sudo', 'python3'] + sys.argv)
+
+  bearer = load_bearer_token(bearerfile)
+  print(f"🔍 Fetching DNS records for zone: {zoneid}")
+  try:
+      record_ids = get_dns_record_ids(zoneid, bearer)
+  except Exception as e:
+      print(f"❌ Failed to fetch records: {e}")
+      sys.exit(1)
+
+  for record_id in record_ids:
+      delete_dns_record(zoneid, record_id, bearer)
+
+  print("🚀 All done!")
 # }}}

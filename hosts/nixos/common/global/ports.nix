@@ -46,5 +46,8 @@
     open-webui = 8441;
     searxng = 8442;
     jupyter-ai = 8443;
+    meilisearch = 8444;
+    karakeep = 8445;
+    karakeep-browser = 8446;
   };
 }

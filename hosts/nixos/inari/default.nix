@@ -4,14 +4,17 @@
     ../common/users/pilot.nix
     ../common/users/guest.nix
     ../common/optional/oci.nix
+    ../common/optional/quietboot.nix
     ../common/optional/services/acme.nix
     # ../common/optional/services/kanata.nix
     ../common/optional/services/nginx.nix
     ../common/optional/services/postgres.nix
+    ../common/optional/services/meilisearch.nix
     ../common/optional/services/syncthing.nix
     # ../common/optional/services/restic
 
     ./services/ollama.nix
+    ./services/karakeep.nix
     ./services/commafeed.nix
     # # ./services/ddclient.nix
     ./services/actual.nix

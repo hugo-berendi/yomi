@@ -1,20 +1,21 @@
 {
   lib,
+  pkgs,
   ...
 }: {
   boot.plymouth = {
     enable = true;
-    # themePackages = [pkgs.plymouthThemeLone];
-    # theme = "lone";
+    themePackages = [pkgs.plymouthThemeLone];
+    theme = "lone";
   };
-  stylix.targets.plymouth = {
-    enable = true;
-    logoAnimated = true;
-  };
+  # stylix.targets.plymouth = {
+  #   enable = true;
+  #   logoAnimated = true;
+  # };
 
   console = {
     useXkbConfig = true;
-    earlySetup = false;
+    # earlySetup = false;
   };
 
   boot = {
