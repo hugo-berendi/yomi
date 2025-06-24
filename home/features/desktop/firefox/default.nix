@@ -47,43 +47,48 @@
 
       # }}}
       # {{{ Extensions
-      extensions.packages = with inputs.firefox-addons.packages.${pkgs.system};
-      with lib.lists;
-        flatten [
-          [
-            augmented-steam # Adds more info to steam
-            blocktube # Lets you block youtube channels
-            bitwarden # password manager
-            buster-captcha-solver
-            clearurls # removes ugly args from urls
-            cliget # Generates curl commands for downloading account-protected things
-            darkreader
-            dearrow # Crowdsourced clickbait remover 💀
-            decentraleyes # Serves local copies of a bunch of things instead of reaching a CDN
-            don-t-fuck-with-paste # disallows certain websites from disabling pasting
-            gesturefy # mouse gestures
-            i-dont-care-about-cookies
-            indie-wiki-buddy # redirects fandom wiki urls to the proper wikis
-            leechblock-ng # website blocker
-            localcdn # caches libraries locally
-            octolinker # github import to link thingy
-            privacy-badger # blocks some trackers
-            privacy-pass # captcha stuff
-            privacy-redirect # allows redirecting to my own instances for certain websites
-            refined-github # a bunch of github modifications
-            return-youtube-dislikes
-            sponsorblock # skip youtube sponsors
-            skip-redirect # attempts to skip to the final reddirect for certain urls
-            steam-database # adds info from steamdb on storepages
-            terms-of-service-didnt-read
-            translate-web-pages
-            ublock-origin
-            unpaywall
-            user-agent-string-switcher
-            vimium-c # vim keybinds
-            youtube-shorts-block
-          ]
-        ];
+      extensions = {
+        settings = {
+        };
+        packages = with inputs.firefox-addons.packages.${pkgs.system};
+        with lib.lists;
+          flatten [
+            [
+              augmented-steam # Adds more info to steam
+              blocktube # Lets you block youtube channels
+              bitwarden # password manager
+              buster-captcha-solver
+              clearurls # removes ugly args from urls
+              cliget # Generates curl commands for downloading account-protected things
+              darkreader
+              dearrow # Crowdsourced clickbait remover 💀
+              decentraleyes # Serves local copies of a bunch of things instead of reaching a CDN
+              don-t-fuck-with-paste # disallows certain websites from disabling pasting
+              gesturefy # mouse gestures
+              i-dont-care-about-cookies
+              indie-wiki-buddy # redirects fandom wiki urls to the proper wikis
+              leechblock-ng # website blocker
+              localcdn # caches libraries locally
+              octolinker # github import to link thingy
+              privacy-badger # blocks some trackers
+              privacy-pass # captcha stuff
+              privacy-redirect # allows redirecting to my own instances for certain websites
+              refined-github # a bunch of github modifications
+              return-youtube-dislikes
+              sponsorblock # skip youtube sponsors
+              skip-redirect # attempts to skip to the final reddirect for certain urls
+              steam-database # adds info from steamdb on storepages
+              terms-of-service-didnt-read
+              translate-web-pages
+              ublock-origin
+              unpaywall
+              user-agent-string-switcher
+              vimium-c # vim keybinds
+              youtube-shorts-block
+              karakeep
+            ]
+          ];
+      };
       # }}}
       # {{{ Search engines
       search.engines = let
@@ -819,7 +824,7 @@
               /*--extension menu--*/
               #main-window:not([lwtheme]) #unified-extensions-button {
                 list-style-image: url("icons/extensions.svg") !important;
-                fill: var(--toolbarbutton-icon-fill) !important;
+                fill: var(--toolbarbutton-icon-fill) !important;firefoxfirefox
               }
               #main-window[lwtheme] #unified-extensions-button {
                 list-style-image: url("icons/extensions.svg") !important;

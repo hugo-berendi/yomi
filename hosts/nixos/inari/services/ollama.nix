@@ -6,12 +6,10 @@
     user = "ollama";
     models = "/persist/data/models";
     loadModels = [
-      "mistral:7b"
       "deepseek-r1:7b"
-      "qwen3:14b"
-      "qwen2.5vl:7b"
-      "qwen3:8b"
       "nomic-embed-text:latest"
+      "gemma3:4b"
+      "gemma3:12b"
     ];
   };
 
