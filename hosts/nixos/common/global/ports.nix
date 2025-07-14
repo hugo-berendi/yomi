@@ -49,5 +49,16 @@
     meilisearch = 8444;
     karakeep = 8445;
     karakeep-browser = 8446;
+    n8n = 8447;
+    komga = 8448;
+    adguard = 8449;
+    radarr = 8450;
+    readarr = 8451;
+    lidarr = 8452;
+    prowlarr = 8453;
+    sonarr = 8989;
+    bazarr = 8454;
+    transmission_ui = 8455;
+    transmission_peer = 51820;
   };
 }

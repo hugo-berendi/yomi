@@ -15,41 +15,34 @@
 
     ./services/ollama.nix
     ./services/karakeep.nix
+    ./services/n8n.nix
     ./services/commafeed.nix
     # # ./services/ddclient.nix
     ./services/actual.nix
     ./services/cloudflared.nix
-    # ./services/diptime.nix
     ./services/forgejo.nix
     ./services/guacamole
     ./services/paperless.nix
     ./services/homer.nix
     ./services/msmtp.nix
-    # ./services/intray.nix
     ./services/invidious.nix
-    ./services/jellyfin.nix
     ./services/jupyter.nix
     ./services/microbin.nix
-    # ./services/glance.nix
-    # ./services/pounce.nix
     # ./services/qbittorrent.nix # turned on/off depending on whether my vpn is paid for
     ./services/radicale.nix
     ./services/redlib.nix
     # ./services/smos.nix
     ./services/vaultwarden.nix
-    # ./services/keycloak.nix
     ./services/immich.nix
     ./services/music
     ./services/searxng.nix
     ./services/zfs.nix
+    ./services/adguard-home.nix
     # ./services/ntfy.nix
     ./services/comics/default.nix
+    ./services/komga.nix
     # {{{ *arr suite
-    ./services/sonarr.nix
-    ./services/radarr.nix
-    ./services/readarr.nix
-    ./services/bazarr.nix
-    ./services/prowlarr.nix
+    ./services/media
     # }}}
     ./services/home-assistant.nix
     # {{{ infra

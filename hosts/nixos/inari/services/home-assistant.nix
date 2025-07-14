@@ -16,6 +16,9 @@
       "radio_browser"
       "govee_ble"
       "govee_light_local"
+      "tuya"
+      "ibeacon"
+      "roborock"
     ];
     config = {
       default_config = {};

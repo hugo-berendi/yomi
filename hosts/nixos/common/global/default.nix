@@ -14,6 +14,7 @@
     inputs.sops-nix.nixosModules.sops
     inputs.nix-flatpak.nixosModules.nix-flatpak
     inputs.authentik-nix.nixosModules.default
+    inputs.nixarr.nixosModules.default
     # }}}
     # {{{ Satellite subprojects
     ../../../../dns/implementation/nixos-module.nix
@@ -42,6 +43,7 @@ in {
   sops.age.sshKeyPaths = ["/persist/state/etc/ssh/ssh_host_ed25519_key"];
 
   # {{{ ad-hoc options
+  networking.nameservers = [config.yomi.nginx.at.adguard.url];
   # /etc/hosts
   networking.extraHosts = let
     hosts = hostnames:

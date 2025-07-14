@@ -13,4 +13,5 @@ in rec {
   zen-browser-unwrapped = pkgs.callPackage ./zen-browser-unwrapped {};
   zen-browser-bin = pkgs.wrapFirefox zen-browser-unwrapped {};
   pelican-wings = pkgs.callPackage ./pelican-wings.nix {};
+  perplexica = pkgs.callPackage ./perplexica.nix {};
 }

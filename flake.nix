@@ -53,6 +53,8 @@
     # }}}
 
     # {{{ Nix-related tooling
+    nixarr.url = "github:rasmus-kirk/nixarr";
+
     # {{{ Storage
     impermanence.url = "github:nix-community/impermanence";
 
