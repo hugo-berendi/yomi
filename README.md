@@ -19,6 +19,7 @@ This repo's structure is based on the concept of hosts - individual machines con
 
 - [amaterasu](./hosts/nixos/amaterasu/) — my personal laptop
 - [tsukuyomi](./hosts/nixos/tsukuyomi/) — my tower pc
+- [inari](./hosts/nixos/inari/) — my tower pc
 - susanoo — my android phone. Although not configured using nix, this name gets referenced in some places
 
 ## File structure
