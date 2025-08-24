@@ -55,6 +55,9 @@
     # {{{ Nix-related tooling
     nixarr.url = "github:rasmus-kirk/nixarr";
 
+    declarative-jellyfin.url = "github:Sveske-Juice/declarative-jellyfin";
+    declarative-jellyfin.inputs.nixpkgs.follows = "nixpkgs";
+
     # {{{ Storage
     impermanence.url = "github:nix-community/impermanence";
 

@@ -24,6 +24,8 @@
     exporter = {
       enable = true;
     };
-    settings = {};
+    settings = {
+      PAPERLESS_AUTO_LOGIN_USERNAME = "admin";
+    };
   };
 }

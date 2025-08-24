@@ -8,7 +8,7 @@
     ./readarr.nix
     ./transmission.nix
     ./jellyseerr.nix
-    # ./jellyfin.nix
+    ./jellyfin.nix
     ./prowlarr.nix
     ./flaresolverr.nix
   ];

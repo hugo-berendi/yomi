@@ -1,6 +1,18 @@
-{config, ...}: {
+{
+  config,
+  inputs,
+  ...
+}: {
+  imports = [inputs.declarative-jellyfin.nixosModules.default];
   # {{{ reverse proxy
   yomi.cloudflared.at.media.port = config.yomi.ports.jellyfin;
+  # }}}
+  # {{{ Secrets
+  sops.secrets.jellyfin_admin_passwd = {
+    sopsFile = ../../secrets.yaml;
+    owner = config.users.users.jellyfin.name;
+    group = config.users.users.jellyfin.group;
+  };
   # }}}
   #{{{ settings
   services.declarative-jellyfin = {
@@ -14,6 +26,7 @@
       };
       UICulture = "de";
     };
+    network.internalHttpPort = config.yomi.cloudflared.at.media.port;
     libraries = {
       Movies = {
         enabled = true;
@@ -50,11 +63,6 @@
         version = "1.10.10.19";
         targetAbi = "10.10.7.0"; # Required as intro-skipper doesn't provide a meta.json file
         sha256 = "sha256:12hby8vkb6q2hn97a596d559mr9cvrda5wiqnhzqs41qg6i8p2fd";
-      }
-      {
-        name = "jellyfin-ani-sync";
-        url = "https://github.com/vosmiic/jellyfin-ani-sync/releases/download/v3.7/10.10.3.-.ani-sync_3.7.0.0.zip";
-        version = "3.7";
       }
     ];
   };
