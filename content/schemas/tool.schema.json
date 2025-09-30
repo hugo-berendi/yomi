@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/hugo-berendi/yomi/schemas/tool.json",
+  "title": "Tool",
+  "description": "A tool or software package used in the configuration",
+  "type": "object",
+  "required": ["name", "description"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The name of the tool",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string",
+      "description": "A brief description of what the tool does",
+      "minLength": 1
+    },
+    "url": {
+      "type": "string",
+      "description": "URL to the tool's homepage or repository",
+      "format": "uri"
+    },
+    "category": {
+      "type": "string",
+      "description": "The category this tool belongs to",
+      "enum": [
+        "fundamentals",
+        "graphical",
+        "terminal",
+        "editor",
+        "shell",
+        "file-manager",
+        "git",
+        "other"
+      ]
+    },
+    "config_path": {
+      "type": "string",
+      "description": "Path to the configuration file for this tool"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes about the tool"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+summary:
+  total_monthly: 1.92
+  currency: EUR
+
+subscriptions:
+  - name: Migadu
+    description: Mail
+    annual_cost: 19
+    url: https://migadu.com/
+
+  - name: SynHost
+    description: Domain
+    annual_cost: 4
+    url: https://synhost.de/

@@ -1,0 +1,145 @@
+services:
+  - name: Actual
+    description: budgeting tool
+    url: https://actualbudget.org/
+    category: budgeting
+    enabled: true
+
+  - name: Commafeed
+    description: rss reader
+    url: https://github.com/Athou/commafeed
+    category: rss
+    enabled: true
+
+  - name: Forgejo
+    description: git forge
+    url: https://forgejo.org/
+    category: git-forge
+    enabled: true
+
+  - name: Grafana
+    description: pretty dashboards
+    url: https://github.com/grafana/grafana
+    category: monitoring
+    enabled: true
+
+  - name: Guacamole
+    description: remote desktop access
+    url: https://guacamole.apache.org/
+    category: remote-access
+    enabled: true
+
+  - name: Homer
+    description: server homepage
+    url: https://github.com/bastienwirtz/homer
+    category: homepage
+    enabled: true
+
+  - name: Intray
+    description: GTD capture tool
+    url: https://github.com/NorfairKing/intray
+    category: gtd
+    enabled: true
+
+  - name: Invidious
+    description: alternate youtube client
+    url: https://invidious.io/
+    category: youtube-client
+    enabled: true
+
+  - name: Jellyfin
+    description: media server
+    url: https://jellyfin.org/
+    category: media
+    enabled: true
+
+  - name: Jupyterhub
+    description: notebook collaboration suite
+    url: https://jupyter.org/hub
+    category: notebook
+    enabled: true
+
+  - name: Microbin
+    description: code & file sharing service
+    url: https://microbin.eu/
+    category: sharing
+    enabled: true
+
+  - name: Pounce
+    description: irc bouncer
+    url: https://git.causal.agency/pounce/about/
+    category: irc
+    enabled: true
+
+  - name: Calico
+    description: irc bouncer client
+    url: https://git.causal.agency/pounce/about/calico.1
+    category: irc
+    enabled: true
+
+  - name: Prometheus
+    description: metric collector
+    url: https://github.com/prometheus/prometheus
+    category: monitoring
+    enabled: true
+
+  - name: Qbittorrent
+    description: torrent client
+    url: https://www.qbittorrent.org
+    category: torrent
+    enabled: true
+
+  - name: Radicale
+    description: calendar server
+    url: https://radicale.org/v3.html
+    category: calendar
+    enabled: true
+
+  - name: Redlib
+    description: alternate reddit client
+    url: https://github.com/redlib-org/redlib
+    category: reddit-client
+    enabled: true
+
+  - name: Smos
+    description: a comprehensive self-management system
+    url: https://github.com/NorfairKing/smos
+    category: self-management
+    enabled: true
+
+  - name: Syncthing
+    description: file synchronization
+    url: https://syncthing.net/
+    category: sync
+    enabled: true
+
+  - name: Vaultwarden
+    description: password manager
+    url: https://github.com/dani-garcia/vaultwarden/
+    category: password-manager
+    enabled: true
+
+  - name: Whoogle
+    description: search engine
+    url: https://github.com/benbusby/whoogle-search#manual-docker
+    category: search-engine
+    enabled: false
+    notes: "OR SearXNG"
+
+  - name: SearXNG
+    description: search engine
+    url: https://docs.searxng.org/
+    category: search-engine
+    enabled: true
+
+  - name: Calibre Web
+    description: A online library for my books
+    url: https://github.com/janw/calibre-web
+    category: library
+    enabled: false
+
+  - name: Plex
+    description: A hosting service for music, movies, etc. similar to Jellyfin
+    url: https://www.plex.tv/
+    category: media
+    enabled: false

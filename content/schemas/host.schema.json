@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/hugo-berendi/yomi/schemas/host.json",
+  "title": "Host",
+  "description": "A host machine in the NixOS configuration",
+  "type": "object",
+  "required": ["hostname", "description", "type"],
+  "properties": {
+    "hostname": {
+      "type": "string",
+      "description": "The hostname of the machine",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string",
+      "description": "What the machine is used for",
+      "minLength": 1
+    },
+    "type": {
+      "type": "string",
+      "description": "The type of machine",
+      "enum": ["laptop", "desktop", "server", "phone", "other"]
+    },
+    "nix_path": {
+      "type": "string",
+      "description": "Path to the NixOS configuration relative to repository root"
+    },
+    "mythology_reference": {
+      "type": "string",
+      "description": "The space/mythology reference the name is based on"
+    },
+    "active": {
+      "type": "boolean",
+      "description": "Whether this host is actively maintained",
+      "default": true
+    }
+  }
+}

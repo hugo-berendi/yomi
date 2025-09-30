@@ -1,0 +1,8 @@
+tasks:
+  - title: configure rpi iso image + nixos config
+    completed: false
+    priority: medium
+
+  - title: create a more clean and powerful base config
+    completed: false
+    priority: high

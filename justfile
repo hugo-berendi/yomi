@@ -187,3 +187,9 @@ dns-clear zoneid bearerfile="/run/secrets/cloudflare_dns_api_token":
 
   print("🚀 All done!")
 # }}}
+# {{{ Content Management
+[doc("Validate content YAML files")]
+[group("content")]
+validate-content:
+  python3 scripts/validate-content.py
+# }}}

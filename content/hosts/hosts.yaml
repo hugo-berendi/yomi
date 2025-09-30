@@ -1,0 +1,28 @@
+hosts:
+  - hostname: amaterasu
+    description: my personal laptop
+    type: laptop
+    nix_path: ./hosts/nixos/amaterasu/
+    mythology_reference: Japanese sun goddess
+    active: true
+
+  - hostname: tsukuyomi
+    description: my tower pc
+    type: desktop
+    nix_path: ./hosts/nixos/tsukuyomi/
+    mythology_reference: Japanese moon god
+    active: true
+
+  - hostname: inari
+    description: my server
+    type: server
+    nix_path: ./hosts/nixos/inari/
+    mythology_reference: Japanese kami of foxes, fertility, rice, tea and sake, agriculture and industry
+    active: true
+
+  - hostname: susanoo
+    description: my android phone
+    type: phone
+    mythology_reference: Japanese god of the sea and storms
+    active: true
+    notes: Although not configured using nix, this name gets referenced in some places

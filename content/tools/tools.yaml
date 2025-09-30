@@ -1,0 +1,172 @@
+fundamentals:
+  - name: Nixos
+    description: nix based operating system
+    url: http://nixos.org/
+    category: fundamentals
+
+  - name: Home-manager
+    description: manage user configuration using nix
+    url: https://github.com/nix-community/home-manager
+    category: fundamentals
+
+  - name: Impermanence
+    description: see the article about erasing your darlings
+    url: https://github.com/nix-community/impermanence
+    category: fundamentals
+    notes: See https://grahamc.com/blog/erase-your-darlings
+
+  - name: Sops-nix
+    description: secret management
+    url: https://github.com/Mic92/sops-nix
+    category: fundamentals
+
+  - name: Disko
+    description: format disks using nix
+    url: https://github.com/nix-community/disko
+    category: fundamentals
+
+  - name: ZFS
+    description: filesystem
+    url: https://openzfs.org/wiki/Main_Page
+    category: fundamentals
+
+graphical:
+  - name: Stylix
+    description: base16 module for nix
+    url: https://github.com/danth/stylix
+    category: graphical
+
+  - name: Base16 templates
+    description: list of base16 theme templates
+    url: https://github.com/chriskempson/base16-templates-source
+    category: graphical
+
+  - name: Catppuccin
+    description: base16 theme I use
+    url: https://github.com/catppuccin/catppuccin
+    category: graphical
+
+  - name: Rosepine
+    description: another theme I use
+    url: https://rosepinetheme.com/
+    category: graphical
+
+  - name: Hyprland
+    description: wayland compositor
+    url: https://hyprland.org/
+    category: graphical
+
+  - name: Wlogout
+    description: wayland logout menu
+    url: https://github.com/ArtsyMacaw/wlogout
+    category: graphical
+
+  - name: Hyprpicker
+    description: hyprland color picker
+    url: https://github.com/hyprwm/hyprpicker
+    category: graphical
+
+  - name: Grimblast
+    description: screenshot tool
+    url: https://github.com/hyprwm/contrib/tree/main/grimblast
+    category: graphical
+
+  - name: Dunst
+    description: notification daemon
+    url: https://dunst-project.org/
+    category: graphical
+
+  - name: Wlsunset
+    description: day/night screen gamma adjustments
+    url: https://sr.ht/~kennylevinsen/wlsunset/
+    category: graphical
+
+  - name: Anyrun
+    description: program launcher
+    url: https://github.com/Kirottu/anyrun
+    category: graphical
+
+  - name: Foot
+    description: terminal emulator
+    url: https://codeberg.org/dnkl/foot
+    category: graphical
+
+  - name: Zathura
+    description: pdf viewer
+    url: https://pwmt.org/projects/zathura/
+    category: graphical
+
+  - name: Firefox
+    description: web browser
+    url: https://www.mozilla.org/en-US/firefox/
+    category: graphical
+
+  - name: Tesseract
+    description: OCR engine
+    url: https://github.com/tesseract-ocr/tesseract
+    category: graphical
+
+  - name: Obsidian
+    description: note taking software
+    url: https://obsidian.md/
+    category: graphical
+
+  - name: Bitwarden
+    description: client for self-hosted password manager
+    url: https://bitwarden.com/
+    category: graphical
+
+terminal:
+  - name: Neovim
+    description: my editor
+    url: https://neovim.io/
+    category: editor
+    config_path: ./home/features/neovim/default.nix
+
+  - name: Neovide
+    description: neovim gui client
+    url: https://neovide.dev/index.html
+    category: editor
+
+  - name: Vimclip
+    description: vim anywhere!
+    url: https://github.com/hrantzsch/vimclip
+    category: editor
+
+  - name: Tmux
+    description: terminal multiplexer
+    url: https://github.com/tmux/tmux/wiki
+    category: terminal
+
+  - name: Fish
+    description: user friendly shell
+    url: https://fishshell.com/
+    category: shell
+
+  - name: Starship
+    description: shell prompt
+    url: https://starship.rs/
+    category: shell
+
+  - name: Yazi
+    description: file manager
+    url: https://github.com/sxyazi/yazi
+    category: file-manager
+
+  - name: Lazygit
+    description: git tui
+    url: https://github.com/jesseduffield/lazygit
+    category: git
+
+hall_of_fame:
+  - name: Kitty
+    description: terminal emulator
+    url: https://sw.kovidgoyal.net/kitty/
+    category: terminal
+    notes: I switched to Foot
+
+  - name: Eww
+    description: widget system for wayland
+    url: https://github.com/elkowar/eww
+    category: graphical
+    notes: experimented with eww for a bit, but setup was painful and bars are a bit useless

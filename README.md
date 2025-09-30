@@ -27,6 +27,7 @@ This repo's structure is based on the concept of hosts - individual machines con
 | Location                     | Description                                         |
 | ---------------------------- | --------------------------------------------------- |
 | [common](./common)           | Configuration loaded on both nixos and home-manager |
+| [content](./content)         | Structured content (services, hosts, tools) - [Edit Guide](./docs/CONTENT_MANAGEMENT.md) |
 | [devshells](./devshells)     | Nix shells                                          |
 | [docs](./docs)               | Additional documentation regarding my setup         |
 | [home](./home)               | Home manager configurations                         |
@@ -46,6 +47,7 @@ Here's some things you might want to check out:
 - My [neovim config](./home/features/neovim/default.nix)
   - written using [nixvim](https://nix-community.github.io/nixvim)
 - The [flake](./flake.nix) entrypoint for this repository
+- The [content management system](./docs/CONTENT_MANAGEMENT.md) for editing services, hosts, and tools
 
 ## Things I use
 
