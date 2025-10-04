@@ -146,6 +146,8 @@
     ngrok.url = "github:ngrok/ngrok-nix";
 
     playit-nixos-module.url = "github:pedorich-n/playit-nixos-module";
+
+    opencode-flake.url = "github:aodhanhayter/opencode-flake";
   };
 
   outputs = {

@@ -21,6 +21,7 @@
     ./cava.nix
     ./hyfetch.nix
     ./rbw.nix
+    ./opencode.nix
   ];
 
   # Enable basic CLI thingiesMore actions
