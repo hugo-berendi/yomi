@@ -71,6 +71,7 @@ in
       # (ghPage "giftstogo")
       (migaduMail "" "xmycngew")
       (migaduMail "tengu" "t5fehqan")
+      (migaduMail "yokai" "dnvlmbud")
       [
         {
           at = "classattack";
