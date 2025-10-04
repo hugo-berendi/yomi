@@ -2,8 +2,6 @@
   # {{{ secrets
   sops.secrets.ocis_env = {
     sopsFile = ../secrets.yaml;
-    owner = config.services.ocis.user;
-    group = config.services.ocis.group;
   };
   # }}}
   # {{{ reverse proxy
@@ -18,6 +16,11 @@
     url = config.yomi.nginx.at.cloud.url;
     stateDir = "/raid5pool/cloud";
     configDir = "/var/lib/ocis/config";
+    environment = {
+      OCIS_INSECURE = "true";
+      SEARCH_EXTRACTOR_TYPE = "basic";
+      OCIS_EXCLUDE_RUN_SERVICES = "search,thumbnails";
+    };
   };
   # }}}
   # {{{ storage
