@@ -1,16 +1,27 @@
 {config, ...}: {
   yomi.nginx.at.adguard.port = config.yomi.ports.adguard;
+  
+  environment.persistence."/persist/state".directories = [
+    {
+      directory = "/var/lib/AdGuardHome";
+      user = "adguardhome";
+      group = "adguardhome";
+      mode = "0750";
+    }
+  ];
+  
   services.adguardhome = {
     enable = true;
+    host = "0.0.0.0";
     port = config.yomi.nginx.at.adguard.port;
     settings = {
       filtering = {
         protection_enabled = true;
         filtering_enabled = true;
 
-        parental_enabled = false; # Parental control-based DNS requests filtering.
+        parental_enabled = false;
         safe_search = {
-          enabled = false; # Enforcing "Safe search" option for search engines, when possible.
+          enabled = false;
         };
       };
       filters =
@@ -18,8 +29,8 @@
           enabled = true;
           url = url;
         }) [
-          "https://adguardteam.github.io/HostlistsRegistry/assets/filter_9.txt" # The Big List of Hacked Malware Web Sites
-          "https://adguardteam.github.io/HostlistsRegistry/assets/filter_11.txt" # malicious url blocklist
+          "https://adguardteam.github.io/HostlistsRegistry/assets/filter_9.txt"
+          "https://adguardteam.github.io/HostlistsRegistry/assets/filter_11.txt"
           "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/pro.txt"
         ];
     };

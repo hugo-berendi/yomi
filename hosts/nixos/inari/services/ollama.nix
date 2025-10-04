@@ -13,6 +13,12 @@
     ];
   };
 
+  systemd.services.ollama.serviceConfig = {
+    MemoryMax = "0";
+    LimitAS = "infinity";
+    LimitMEMLOCK = "infinity";
+  };
+
   services.open-webui = {
     enable = true;
     port = config.yomi.ports.open-webui;

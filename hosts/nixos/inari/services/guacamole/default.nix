@@ -4,6 +4,7 @@
 
   virtualisation.oci-containers.containers.guacamole = {
     image = "flcontainers/guacamole";
+    autoStart = false;
     ports = ["${toString config.yomi.nginx.at.guacamole.port}:8080"];
     volumes = [
       "/etc/localtime:/etc/localtime"
@@ -14,6 +15,5 @@
     environment.TZ = config.time.timeZone;
   };
 
-  # Allow ssh-ing using the provided key
   users.users.pilot.openssh.authorizedKeys.keyFiles = [./ed25519.pub];
 }

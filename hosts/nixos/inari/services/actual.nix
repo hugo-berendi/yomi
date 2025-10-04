@@ -6,7 +6,7 @@ in {
 
   virtualisation.oci-containers.containers.actual = {
     image = "actualbudget/actual-server:latest";
-    autoStart = true;
+    autoStart = false;
 
     ports = ["${toString config.yomi.nginx.at.actual.port}:5006"]; # server:docker
     volumes = ["${dataDir}:/data"]; # server:docker

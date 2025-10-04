@@ -53,7 +53,7 @@
 
   environment.persistence."/persist/state".directories = [
     "/etc/pelican"
-    "/run/wings"
+    "/var/lib/pelican"
   ];
 
   environment.systemPackages = [pkgs.pelican-wings];

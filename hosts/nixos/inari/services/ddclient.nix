@@ -5,7 +5,7 @@
   ...
 }: {
   services.ddclient = {
-    enable = true;
+    enable = false;
     interval = "1m";
     configFile = config.sops.templates."ddclient.conf".path;
 
