@@ -43,7 +43,8 @@ in {
   sops.age.sshKeyPaths = ["/persist/state/etc/ssh/ssh_host_ed25519_key"];
 
   # {{{ ad-hoc options
-  networking.nameservers = [config.yomi.nginx.at.adguard.url];
+  # Use DHCP/NetworkManager-provided DNS by default; AdGuardHome sets this on its host.
+
   # /etc/hosts
   networking.extraHosts = let
     hosts = hostnames:
