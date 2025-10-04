@@ -16,8 +16,7 @@
     ./services/ollama.nix
     ./services/karakeep.nix
     ./services/n8n.nix
-    ./services/commafeed.nix
-    # # ./services/ddclient.nix
+    # ./services/ddclient.nix
     ./services/actual.nix
     ./services/cloudflared.nix
     ./services/forgejo.nix
@@ -28,35 +27,25 @@
     ./services/invidious.nix
     ./services/jupyter.nix
     ./services/microbin.nix
-    # ./services/qbittorrent.nix # turned on/off depending on whether my vpn is paid for
     ./services/radicale.nix
     ./services/redlib.nix
-    # ./services/smos.nix
     ./services/vaultwarden.nix
     ./services/immich.nix
     ./services/music
     ./services/searxng.nix
     ./services/zfs.nix
     ./services/adguard-home.nix
-    # ./services/ntfy.nix
     ./services/comics/default.nix
-    ./services/komga.nix
-    # {{{ *arr suite
     ./services/media
-    # }}}
     ./services/home-assistant.nix
-    # {{{ infra
-    # ./services/uptime.nix
+    ./services/uptime.nix
     ./services/authentik.nix
     ./services/prometheus.nix
     ./services/grafana.nix
-    # }}}
-    # {{{ game servers
-    # ./services/pelican
-    # ./services/playit.nix # tunnel for minecraft
-    # ./services/valheim.nix
-    # ./services/minecraft.nix
-    # }}}
+    ./services/pelican
+    ./services/playit.nix
+    ./services/owncloud.nix
+    ./services/anonaddy.nix
 
     ./filesystems
     ./hardware
