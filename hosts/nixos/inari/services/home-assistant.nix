@@ -5,20 +5,17 @@
     extraPackages = python3Packages:
       with python3Packages; [
         gtts
-        # numpy
-        # hassil
-        # home_assistant_intents
       ];
     extraComponents = [
       "isal"
       "esphome"
       "met"
       "radio_browser"
-      "govee_ble"
-      "govee_light_local"
       "tuya"
       "ibeacon"
       "roborock"
+      "mqtt"
+      "govee_ble"
     ];
     config = {
       default_config = {};
@@ -44,4 +41,48 @@
       };
     };
   };
+
+  services.mosquitto = {
+    enable = true;
+    listeners = [
+      {
+        port = config.yomi.ports.mqtt;
+        address = "127.0.0.1";
+        acl = ["pattern readwrite #"];
+        omitPasswordAuth = true;
+        settings.allow_anonymous = true;
+      }
+    ];
+  };
+
+  sops.templates."govee2mqtt.env" = {
+    content = ''
+      GOVEE_MQTT_HOST=127.0.0.1
+      GOVEE_MQTT_PORT=${toString config.yomi.ports.mqtt}
+      GOVEE_LAN_SCAN=192.168.178.107,192.168.178.108
+    '';
+    owner = config.services.govee2mqtt.user;
+  };
+
+  services.govee2mqtt = {
+    enable = config.services.home-assistant.enable;
+    environmentFile = config.sops.templates."govee2mqtt.env".path;
+  };
+
+  environment.persistence."/persist/state".directories = [
+    {
+      directory = "/var/lib/hass";
+      user = "hass";
+      group = "hass";
+    }
+    {
+      directory = "/var/lib/private/mosquitto";
+      mode = "0700";
+    }
+    {
+      directory = "/var/lib/govee2mqtt";
+      user = config.services.govee2mqtt.user;
+      group = config.services.govee2mqtt.group;
+    }
+  ];
 }

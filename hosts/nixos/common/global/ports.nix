@@ -61,5 +61,8 @@
     transmission_ui = 8455;
     transmission_peer = 51820;
     jellyfin = 8456;
+    mqtt = 8457;
+    anonaddy = 8458;
+    owncloud = 8459;
   };
 }
