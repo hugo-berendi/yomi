@@ -11,11 +11,14 @@
     ./jellyfin.nix
     ./prowlarr.nix
     ./flaresolverr.nix
+    ./recyclarr.nix
   ];
 
   nixarr = {
     enable = true;
     stateDir = "/var/lib/media";
+    mediaDir = "/raid5pool/media";
+    mediaUsers = [ "jellyfin" "sonarr" "radarr" "bazarr" ];
   };
 
   environment.persistence."/persist/state".directories = [
