@@ -1,6 +1,7 @@
 {config, ...}: {
+  # {{{ Reverse proxy
   yomi.nginx.at.paperless.port = config.yomi.ports.paperless;
-
+  # }}}
   # {{{ Secrets
   sops.secrets.paperless_env = {
     sopsFile = ../secrets.yaml;
@@ -12,7 +13,7 @@
     owner = config.services.paperless.user;
   };
   # }}}
-
+  # {{{ Service
   services.paperless = {
     enable = true;
     port = config.yomi.ports.paperless;
@@ -28,4 +29,5 @@
       PAPERLESS_AUTO_LOGIN_USERNAME = "admin";
     };
   };
+  # }}}
 }

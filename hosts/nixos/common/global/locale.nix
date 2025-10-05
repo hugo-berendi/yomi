@@ -1,10 +1,10 @@
 {config, ...}: let
   lang = config.i18n.defaultLocale;
 in {
-  # Set your time zone.
+  # {{{ Time zone
   time.timeZone = "Europe/Berlin";
-
-  # Select internationalisation properties.
+  # }}}
+  # {{{ Locale
   i18n.defaultLocale = "en_US.UTF-8";
 
   i18n.extraLocaleSettings = {
@@ -21,4 +21,5 @@ in {
     LC_TELEPHONE = lang;
     LC_TIME = lang;
   };
+  # }}}
 }

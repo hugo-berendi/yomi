@@ -1,4 +1,5 @@
 {pkgs, ...}: {
+  # {{{ Imports
   imports = [
     ./foot.nix
     ./ghostty.nix
@@ -11,36 +12,36 @@
     ./zathura.nix
     ./gaming.nix
     ./unity.nix
-
     ./calibre.nix
   ];
-
-  # Notifies on low battery percentages
+  # }}}
+  # {{{ Services
   services.batsignal.enable = true;
 
   services.gnome-keyring = {
     enable = true;
     components = ["pkcs11" "secrets" "ssh"];
   };
-
-  # Use a base16 theme for gtk apps!
+  # }}}
+  # {{{ Theming
   stylix.targets.gtk.enable = true;
 
   gtk.iconTheme = {
     package = pkgs.papirus-icon-theme;
     name = "Papirus";
   };
-
-  # Base packages
+  # }}}
+  # {{{ Packages
   home.packages = with pkgs; [
-    gimp # Image editing
-    krita # drawing
-    libreoffice # document editing
-    bitwarden # Password-manager
-    qbittorrent # Torrent client
-    overskride # Bluetooth client
-    mpv # Video player
-    imv # Image viewer
-    obs-studio # video recorder
+    gimp
+    krita
+    libreoffice
+    bitwarden
+    qbittorrent
+    overskride
+    mpv
+    imv
+    obs-studio
   ];
+  # }}}
 }

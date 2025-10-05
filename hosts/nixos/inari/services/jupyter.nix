@@ -22,9 +22,10 @@ in {
     sopsFile = ../secrets.yaml;
   };
   # }}}
+  # {{{ Service
   systemd.services.jupyterhub.path = [
-    pkgs.texlive.combined.scheme-full # LaTeX stuff is useful for matplotlib
-    pkgs.git # Required by the git extension
+    pkgs.texlive.combined.scheme-full
+    pkgs.git
   ];
 
   services.jupyterhub = {
@@ -34,7 +35,6 @@ in {
     jupyterhubEnv = appEnv;
     jupyterlabEnv = appEnv;
 
-    # {{{ Spwaner & auth config
     extraConfig = ''
       c.Authenticator.allow_all = True
 
@@ -42,9 +42,8 @@ in {
       c.SystemdSpawner.mem_limit = '2G'
       c.SystemdSpawner.cpu_limit = 2.0
     '';
-    # }}}
     authentication = "null";
-    # {{{ Python 3 kernel
+
     kernels.python3 = let
       env = pkgs.python3.withPackages (p:
         with p; [
@@ -53,9 +52,6 @@ in {
           scipy
           matplotlib
           tabulate
-          # torch
-          # torchvision
-          # torchaudio
         ]);
     in {
       displayName = "Numerical mathematics setup";
@@ -70,10 +66,9 @@ in {
       logo32 = "${env}/${env.sitePackages}/ipykernel/resources/logo-32x32.png";
       logo64 = "${env}/${env.sitePackages}/ipykernel/resources/logo-64x64.png";
     };
-    # }}}
   };
-
-  # {{{ Networking & storage
+  # }}}
+  # {{{ Networking & persistence
   yomi.cloudflared.at.jupyter.port = config.yomi.ports.jupyterhub;
 
   environment.persistence."/persist/state".directories = [

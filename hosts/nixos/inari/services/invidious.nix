@@ -31,4 +31,8 @@
     };
     package = pkgs.invidious;
   };
+
+  environment.persistence."/persist/state".directories = [
+    "/var/lib/invidious"
+  ];
 }

@@ -4,7 +4,7 @@
   lib,
   ...
 }: {
-  # {{{ Zfs config
+  # {{{ ZFS config
   services.zfs = {
     trim = {
       enable = true;
@@ -14,8 +14,6 @@
       interval = "weekly";
     };
     zed = {
-      # enableMail = true;
-
       settings = {
         ZED_DEBUG_LOG = "/tmp/zed.debug.log";
         ZED_EMAIL_ADDR = ["alert@hugo-berendi.de"];
@@ -31,7 +29,7 @@
     };
   };
   # }}}
-  # {{{ remote ssh unlocking
+  # {{{ Remote SSH unlocking
   boot.kernelParams = ["ip=dhcp"];
   boot.initrd = {
     availableKernelModules = ["r8169"];
@@ -48,12 +46,10 @@
   };
   environment.persistence."/persist/state".directories = ["/etc/secrets/initrd"];
   # }}}
-  # {{{ Sanoid config
-  # Sanoid allows me to configure snapshot frequency on a per-dataset basis.
+  # {{{ Sanoid
   services.sanoid = {
     enable = true;
 
-    # {{{ Data
     datasets."zroot/root/persist/data" = {
       autosnap = true;
       autoprune = true;
@@ -64,8 +60,7 @@
       daily = 7;
       hourly = 24;
     };
-    # }}}
-    # {{{ State
+
     datasets."zroot/root/persist/state" = {
       autosnap = true;
       autoprune = true;
@@ -76,15 +71,6 @@
       daily = 3;
       hourly = 6;
     };
-    # }}}
   };
-  # }}}
-  # {{{ Syncoid
-  # Automatically sync certain snapshot to rsync.net
-  # services.syncoid = {
-  #   enable = true;
-  #   commands."zroot/root/persist/data".target = "root@rsync.net:zroot/root/persist/data";
-  #   commands."zroot/root/persist/state".target = "root@rsync.net:zroot/root/persist/state";
-  # };
   # }}}
 }

@@ -3,15 +3,17 @@
   pkgs,
   ...
 }: {
+  # {{{ Packages
   home.packages = with pkgs; [
-    legendary-gl # cli tool for epic games launcher
-    rare # ui client for legendary
-    heroic # maybe better than rare
-    mangohud # show stats (like fps) using a game overlay
-    gamemode # run games better on linux
-    lutris # wrapper for most game stores
-    protonplus # manage proton (ge) and wine
+    legendary-gl
+    rare
+    heroic
+    mangohud
+    gamemode
+    lutris
+    protonplus
   ];
+  # }}}
   # {{{ Styling
   stylix.targets = {
     mangohud.enable = true;

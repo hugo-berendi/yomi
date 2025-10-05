@@ -1,10 +1,9 @@
 {config, ...}: let
-  # Using `config.users.users.pilot.name` causes an infinite recursion error
-  # due to the way the syncthing module is written
   user = config.yomi.pilot.name;
   group = "syncthing";
   dataDir = "/persist/state/var/lib/syncthing";
 in {
+  # {{{ Service
   services.syncthing = {
     inherit user group dataDir;
     enable = true;
@@ -30,14 +29,19 @@ in {
     guiAddress = "127.0.0.1:${toString config.yomi.ports.syncthing}";
     settings.gui.insecureSkipHostcheck = true;
   };
-
-  # Expose gui interface via nginx
-  # yomi.nginx.at."syncthing.${config.networking.hostName}".port =
-  #   config.yomi.ports.syncthing;
-
-  # Syncthing seems to leak memory, so we want to restart it daily.
+  # }}}
+  # {{{ Systemd
   systemd.services.syncthing.serviceConfig.RuntimeMaxSec = "1d";
 
-  # I'm not sure this is needed anymore, I just know I got some ownership errors at some point.
   systemd.tmpfiles.rules = ["d ${dataDir} - ${user} ${group}"];
+  # }}}
+  # {{{ Persistence
+  environment.persistence."/persist/state".directories = [
+    {
+      directory = dataDir;
+      user = user;
+      group = group;
+    }
+  ];
+  # }}}
 }

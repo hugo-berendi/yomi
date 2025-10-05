@@ -3,15 +3,15 @@
   config,
   ...
 }: let
-  calibre_config_dir = "${config.xdg.configHome}/calibre"; # Config options
+  calibre_config_dir = "${config.xdg.configHome}/calibre";
 in {
+  # {{{ Packages & environment
   home = {
     packages = with pkgs; [calibre libsForQt5.qt5ct];
     sessionVariables = {
       CALIBRE_USE_SYSTEM_THEME = 1;
       QT_QPA_PLATFORM = "wayland";
-      CALIBRE_CONFIG_DIRECTORY =
-        calibre_config_dir;
+      CALIBRE_CONFIG_DIRECTORY = calibre_config_dir;
     };
 
     file.".config/qt5ct/colors/Base16.conf".text = ''
@@ -22,12 +22,16 @@ in {
 
     '';
   };
-  yomi.persistence.at.state.apps.calibre.directories = [
-    calibre_config_dir
-  ];
-
+  # }}}
+  # {{{ Qt config
   qt = {
     enable = true;
     platformTheme.name = "gtk3";
   };
+  # }}}
+  # {{{ Persistence
+  yomi.persistence.at.state.apps.calibre.directories = [
+    calibre_config_dir
+  ];
+  # }}}
 }

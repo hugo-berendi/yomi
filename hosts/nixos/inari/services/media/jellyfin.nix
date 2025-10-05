@@ -4,7 +4,7 @@
   ...
 }: {
   imports = [inputs.declarative-jellyfin.nixosModules.default];
-  # {{{ reverse proxy
+  # {{{ Reverse proxy
   yomi.cloudflared.at.media.port = config.yomi.ports.jellyfin;
   # }}}
   # {{{ Secrets
@@ -14,12 +14,11 @@
     group = config.users.users.jellyfin.group;
   };
   # }}}
-  #{{{ settings
+  # {{{ Service
   services.declarative-jellyfin = {
     enable = true;
     system = {
       serverName = "HugoFlix";
-      # Use Hardware Acceleration for trickplay image generation
       trickplayOptions = {
         enableHwAcceleration = true;
         enableHwEncoding = true;
@@ -61,7 +60,7 @@
         name = "intro skipper";
         url = "https://github.com/intro-skipper/intro-skipper/releases/download/10.10/v1.10.10.19/intro-skipper-v1.10.10.19.zip";
         version = "1.10.10.19";
-        targetAbi = "10.10.7.0"; # Required as intro-skipper doesn't provide a meta.json file
+        targetAbi = "10.10.7.0";
         sha256 = "sha256:12hby8vkb6q2hn97a596d559mr9cvrda5wiqnhzqs41qg6i8p2fd";
       }
     ];

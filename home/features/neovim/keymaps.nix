@@ -42,42 +42,6 @@
       }
       {
         mode = "n";
-        key = "<C-h>";
-        action = "<C-w>h";
-        options = {
-          desc = "Go to Left Window";
-          remap = true;
-        };
-      }
-      {
-        mode = "n";
-        key = "<C-j>";
-        action = "<C-w>j";
-        options = {
-          desc = "Go to Lower Window";
-          remap = true;
-        };
-      }
-      {
-        mode = "n";
-        key = "<C-k>";
-        action = "<C-w>k";
-        options = {
-          desc = "Go to Upper Window";
-          remap = true;
-        };
-      }
-      {
-        mode = "n";
-        key = "<C-l>";
-        action = "<C-w>l";
-        options = {
-          desc = "Go to Right Window";
-          remap = true;
-        };
-      }
-      {
-        mode = "n";
         key = "<C-Up>";
         action = "<cmd>resize +2<cr>";
         options = {desc = "Increase Window Height";};
@@ -102,39 +66,39 @@
       }
       {
         mode = "n";
-        key = "<A-j>";
+        key = "<A-S-j>";
         action = "<cmd>m .+1<cr>==";
-        options = {desc = "Move Down";};
+        options = {desc = "Move Line Down";};
       }
       {
         mode = "n";
-        key = "<A-k>";
+        key = "<A-S-k>";
         action = "<cmd>m .-2<cr>==";
-        options = {desc = "Move Up";};
+        options = {desc = "Move Line Up";};
       }
       {
         mode = "i";
-        key = "<A-j>";
+        key = "<A-S-j>";
         action = "<esc><cmd>m .+1<cr>==gi";
-        options = {desc = "Move Down";};
+        options = {desc = "Move Line Down";};
       }
       {
         mode = "i";
-        key = "<A-k>";
+        key = "<A-S-k>";
         action = "<esc><cmd>m .-2<cr>==gi";
-        options = {desc = "Move Up";};
+        options = {desc = "Move Line Up";};
       }
       {
         mode = "v";
-        key = "<A-j>";
+        key = "<A-S-j>";
         action = ":m '>+1<cr>gv=gv";
-        options = {desc = "Move Down";};
+        options = {desc = "Move Lines Down";};
       }
       {
         mode = "v";
-        key = "<A-k>";
+        key = "<A-S-k>";
         action = ":m '<-2<cr>gv=gv";
-        options = {desc = "Move Up";};
+        options = {desc = "Move Lines Up";};
       }
       {
         mode = "i";

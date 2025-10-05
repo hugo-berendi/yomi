@@ -76,10 +76,28 @@ in {
         ...
       }: {
         name = host;
-        value = "${protocol}://localhost:${toString port}";
+        value = "${protocol}://localhost:${toString (port + 200)}";
       }
     )
     cfg.at;
+
+  config.services.anubis.instances = let
+    mkAnubisInstance = {
+      subdomain,
+      port,
+      ...
+    }: {
+      name = subdomain;
+      value = {
+        settings = {
+          BIND_NETWORK = "tcp";
+          BIND = ":${toString (port + 200)}";
+          TARGET = "http://localhost:${toString port}";
+        };
+      };
+    };
+  in
+    lib.attrsets.mapAttrs' (_: mkAnubisInstance) cfg.at;
 
   config.yomi.dns.records = let
     mkDnsRecord = {subdomain, ...}: {

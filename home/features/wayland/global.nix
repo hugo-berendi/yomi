@@ -1,9 +1,9 @@
-# Common wayland stuff
 {
   lib,
   pkgs,
   ...
 }: {
+  # {{{ Imports
   imports = [
     ./ags
     ./waybar
@@ -13,19 +13,18 @@
 
     ../desktop
   ];
-
+  # }}}
+  # {{{ Session variables
   home.sessionVariables.NIXOS_OZONES_WL = "1";
   services.swayosd.enable = true;
-
+  # }}}
+  # {{{ Packages
   home.packages = let
-    # {{{ OCR script
     _ = lib.getExe;
 
     wl-copy = "${pkgs.wl-clipboard}/bin/wl-copy";
     wl-paste = "${pkgs.wl-clipboard}/bin/wl-paste";
 
-    # TODO: put this in it's own file perhaps?
-    # Taken from [here](https://github.com/fufexan/dotfiles/blob/3b0075fa7a5d38de13c8c32140c4b020b6b32761/home/wayland/default.nix#L14)
     wl-ocr = pkgs.writeShellScriptBin "wl-ocr" ''
       ${_ pkgs.grim} -g "$(${_ pkgs.slurp})" -t ppm - \
         | ${_ pkgs.tesseract5} - - \
@@ -42,18 +41,18 @@
         _ pkgs.libnotify
       } "Scanned qr code on area with output \"$(${wl-paste})\""
     '';
-    # }}}
   in
     with pkgs; [
-      libnotify # Send notifications
-      wl-ocr # Custom ocr script
-      wl-qr # Custom qr scanner script
-      wl-clipboard # Clipboard manager
-      hyprpicker-new # Color picker
-      grimblast # Screenshot tool
-      brightnessctl # Adjust screen brightness
-      pamixer # Adjust audio volume
-      kdePackages.xwaylandvideobridge # screen sharing for xwayland apps like discord
-      wl-screenrec # video recorder (with daemon support!)
+      libnotify
+      wl-ocr
+      wl-qr
+      wl-clipboard
+      hyprpicker-new
+      grimblast
+      brightnessctl
+      pamixer
+      kdePackages.xwaylandvideobridge
+      wl-screenrec
     ];
+  # }}}
 }

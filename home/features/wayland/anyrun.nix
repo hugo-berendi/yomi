@@ -19,9 +19,7 @@ in {
     config = {
       # {{{ Plugins
       plugins = [
-        # inputs.anyrun-rbw.packages.${pkgs.system}.default
         inputs.anyrun-plugins.packages.${pkgs.system}.cliphist
-        # inputs.anyrun-hyprwin.packages.${pkgs.system}.default
         inputs.anyrun-plugins.packages.${pkgs.system}.applications
         inputs.anyrun-plugins.packages.${pkgs.system}.symbols
       ];
@@ -57,24 +55,11 @@ in {
       )
     '';
 
-    # extraConfigFiles."rbw.ron".text = ''
-    #   Config(
-    #     prefix: ":p",
-    #   )
-    # ''; # idk why it needs a empty config
-
     extraConfigFiles."cliphist.ron".text = ''
       Config(
         cliphist_path: "${lib.getExe pkgs.cliphist}",
         max_entries: 10,
         prefix: ":v",
-      )
-    '';
-
-    extraConfigFiles."hyprwin.ron".text = ''
-      Config(
-        max_entries: 5,
-        prefix: ":w",
       )
     '';
 

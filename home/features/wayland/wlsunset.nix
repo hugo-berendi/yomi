@@ -15,7 +15,6 @@ in {
   services.wlsunset = {
     enable = true;
 
-    # Random German coordinates
     latitude = "51.23";
     longitude = "14.83";
   };

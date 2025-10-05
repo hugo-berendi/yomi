@@ -1,4 +1,3 @@
-# Wlogout is a logout menu. In my setup, it can be triggered using mod-q
 {
   config,
   pkgs,

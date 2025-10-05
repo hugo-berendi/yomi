@@ -1,6 +1,7 @@
-{
+{...}: {
   virtualisation.oci-containers.backend = "docker";
 
+  # {{{ Persistence
   environment.persistence = {
     "/persist/state".directories = [
       "/var/lib/containers/storage"
@@ -10,4 +11,5 @@
       "/var/lib/containers/cache"
     ];
   };
+  # }}}
 }

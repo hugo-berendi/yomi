@@ -1,5 +1,8 @@
 {config, ...}: {
+  # {{{ Reverse proxy
   yomi.nginx.at.home.port = config.yomi.ports.home-assistant;
+  # }}}
+  # {{{ Home assistant
   services.home-assistant = {
     enable = true;
     extraPackages = python3Packages:
@@ -41,7 +44,8 @@
       };
     };
   };
-
+  # }}}
+  # {{{ Mosquitto
   services.mosquitto = {
     enable = true;
     listeners = [
@@ -54,7 +58,8 @@
       }
     ];
   };
-
+  # }}}
+  # {{{ Govee2mqtt
   sops.templates."govee2mqtt.env" = {
     content = ''
       GOVEE_MQTT_HOST=127.0.0.1
@@ -68,7 +73,8 @@
     enable = config.services.home-assistant.enable;
     environmentFile = config.sops.templates."govee2mqtt.env".path;
   };
-
+  # }}}
+  # {{{ Persistence
   environment.persistence."/persist/state".directories = [
     {
       directory = "/var/lib/hass";
@@ -85,4 +91,5 @@
       group = config.services.govee2mqtt.group;
     }
   ];
+  # }}}
 }

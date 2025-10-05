@@ -1,36 +1,39 @@
 {lib, ...}: {
-  # flatpak
   services.flatpak = {
     enable = true;
+
+    # {{{ Update settings
     update = {
       onActivation = true;
       auto = {
         enable = true;
-        onCalendar = "weekly"; # Default value
+        onCalendar = "weekly";
       };
     };
+    # }}}
+    # {{{ Remotes
     remotes = lib.mkOptionDefault [
       {
         name = "flathub-beta";
         location = "https://flathub.org/beta-repo/flathub-beta.flatpakrepo";
       }
     ];
+    # }}}
+    # {{{ Overrides
     overrides = {
       global = {
-        # Force Wayland by default
         Context.sockets = ["wayland" "!x11" "!fallback-x11"];
       };
     };
+    # }}}
+    # {{{ Packages
     packages = [
-      # {
-      #   appId = "dev.vencord.Vesktop";
-      #   origin = "flathub";
-      # }
       {
         appId = "dev.bragefuglseth.Keypunch";
         origin = "flathub";
       }
       "com.gitlab.tipp10.tipp10"
     ];
+    # }}}
   };
 }

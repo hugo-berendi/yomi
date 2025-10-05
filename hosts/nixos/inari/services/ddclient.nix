@@ -1,15 +1,14 @@
-# DDClient is a dynamic dns service
 {
   config,
   pkgs,
   ...
 }: {
+  # {{{ Service
   services.ddclient = {
     enable = false;
     interval = "1m";
     configFile = config.sops.templates."ddclient.conf".path;
 
-    # REASON: latest release doesn't support explicit root-domain annotations for porkbun
     package = pkgs.ddclient.overrideAttrs (_: {
       src = pkgs.fetchFromGitHub {
         owner = "ddclient";
@@ -19,20 +18,19 @@
       };
     });
   };
-
+  # }}}
+  # {{{ Configuration
   sops.templates."ddclient.conf".content = ''
-    # General settings
-    cache=/var/lib/ddclient/ddclient.cache # See the nixos module for details
+    cache=/var/lib/ddclient/ddclient.cache
     foreground=YES
 
-    # Routers
     use=web, web=checkip.dyndns.com/, web-skip='Current IP Address: '
 
-    # Protocols
     protocol=cloudflare
     apikey=${config.sops.placeholder.porkbun_api_key}
     secretapikey=${config.sops.placeholder.porkbun_secret_api_key}
-    root-domain=hugo-berendi.de # The root domain detection doesn't work properly
+    root-domain=hugo-berendi.de
     node1.pelican.hugo-berendi.de
   '';
+  # }}}
 }

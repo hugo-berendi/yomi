@@ -3,6 +3,7 @@
     enable = true;
   };
 
+  # {{{ Persistence
   environment.persistence."/persist/state".directories = [
     {
       directory = "/var/lib/postgresql";
@@ -10,4 +11,5 @@
       group = config.users.users.postgres.group;
     }
   ];
+  # }}}
 }

@@ -44,6 +44,10 @@ in {
       "LOG_IP_VAR" = "remote_addr";
       "OPCACHE_MEM_SIZE" = "128";
       "POSTFIX_DEBUG" = "false";
+
+      "POSTFIX_RELAYHOST" = "smtp.migadu.com:465";
+      "POSTFIX_RELAYHOST_AUTH_ENABLE" = "true";
+      "POSTFIX_SMTP_TLS" = "encrypt";
     };
     volumes = [
       "${dataDir}:/data:rw"

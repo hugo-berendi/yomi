@@ -10,6 +10,8 @@
       "nomic-embed-text:latest"
       "gemma3:4b"
       "gemma3:12b"
+      "qwen2.5-coder:7b"
+      "qwen2.5:14b"
     ];
   };
 
@@ -54,4 +56,9 @@
     ];
     log-driver = "journald";
   };
+
+  environment.persistence."/persist/state".directories = [
+    "/var/lib/ollama"
+    "/var/lib/open-webui"
+  ];
 }

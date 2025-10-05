@@ -1,13 +1,11 @@
 {config, ...}: {
-  # {{{ Main config
+  # {{{ Service
   services.prometheus = {
     enable = true;
     port = config.yomi.ports.prometheus;
     webExternalUrl = config.yomi.nginx.at.prometheus.url;
 
-    # {{{ Base exporters
     exporters = {
-      # System info
       node = {
         enable = true;
         enabledCollectors = ["systemd"];
@@ -33,10 +31,9 @@
         ];
       }
     ];
-    # }}}
   };
   # }}}
-  # {{{ Networking & storage
+  # {{{ Networking & persistence
   yomi.nginx.at.prometheus.port = config.services.prometheus.port;
 
   environment.persistence."/persist/state".directories = [

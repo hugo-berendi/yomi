@@ -3,23 +3,20 @@
   pkgs,
   ...
 }: {
+  # {{{ Plymouth
   boot.plymouth = {
     enable = true;
     themePackages = [pkgs.plymouthThemeLone];
     theme = "lone";
   };
-  # stylix.targets.plymouth = {
-  #   enable = true;
-  #   logoAnimated = true;
-  # };
-
+  # }}}
+  # {{{ Console
   console = {
     useXkbConfig = true;
-    # earlySetup = false;
   };
-
+  # }}}
+  # {{{ Boot parameters
   boot = {
-    # See https://search.nixos.org/options?show=boot.initrd.verbose&query=boot.initrd.verbose
     kernelParams = [
       "quiet"
       "loglevel=3"
@@ -33,4 +30,5 @@
     consoleLogLevel = lib.mkDefault 0;
     initrd.verbose = false;
   };
+  # }}}
 }

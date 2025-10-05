@@ -1,5 +1,5 @@
 {...}: {
-  # Bootloader.
+  # {{{ Bootloader
   boot.loader = {
     efi = {
       canTouchEfiVariables = true;
@@ -21,8 +21,11 @@
       '';
     };
   };
+  # }}}
+  # {{{ Stylix
   stylix.targets.grub = {
     enable = true;
     useImage = true;
   };
+  # }}}
 }

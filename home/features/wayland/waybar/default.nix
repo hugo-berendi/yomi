@@ -1,15 +1,16 @@
 {pkgs, ...}: {
+  # {{{ Imports
   imports = [
     ./style.nix
   ];
-
+  # }}}
+  # {{{ Waybar
   programs.waybar = {
     enable = true;
     package = pkgs.waybar;
     systemd.enable = true;
     settings = {
       mainBar = {
-        # General
         "position" = "top";
         "layer" = "top";
         "margin-top" = 20;
@@ -18,14 +19,12 @@
         "margin-bottom" = 0;
         "spacing" = 0;
 
-        # Modules on the left side
         modules-left = [
           "hyprland/workspaces"
           "tray"
           "custom/music"
         ];
 
-        # Modules on the right side
         modules-right = [
           "custom/dexcom"
           "custom/updates"
@@ -34,7 +33,6 @@
           "custom/power"
         ];
 
-        # Group hardware
         "group/hardware" = {
           "orientation" = "horizontal";
           "modules" = [
@@ -44,7 +42,6 @@
           ];
         };
 
-        # General group
         "group/general" = {
           "orientation" = "horizontal";
           "modules" = [
@@ -57,7 +54,6 @@
           ];
         };
 
-        # Configuration for modules
         "hyprland/workspaces" = {
           "active-only" = false;
           "disable-click" = false;
@@ -106,9 +102,8 @@
         "custom/music" = {
           "format" = "{icon}{}";
           "format-icons" = {
-            # "Playing" = " "; # Uncomment if not using caway
-            "Paused" = " ";
-            "Stopped" = " "; # This stop symbol is RTL. So &#x202d; is left-to-right override.
+            "Paused" = " ";
+            "Stopped" = " ";
           };
           "escape" = true;
           "tooltip" = true;
@@ -200,31 +195,29 @@
         };
 
         "custom/power" = {
-          "format" = "";
+          "format" = "";
           "on-click" = "wlogout";
           "tooltip" = false;
         };
 
-        # CPU
         "cpu" = {
-          "format" = " {usage}% ";
+          "format" = " {usage}% ";
           "on-click" = "kitty -e htop";
         };
 
-        # Memory
         "memory" = {
-          "format" = " {}% ";
+          "format" = " {}% ";
           "on-click" = "kitty -e htop";
         };
 
-        # Hard disk space used
         "disk" = {
           "interval" = 30;
-          "format" = " {percentage_used}% ";
+          "format" = " {percentage_used}% ";
           "path" = "/";
           "on-click" = "kitty -e htop";
         };
       };
     };
   };
+  # }}}
 }

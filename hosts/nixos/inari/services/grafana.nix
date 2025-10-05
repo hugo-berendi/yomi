@@ -6,10 +6,11 @@
     owner = "grafana";
   };
 in {
+  # {{{ Secrets
   sops.secrets.grafana_smtp_pass = sopsSettings;
   sops.secrets.grafana_discord_webhook = sopsSettings;
-
-  # {{{ Main config
+  # }}}
+  # {{{ Service
   services.grafana = {
     enable = true;
 
@@ -20,7 +21,6 @@ in {
         http_port = port;
       };
 
-      # {{{ Smtp
       smtp = rec {
         enabled = true;
 
@@ -32,14 +32,11 @@ in {
         password = secret "grafana_smtp_pass";
         startTLS_policy = "NoStartTLS";
       };
-      # }}}
     };
 
-    # {{{ Provisoning
     provision = {
       enable = true;
 
-      # https://grafana.com/docs/grafana/latest/alerting/set-up/provision-alerting-resources/file-provisioning/
       alerting.contactPoints.settings = {
         apiVersion = 1;
         contactPoints = [
@@ -86,10 +83,9 @@ in {
         ];
       };
     };
-    # }}}
   };
   # }}}
-  # {{{ Networking & storage
+  # {{{ Networking & persistence
   yomi.nginx.at.grafana.port = port;
 
   environment.persistence."/persist/state".directories = [

@@ -3,16 +3,17 @@
   config,
   ...
 }: {
+  # {{{ Secrets
   sops.secrets.forgejo_mail_password = {
     sopsFile = ../secrets.yaml;
     owner = config.services.forgejo.user;
     group = config.services.forgejo.group;
   };
-
+  # }}}
+  # {{{ Reverse proxy
   yomi.cloudflared.at.git.port = config.yomi.ports.forgejo;
-
-  # Add CNAME record for ssh access. Unlike the http interface,
-  # this will only get exposed over tailscale, so it is safe.
+  # }}}
+  # {{{ DNS records
   yomi.dns.records = [
     {
       type = "CNAME";
@@ -21,7 +22,8 @@
       to = config.networking.hostName;
     }
   ];
-
+  # }}}
+  # {{{ Service
   services.forgejo = {
     enable = true;
     stateDir = "/persist/state/var/lib/forgejo";
@@ -36,7 +38,6 @@
 
     lfs.enable = true;
 
-    # See [the cheatsheet](https://docs.gitea.com/next/administration/config-cheat-sheet)
     settings = {
       default.APP_NAME = "hugit";
 
@@ -44,7 +45,7 @@
         DOMAIN = config.yomi.cloudflared.at.git.host;
         HTTP_PORT = config.yomi.cloudflared.at.git.port;
         ROOT_URL = config.yomi.cloudflared.at.git.url;
-        LANDING_PAGE = "hugo-berendi"; # Make my profile the landing page
+        LANDING_PAGE = "hugo-berendi";
         SSH_DOMAIN = "ssh.${config.yomi.cloudflared.at.git.host}";
       };
 
@@ -69,8 +70,6 @@
     };
   };
 
-  # Clean up dumps older than a week.
-  # The data is also saved in zfs snapshots and rsync backups,
-  # so this is just an extra layer of safety.
   systemd.tmpfiles.rules = ["d ${config.services.forgejo.stateDir}/dump - - - 7d"];
+  # }}}
 }

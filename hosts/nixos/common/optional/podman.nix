@@ -1,4 +1,5 @@
-{
+{...}: {
+  # {{{ Virtualization
   virtualisation = {
     podman = {
       enable = true;
@@ -7,7 +8,8 @@
 
     oci-containers.backend = "podman";
   };
-
+  # }}}
+  # {{{ Persistence
   environment.persistence = {
     "/persist/state".directories = [
       "/var/lib/containers/storage"
@@ -17,4 +19,5 @@
       "/var/lib/containers/cache"
     ];
   };
+  # }}}
 }

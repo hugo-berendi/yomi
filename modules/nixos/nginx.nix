@@ -84,7 +84,7 @@ in {
             if port != null
             then {
               locations."/" = {
-                proxyPass = "http://localhost:${toString (port + 200)}";
+                proxyPass = "http://localhost:${toString port}";
                 proxyWebsockets = true;
               };
             }
@@ -101,24 +101,6 @@ in {
       };
     in
       lib.attrsets.mapAttrs' (_: mkNginxConfig) cfg.at;
-
-    services.anubis.instances = let
-      mkAnubisInstance = {
-        subdomain,
-        port,
-        ...
-      }: {
-        name = subdomain;
-        value = {
-          settings = {
-            BIND_NETWORK = "tcp";
-            BIND = ":${toString (port + 200)}";
-            TARGET = "http://localhost:${toString port}";
-          };
-        };
-      };
-    in
-      lib.attrsets.mapAttrs' (_: mkAnubisInstance) (lib.attrsets.filterAttrs (n: v: v.port != null) cfg.at);
 
     yomi.dns.records = let
       mkDnsRecord = {subdomain, ...}: {

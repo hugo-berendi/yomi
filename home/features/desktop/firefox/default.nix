@@ -54,6 +54,7 @@
         with lib.lists;
           flatten [
             [
+              addy_io # anonaddy email aliasing
               augmented-steam # Adds more info to steam
               blocktube # Lets you block youtube channels
               bitwarden # password manager

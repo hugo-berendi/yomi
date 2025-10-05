@@ -35,13 +35,13 @@
   };
   # }}}
   # {{{ Storage
-  # environment.persistence."/persist/state".directories = [
-  #   {
-  #     directory = "/var/lib/meilisearch";
-  #     mode = "u=rwx,g=,o=";
-  #     user = config.users.users.meilisearch.name;
-  #     group = config.users.groups.meilisearch.name;
-  #   }
-  # ];
+  environment.persistence."/persist/state".directories = [
+    {
+      directory = "/var/lib/meilisearch";
+      mode = "u=rwx,g=,o=";
+      user = config.users.users.meilisearch.name;
+      group = config.users.groups.meilisearch.name;
+    }
+  ];
   # }}}
 }

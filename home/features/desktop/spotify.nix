@@ -6,17 +6,18 @@
 }: let
   spicePkgs = inputs.spicetify-nix.legacyPackages.${pkgs.system};
 in {
+  # {{{ Imports
   imports = [./audio.nix];
+  # }}}
+  # {{{ Packages
   home.packages = [
     pkgs.spot
     pkgs.playerctl
   ];
-
+  # }}}
+  # {{{ Spicetify
   programs.spicetify = {
     enable = true;
-
-    # theme = config.yomi.theming.get themeMap;
-    # colorScheme = config.yomi.theming.get colorschemeMap;
 
     enabledExtensions = with spicePkgs.extensions; [
       adblock
@@ -26,18 +27,18 @@ in {
       fullAppDisplayMod
       groupSession
       keyboardShortcut
-      listPlaylistsWithSong # Adds button to show playlists which contain a song
-      playlistIntersection # Shows stuff that's in two different playlists
-      savePlaylists # Adds a button to duplicate playlists
+      listPlaylistsWithSong
+      playlistIntersection
+      savePlaylists
       showQueueDuration
-      shuffle # Working shuffle
-      skipStats # Track my skips
+      shuffle
+      skipStats
       songStats
       trashbin
-      wikify # Shows an artist's wikipedia entry
+      wikify
     ];
   };
-
+  # }}}
   # {{{ Persistence
   yomi.persistence.at.state.apps.spotify.directories = [
     "${config.xdg.configHome}/spotify"

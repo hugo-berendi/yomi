@@ -1,15 +1,8 @@
 {config, ...}: {
+  # {{{ Reverse proxy
   yomi.nginx.at.adguard.port = config.yomi.ports.adguard;
-  
-  environment.persistence."/persist/state".directories = [
-    {
-      directory = "/var/lib/AdGuardHome";
-      user = "adguardhome";
-      group = "adguardhome";
-      mode = "0750";
-    }
-  ];
-  
+  # }}}
+  # {{{ Service
   services.adguardhome = {
     enable = true;
     host = "0.0.0.0";
@@ -35,4 +28,15 @@
         ];
     };
   };
+  # }}}
+  # {{{ Persistence
+  environment.persistence."/persist/state".directories = [
+    {
+      directory = "/var/lib/AdGuardHome";
+      user = "adguardhome";
+      group = "adguardhome";
+      mode = "0750";
+    }
+  ];
+  # }}}
 }

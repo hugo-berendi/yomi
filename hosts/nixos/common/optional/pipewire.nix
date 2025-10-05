@@ -1,8 +1,9 @@
-# This handles audio stuff
 {...}: {
+  # {{{ RTKit and PulseAudio
   security.rtkit.enable = true;
   services.pulseaudio.enable = false;
-
+  # }}}
+  # {{{ PipeWire
   services.pipewire = {
     enable = true;
     alsa.enable = true;
@@ -10,8 +11,8 @@
     pulse.enable = true;
     jack.enable = true;
   };
-
-  # https://nixos.wiki/wiki/PipeWire
+  # }}}
+  # {{{ Bluetooth audio
   environment.etc = {
     "wireplumber/bluetooth.lua.d/51-bluez-config.lua".text = ''
       bluez_monitor.properties = {
@@ -22,4 +23,5 @@
       }
     '';
   };
+  # }}}
 }

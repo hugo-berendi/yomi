@@ -7,25 +7,27 @@
 }: let
   rosePineCursor = import ./rose-pine-cursor.nix {inherit pkgs;};
 in {
+  # {{{ Imports
   imports = [
     ../global.nix
     ./hyprpaper.nix
     ./hyprlock.nix
     ./hypridle.nix
   ];
-
+  # }}}
+  # {{{ Packages
   home.packages = with pkgs; [
     hyprcursor
     rosePineCursor
     qt6ct
     inputs.pyprland.packages.${pkgs.system}.pyprland
   ];
-
+  # }}}
+  # {{{ Hyprland
   stylix.targets.hyprland.enable = false;
   wayland.windowManager.hyprland = {
     enable = true;
 
-    # set the Hyprland and XDPH packages to null to use the ones from the NixOS module
     package = null;
     portalPackage = null;
 
@@ -35,12 +37,6 @@ in {
       variables = ["--all"];
       enableXdgAutostart = true;
     };
-
-    plugins = [
-      # {{{ Plugins
-      # inputs.hy3.packages.x86_64-linux.hy3
-      # }}}
-    ];
 
     settings = {
       # {{{ Decoration
@@ -52,7 +48,7 @@ in {
         blur = {
           enabled = config.yomi.theming.blur.enable;
           ignore_opacity = true;
-          xray = false; # looks ugly
+          xray = false;
           size = config.yomi.theming.blur.size;
           passes = config.yomi.theming.blur.passes;
           contrast = config.yomi.theming.blur.contrast;
@@ -73,7 +69,6 @@ in {
       };
       # }}}
       # {{{ Monitors
-      # Configure monitor properties
       monitor = lib.forEach config.yomi.monitors (
         m:
           lib.concatStringsSep "," [
@@ -91,14 +86,11 @@ in {
         )
         config.yomi.monitors;
       # }}}
-      # {{{ autostart
-      # Without this, xdg-open doesn't work
+      # {{{ Autostart
       exec = ["systemctl --user import-environment PATH && systemctl --user restart xdg-desktop-portal.service"];
       exec-once = [
         "${config.yomi.settings.terminal-cmd} & zen & vesktop & spotify & obsidiantui & pypr & xwaylandvideobridge"
         "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
-        # "wl-paste --type text --watch cliphist store" # Stores only text data
-        # "wl-paste --type image --watch cliphist store" # Stores only image data
         "ln -sf ${pkgs.fish}/bin/fish /usr/bin/fish"
       ];
       # }}}
@@ -107,10 +99,7 @@ in {
       "$mod" = "SUPER";
       bind =
         [
-          # {{{ misc keybinds
           "$mod, C, exec, cliphist list | anyrun --plugins ${inputs.anyrun.packages.${pkgs.system}.stdin}/lib/libstdin.so | cliphist decode | wl-copy"
-
-          # }}}
           # {{{ pyprland plugins
           "$mod, V, exec, pypr toggle volume"
           "$mod Shift, Return, exec, pypr toggle term"
@@ -127,8 +116,8 @@ in {
           "$mod, Space, exec, ${lib.getExe inputs.anyrun.packages.${pkgs.system}.default}"
           "$mod, T, exec, wl-ocr"
           "$mod SHIFT, T, exec, wl-qr"
-          "$mod CONTROL, T, exec, hyprpicker | wl-copy && notify-send 'Copied color $(wp-paste)'" # Color picker
-          "$mod, B, exec, wlsunset-toggle" # Toggle blue light filter thingy
+          "$mod CONTROL, T, exec, hyprpicker | wl-copy && notify-send 'Copied color $(wp-paste)'"
+          "$mod, B, exec, wlsunset-toggle"
           "bind = $mod, Return, exec, ${config.yomi.settings.terminal}"
           # }}}
           # {{{ Screenshotting
@@ -139,10 +128,8 @@ in {
           # {{{ Power
           "$mod, Escape, exec, wlogout"
           # }}}
-        ]
+        )
         ++ (
-          # workspaces
-          # binds $mod + [shift +] {1..10} to [move to] workspace {1..10}
           builtins.concatLists (
             builtins.genList (
               i: let
@@ -158,7 +145,6 @@ in {
             10
           )
         );
-      # {{{ binds that repeat when held
       binde = [
         # {{{ control volume
         ", XF86AudioRaiseVolume, exec, volume --inc"
@@ -167,19 +153,12 @@ in {
         # {{{ control backlight
         ", XF86MonBrightnessDown, exec, backlight --dec"
         ", XF86MonBrightnessUp, exec, backlight --inc"
-        # }}}
       ];
-      # }}}
-      # {{{ Mouse move/resize
-      # Move/resize windows with mod + LMB/RMB and dragging
       bindm = [
         "$mod, mouse:272, movewindow"
         "$mod, mouse:273, resizewindow"
       ];
-      # }}}
-      # {{{ windowrules
       windowrule = [
-        # {{{ Automatically move stuff to workspaces
         "workspace 2 silent, title:^(.*Zen Browser.*)$"
         "workspace 3 silent, title:^(.*((Disc|WebC|Venc)ord)|Vesktop.*)$"
         "workspace 3 silent, title:^(.*Element.*)$"
@@ -188,34 +167,27 @@ in {
         "workspace 4 silent, title:^(.*stellar-sanctum)$"
         "workspace 4 silent, class:^(org\.wezfurlong\.wezterm\.obsidian)$"
         "workspace 8 silent, class:^(org\.wezfurlong\.wezterm\.smos)$"
-        # }}}
-        # {{{ xwaylandvideobridge
         "opacity 0.0 override, class:^(xwaylandvideobridge)$"
         "noanim, class:^(xwaylandvideobridge)$"
         "noinitialfocus, class:^(xwaylandvideobridge)$"
         "maxsize 1 1, class:^(xwaylandvideobridge)$"
         "noblur, class:^(xwaylandvideobridge)$"
-        # }}}
-        # {{{ Idleinhibit rules
-        # - while firefox is fullscreen
         "idleinhibit fullscreen, title:^(.*Zen Browser.*)$"
-        # - while watching videos
         "idleinhibit focus, class:^(mpv|.+exe)$"
         "idleinhibit focus, title:^(.*Zen Browser.*)$, title:^(.*YouTube.*)$"
-        # }}}
       ];
-      # }}}
-      # }}}
     };
   };
-
+  # }}}
+  # {{{ Cliphist
   services.cliphist = {
     enable = true;
     package = pkgs.cliphist;
     allowImages = true;
     systemdTargets = ["graphical-session.target"];
   };
-
+  # }}}
+  # {{{ Pyprland config
   home.file.".config/hypr/pyprland.toml".text =
     /*
     toml
@@ -239,4 +211,5 @@ in {
         unfocus = "hide"
         lazy = true
     '';
+  # }}}
 }

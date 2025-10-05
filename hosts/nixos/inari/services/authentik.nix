@@ -1,15 +1,13 @@
 {config, ...}: {
-  # {{{ reverse proxy / domain setup
+  # {{{ Reverse proxy
   yomi.cloudflared.at.authentik.port = config.yomi.ports.authentik;
   # }}}
   # {{{ Secrets
   sops.secrets.authentik_env = {
     sopsFile = ../secrets.yaml;
-    # owner = config.users.users.authentik.name;
-    # group = config.users.users.authentik.group;
   };
   # }}}
-  # {{{ General config
+  # {{{ Service
   services.authentik = {
     enable = true;
     environmentFile = config.sops.secrets.authentik_env.path;
@@ -26,5 +24,10 @@
       avatars = "initials";
     };
   };
+  # }}}
+  # {{{ Persistence
+  environment.persistence."/persist/state".directories = [
+    "/var/lib/authentik"
+  ];
   # }}}
 }
