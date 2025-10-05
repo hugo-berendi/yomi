@@ -23,7 +23,7 @@
     nix-minecraft.url = "github:Infinidoge/nix-minecraft";
 
     # Home manager
-    home-manager.url = "github:0x006E/home-manager";
+    home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
     # {{{ Hyprland

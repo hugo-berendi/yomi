@@ -11,22 +11,16 @@
 		./lsp/lspsaga.nix
 		./lsp/conform.nix
 		./lsp/trouble.nix
-		./lsp/refactoring.nix
 		# }}}
 		# {{{ navigation
 		./navigation/flash.nix
-		./navigation/harpoon.nix
-		./navigation/oil.nix
 		# }}}
 		# {{{ git
 		./git/gitsigns.nix
-		./git/neogit.nix
-		./git/diffview.nix
 		# }}}
 		# {{{ editor
 		./editor/treesitter.nix
 		./editor/wakatime.nix
-		./editor/vim-css-colors.nix
 		./editor/presence.nix
 		# }}}
 		# {{{ cmp
@@ -64,9 +58,6 @@
 		which-key = {
 			enable = true;
 			settings = {};
-		};
-		comment = {
-			enable = true;
 		};
 		nvim-autopairs = {
 			enable = true;

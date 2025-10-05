@@ -23,6 +23,12 @@
           eol = "↲",
           nbsp = "␣",
         }
+
+        local _border = "rounded"
+        vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, { border = _border })
+        vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, { border = _border })
+        vim.diagnostic.config{ float = { border = _border } }
+        require('lspconfig.ui.windows').default_options = { border = _border }
       '';
 
     clipboard = {
@@ -34,8 +40,6 @@
       neovide_padding_bottom = 6;
       neovide_padding_right = 12;
       neovide_padding_left = 12;
-      # neovide_transparency = 1;
-      # transparency = config.stylix.opacity.terminal;
       neovide_theme = "auto";
       neovide_refresh_rate = 165;
       neovide_refresh_rate_idle = 5;

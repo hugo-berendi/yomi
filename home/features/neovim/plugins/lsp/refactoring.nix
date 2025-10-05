@@ -3,6 +3,8 @@
 		refactoring-nvim
 	];
 
+	programs.nixvim.plugins.telescope.enable = true;
+
 	programs.nixvim.extraConfigLua = ''
 		require('refactoring').setup({
 			prompt_func_return_type = {

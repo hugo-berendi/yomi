@@ -6,7 +6,6 @@
         globalstatus = true;
         extensions = [
           "fzf"
-          "neo-tree"
         ];
         disabledFiletypes = {
           statusline = [
