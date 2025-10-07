@@ -21,7 +21,7 @@
     ./services/forgejo.nix
     ./services/guacamole
     ./services/paperless.nix
-    ./services/homer.nix
+    ./services/homepage.nix
     ./services/msmtp.nix
     ./services/invidious.nix
     ./services/jupyter.nix

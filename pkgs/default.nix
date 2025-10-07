@@ -6,7 +6,6 @@ in rec {
   # example = pkgs.callPackage (import ./example.nix) {};
   hyprpicker-new = pkgs.callPackage (import ./hyprpicker.nix) {};
   vimclip = pkgs.callPackage (import ./vimclip.nix) {};
-  homer = pkgs.callPackage (import ./homer.nix) {};
   # octodns-cloudflare = pkgs.python3Packages.callPackage (import ./octodns-cloudflare.nix) {};
   # calibre-web-automated = pkgs.python3Packages.callPackage (import ./calibre-web-automated.nix) {};
   plymouthThemeLone = plymouthThemes.lone;
