@@ -41,8 +41,10 @@
     ./services/authentik.nix
     ./services/prometheus.nix
     ./services/grafana.nix
+    ./services/loki.nix
     ./services/playit.nix
     ./services/anonaddy.nix
+    ./services/pelican
 
     ./filesystems
     ./hardware
