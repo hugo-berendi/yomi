@@ -37,6 +37,7 @@ in {
 
     extraConfig = ''
       c.Authenticator.allow_all = True
+      c.JupyterHub.allowed_hosts = ['lab.hugo-berendi.de', 'localhost']
 
       c.Spawner.notebook_dir='${config.users.users.pilot.home}/projects/notebooks'
       c.SystemdSpawner.mem_limit = '2G'
