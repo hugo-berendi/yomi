@@ -22,6 +22,8 @@
 
     nix-minecraft.url = "github:Infinidoge/nix-minecraft";
 
+    opencode-flake.url = "github:aodhanhayter/opencode-flake";
+
     # Home manager
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
@@ -146,8 +148,6 @@
     ngrok.url = "github:ngrok/ngrok-nix";
 
     playit-nixos-module.url = "github:pedorich-n/playit-nixos-module";
-
-    opencode-flake.url = "github:aodhanhayter/opencode-flake";
   };
 
   outputs = {
