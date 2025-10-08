@@ -9,8 +9,6 @@
     mode = "0444"; # I don't care about this key that much, as I'm the only user of this instance
   };
 
-  systemd.tmpfiles.rules = ["z /var/lib/private 0700 root"];
-
   yomi.nginx.at.yt.port = config.yomi.ports.invidious;
 
   services.invidious = {

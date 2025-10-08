@@ -25,12 +25,5 @@
     N8N_AI_ENABLED = toString true;
   };
 
-  # {{{ Storage
-  environment.persistence."/persist/state".directories = [
-    {
-      directory = "/var/lib/private/n8n";
-      mode = "0700";
-    }
-  ];
-  # }}}
+
 }

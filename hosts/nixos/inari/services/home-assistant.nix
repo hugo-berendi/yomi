@@ -82,10 +82,6 @@
       group = "hass";
     }
     {
-      directory = "/var/lib/private/mosquitto";
-      mode = "0700";
-    }
-    {
       directory = "/var/lib/govee2mqtt";
       user = config.services.govee2mqtt.user;
       group = config.services.govee2mqtt.group;

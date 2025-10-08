@@ -11,6 +11,10 @@
     "/var/lib/systemd"
     "/var/lib/nixos"
     "/var/log"
+    {
+      directory = "/var/lib/private";
+      mode = "0700";
+    }
   ];
   # }}}
   # {{{ FUSE
