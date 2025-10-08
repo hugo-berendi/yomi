@@ -64,5 +64,18 @@
     mqtt = 8457;
     anonaddy = 8458;
     owncloud = 8459;
+    homepage = 8460;
+    loki = 8461;
+    promtail = 8462;
+    prometheus-postgres-exporter = 8463;
+    prometheus-zfs-exporter = 8464;
+    prometheus-systemd-exporter = 8465;
+    prometheus-smartctl-exporter = 8466;
+    prometheus-exportarr-radarr = 8467;
+    prometheus-exportarr-sonarr = 8468;
+    prometheus-exportarr-lidarr = 8469;
+    prometheus-exportarr-prowlarr = 8470;
+    prometheus-exportarr-bazarr = 8471;
+    prometheus-exportarr-readarr = 8472;
   };
 }
