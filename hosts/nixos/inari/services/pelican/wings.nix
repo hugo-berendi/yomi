@@ -24,31 +24,35 @@
 
   environment.etc."pelican/config.yml" = {
     text = ''
-      debug: false
-      uuid: f81cd8a3-792e-4c6d-bdf7-4713a0334f7e
-      token_id: XwhVdJDAKew0ZZYu
-      token: SB06s7Nvf5yZaan8PsDsahv1VDq3TcAM3tEQ8izRA3CkHYyeCQ1PA6v9DrTXyU0z
+      debug: true
+      uuid: 291ddb9e-d377-4270-af8a-b3e4a6dae708
+      token_id: XelVnCDM6NOW3wkI
+      token: ewJqrBCxesfDMtSvzTWA7okk0Z6ksCNDRFiD2nJ6r9Apn6MRWmgrVl5tf6FXfIC7
       api:
         host: 0.0.0.0
         port: ${toString config.yomi.ports.pelican-node1}
         ssl:
           enabled: false
-          cert: /etc/letsencrypt/live/node1.pelican.hugo-berendi.de/fullchain.pem
-          key: /etc/letsencrypt/live/node1.pelican.hugo-berendi.de/privkey.pem
         upload_limit: 256
       system:
         data: /var/lib/pelican/volumes
         sftp:
           bind_port: 2022
+      docker:
+        network:
+          name: host
+          network_mode: host
       allowed_mounts: []
       remote: 'https://pelican.hugo-berendi.de'
     '';
 
     mode = "0600";
     user = "root";
-    group = "root"; # Or potentially "docker" if needed, but root is safer
+    group = "root";
   };
-  # yomi.nginx.at."node1.pelican".port = config.yomi.ports.pelican-node1;
+
+  yomi.nginx.at."node1.pelican".port = config.yomi.ports.pelican-node1;
+
   networking.firewall.allowedTCPPorts = [config.yomi.ports.pelican-node1 2022];
 
   environment.persistence."/persist/state".directories = [

@@ -66,7 +66,7 @@ in {
       ExecStop = "docker network rm -f pelican_default";
     };
     script = ''
-      docker network inspect pelican_default || docker network create pelican_default --subnet=172.20.0.0/16
+      docker network inspect pelican_default || docker network create pelican_default --subnet=172.19.0.0/16
     '';
     partOf = ["docker-compose-pelican-root.target"];
     wantedBy = ["docker-compose-pelican-root.target"];
