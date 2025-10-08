@@ -118,7 +118,7 @@ in {
           "$mod SHIFT, T, exec, wl-qr"
           "$mod CONTROL, T, exec, hyprpicker | wl-copy && notify-send 'Copied color $(wp-paste)'"
           "$mod, B, exec, wlsunset-toggle"
-          "bind = $mod, Return, exec, ${config.yomi.settings.terminal}"
+          "$mod, Return, exec, ${config.yomi.settings.terminal}"
           # }}}
           # {{{ Screenshotting
           "$mod, PRINT, exec, grimblast --notify copysave area"
