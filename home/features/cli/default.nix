@@ -21,6 +21,7 @@
     ./hyfetch.nix
     ./rbw.nix
     ./opencode.nix
+    ./yubikey-scripts.nix
   ];
   # }}}
   # {{{ Basic programs

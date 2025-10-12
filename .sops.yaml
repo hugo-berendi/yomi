@@ -3,7 +3,7 @@ keys:
   - &amaterasu age1x9dhumaa3qg77z9swunz3zl5r6ez6gqyhwd66ytp20ndzjefdvcsq6yfu8
   - &tsukuyomi age1cq2ue7z0l3mhwhz2mmqlcsh0acmvsa7vayzjkr2efwjxltp9yexsj0rv5r
 creation_rules:
-  - path_regex: hosts/nixos/common/secrets.yaml
+  - path_regex: hosts/nixos/common/secrets.*\.yaml
     key_groups:
       - age:
           - *hugob

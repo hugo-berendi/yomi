@@ -10,6 +10,23 @@
     package = inputs.opencode-flake.packages.${pkgs.system}.default;
 
     settings = {
+      provider = {
+        ollama = {
+          npm = "@ai-sdk/openai-compatible";
+          name = "Ollama (local)";
+          options = {
+            baseURL = "http://inari.hugo-berendi.de:8440/v1";
+          };
+          models = {
+            llama2 = {
+              name = "Llama 2";
+            };
+            "qwen2.5:14b" = {
+              name = "Qwen 2.5";
+            };
+          };
+        };
+      };
       mcp =
         {
           filesystem = {
@@ -34,6 +51,12 @@
             type = "local";
             enabled = true;
             command = ["${pkgs.nodejs}/bin/npx" "-y" "@modelcontextprotocol/server-fetch"];
+          };
+
+          playwright = {
+            type = "local";
+            enabled = true;
+            command = ["${pkgs.nodejs}/bin/npx" "-y" "@executeautomation/playwright-mcp-server"];
           };
         }
         // lib.optionalAttrs (config.sops.secrets ? "GITHUB_TOKEN") {

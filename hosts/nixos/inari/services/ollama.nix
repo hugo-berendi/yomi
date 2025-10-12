@@ -2,6 +2,7 @@
   yomi.cloudflared.at.ai.port = config.yomi.ports.open-webui;
   services.ollama = {
     enable = true;
+    host = "0.0.0.0";
     port = config.yomi.ports.ollama;
     user = "ollama";
     models = "/persist/data/models";

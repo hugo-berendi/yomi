@@ -45,6 +45,7 @@
     ./services/playit.nix
     ./services/anonaddy.nix
     ./services/pelican
+    ./services/owncloud.nix
 
     ./filesystems
     ./hardware

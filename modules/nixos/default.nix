@@ -6,4 +6,5 @@
   nginx = import ./nginx.nix;
   pilot = import ./pilot.nix;
   pounce = import ./pounce.nix;
+  yubikey = import ./yubikey.nix;
 }

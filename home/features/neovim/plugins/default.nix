@@ -23,12 +23,9 @@
 		./editor/wakatime.nix
 		./editor/presence.nix
 		# }}}
-		# {{{ cmp
-		./cmp/cmp.nix
-		./cmp/lspkind.nix
-		./cmp/autopairs.nix
-		./cmp/cmp-copilot.nix
-		./cmp/schemastore.nix
+		# {{{ completion
+		./completion/blink-cmp.nix
+		./completion/copilot.nix
 		# }}}
 		# {{{ ui
 		./ui/dressing.nix

@@ -71,6 +71,24 @@ bump-common:
     nixcord \
     --accept-flake-config
 # }}}
+# {{{ Garbage collection
+[doc("Completely clean up the system by removing old generations and running garbage collection")]
+[group("nix")]
+gc:
+  #!/usr/bin/env bash
+  set -euo pipefail
+
+  echo "🧹 Deleting old NixOS generations..."
+  sudo nix-collect-garbage --delete-older-than 7d
+
+  echo "🧹 Running garbage collection..."
+  sudo nix-collect-garbage -d
+
+  echo "🧹 Optimizing nix store..."
+  sudo nix-store --optimise
+
+  echo "🚀 All done!"
+# }}}
 # {{{ Age / sops related thingies
 [doc("Save the user's SSH key as a key usable by sops")]
 [group("secrets")]
