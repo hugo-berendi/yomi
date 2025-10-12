@@ -1,5 +1,13 @@
 # nix build
 result/
+result
+
+# temporary/backup files
+*.yaml.bak
+*.yaml.new
+*.yaml.orig
+*.yaml.tmp
+.temp_secrets.yaml
 
 *.log
 .luarc.json
