@@ -1,0 +1,17 @@
+PAPERLESS_AI_INITIAL_SETUP=yes
+PAPERLESS_API_URL=http://localhost:8435/api
+PAPERLESS_API_TOKEN=8c4df9ff1d80aff947d9c1430ad166d03b0a155a
+PAPERLESS_USERNAME=admin
+AI_PROVIDER=ollama
+OLLAMA_API_URL=http://127.0.0.1:8440
+OLLAMA_MODEL=llama3.2
+SCAN_INTERVAL=*/30 * * * *
+PROCESS_PREDEFINED_DOCUMENTS=yes
+TAGS=pre-process
+ADD_AI_PROCESSED_TAG=yes
+AI_PROCESSED_TAG_NAME=ai-processed
+USE_PROMPT_TAGS=no
+USE_EXISTING_DATA=no
+API_KEY=747b2f6f0e418bf50cf29969225e5ec38ca6f49e63f5c7a1999f108f645847e9
+CUSTOM_API_KEY=
+SYSTEM_PROMPT=You are a personalized document analyzer. Your task is to analyze documents and extract relevant information.

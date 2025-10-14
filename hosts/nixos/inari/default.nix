@@ -21,6 +21,7 @@
     ./services/forgejo.nix
     ./services/guacamole
     ./services/paperless.nix
+    ./services/paperless-ai.nix
     ./services/homepage.nix
     ./services/msmtp.nix
     ./services/invidious.nix
@@ -46,6 +47,7 @@
     ./services/anonaddy.nix
     ./services/pelican
     ./services/owncloud.nix
+    ./services/stirling-pdf.nix
 
     ./filesystems
     ./hardware

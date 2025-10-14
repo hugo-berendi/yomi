@@ -1,28 +1,35 @@
 # Agent Guidelines for Yomi
 
 ## Build/Lint/Test Commands
-- **Build NixOS config**: `just nixos-rebuild build <hostname>` (hosts: amaterasu, tsukuyomi, inari, iso)
-- **Apply config locally**: `just nixos-rebuild switch` (requires sudo)
+- **Build config**: `just nixos-rebuild build <hostname>` (hosts: amaterasu, tsukuyomi, inari, iso)
+- **Apply locally**: `just nixos-rebuild switch` (requires sudo, defaults to current hostname)
 - **Build ISO**: `just build-iso`
-- **Format Lua code**: `stylua .` (config in stylua.toml)
-- **Update flake inputs**: `just bump-common`
-- **DNS operations**: `just dns-diff` and `just dns-push`
+- **Format Lua**: `stylua .` (config in stylua.toml)
+- **Update flake**: `just bump-common` (updates common inputs like nixpkgs, home-manager, etc.)
+- **Garbage collection**: `just gc` (removes old generations, optimizes store)
+- **DNS**: `just dns-diff` (preview), `just dns-push` (apply changes)
+- **Secrets**: `just sops-rekey` (rekey all secrets.yaml files)
 
 ## Code Style
 
 ### Nix
-- Use fold markers `{{{` and `}}}` for organizing sections
-- Group imports logically with comments: `# {{{ Imports`, `# }}}` 
+- Use fold markers `{{{` and `}}}` to organize file sections
+- Group imports with comments: `# {{{ Imports` ... `# }}}`
 - Prefer `let...in` for local bindings
-- Use `lib.mkOption` for module options with clear descriptions
-- Always set `description` and `type` for options
+- Module options: always include `description`, `type`, and use `lib.mkOption`
 - Use `lib.mkDefault` for overridable defaults
+- Function args: destructured attrsets (`{lib, config, ...}:`)
+- Attribute naming: camelCase for options, kebab-case for packages
 
 ### Lua  
-- **Formatting**: Tabs (width 4), max column 120 (see stylua.toml)
-- Apply stylua config via `yomi.lua.styluaConfig = ../../../stylua.toml`
+- Tabs (width 4), max column 120 (see stylua.toml)
+- Run `stylua .` before committing
+- Use tabs consistently (no spaces for indentation)
 
 ### General
-- Follow existing patterns in neighboring files (check imports, frameworks, naming)
-- Never commit secrets - use sops-nix for secret management
-- No generic/placeholder values - match codebase conventions precisely
+- **Match existing patterns**: check imports, frameworks, naming in neighboring files
+- **Secrets**: never commit secrets; use sops-nix (files named `secrets.yaml`)
+- **No placeholders**: use actual values matching codebase conventions
+- **Flake follows**: inputs should follow nixpkgs where possible
+- **Hosts**: amaterasu (desktop), tsukuyomi (laptop), inari (server)
+- **Persistence**: services using `DynamicUser=` don't need explicit persistence config; `/var/lib/private` is already persisted

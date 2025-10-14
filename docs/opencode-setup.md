@@ -6,12 +6,10 @@ OpenCode is configured with Home Manager and includes several useful MCP (Model 
 
 1. **filesystem** - Access to your projects directory (`~/projects`)
 2. **github** - GitHub integration (requires `GITHUB_TOKEN` sops secret)
-3. **git** - Git operations and repository management
-4. **searxng** - SearXNG search integration (requires `SEARXNG_URL` sops secret)
-5. **playwright** - Browser automation with Playwright
-6. **Astro docs** - Astro.build documentation access
-7. **postgres** - PostgreSQL database access
-8. **fetch** - Web content fetching
+3. **searxng** - SearXNG search integration (requires `SEARXNG_URL` sops secret)
+4. **playwright** - Browser automation with Playwright
+5. **Astro docs** - Astro.build documentation access
+6. **nixos** - NixOS configuration and package search
 
 ## Secrets Configuration
 

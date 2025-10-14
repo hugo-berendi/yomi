@@ -35,28 +35,22 @@
             command = ["${pkgs.nodejs}/bin/npx" "-y" "@modelcontextprotocol/server-filesystem" "${config.home.homeDirectory}/projects"];
           };
 
-          git = {
-            type = "local";
-            enabled = true;
-            command = ["${pkgs.nodejs}/bin/npx" "-y" "@modelcontextprotocol/server-git"];
-          };
-
           "Astro docs" = {
             type = "local";
             enabled = true;
             command = ["${pkgs.nodejs}/bin/npx" "-y" "mcp-remote" "https://mcp.docs.astro.build/mcp"];
           };
 
-          fetch = {
-            type = "local";
-            enabled = true;
-            command = ["${pkgs.nodejs}/bin/npx" "-y" "@modelcontextprotocol/server-fetch"];
-          };
-
           playwright = {
             type = "local";
             enabled = true;
             command = ["${pkgs.nodejs}/bin/npx" "-y" "@executeautomation/playwright-mcp-server"];
+          };
+
+          nixos = {
+            type = "local";
+            enabled = true;
+            command = ["${pkgs.nix}/bin/nix" "run" "github:utensils/mcp-nixos" "--"];
           };
         }
         // lib.optionalAttrs (config.sops.secrets ? "GITHUB_TOKEN") {

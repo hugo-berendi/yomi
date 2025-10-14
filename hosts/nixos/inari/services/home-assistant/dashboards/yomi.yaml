@@ -1,0 +1,156 @@
+title: Yomi Dashboard
+views:
+  - title: Home
+    path: home
+    icon: mdi:home-assistant
+    cards:
+      - type: weather-forecast
+        entity: weather.forecast_home
+        show_forecast: true
+        forecast_type: hourly
+        name: Weather & Forecast
+      - type: entities
+        title: 🌅 Morning Routine
+        show_header_toggle: false
+        entities:
+          - entity: sensor.a063_next_alarm
+            name: Next Alarm
+            icon: mdi:alarm
+          - entity: sun.sun
+            name: Sun
+          - entity: sensor.sun_next_dawn
+            name: Next Dawn
+          - entity: sensor.sun_next_rising
+            name: Next Sunrise
+      - type: entities
+        title: 👤 Person Status
+        show_header_toggle: false
+        entities:
+          - entity: person.hugo_berendi
+            name: Hugo
+          - entity: device_tracker.a063
+            name: Phone Location
+          - entity: binary_sensor.a063_is_charging
+            name: Phone Charging
+          - entity: binary_sensor.a063_bluetooth_state
+            name: Bluetooth
+  - title: Car
+    path: car
+    icon: mdi:car-electric
+    cards:
+      - type: entities
+        title: 🚗 VW ID.3 Status
+        show_header_toggle: false
+        entities:
+          - entity: binary_sensor.hugo_s_id_3_car_is_online
+            name: Online
+          - entity: binary_sensor.hugo_s_id_3_car_is_active
+            name: Active
+          - entity: device_tracker.hugo_s_id_3_tracker
+            name: Location
+      - type: entities
+        title: 🔋 Battery & Charging
+        show_header_toggle: false
+        entities:
+          - entity: sensor.hugo_s_id_3_state_of_charge
+            name: Battery Level
+          - entity: sensor.hugo_s_id_3_range
+            name: Range
+          - entity: binary_sensor.hugo_s_id_3_insufficient_battery_level_warning
+            name: Low Battery Warning
+      - type: entities
+        title: ❄️ Climate Control
+        show_header_toggle: false
+        entities:
+          - entity: binary_sensor.hugo_s_id_3_climatisation_at_unlock
+            name: Climate at Unlock
+          - entity: binary_sensor.hugo_s_id_3_climatisation_without_external_power
+            name: Climate w/o Power
+          - entity: binary_sensor.hugo_s_id_3_front_window_heating_state
+            name: Front Window Heating
+          - entity: binary_sensor.hugo_s_id_3_rear_window_heating_state
+            name: Rear Window Heating
+      - type: entities
+        title: 🤖 Climate Automations
+        show_header_toggle: false
+        entities:
+          - entity: automation.start_id_3_climate_mon_thu_07_20_if_15degc
+            name: Mon-Thu 07:20 (if <15°C)
+          - entity: automation.start_id_3_climate_fri_08_10_if_15degc
+            name: Fri 08:10 (if <15°C)
+          - entity: automation.auto_start_id_3_climate_when_leaving_home_if_cold
+            name: Auto on Leaving (if cold)
+      - type: entities
+        title: 🚨 Car Alerts
+        show_header_toggle: false
+        entities:
+          - entity: automation.morning_id_3_status_summary
+            name: Morning Summary
+          - entity: automation.warn_if_car_doors_windows_left_open_when_leaving
+            name: Doors/Windows Open
+          - entity: automation.warn_when_id_3_battery_is_low
+            name: Low Battery Alert
+          - entity: automation.notify_when_id_3_charging_complete
+            name: Charging Complete
+          - entity: automation.remind_to_plug_in_car_when_arriving_home
+            name: Plug-in Reminder
+  - title: Lights
+    path: lights
+    icon: mdi:lightbulb-group
+    cards:
+      - type: entities
+        title: 💡 Bedroom Lights
+        show_header_toggle: false
+        entities:
+          - entity: light.schlafzimmer_1
+            name: Bedroom Light 1
+          - entity: light.schlafzimmer_2
+            name: Bedroom Light 2
+      - type: entities
+        title: 🤖 Light Automations
+        show_header_toggle: false
+        entities:
+          - entity: automation.turn_on_bedroom_lights_at_sunset_when_home
+            name: On at Sunset
+          - entity: automation.turn_off_bedroom_lights_at_bedtime
+            name: Off at Bedtime
+          - entity: automation.turn_off_bedroom_lights_when_leaving_home
+            name: Off When Away
+          - entity: automation.welcome_home_with_warm_lighting
+            name: Welcome Home
+      - type: entities
+        title: ☀️ Sun Schedule
+        show_header_toggle: false
+        entities:
+          - entity: sensor.sun_next_setting
+            name: Next Sunset
+          - entity: sensor.sun_next_dusk
+            name: Next Dusk
+          - entity: sensor.sun_next_midnight
+            name: Next Midnight
+  - title: System
+    path: system
+    icon: mdi:cog
+    cards:
+      - type: entities
+        title: ⚙️ System Info
+        show_header_toggle: false
+        entities:
+          - entity: sun.sun
+            name: Sun
+          - entity: zone.home
+            name: Home Zone
+      - type: entities
+        title: 📱 Phone Sensors
+        show_header_toggle: false
+        entities:
+          - entity: binary_sensor.a063_android_auto
+            name: Android Auto
+          - entity: binary_sensor.a063_mobile_data
+            name: Mobile Data
+          - entity: binary_sensor.a063_wi_fi_state
+            name: Wi-Fi
+          - entity: binary_sensor.a063_nfc_state
+            name: NFC
+          - entity: binary_sensor.a063_hotspot_state
+            name: Hotspot

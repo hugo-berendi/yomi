@@ -27,6 +27,7 @@
     };
     settings = {
       PAPERLESS_AUTO_LOGIN_USERNAME = "admin";
+      PAPERLESS_CSRF_TRUSTED_ORIGINS = "https://paperless.hugo-berendi.de";
     };
   };
   # }}}

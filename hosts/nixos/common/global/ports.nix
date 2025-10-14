@@ -77,5 +77,8 @@
     prometheus-exportarr-prowlarr = 8470;
     prometheus-exportarr-bazarr = 8471;
     prometheus-exportarr-readarr = 8472;
+    stirling-pdf = 8473;
+    paperless-ai = 8474;
+    paperless-ai-rag = 8475;
   };
 }
