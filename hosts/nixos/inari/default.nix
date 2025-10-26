@@ -49,6 +49,7 @@
     ./services/owncloud.nix
     ./services/stirling-pdf.nix
 
+    ./networking
     ./filesystems
     ./hardware
   ];
