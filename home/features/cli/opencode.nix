@@ -5,6 +5,9 @@
   inputs,
   ...
 }: {
+  home.packages = with inputs.nix-ai-tools.packages.${pkgs.system}; [
+    gemini-cli
+  ];
   programs.opencode = {
     enable = true;
     package = inputs.opencode-flake.packages.${pkgs.system}.default;
@@ -69,8 +72,6 @@
         };
     };
   };
-
-  home.packages = [pkgs.nodejs];
 
   sops.secrets = lib.mkIf (builtins.pathExists ./secrets.yaml) {
     GITHUB_TOKEN = {

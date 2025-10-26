@@ -23,6 +23,7 @@
     nix-minecraft.url = "github:Infinidoge/nix-minecraft";
 
     opencode-flake.url = "github:aodhanhayter/opencode-flake";
+    nix-ai-tools.url = "github:numtide/nix-ai-tools";
 
     # Home manager
     home-manager.url = "github:nix-community/home-manager";
