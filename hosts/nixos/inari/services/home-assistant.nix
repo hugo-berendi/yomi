@@ -87,6 +87,22 @@
         };
         dontCheckManifest = true;
       })
+      (pkgs.buildHomeAssistantComponent {
+        owner = "JonasJoKuJonas";
+        domain = "webuntis";
+        version = "2.0.1";
+        dependencies = [
+          pkgs.python-webuntis
+        ];
+        src = pkgs.fetchFromGitHub {
+          owner = "JonasJoKuJonas";
+          repo = "homeassistant-WebUntis";
+          rev = "v2.0.1";
+          hash = "sha256-uN1uTdksL8PkDmMTGAD4tBetCaC0awigynR2e3Gz69I=";
+        };
+        dontCheckManifest = false;
+        patches = [];
+      })
     ];
     config = {
       default_config = {};
