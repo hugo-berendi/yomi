@@ -76,14 +76,14 @@
 
     # Networks
     networks = {
-      "30-enp0s25" = {
-        matchConfig.Name = "enp0s25"; # This is the laptop's ethernet interface
+      "30-enp4s0" = {
+        matchConfig.Name = "enp4s0"; # This is the laptop's ethernet interface
         networkConfig.Bridge = "br0";
         linkConfig.RequiredForOnline = "enslaved";
       };
 
-      "30-wlo1" = {
-        matchConfig.Name = "wlo1"; # This is the laptop's wireless interface
+      "30-wlp2s0" = {
+        matchConfig.Name = "wlp2s0"; # This is the laptop's wireless interface
         linkConfig.Unmanaged = "yes"; # hostapd will take care of this!
       };
 

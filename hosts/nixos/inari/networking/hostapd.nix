@@ -1,18 +1,18 @@
 # hostapd creates a WIFI network my other devices can connect to
 let
-  interface = "wlo1";
+  interface = "wlp2s0";
 in
 {
   services.hostapd = {
     enable = true;
     radios.${interface} = {
       band = "2g";
-      countryCode = "NL";
+      countryCode = "DE";
       # channel = 0; # Automatic channel selection
       channel = 6;
 
       networks.${interface} = {
-        ssid = "five-pebbles";
+        ssid = "kitsune";
         logLevel = 0; # Debugging
         authentication = {
           # This device doesn't support wpa3-sae
