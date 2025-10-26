@@ -5,9 +5,8 @@
     settings = {
       # upstream DNS servers
       server = [
+        "127.0.0.1#53", # AdGuard Home
         "9.9.9.9" # Quad9
-        "8.8.8.8" # Google
-        "1.1.1.1" # Cloudflare
       ];
 
       # sensible behaviours
