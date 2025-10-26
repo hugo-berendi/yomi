@@ -1,4 +1,14 @@
 {
+  config,
+  lib,
+  ...
+}: let
+  publicPorts = lib.attrsets.mapAttrsToList (name: value: toString value.port) config.yomi.cloudflared.at;
+  privatePorts = lib.attrsets.mapAttrsToList (name: value: toString value.port) config.yomi.nginx.at;
+
+  publicPortsString = lib.strings.concatStringsSep ", " publicPorts;
+  privatePortsString = lib.strings.concatStringsSep ", " privatePorts;
+in {
   networking = {
     # No local firewall.
     nat.enable = false;
@@ -44,12 +54,12 @@
 
           chain public_services {
             # Public services
-            tcp dport { 8432, 8420, 8442, 8427, 8436, 8419, 8418, 8431, 8415, 8441, 8456, 8426 } accept
+            tcp dport { ${publicPortsString} } accept
           }
 
           chain private_services {
             # Private services
-            tcp dport { 8416, 8407, 8437, 8414, 8410, 8459, 8449, 8434, 8458, 8460, 8474, 8409, 8445, 8461, 8435, 8421, 8123, 8473, 8408, 8447, 8455, 8438, 8439, 8989, 8453, 8454, 8452, 8450, 8451 } accept
+            tcp dport { ${privatePortsString} } accept
           }
         }
 
