@@ -12,27 +12,44 @@
           chain input {
             type filter hook input priority 0; policy drop;
 
-            iifname "lo"  accept comment "Accept everything from loopback interface"
-            iifname "br0" accept comment "Allow local network to access the router"
-            iifname "br1" accept comment "Allow local network to access the router"
+            # Basic security hardening
+            ct state invalid drop comment "Drop invalid packets"
+            ct state { established, related } accept comment "Allow established and related connections"
+            iifname "lo" accept comment "Accept all loopback traffic"
 
-            iifname "enp4s0" ct state  { established, related } accept comment "Allow established traffic"
-            iifname "enp4s0" icmp type { echo-request, destination-unreachable, time-exceeded } counter accept comment "Allow select ICMP"
+            # Rate limiting to prevent DoS attacks
+            iifname "enp4s0" tcp dport { 80, 443 } meter flood { ip saddr limit rate 10/second burst 20 packets } accept
 
-            iifname "enp4s0" counter drop comment "Drop all other unsolicited traffic from wan"
+            # Jump to service chains
+            iifname "enp4s0" jump public_services
+            iifname { "br0", "br1" } jump private_services
+
+            # Drop all other traffic
+            counter drop
           }
 
           chain forward {
-            type filter hook forward priority filter; policy drop;
+            type filter hook forward priority 0; policy drop;
 
-            iifname "br0" oifname "enp4s0" accept comment "Allow trusted LAN to WAN"
-            iifname "br1" oifname "enp4s0" accept comment "Allow guest   LAN to WAN"
-            iifname "enp4s0" oifname "br0" ct state { established, related } accept comment "Allow established back to LANs"
-            iifname "enp4s0" oifname "br1" ct state { established, related } accept comment "Allow established back to LANs"
+            # Allow forwarding from LAN to WAN
+            iifname { "br0", "br1" } oifname "enp4s0" accept
+
+            # Allow established and related connections back to LAN
+            ct state { established, related } accept
           }
 
           chain output {
             type filter hook output priority 0; policy accept;
+          }
+
+          chain public_services {
+            # Public services
+            tcp dport { 8432, 8420, 8442, 8427, 8436, 8419, 8418, 8431, 8415, 8441, 8456, 8426 } accept
+          }
+
+          chain private_services {
+            # Private services
+            tcp dport { 8416, 8407, 8437, 8414, 8410, 8459, 8449, 8434, 8458, 8460, 8474, 8409, 8445, 8461, 8435, 8421, 8123, 8473, 8408, 8447, 8455, 8438, 8439, 8989, 8453, 8454, 8452, 8450, 8451 } accept
           }
         }
 
