@@ -71,6 +71,11 @@ bump-common:
     nixcord \
     --accept-flake-config
 # }}}
+
+# Rebuild the system
+rebuild:
+	sudo nh switch .#$(hostname)
+
 # {{{ Garbage collection
 [doc("Completely clean up the system by removing old generations and running garbage collection")]
 [group("nix")]
