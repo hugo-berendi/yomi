@@ -3,6 +3,7 @@
   lib,
   ...
 }: let
+  cfg = config.yomi.restic;
   backupUrl = lib.removeSuffix "\n" (builtins.readFile ./url.txt);
 
   # {{{ Backup helper
@@ -31,7 +32,12 @@
   };
   # }}}
 in {
-  sops.secrets.backup_password.sopsFile = ../../../secrets.yaml;
+  options.yomi.restic = {
+    enable = lib.mkEnableOption "yomi's restic backup integration";
+  };
+
+  config = lib.mkIf cfg.enable {
+    sops.secrets.backup_password.sopsFile = ../../../secrets.yaml;
 
   services.restic.backups = {
     # {{{ Data
@@ -70,5 +76,6 @@ in {
       ];
     };
     # }}}
+  };
   };
 }

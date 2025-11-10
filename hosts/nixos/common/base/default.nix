@@ -1,4 +1,3 @@
-# Configuration pieces included on all (nixos) hosts
 {
   inputs,
   lib,
@@ -20,18 +19,16 @@
     ../../../../dns/implementation/nixos-module.nix
     ../../../../dns/implementation/nixos-module-assertions.nix
     # }}}
-    # {{{ global configuration
-    ./cli/fish.nix
-    ./services/openssh.nix
-    ./services/tailscale.nix
-    ./nix.nix
-    ./locale.nix
-    ./unicode.nix
-    ./persistence.nix
-    ./ports.nix
-    ./wireless
-
+    # {{{ common configuration
     ../../../../common/default.nix
+    ../users/pilot.nix
+    ../nix.nix
+    ../locale.nix
+    ../unicode.nix
+    ../persistence.nix
+    ../ports.nix
+
+    ./flags.nix
     # }}}
   ];
   # }}}

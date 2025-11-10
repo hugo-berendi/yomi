@@ -1,0 +1,19 @@
+{
+  imports = [
+    ./acme.nix
+    ./anubis.nix
+    ./greetd.nix
+    ./kanata.nix
+    ./meilisearch.nix
+    ./nginx.nix
+    ./oci.nix
+    ./openssh.nix
+    ./postgres.nix
+    ./protonvpn.nix
+    ./restic
+    ./suwayomi.nix
+    ./syncthing.nix
+    ./tailscale.nix
+    ./yubikey.nix
+  ];
+}

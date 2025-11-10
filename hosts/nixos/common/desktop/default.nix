@@ -1,6 +1,7 @@
 {
   imports = [
-    ../pipewire.nix
+    ./pipewire.nix
+    ./quietboot.nix
     ./xdg-portal.nix
   ];
 

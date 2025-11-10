@@ -1,8 +1,18 @@
-{config, ...}: let
+{
+  config,
+  lib,
+  ...
+}: let
+  cfg = config.yomi.syncthing;
   user = config.yomi.pilot.name;
   group = "syncthing";
   dataDir = "/persist/state/var/lib/syncthing";
 in {
+  options.yomi.syncthing = {
+    enable = lib.mkEnableOption "yomi's syncthing integration";
+  };
+
+  config = lib.mkIf cfg.enable {
   # {{{ Service
   services.syncthing = {
     inherit user group dataDir;
@@ -44,4 +54,5 @@ in {
     }
   ];
   # }}}
+  };
 }

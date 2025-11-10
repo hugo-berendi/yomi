@@ -1,4 +1,8 @@
-{config, ...}: let
+{
+  config,
+  lib,
+  ...
+}: let
   lang = config.i18n.defaultLocale;
 in {
   # {{{ Time zone
@@ -21,5 +25,8 @@ in {
     LC_TELEPHONE = lang;
     LC_TIME = lang;
   };
+  # }}}
+  # {{{ Console keymap
+  console.keyMap = lib.mkForce "de";
   # }}}
 }

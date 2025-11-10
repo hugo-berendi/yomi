@@ -1,4 +1,10 @@
-{...}: let
+{
+  config,
+  lib,
+  ...
+}: let
+  cfg = config.yomi.kanata;
+  
   mkConfig = {
     blueTrigger,
     redTrigger,
@@ -170,25 +176,31 @@
     ;; }}}
   '';
 in {
-  services.kanata = {
-    enable = true;
-    keyboards.amaterasuLaptop = {
-      devices = ["/dev/input/by-path/platform-i8042-serio-0-event-kbd"];
+  options.yomi.kanata = {
+    enable = lib.mkEnableOption "yomi's kanata integration";
+  };
 
-      config = mkConfig {
-        redTrigger = "lalt";
-        blueTrigger = "ralt";
-        chordDelay = 25;
+  config = lib.mkIf cfg.enable {
+    services.kanata = {
+      enable = true;
+      keyboards.amaterasuLaptop = {
+        devices = ["/dev/input/by-path/platform-i8042-serio-0-event-kbd"];
+
+        config = mkConfig {
+          redTrigger = "lalt";
+          blueTrigger = "ralt";
+          chordDelay = 25;
+        };
       };
-    };
 
-    keyboards.keychronK6 = {
-      devices = ["/dev/input/by-id/usb-Keychron_Keychron_K2-event-kbd"];
+      keyboards.keychronK6 = {
+        devices = ["/dev/input/by-id/usb-Keychron_Keychron_K2-event-kbd"];
 
-      config = mkConfig {
-        redTrigger = "lalt";
-        blueTrigger = "rctl";
-        chordDelay = 30;
+        config = mkConfig {
+          redTrigger = "lalt";
+          blueTrigger = "rctl";
+          chordDelay = 30;
+        };
       };
     };
   };
