@@ -31,7 +31,7 @@ in {
       modifier = "Mod4";
 
       terminal = "${pkgs.foot}/bin/footclient";
-      menu = "anyrun";
+      menu = "wofi";
 
       bars = [];
 
@@ -102,7 +102,7 @@ in {
       keybindings = let
         mod = "Mod4";
         term = "footclient";
-        app-menu = "anyrun";
+        app-menu = "wofi";
         power-menu = "wlogout";
       in {
         "${mod}+Return" = "exec ${term}";

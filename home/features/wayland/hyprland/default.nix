@@ -99,7 +99,7 @@ in {
       "$mod" = "SUPER";
       bind =
         [
-          "$mod, C, exec, cliphist list | anyrun --plugins ${inputs.anyrun.packages.${pkgs.system}.stdin}/lib/libstdin.so | cliphist decode | wl-copy"
+          "$mod, C, exec, cliphist list | wofi --dmenu | cliphist decode | wl-copy"
           # {{{ pyprland plugins
           "$mod, V, exec, pypr toggle volume"
           "$mod Shift, Return, exec, pypr toggle term"
@@ -113,7 +113,7 @@ in {
           ", XF86AudioPlay, exec, volume --play-pause"
           # }}}
           # {{{ Execute external things
-          "$mod, Space, exec, ${lib.getExe inputs.anyrun.packages.${pkgs.system}.default}"
+          "$mod, Space, exec, ${lib.getExe pkgs.wofi}"
           "$mod, T, exec, wl-ocr"
           "$mod SHIFT, T, exec, wl-qr"
           "$mod CONTROL, T, exec, hyprpicker | wl-copy && notify-send 'Copied color $(wp-paste)'"
