@@ -63,7 +63,7 @@ in {
           chain private_services {
             # Private services
             tcp dport { ${privatePortsString} } accept
-            tcp dport { 80, 443 } accept comment "HTTP and HTTPS"
+            tcp dport { 22, 80, 443 } accept comment "SSH, HTTP and HTTPS"
             udp dport { 53, 67 } accept comment "DNS and DHCP"
           }
         }
