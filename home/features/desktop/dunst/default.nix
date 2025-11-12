@@ -1,4 +1,4 @@
-{
+{config, ...}: {
   services.dunst = {
     enable = true;
 
@@ -10,7 +10,7 @@
         width = 500;
         height = 400;
         origin = "bottom-right";
-        offset = "20x20";
+        offset = "${toString config.yomi.theming.gaps.outer}x${toString config.yomi.theming.gaps.outer}";
         scale = 0;
         notification_limit = 0;
         progress_bar = true;
@@ -21,15 +21,13 @@
         indicate_hidden = true;
         transparency = 15;
         separator_height = 2;
-        padding = 15;
-        horizontal_padding = 15;
+        padding = config.yomi.theming.gaps.inner;
+        horizontal_padding = config.yomi.theming.gaps.inner;
         text_icon_padding = 0;
-        frame_width = 3;
-        frame_color = "#89B4FA";
-        gap_size = 5;
+        frame_width = config.yomi.theming.rounding.size;
+        gap_size = config.yomi.theming.gaps.inner / 2;
         seperator_color = "frame";
         sort = true;
-        font = "Maple Mono NF 15";
         line_height = 0;
         markup = "full";
         format = "<b>%s</b>\n%b";
@@ -42,7 +40,7 @@
         hide_duplicate_count = false;
         show_indicators = true;
         enable_recursive_icon_lookup = true;
-        icon_theme = "Adawaita";
+        icon_theme = "Papirus";
         icons_position = "left";
         min_icon_size = 32;
         max_icon_size = 128;
@@ -52,8 +50,8 @@
         always_run_script = true;
         title = "Dunst";
         class = "Dunst";
-        corner_radius = 20;
-        ignore_radius = 20;
+        corner_radius = config.yomi.theming.rounding.radius;
+        ignore_radius = config.yomi.theming.rounding.radius;
         ignore_dbusclose = false;
         force_xwayland = false;
         force_xinerama = false;
@@ -62,30 +60,10 @@
         mouse_right_click = "close_all";
       };
 
-      exaperimental = {
+      experimental = {
         per_monitor_dpi = false;
-      };
-
-      urgency_low = {
-        background = "#1E1E1E";
-        foreground = "#CDD6F4";
-        timeout = 10;
-      };
-
-      uregency_normal = {
-        background = "#1E1E1E";
-        foreground = "#CDD6F4";
-        timeout = 10;
-      };
-
-      urgency_critical = {
-        background = "#1E1E1E";
-        foreground = "#CDD6F4";
-        frame_color = "#FAB387";
-        timeout = 10;
       };
     };
   };
-  stylix.targets.dunst.enable = false;
-  # stylix.targets.hyprland.enable = true;
+  stylix.targets.dunst.enable = true;
 }

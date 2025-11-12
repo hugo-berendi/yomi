@@ -3,7 +3,7 @@
   imports = [
     ./foot.nix
     ./ghostty.nix
-    ./mako.nix
+    ./dunst
     ./discord
     ./firefox
     ./wakatime
