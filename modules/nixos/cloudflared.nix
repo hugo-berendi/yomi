@@ -69,36 +69,43 @@ in {
 
   config.services.cloudflared.tunnels.${cfg.tunnel}.ingress =
     lib.attrsets.mapAttrs' (
-      _: {
-        port,
+      name: {
         host,
-        protocol,
+        subdomain,
+        port,
         ...
-      }: {
+      }: let
+        anubisPort = port + 200;
+      in {
         name = host;
-        value = "${protocol}://localhost:${toString (port + 200)}";
+        value = "http://localhost:${toString anubisPort}";
       }
     )
     cfg.at;
 
   config.services.anubis.instances = let
-    mkAnubisInstance = {
+    mkAnubisInstance = name: {
       subdomain,
       port,
+      protocol,
       ...
-    }: {
+    }: let
+      anubisPort = port + 200;
+      metricsPort = port + 300;
+    in {
       name = subdomain;
       value = {
         settings = {
-          # Use per-instance Unix sockets in runtime dir (multi-instance safe)
-          BIND = "/run/anubis/anubis-${subdomain}/bind";
-          METRICS_BIND = "/run/anubis/anubis-${subdomain}/metrics";
-          TARGET = "http://localhost:${toString port}";
+          BIND_NETWORK = "tcp";
+          BIND = "127.0.0.1:${toString anubisPort}";
+          METRICS_BIND_NETWORK = "tcp";
+          METRICS_BIND = "127.0.0.1:${toString metricsPort}";
+          TARGET = "${protocol}://localhost:${toString port}";
         };
       };
     };
   in
-    lib.attrsets.mapAttrs' (_: mkAnubisInstance) cfg.at;
+    lib.attrsets.mapAttrs' mkAnubisInstance cfg.at;
 
   config.yomi.dns.records = let
     mkDnsRecord = {subdomain, ...}: {
