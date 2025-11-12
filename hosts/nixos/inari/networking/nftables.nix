@@ -28,11 +28,11 @@ in {
             iifname "lo" accept comment "Accept all loopback traffic"
 
             # Rate limiting to prevent DoS attacks
-            iifname "enp4s0" tcp dport { 80, 443 } meter flood { ip saddr limit rate 10/second burst 20 packets } accept
+            iifname "eno1" tcp dport { 80, 443 } meter flood { ip saddr limit rate 10/second burst 20 packets } accept
 
             # Jump to service chains
-            iifname "enp4s0" jump public_services
-            iifname { "br0", "br1" } jump private_services
+            iifname "eno1" jump public_services
+            iifname { "br0", "br1", "tailscale0" } jump private_services
 
             # Drop all other traffic
             counter drop
@@ -42,7 +42,10 @@ in {
             type filter hook forward priority 0; policy drop;
 
             # Allow forwarding from LAN to WAN
-            iifname { "br0", "br1" } oifname "enp4s0" accept
+            iifname { "br0", "br1" } oifname "eno1" accept
+            
+            # Allow WiFi hotspot (br1) to access main LAN (br0)
+            iifname "br1" oifname "br0" accept
 
             # Allow established and related connections back to LAN
             ct state { established, related } accept
@@ -60,13 +63,15 @@ in {
           chain private_services {
             # Private services
             tcp dport { ${privatePortsString} } accept
+            tcp dport { 80, 443 } accept comment "HTTP and HTTPS"
+            udp dport { 53, 67 } accept comment "DNS and DHCP"
           }
         }
 
         table ip nat {
           chain postrouting {
             type nat hook postrouting priority 100; policy accept;
-            oifname "enp4s0" masquerade
+            oifname { "eno1", "br0" } masquerade
           }
         }
       '';

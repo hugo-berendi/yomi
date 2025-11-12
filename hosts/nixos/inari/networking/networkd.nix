@@ -76,8 +76,8 @@
 
     # Networks
     networks = {
-      "30-enp4s0" = {
-        matchConfig.Name = "enp4s0"; # This is the laptop's ethernet interface
+      "30-eno1" = {
+        matchConfig.Name = "eno1"; # This is the laptop's ethernet interface
         networkConfig.Bridge = "br0";
         linkConfig.RequiredForOnline = "enslaved";
       };

@@ -11,7 +11,7 @@ in {
     radios.${interface} = {
       band = "2g";
       countryCode = "DE";
-      channel = 0; # Automatic channel selection
+      channel = 6;
 
       networks.${interface} = {
         ssid = "kitsune";
@@ -23,7 +23,7 @@ in {
         };
 
         settings = {
-          bridge = "br0";
+          bridge = "br1";
           ieee80211w = 0;
         };
       };
