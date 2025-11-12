@@ -3,9 +3,9 @@
   lib,
   ...
 }: let
-  cfg = config.yomi.oci;
+  cfg = config.yomi.containers;
 in {
-  options.yomi.oci = {
+  options.yomi.containers = {
     enable = lib.mkEnableOption "yomi's OCI containers integration";
   };
 
