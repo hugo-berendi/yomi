@@ -17,6 +17,13 @@
 
   system.stateVersion = "24.05";
 
+  yomi.pilot.name = "hugob";
+  yomi.machine.graphical = true;
+  yomi.machine.gaming = true;
+  yomi.machine.interactible = true;
+  yomi.wireless.enable = true;
+  yomi.wireless.backend = "wpa-supplicant";
+
   # {{{ Machine ids
   networking.hostName = "tsukuyomi";
   # }}}
@@ -64,6 +71,4 @@
     dunst
   ];
   # }}}
-
-  yomi.pilot.name = "hugob";
 }
