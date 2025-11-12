@@ -5,10 +5,8 @@
   inputs,
   ...
 }: {
-  programs.zen = {
+  programs.zen-browser = {
     enable = true;
-
-    package = pkgs.zen-browser-bin;
 
     policies = {
       DisableAppUpdate = true;
@@ -880,17 +878,17 @@
   #   mimeType = ["text/html" "text/xml" "x-scheme-handler/http" "x-scheme-handler/https"];
   # };
 
-  # {{{ Make firefox the default
-  # Use firefox as the default browser to open stuff.
+  # {{{ Make zen the default
+  # Use zen as the default browser to open stuff.
   xdg.mimeApps.defaultApplications = {
-    "text/html" = ["firefox.desktop"];
-    "text/xml" = ["firefox.desktop"];
-    "x-scheme-handler/http" = ["firefox.desktop"];
-    "x-scheme-handler/https" = ["firefox.desktop"];
+    "text/html" = ["zen-beta.desktop"];
+    "text/xml" = ["zen-beta.desktop"];
+    "x-scheme-handler/http" = ["zen-beta.desktop"];
+    "x-scheme-handler/https" = ["zen-beta.desktop"];
   };
 
-  # Tell apps firefox is the default browser using an env var.
-  home.sessionVariables.BROWSER = "firefox";
+  # Tell apps zen is the default browser using an env var.
+  home.sessionVariables.BROWSER = "zen";
   # }}}
 
   # {{{ Persistence
