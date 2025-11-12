@@ -5,7 +5,7 @@
   ...
 }: {
   config = lib.mkIf config.yomi.machine.gaming {
-    assertion = [
+    assertions = [
       {
         message = "Gaming module can only be used on graphical machines";
         assertion = config.yomi.machine.graphical;

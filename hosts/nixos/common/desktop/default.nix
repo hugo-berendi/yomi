@@ -9,7 +9,7 @@
     ./steam.nix
     ./unicode.nix
     ./quietboot.nix
-    ./hyperland.nix
+    ./hyprland.nix
   ];
 
   config = lib.mkIf config.yomi.machine.graphical {

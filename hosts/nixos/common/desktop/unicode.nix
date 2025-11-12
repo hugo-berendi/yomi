@@ -1,4 +1,9 @@
-{pkgs, ...}: {
+{
+  pkgs,
+  lib,
+  config,
+  ...
+}: {
   config.i18n.inputMethod = lib.mkIf config.yomi.machine.graphical {
     enable = true;
     type = "fcitx5";

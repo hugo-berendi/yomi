@@ -1,7 +1,8 @@
 # The main configuration is specified by home-manager
 {
   pkgs,
-  inputs,
+  config,
+  lib,
   ...
 }: let
   cfg = config.yomi.hyprland;
@@ -11,7 +12,7 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
-    assertion = [
+    assertions = [
       {
         message = "Hyprland can only be used on graphical machines";
         assertion = config.yomi.machine.graphical;
