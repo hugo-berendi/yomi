@@ -34,10 +34,6 @@
       warn-dirty = false;
 
       auto-optimise-store = true;
-
-      trusted-users = ["root" "@wheel"];
-
-      fallback = true;
     };
     # }}}
   };

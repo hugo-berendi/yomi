@@ -1,6 +1,3 @@
 {
-  imports = [
-    ./fish.nix
-    ./htop.nix
-  ];
+  imports = [./fish.nix];
 }

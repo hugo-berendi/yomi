@@ -34,7 +34,7 @@ in {
       "APP_DEBUG" = "false";
       "APP_URL" = config.yomi.nginx.at.alias.url;
 
-      "REDIS_HOST" = "redis";
+      "REDIS_HOST" = "valkey";
       "REAL_IP_FROM" = "0.0.0.0/32";
       "REAL_IP_HEADER" = "X-Forwarded-For";
       "ANONADDY_ADDITIONAL_USERNAME_LIMIT" = "3";
@@ -58,7 +58,7 @@ in {
     ];
     dependsOn = [
       "addy_db"
-      "addy_redis"
+      "addy_valkey"
     ];
     log-driver = "journald";
     extraOptions = [
@@ -126,15 +126,15 @@ in {
       "docker-compose-addy-root.target"
     ];
   };
-  virtualisation.oci-containers.containers."addy_redis" = {
-    image = "redis:4.0-alpine";
+  virtualisation.oci-containers.containers."addy_valkey" = {
+    image = "valkey/valkey:alpine";
     log-driver = "journald";
     extraOptions = [
-      "--network-alias=redis"
+      "--network-alias=valkey"
       "--network=addy_default"
     ];
   };
-  systemd.services."docker-addy_redis" = {
+  systemd.services."docker-addy_valkey" = {
     serviceConfig = {
       Restart = lib.mkOverride 90 "always";
       RestartMaxDelaySec = lib.mkOverride 90 "1m";

@@ -5,9 +5,9 @@
     else true;
 in {
   programs.nixvim.plugins = {
-    presence-nvim = {
+    presence = {
       enable = enabled;
-      neovimImageText = "The true editor";
+      settings.neovim_image_text = "The true editor";
     };
   };
 }

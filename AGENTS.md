@@ -1,5 +1,17 @@
 # Agent Guidelines for Yomi
 
+## Agent Specializations
+
+### NixOS Config Development Agent
+When working on NixOS configuration changes, the agent should:
+- **Use the nixos MCP server**: For searching NixOS packages, options, and Home Manager configurations
+- **Follow build workflow**: Always run `just nixos-rebuild build <hostname>` to verify changes before applying
+- **Test locally**: Use `just nixos-rebuild switch` to apply and test changes
+- **Verify all MCP servers**: Ensure filesystem, nixos, github, and deepwiki MCPs are available
+- **Check conventions**: Follow fold markers, use lib.mkOption for module options, maintain existing patterns
+- **Manage secrets**: Use sops-nix for any secrets (EXA_API_KEY, GITHUB_TOKEN, SEARXNG_URL)
+- **Code style**: No comments unless requested, use camelCase for options, kebab-case for packages
+
 ## Build/Lint/Test Commands
 - **Build config**: `just nixos-rebuild build <hostname>` (hosts: amaterasu, tsukuyomi, inari, iso)
 - **Apply locally**: `just nixos-rebuild switch` (requires sudo, defaults to current hostname)

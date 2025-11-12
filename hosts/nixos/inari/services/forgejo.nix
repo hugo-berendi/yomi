@@ -84,7 +84,7 @@
     instances.default = {
       enable = true;
       name = "inari-runner";
-      url = config.yomi.cloudflared.at.git.url;
+      url = "http://localhost:${toString config.yomi.ports.forgejo}";
       tokenFile = config.sops.templates."forgejo_runner_token.env".path;
       labels = [
         "nix:docker://nixos/nix:latest"

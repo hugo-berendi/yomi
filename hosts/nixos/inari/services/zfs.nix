@@ -50,7 +50,8 @@
   services.sanoid = {
     enable = true;
 
-    datasets."zroot/root/persist/data" = {
+    # Snapshot actual data on raid5pool
+    datasets."raid5pool" = {
       autosnap = true;
       autoprune = true;
       recursive = true;
@@ -61,6 +62,7 @@
       hourly = 24;
     };
 
+    # Minimal snapshots for system state on zroot
     datasets."zroot/root/persist/state" = {
       autosnap = true;
       autoprune = true;

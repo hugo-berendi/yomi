@@ -95,10 +95,10 @@
           pkgs.python-webuntis
         ];
         src = pkgs.fetchFromGitHub {
-          owner = "JonasJoKuJonas";
+          owner = "hugo-berendi";
           repo = "homeassistant-WebUntis";
-          rev = "v2.0.1";
-          hash = "sha256-uN1uTdksL8PkDmMTGAD4tBetCaC0awigynR2e3Gz69I=";
+          rev = "5d310b7bdc11ffff1e78e6dcbdad0ece6306ef6d";
+          hash = "sha256-7vLVzT+46IUN0++BlNmItZrwhqwiqFgVT0/yD91FRkQ=";
         };
         dontCheckManifest = false;
         patches = [];

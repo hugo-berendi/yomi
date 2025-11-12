@@ -1,9 +1,4 @@
-{
-  lib,
-  pkgs,
-  config,
-  ...
-}: {
+{config, ...}: {
   # {{{ Imports
   imports = [
     ../common
@@ -17,6 +12,13 @@
   # }}}
 
   system.stateVersion = "24.05";
+
+  yomi.pilot.name = "hugob";
+  yomi.machine.graphical = true;
+  yomi.machine.gaming = true;
+  yomi.machine.interactible = true;
+  yomi.wireless.enable = true;
+  yomi.wireless.backend = "iwd";
 
   # {{{ Machine ids
   networking.hostName = "amaterasu";
@@ -36,6 +38,4 @@
     }
   ];
   # }}}
-
-  yomi.pilot.name = "hugob";
 }

@@ -7,9 +7,11 @@ OpenCode is configured with Home Manager and includes several useful MCP (Model 
 1. **filesystem** - Access to your projects directory (`~/projects`)
 2. **github** - GitHub integration (requires `GITHUB_TOKEN` sops secret)
 3. **searxng** - SearXNG search integration (requires `SEARXNG_URL` sops secret)
-4. **playwright** - Browser automation with Playwright
-5. **Astro docs** - Astro.build documentation access
-6. **nixos** - NixOS configuration and package search
+4. **exa** - Exa.ai web search integration (requires `EXA_API_KEY` sops secret)
+5. **deepwiki** - DeepWiki search for documentation and knowledge bases
+6. **playwright** - Browser automation with Playwright
+7. **Astro docs** - Astro.build documentation access
+8. **nixos** - NixOS configuration and package search
 
 ## Secrets Configuration
 
@@ -18,9 +20,12 @@ MCP servers use sops-nix for secret management. Add the following secrets to `ho
 ### Required Secrets
 
 1. **GITHUB_TOKEN** - Already configured in secrets.yaml (used by git.nix)
-2. **SEARXNG_URL** - SearXNG instance URL (needs to be added)
+2. **SEARXNG_URL** - SearXNG instance URL (optional)
+3. **EXA_API_KEY** - Exa.ai API key for web search (optional, get from https://exa.ai)
 
-### Adding SEARXNG_URL Secret
+### Adding Optional Secrets
+
+#### Adding SEARXNG_URL Secret
 
 Edit `home/features/cli/secrets.yaml`:
 ```bash
@@ -32,14 +37,21 @@ Add:
 SEARXNG_URL: https://your-searxng-instance.com
 ```
 
-Then enable the secret in `opencode.nix` by changing:
-```nix
-SEARXNG_URL = lib.mkIf false {
+The secret will be automatically enabled if present in secrets.yaml.
+
+#### Adding EXA_API_KEY Secret
+
+Edit `home/features/cli/secrets.yaml`:
+```bash
+sops home/features/cli/secrets.yaml
 ```
-to:
-```nix
-SEARXNG_URL = lib.mkIf true {
+
+Add:
+```yaml
+EXA_API_KEY: your-exa-api-key-here
 ```
+
+The secret will be automatically enabled if present in secrets.yaml. Get your API key from https://exa.ai
 
 ## Usage
 

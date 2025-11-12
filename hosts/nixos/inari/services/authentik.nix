@@ -1,4 +1,8 @@
-{config, ...}: {
+{
+  config,
+  lib,
+  ...
+}: {
   # {{{ Reverse proxy
   yomi.cloudflared.at.authentik.port = config.yomi.ports.authentik;
   # }}}
@@ -24,10 +28,6 @@
       avatars = "initials";
     };
   };
-  # }}}
-  # {{{ Persistence
-  environment.persistence."/persist/state".directories = [
-    "/var/lib/authentik"
-  ];
+
   # }}}
 }

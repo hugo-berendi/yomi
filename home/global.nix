@@ -13,11 +13,11 @@
     inputs.impermanence.nixosModules.home-manager.impermanence
     inputs.spicetify-nix.homeManagerModules.spicetify
     # inputs.anyrun.homeManagerModules.default
-    inputs.nix-index-database.hmModules.nix-index
+    inputs.nix-index-database.homeModules.nix-index
     inputs.sops-nix.homeManagerModules.sops
     inputs.hyprland.homeManagerModules.default
     inputs.ags.homeManagerModules.default
-    inputs.nixvim.homeManagerModules.nixvim
+    inputs.nixvim.homeModules.nixvim
     inputs.nixcord.homeModules.nixcord
     # inputs.ghostty.homeModules.default
     # }}}

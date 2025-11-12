@@ -5,7 +5,11 @@
     zen-browser.url = "github:0xc000022070/zen-browser-flake";
     # {{{ Nixpkgs instances
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs-old.url = "github:nixos/nixpkgs/nixos-25.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    flake-parts = {
+      url = "github:hercules-ci/flake-parts";
+    };
     # }}}
     # {{{ Additional package repositories
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
@@ -90,8 +94,7 @@
     # {{{ Nixvim
     nixvim = {
       url = "github:nix-community/nixvim";
-      # If using a stable channel you can use `url = "github:nix-community/nixvim/nixos-<version>"`
-      inputs.nixpkgs.follows = "nixpkgs";
+      # inputs.nixpkgs.follows = "nixpkgs-old";
     };
     # }}}
 
@@ -136,7 +139,6 @@
     # {{{ Theming
     stylix.url = "github:danth/stylix";
     stylix.inputs.nixpkgs.follows = "nixpkgs";
-    stylix.inputs.home-manager.follows = "home-manager";
 
     base16-schemes.url = "github:tinted-theming/schemes";
     base16-schemes.flake = false;

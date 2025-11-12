@@ -37,7 +37,7 @@
 	};
 
 	virtualisation.oci-containers.containers."paperless-ai-rag" = {
-		image = "clusterzx/paperless-ai:rag";
+		image = "clusterzx/paperless-ai:latest";
 		environment = {
 			PUID = "1000";
 			PGID = "1000";

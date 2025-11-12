@@ -90,8 +90,9 @@ in {
       name = subdomain;
       value = {
         settings = {
-          BIND_NETWORK = "tcp";
-          BIND = ":${toString (port + 200)}";
+          # Use per-instance Unix sockets in runtime dir (multi-instance safe)
+          BIND = "/run/anubis/anubis-${subdomain}/bind";
+          METRICS_BIND = "/run/anubis/anubis-${subdomain}/metrics";
           TARGET = "http://localhost:${toString port}";
         };
       };

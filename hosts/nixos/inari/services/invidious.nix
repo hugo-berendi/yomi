@@ -1,8 +1,15 @@
 {
   config,
   pkgs,
+  lib,
   ...
 }: {
+  users.groups.invidious = {};
+  users.users.invidious = {
+    isSystemUser = true;
+    group = "invidious";
+  };
+
   sops.secrets.invidious_hmac_key.sopsFile = ../secrets.yaml;
   sops.templates."invidious_hmac_key.json" = {
     content = ''{ "hmac_key": "${config.sops.placeholder.invidious_hmac_key}" }'';
@@ -30,7 +37,18 @@
     package = pkgs.invidious;
   };
 
+  systemd.services.invidious.serviceConfig = {
+    DynamicUser = lib.mkForce false;
+    User = "invidious";
+    Group = "invidious";
+  };
+
   environment.persistence."/persist/state".directories = [
-    "/var/lib/invidious"
+    {
+      directory = "/var/lib/invidious";
+      user = "invidious";
+      group = "invidious";
+      mode = "0700";
+    }
   ];
 }

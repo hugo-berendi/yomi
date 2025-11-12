@@ -14,6 +14,9 @@ python313.pkgs.buildPythonPackage rec {
     sha256 = "sha256:vrr+qnEUnMkJSu0EUrtW9Qoih0F4bNkYgCDI/nmwYW0=";
   };
 
+  pyproject = true;
+  build-system = with python313.pkgs; [setuptools];
+
   propagatedBuildInputs = with python313.pkgs; [
     requests
   ];

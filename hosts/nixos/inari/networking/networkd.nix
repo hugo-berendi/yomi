@@ -10,11 +10,11 @@
 # - vlan10: used by the WIFI network this device induces
 # - vlan20: private services accessible by me only
 # - vlan30: public services accessible by the internet
-{
+{lib, ...}: {
   # Forward packets (IPV4 only)
   boot.kernel.sysctl = {
     "net.ipv4.conf.all.forwarding" = true;
-    "net.ipv6.conf.all.forwarding" = false;
+    "net.ipv6.conf.all.forwarding" = lib.mkForce false;
   };
 
   # Useful for troubleshooting
@@ -132,3 +132,4 @@
     };
   };
 }
+

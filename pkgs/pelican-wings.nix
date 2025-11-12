@@ -4,7 +4,7 @@
     then "amd64"
     else if pkgs.stdenv.isAarch64
     then "arm64"
-    else throw "Unsupported architecture for Pelican Wings: ${pkgs.stdenv.system}";
+    else throw "Unsupported architecture for Pelican Wings: ${pkgs.stdenv.hostPlatform.system}";
 
   pelican-wings = pkgs.stdenv.mkDerivation rec {
     pname = "pelican-wings";

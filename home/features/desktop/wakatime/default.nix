@@ -8,7 +8,7 @@
     path = "${config.home.homeDirectory}/.wakatime.cfg";
   };
 
-  home.packages = [pkgs.wakatime];
+  home.packages = [pkgs.wakatime-cli];
 
   home.shellAliases = {
     wakatime = "wakatime-cli";

@@ -1,11 +1,15 @@
-{config, ...}: {
+{
+  config,
+  lib,
+  ...
+}: {
   yomi.cloudflared.at.ai.port = config.yomi.ports.open-webui;
   services.ollama = {
     enable = true;
     host = "0.0.0.0";
     port = config.yomi.ports.ollama;
     user = "ollama";
-    models = "/persist/data/models";
+    models = "/raid5pool/ollama/models";
     loadModels = [
       "deepseek-r1:7b"
       "nomic-embed-text:latest"
@@ -17,6 +21,7 @@
   };
 
   systemd.services.ollama.serviceConfig = {
+    DynamicUser = lib.mkForce false;
     MemoryMax = "0";
     LimitAS = "infinity";
     LimitMEMLOCK = "infinity";
@@ -43,6 +48,8 @@
     };
   };
 
+  systemd.services.open-webui.serviceConfig.DynamicUser = lib.mkForce true;
+
   virtualisation.oci-containers.containers."jupyter-ai" = {
     image = "jupyter/minimal-notebook:latest";
     environment = {
@@ -58,8 +65,8 @@
     log-driver = "journald";
   };
 
-  environment.persistence."/persist/state".directories = [
-    "/var/lib/ollama"
-    "/var/lib/open-webui"
-  ];
+  fileSystems."/var/lib/ollama" = {
+    device = "/raid5pool/ollama/state";
+    options = ["bind"];
+  };
 }

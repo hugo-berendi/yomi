@@ -9,7 +9,6 @@
       jupyterhub
       jupyterlab
       jupyterhub-systemdspawner
-      jupyter-collaboration
       jupyterlab-git
     ]);
   # }}}

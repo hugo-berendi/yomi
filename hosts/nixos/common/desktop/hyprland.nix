@@ -3,14 +3,30 @@
   pkgs,
   inputs,
   ...
-}: {
-  imports = [
-    ./hyprlock.nix
-  ];
-  programs.hyprland = {
-    enable = true;
-    package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
-    xwayland.enable = true;
+}: let
+  cfg = config.yomi.hyprland;
+in {
+  options.yomi.hyprland = {
+    enable = lib.mkEnableOption "yomi's hyprland integration";
   };
-  services.udev.packages = [pkgs.swayosd];
+
+  config = lib.mkIf cfg.enable {
+    assertion = [
+      {
+        message = "Hyprland can only be used on graphical machines";
+        assertion = config.yomi.machine.graphical;
+      }
+    ];
+
+    security.pam.services.hyprlock = {};
+
+    programs.hyprland = {
+      enable = true;
+      package = pkgs.hyprland;
+    };
+
+    services.udev.packages = [pkgs.swayosd];
+
+    environment.systemPackages = [config.programs.hyprland.package];
+  };
 }

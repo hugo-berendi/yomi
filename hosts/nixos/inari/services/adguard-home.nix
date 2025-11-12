@@ -30,13 +30,13 @@
   };
   # }}}
   # {{{ Persistence
-  environment.persistence."/persist/state".directories = [
-    {
-      directory = "/var/lib/AdGuardHome";
-      user = "adguardhome";
-      group = "adguardhome";
-      mode = "0750";
-    }
-  ];
+  # environment.persistence."/persist/state".directories = [
+  #   {
+  #     directory = "/var/lib/AdGuardHome";
+  #     user = "adguardhome";
+  #     group = "adguardhome";
+  #     mode = "0750";
+  #   }
+  # ];
   # }}}
 }

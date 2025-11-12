@@ -29,6 +29,7 @@
     mediaLocation = "/raid5pool/media/photos";
     secretsFile = config.sops.secrets.immich_secrets.path;
   };
+
   # }}}
   # {{{ Persistence
   environment.persistence."/persist/state".directories = [

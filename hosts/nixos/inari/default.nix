@@ -2,7 +2,10 @@
   # {{{ Imports
   imports = [
     ../common
-    ../common/users/guest.nix
+
+    # ./networking
+    ./filesystems
+    ./hardware
 
     ../common/services/anubis.nix
     ../common/services/meilisearch.nix
@@ -42,16 +45,14 @@
     ./services/pelican
     ./services/owncloud.nix
     ./services/stirling-pdf.nix
-
-    # ./networking
-    ./filesystems
-    ./hardware
   ];
   # }}}
 
   system.stateVersion = "24.05";
 
-  yomi.acme.enable = true;
+  yomi.pilot.name = "hugob";
+  yomi.machine.interactible = true;
+  yomi.containers.enable = true;
 
   # {{{ Machine ids
   networking.hostName = "inari";

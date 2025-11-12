@@ -10,15 +10,6 @@
     enable = true;
     package = pkgs.gitFull;
 
-    userName = "hugo-berendi";
-    userEmail = "git@hugo-berendi.de";
-
-    # {{{ Delta pager
-    delta = {
-      enable = true;
-      options = {};
-    };
-    # }}}
     # {{{ Globally ignored files
     ignores = [
       # Syncthing
@@ -30,23 +21,28 @@
       ".envrc"
     ];
     # }}}
-    # {{{ Aliases
-    aliases = {
-      # Print history nicely
-      graph = "log --decorate --oneline --graph";
 
-      # Print last commit's hash
-      hash = "log -1 --format='%H'";
+    settings = {
+      user = {
+        name = "hugo-berendi";
+        email = "git@hugo-berendi.de";
+      };
 
-      # Count the number of commits
-      count = "rev-list --count --all";
+      alias = {
+        # Print history nicely
+        graph = "log --decorate --oneline --graph";
 
-      # Pull with rebase enabled
-      rp = "pull --rebase";
-    };
+        # Print last commit's hash
+        hash = "log -1 --format='%H'";
+
+        # Count the number of commits
+        count = "rev-list --count --all";
+
+        # Pull with rebase enabled
+        rp = "pull --rebase";
+      };
     # }}}
 
-    extraConfig = {
       github.user = "hugo-berendi";
       hub.protocol = "ssh";
       core.editor = "nvim";
@@ -82,7 +78,12 @@
     enable = true;
     settings.git_protocol = "ssh";
   };
-  # }}}
+
+  programs.delta = {
+    enable = true;
+    options = {};
+    enableGitIntegration = true;
+  };  # }}}
 
   sops.secrets.GITHUB_TOKEN.sopsFile = ./secrets.yaml;
 

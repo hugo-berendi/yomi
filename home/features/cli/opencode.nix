@@ -7,6 +7,9 @@
 }: {
   home.packages = with inputs.nix-ai-tools.packages.${pkgs.system}; [
     gemini-cli
+    pkgs.nodejs
+    pkgs.nix
+    pkgs.bash
   ];
   programs.opencode = {
     enable = true;
@@ -55,6 +58,19 @@
             enabled = true;
             command = ["${pkgs.nix}/bin/nix" "run" "github:utensils/mcp-nixos" "--"];
           };
+
+          deepwiki = {
+            type = "local";
+            enabled = true;
+            command = ["${pkgs.nodejs}/bin/npx" "-y" "deepwiki-mcp"];
+          };
+        }
+        // lib.optionalAttrs (config.sops.secrets ? "EXA_API_KEY") {
+          exa = {
+            type = "local";
+            enabled = true;
+            command = ["${pkgs.bash}/bin/bash" "-c" "EXA_API_KEY=$(cat ${config.sops.secrets.EXA_API_KEY.path}) ${pkgs.nodejs}/bin/npx -y exa-mcp-server"];
+          };
         }
         // lib.optionalAttrs (config.sops.secrets ? "GITHUB_TOKEN") {
           github = {
@@ -78,6 +94,9 @@
       sopsFile = ./secrets.yaml;
     };
     SEARXNG_URL = {
+      sopsFile = ./secrets.yaml;
+    };
+    EXA_API_KEY = {
       sopsFile = ./secrets.yaml;
     };
   };

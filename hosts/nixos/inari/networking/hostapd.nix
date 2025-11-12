@@ -2,8 +2,7 @@
 # hostapd creates a WIFI network my other devices can connect to
 let
   interface = "wlp2s0";
-in
-{
+in {
   sops.secrets.wifi_password = {
     sopsFile = ../secrets.yaml;
   };
@@ -20,7 +19,7 @@ in
         authentication = {
           # This device doesn't support wpa3-sae
           mode = "wpa2-sha1";
-          wpaPasswordFile = config.sops.secrets.wifi_password;
+          wpaPasswordFile = config.sops.secrets.wifi_password.path;
         };
 
         settings = {
@@ -31,3 +30,4 @@ in
     };
   };
 }
+

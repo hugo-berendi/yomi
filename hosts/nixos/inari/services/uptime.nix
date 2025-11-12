@@ -1,4 +1,8 @@
-{config, ...}: {
+{
+  config,
+  lib,
+  ...
+}: {
   # {{{ Reverse proxy
   yomi.cloudflared.at.uptime.port = config.yomi.ports.uptime-kuma;
   # }}}
@@ -10,8 +14,9 @@
       UPTIME_KUMA_PORT = builtins.toString config.yomi.cloudflared.at.uptime.port;
     };
   };
-  # }}}
-  # {{{ Persistence
+  
+  systemd.services.uptime-kuma.serviceConfig.DynamicUser = lib.mkForce false;
+  
   environment.persistence."/persist/state".directories = [
     "/var/lib/uptime-kuma"
   ];

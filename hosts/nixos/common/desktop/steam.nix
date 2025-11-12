@@ -1,13 +1,38 @@
-{...}: {
-  programs.steam = {
-    enable = true;
-    remotePlay.openFirewall = true; # Open ports in the firewall for Steam Remote Play
-    dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
-    gamescopeSession.enable = true;
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}: {
+  config = lib.mkIf config.yomi.machine.gaming {
+    assertion = [
+      {
+        message = "Gaming module can only be used on graphical machines";
+        assertion = config.yomi.machine.graphical;
+      }
+    ];
+
+    programs.gamescope = {
+      enable = true;
+      capSysNice = true;
+      args = [
+        "--backend"
+        "sdl"
+      ];
+    };
+
+    programs.steam = {
+      enable = true;
+      remotePlay.openFirewall = true;
+      dedicatedServer.openFirewall = true;
+      gamescopeSession.enable = true;
+      extraPackages = [
+        pkgs.gamescope
+        pkgs.gamemode
+      ];
+      extraCompatPackages = [
+        pkgs.proton-ge-bin
+      ];
+    };
   };
-  # Persist Steam libraries and metadata with impermanence
-  environment.persistence."/persist/state".directories = [
-    "/home/hugob/.steam"
-    "/home/hugob/.local/share/Steam"
-  ];
 }

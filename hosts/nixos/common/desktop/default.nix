@@ -1,9 +1,24 @@
 {
+  config,
+  lib,
+  ...
+}: {
   imports = [
     ./pipewire.nix
-    ./quietboot.nix
     ./xdg-portal.nix
+    ./steam.nix
+    ./unicode.nix
+    ./quietboot.nix
+    ./hyperland.nix
   ];
 
-  stylix.targets.gtk.enable = true;
+  config = lib.mkIf config.yomi.machine.graphical {
+    stylix.targets.gtk.enable = true;
+
+    # https://nixos.wiki/wiki/Bluetooth
+    hardware.bluetooth = {
+      enable = true;
+      powerOnBoot = true;
+    };
+  };
 }
