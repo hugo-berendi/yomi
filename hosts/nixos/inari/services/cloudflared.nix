@@ -18,5 +18,7 @@
       default = "http_status:404";
     };
   };
+
+  yomi.anubis.enable = true;
   # }}}
 }

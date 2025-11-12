@@ -3,7 +3,7 @@
   imports = [
     ../common
 
-    # ./networking
+    ./networking
     ./filesystems
     ./hardware
 
@@ -42,7 +42,7 @@
     ./services/loki.nix
     ./services/playit.nix
     ./services/anonaddy.nix
-    ./services/pelican
+    # ./services/pelican
     ./services/owncloud.nix
     ./services/stirling-pdf.nix
   ];
@@ -53,6 +53,7 @@
   yomi.pilot.name = "hugob";
   yomi.machine.interactible = true;
   yomi.containers.enable = true;
+  yomi.wireless.enable = false;
 
   # {{{ Machine ids
   networking.hostName = "inari";

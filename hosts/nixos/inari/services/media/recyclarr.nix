@@ -1,6 +1,6 @@
 {config, ...}: {
   nixarr.recyclarr = {
-    enable = true;
+    enable = false;
     schedule = "daily";
     configuration = {
       sonarr = {
