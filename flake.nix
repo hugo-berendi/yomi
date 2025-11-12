@@ -98,38 +98,6 @@
     };
     # }}}
 
-    # {{{ anyrun
-    anyrun = {
-      url = "github:Kirottu/anyrun";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    anyrun-nixos-options = {
-      url = "github:n3oney/anyrun-nixos-options";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    anyrun-rbw = {
-      url = "github:uttarayan21/anyrun-rbw";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    anyrun-hyprwin = {
-      url = "github:uttarayan21/anyrun-hyprwin";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    anyrun-plugins = {
-      url = "github:wuliuqii/anyrun-plugins";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    # anyrun-spotify = {
-    #   url = "github:hugo-berendi/anyrun-spotify";
-    #   inputs.nixpkgs.follows = "nixpkgs";
-    # };
-    # }}}
-
     nix-flatpak.url = "github:gmodena/nix-flatpak";
 
     # Spotify client with theming support
