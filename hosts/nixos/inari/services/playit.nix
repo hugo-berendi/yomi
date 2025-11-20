@@ -1,19 +1,12 @@
-{
-  inputs,
-  config,
-  lib,
-  ...
-}: {
-  imports = [inputs.playit-nixos-module.nixosModules.default];
-
-  sops.secrets.playit_secret = lib.mkIf config.services.playit.enable {
+{config, lib, ...}: {
+  sops.secrets.playit_secret = lib.mkIf config.yomi.playit.enable {
     sopsFile = ../secrets.yaml;
-    owner = config.services.playit.user;
-    group = config.services.playit.group;
+    owner = config.yomi.playit.user;
+    group = config.yomi.playit.group;
   };
 
-  services.playit = {
-    enable = false;
+  yomi.playit = {
+    enable = true;
     user = "playit";
     group = "playit";
     secretPath = config.sops.secrets.playit_secret.path;
