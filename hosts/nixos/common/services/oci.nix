@@ -12,14 +12,14 @@ in {
   config = lib.mkIf cfg.enable {
     virtualisation.oci-containers.backend = "docker";
 
-    environment.persistence = {
-      "/persist/state".directories = [
-        "/var/lib/containers/storage"
-      ];
+    virtualisation.docker = {
+      enable = true;
+      autoPrune.enable = true;
+    };
 
-      "/persist/local/cache".directories = [
-        "/var/lib/containers/cache"
-      ];
+    environment.persistence = {
+      "/persist/state".directories = ["/var/lib/containers/storage"];
+      "/persist/local/cache".directories = ["/var/lib/containers/cache"];
     };
   };
 }
