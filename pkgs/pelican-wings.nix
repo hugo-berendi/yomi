@@ -8,11 +8,11 @@
 
   pelican-wings = pkgs.stdenv.mkDerivation rec {
     pname = "pelican-wings";
-    version = "v1.0.0-beta18";
+    version = "v1.0.0-beta19";
 
     src = pkgs.fetchurl {
       url = "https://github.com/pelican-dev/wings/releases/download/${version}/wings_linux_${arch}";
-      hash = "sha256-F/4q+VSxTl25H4gB+FRgT6xR8RVuBun3/2a52+Ykdhg=";
+      hash = "sha256-JosJtqKoPPFGxEa2AnS0bZ6w3w1X4kyfozqQN6YZZOc=";
     };
 
     dontUnpack = true;
