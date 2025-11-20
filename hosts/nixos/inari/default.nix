@@ -45,6 +45,8 @@
     # ./services/pelican
     ./services/owncloud.nix
     ./services/stirling-pdf.nix
+    ./services/vrising.nix
+    ./services/octodns-ddns.nix
   ];
   # }}}
 
@@ -54,6 +56,7 @@
   yomi.machine.interactible = true;
   yomi.containers.enable = true;
   yomi.wireless.enable = false;
+  yomi.tailscale.exitNode = true;
 
   # {{{ Machine ids
   networking.hostName = "inari";
