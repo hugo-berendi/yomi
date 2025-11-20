@@ -8,7 +8,29 @@
 
   publicPortsString = lib.strings.concatStringsSep ", " publicPorts;
   privatePortsString = lib.strings.concatStringsSep ", " privatePorts;
+
+
+
+  exitNodeForwardRule = lib.optionalString config.yomi.tailscale.exitNode ''
+    # Allow Tailscale exit node traffic
+    iifname "tailscale0" oifname "eno1" accept
+  '';
+
+  exitNodePreroutingChain = lib.optionalString config.yomi.tailscale.exitNode ''
+    chain prerouting {
+      type nat hook prerouting priority -100; policy accept;
+    }
+  '';
 in {
+  systemd.services.nftables = {
+    postStart = ''
+      ${lib.getExe' config.systemd.package "systemctl"} restart docker.service
+    '';
+    serviceConfig.ExecReload = lib.mkAfter [
+      "${lib.getExe' config.systemd.package "systemctl"} restart docker.service"
+    ];
+  };
+
   networking = {
     # No local firewall.
     nat.enable = false;
@@ -43,9 +65,11 @@ in {
 
             # Allow forwarding from LAN to WAN
             iifname { "br0", "br1" } oifname "eno1" accept
-            
+
             # Allow WiFi hotspot (br1) to access main LAN (br0)
             iifname "br1" oifname "br0" accept
+
+            ${exitNodeForwardRule}
 
             # Allow established and related connections back to LAN
             ct state { established, related } accept
@@ -64,7 +88,7 @@ in {
             # Private services
             tcp dport { ${privatePortsString} } accept
             tcp dport { 22, 80, 443 } accept comment "SSH, HTTP and HTTPS"
-            udp dport { 53, 67 } accept comment "DNS and DHCP"
+            udp dport { 53, 67, 9876, 9877 } accept comment "DNS, DHCP, and VRising"
           }
         }
 
@@ -73,6 +97,8 @@ in {
             type nat hook postrouting priority 100; policy accept;
             oifname { "eno1", "br0" } masquerade
           }
+
+          ${exitNodePreroutingChain}
         }
       '';
     };
