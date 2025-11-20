@@ -54,6 +54,12 @@ in {
                 default = "http";
               };
 
+              enableAnubis = lib.mkOption {
+                description = "Enable Anubis bot protection for this service";
+                type = lib.types.bool;
+                default = true;
+              };
+
               url = lib.mkOption {
                 description = "External https url used to access this host";
                 type = lib.types.str;
@@ -73,12 +79,21 @@ in {
         host,
         subdomain,
         port,
+        protocol,
+        enableAnubis,
         ...
       }: let
         anubisPort = port + 200;
+        targetPort = if enableAnubis then anubisPort else port;
       in {
         name = host;
-        value = "http://localhost:${toString anubisPort}";
+        value = {
+          service = "${protocol}://localhost:${toString targetPort}";
+          originRequest = {
+            noTLSVerify = protocol != "https";
+            httpHostHeader = host;
+          };
+        };
       }
     )
     cfg.at;
@@ -88,6 +103,7 @@ in {
       subdomain,
       port,
       protocol,
+      enableAnubis,
       ...
     }: let
       anubisPort = port + 200;
@@ -101,11 +117,12 @@ in {
           METRICS_BIND_NETWORK = "tcp";
           METRICS_BIND = "127.0.0.1:${toString metricsPort}";
           TARGET = "${protocol}://localhost:${toString port}";
+          USE_REMOTE_ADDRESS = "true";
         };
       };
     };
   in
-    lib.attrsets.mapAttrs' mkAnubisInstance cfg.at;
+    lib.attrsets.mapAttrs' mkAnubisInstance (lib.attrsets.filterAttrs (_: cfg: cfg.enableAnubis) cfg.at);
 
   config.yomi.dns.records = let
     mkDnsRecord = {subdomain, ...}: {
