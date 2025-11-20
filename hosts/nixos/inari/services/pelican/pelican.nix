@@ -7,7 +7,7 @@
   dataDir = "/persist/data/pelican";
   logsDir = "/persist/state/pelican/logs";
 in {
-  yomi.nginx.at.pelican.port = config.yomi.ports.pelican-panel;
+  yomi.cloudflared.at.pelican.port = config.yomi.ports.pelican-panel;
 
   systemd.tmpfiles.rules = [
     "d ${dataDir} 0777 root root"
@@ -16,10 +16,10 @@ in {
   ];
 
   virtualisation.oci-containers.containers."pelican-panel" = {
-    image = "ghcr.io/pelican-dev/panel:latest";
+    image = "ghcr.io/pelican-dev/panel:v1.0.0-beta25";
     environment = {
       "ADMIN_EMAIL" = "pelican@hugo-berendi.de";
-      "APP_URL" = config.yomi.nginx.at.pelican.url;
+      "APP_URL" = config.yomi.cloudflared.at.pelican.url;
       "XDG_DATA_HOME" = "/pelican-data";
     };
     volumes = [
@@ -28,7 +28,7 @@ in {
       "${toString ./Caddyfile}:/etc/caddy/Caddyfile"
     ];
     ports = [
-      "${toString config.yomi.nginx.at.pelican.port}:80"
+      "${toString config.yomi.cloudflared.at.pelican.port}:80"
     ];
     log-driver = "journald";
     extraOptions = [
