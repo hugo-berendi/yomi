@@ -7,5 +7,5 @@
   yomi-persistence = import ./persistence.nix;
 
   # Should upstream
-  discord = import ./discord.nix;
+  # discord = import ./discord.nix;
 }
