@@ -79,6 +79,12 @@ in
           value = "expected-bite.gl.at.ply.gg.";
           ttl = 600;
         }
+        {
+          at = "vrising";
+          type = "CNAME";
+          value = "wan.hugo-berendi.de.";
+          ttl = 600;
+        }
       ]
     ];
   }

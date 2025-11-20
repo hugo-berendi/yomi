@@ -5,24 +5,7 @@
   extraModules ? [],
 }: let
   #  {{{ Prepare packages
-  # octodns = pkgs.python3Packages.callPackage (import ./octodns.nix) {};
-  # octodns = pkgs.octodns.overrideAttrs (_: {
-  #   version = "unstable-2024-10-08";
-  #   src = pkgs.fetchFromGitHub {
-  #     owner = "octodns";
-  #     repo = "octodns";
-  #     rev = "a1456cb1fcf00916ca06b204755834210a3ea9cf";
-  #     sha256 = "192hbxhb0ghcbzqy3h8q194n4iy7bqfj9ra9qqjff3x2z223czxb";
-  #   };
-  # });
-  # octodns-cloudflare = pkgs.python3Packages.callPackage (import ./octodns-cloudflare.nix) {
-  #   inherit octodns;
-  # };
-  # octodns-ddns = pkgs.python312Packages.callPackage (import ./octodns-ddns.nix) {
-  #   inherit octodns;
-  # };
-  # fullOctodns = octodns.withProviders (_ps: [octodns-cloudflare]);
-  fullOctodns = pkgs.octodns.withProviders (ps: [pkgs.octodns-providers.cloudflare]);
+  fullOctodns = pkgs.octodns.withProviders (ps: [pkgs.octodns-providers.cloudflare pkgs.octodns-providers.ddns]);
 in
   #  }}}
   rec {
