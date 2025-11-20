@@ -13,6 +13,7 @@
     inputs.nix-flatpak.nixosModules.nix-flatpak
     inputs.authentik-nix.nixosModules.default
     inputs.nixarr.nixosModules.default
+    inputs.playit-nixos-module.nixosModules.default
 
     ../../../dns/implementation/nixos-module.nix
     ../../../dns/implementation/nixos-module-assertions.nix
