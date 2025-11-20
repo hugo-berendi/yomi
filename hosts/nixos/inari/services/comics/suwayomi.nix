@@ -1,7 +1,7 @@
 {config, ...}: let
   comicDir = "/raid5pool/media/comics";
 in {
-  yomi.cloudflared.at.suwayomi.port = 4567;
+  yomi.nginx.at.suwayomi.port = 4567;
 
   services.suwayomi-server = {
     enable = true;
@@ -12,14 +12,15 @@ in {
         downloadsPath = comicDir;
         autoDownloadNewChapters = true;
 
-        port = config.yomi.cloudflared.at.suwayomi.port;
+        port = config.yomi.nginx.at.suwayomi.port;
 
         extensionRepos = [
           "https://raw.githubusercontent.com/keiyoushi/extensions/repo/index.min.json"
           "https://raw.githubusercontent.com/suwayomi/tachiyomi-extension/repo/index.min.json"
         ];
 
-        flareSolverrEnabled = false;
+        flareSolverrEnabled = true;
+        flareSolverrUrl = "http://localhost:${toString config.yomi.ports.flaresolverr}";
       };
     };
   };
