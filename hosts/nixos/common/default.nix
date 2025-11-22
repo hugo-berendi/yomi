@@ -11,7 +11,7 @@
     inputs.stylix.nixosModules.stylix
     inputs.sops-nix.nixosModules.sops
     inputs.nix-flatpak.nixosModules.nix-flatpak
-    inputs.authentik-nix.nixosModules.default
+
     inputs.nixarr.nixosModules.default
     inputs.playit-nixos-module.nixosModules.default
 

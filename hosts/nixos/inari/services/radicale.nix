@@ -17,7 +17,7 @@ in {
   };
 
   systemd.tmpfiles.rules = ["d ${dataDir} 0700 radicale radicale"];
-  yomi.cloudflared.at.cal.port = port;
+  yomi.nginx.at.cal.port = port;
   sops.secrets.radicale_htpasswd = {
     sopsFile = ../secrets.yaml;
     owner = config.systemd.services.radicale.serviceConfig.User;

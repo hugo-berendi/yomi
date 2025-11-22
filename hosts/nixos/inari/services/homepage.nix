@@ -102,16 +102,10 @@ in {
             };
           }
           {
-            Authentik = {
-              icon = "authentik.svg";
-              href = "https://authentik.hugo-berendi.de";
-              description = "OAuth, OIDC, SSO and more";
-              widget = {
-                type = "authentik";
-                url = "https://authentik.hugo-berendi.de";
-                key = "{{HOMEPAGE_VAR_AUTHENTIK_API_KEY}}";
-                version = 2;
-              };
+            "Pocket ID" = {
+              icon = "mdi-fingerprint";
+              href = "https://pocket-id.hugo-berendi.de";
+              description = "Passkey authentication & OIDC";
             };
           }
           {

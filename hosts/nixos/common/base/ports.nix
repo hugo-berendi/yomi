@@ -34,7 +34,7 @@
     sabnzbd = 8430;
     suwayomi = 8431;
     home-assistant = 8123;
-    authentik = 8432;
+    pocket-id = 8432;
     keycloak = 8433;
     immich = 8434;
     paperless = 8435;

@@ -1,16 +1,10 @@
 {config, ...}: {
-  # {{{ secrets
-  sops.secrets.ocis_env = {
-    sopsFile = ../secrets.yaml;
-  };
-  # }}}
   # {{{ reverse proxy
   yomi.nginx.at.cloud.port = config.yomi.ports.owncloud;
   # }}}
   # {{{ general config
   services.ocis = {
     enable = true;
-    environmentFile = config.sops.secrets.ocis_env.path;
     address = "0.0.0.0";
     port = config.yomi.ports.owncloud;
     url = config.yomi.nginx.at.cloud.url;
@@ -31,20 +25,8 @@
       OCIS_INSECURE = "true";
       PROXY_TLS = "false";
 
-      # External OIDC (Authentik)
-      OCIS_OIDC_ISSUER = "https://authentik.hugo-berendi.de/application/o/ocis/";
-      PROXY_OIDC_ISSUER = "https://authentik.hugo-berendi.de/application/o/ocis/";
-      PROXY_AUTOPROVISION_ACCOUNTS = "true";
-      PROXY_ROLE_ASSIGNMENT_DRIVER = "oidc";
-      
-      # Web UI OIDC configuration  
-      WEB_OIDC_METADATA_URL = "https://authentik.hugo-berendi.de/application/o/ocis/.well-known/openid-configuration";
-      WEB_OIDC_AUTHORITY = "https://authentik.hugo-berendi.de/application/o/ocis";
-      
       # Disable non-essential services
-      OCIS_EXCLUDE_RUN_SERVICES = "search";
-      PROXY_USER_OIDC_CLAIM = "preferred_username";
-      PROXY_USER_CS3_CLAIM = "username";
+      OCIS_EXCLUDE_RUN_SERVICES = "search,graph";
     };
   };
   # }}}

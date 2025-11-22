@@ -36,7 +36,7 @@
     ./services/media
     ./services/home-assistant.nix
     ./services/uptime.nix
-    ./services/authentik.nix
+    ./services/pocket-id.nix
     ./services/prometheus.nix
     ./services/grafana.nix
     ./services/loki.nix
