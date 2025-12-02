@@ -2,6 +2,7 @@
 	config,
 	lib,
 	pkgs,
+	options,
 	...
 }: let
 	cfg = config.yomi.yubikey;
@@ -102,7 +103,8 @@ in {
 		};
 	};
 
-	config = lib.mkIf cfg.enable {
+	config = lib.mkMerge ([
+		(lib.mkIf cfg.enable {
 		security.pam.services = lib.mkMerge [
 			(lib.mkIf cfg.pam.u2f.enable {
 				login.u2fAuth = true;
@@ -120,8 +122,10 @@ in {
 		security.pam.u2f = lib.mkIf cfg.pam.u2f.enable {
 			enable = true;
 			control = "sufficient";
-			cue = true;
-			appId = cfg.pam.appId;
+			settings = {
+				cue = true;
+				appid = cfg.pam.u2f.appId;
+			};
 		};
 
 		security.pam.yubico = lib.mkIf cfg.pam.challengeResponse.enable {
@@ -172,32 +176,49 @@ in {
 			YOMI_YUBI_AGE_RECIPIENTS = lib.concatStringsSep "," cfg.age.recipients;
 		};
 
-		home-manager.users = lib.genAttrs cfg.users (user: {
-			services.gpg-agent = lib.mkIf cfg.ssh.enableAgent {
-				enable = true;
-				sshKeys = cfg.ssh.publicKeys;
-				pinentryPackage = lib.mkDefault pkgs.pinentry-curses;
-				enableFishIntegration = true;
-				extraConfig = ''
-					no-allow-external-cache
-				'';
-			};
-
-			xdg.configFile."Yubico/u2f_keys" = lib.mkIf (cfg.pam.u2f.enable && cfg.pam.u2f.secretPath != null) {
-				source = config.sops.secrets."yubikey/u2f_keys".path;
-			};
-
-			yomi.persistence.at.state.apps.yubico.directories = [
-				".yubico"
-			];
-		});
-
 		sops.secrets = lib.mkIf (cfg.pam.u2f.enable && cfg.pam.u2f.secretPath != null) {
 			"yubikey/u2f_keys" = {
 				sopsFile = cfg.pam.u2f.secretPath;
-				mode = "0600";
-				owner = "pilot";
+				mode = "0644";
 			};
 		};
-	};
+
+		systemd.services = lib.mkIf (cfg.pam.u2f.enable && cfg.pam.u2f.secretPath != null) (
+			lib.genAttrs (map (user: "yubikey-u2f-link-${user}") cfg.users) (name: let
+				user = builtins.replaceStrings ["yubikey-u2f-link-"] [""] name;
+			in {
+				description = "Link YubiKey U2F keys for ${user}";
+				wantedBy = ["multi-user.target"];
+				after = ["sops-nix.service"];
+				serviceConfig = {
+					Type = "oneshot";
+					RemainAfterExit = true;
+					User = user;
+				};
+				script = ''
+					mkdir -p "$HOME/.config/Yubico"
+					ln -sf ${config.sops.secrets."yubikey/u2f_keys".path} "$HOME/.config/Yubico/u2f_keys"
+				'';
+			})
+		);
+		})
+	] ++ lib.optionals (options ? home-manager) [
+		{
+			home-manager.users = lib.mkIf cfg.enable (lib.genAttrs cfg.users (user: {
+				services.gpg-agent = lib.mkIf cfg.ssh.enableAgent {
+					enable = true;
+					sshKeys = cfg.ssh.publicKeys;
+					pinentry.package = lib.mkDefault pkgs.pinentry-curses;
+					enableFishIntegration = true;
+					extraConfig = ''
+						no-allow-external-cache
+					'';
+				};
+
+				yomi.persistence.at.state.apps.yubico.directories = [
+					".yubico"
+				];
+			}));
+		}
+	]);
 }

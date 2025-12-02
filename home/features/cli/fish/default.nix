@@ -35,7 +35,6 @@ in {
     ./shell-aliases.nix
     ./functions.nix
     ./shell-init.nix
-    ./login-shell-init.nix
   ];
 
   # {{{ Fzf

@@ -52,6 +52,7 @@
     n8n = 8447;
     komga = 8448;
     adguard = 8449;
+    adguard-dns = 8476;
     radarr = 8450;
     readarr = 8451;
     lidarr = 8452;

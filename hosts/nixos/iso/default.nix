@@ -12,7 +12,7 @@
   imports = [
     "${modulesPath}/installer/cd-dvd/installation-cd-minimal.nix"
 
-    ../common/global
+    ../common
   ];
   # }}}
   # {{{ Automount kagutsuchi
@@ -44,6 +44,8 @@
     ];
 
   boot.initrd.systemd.enable = lib.mkForce false;
+
+  yomi.wireless.enable = false;
 
   # Fast but bad compression
   # isoImage.squashfsCompression = "gzip -Xcompression-level 1";

@@ -51,7 +51,6 @@
       grimblast
       brightnessctl
       pamixer
-      kdePackages.xwaylandvideobridge
       wl-screenrec
     ];
   # }}}

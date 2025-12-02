@@ -25,6 +25,12 @@ in {
         if cfg.exitNode
         then "both"
         else "client";
+
+      extraUpFlags =
+        lib.optionals cfg.exitNode [
+          "--advertise-exit-node"
+          "--ssh"
+        ];
     };
 
     environment.persistence."/persist/state".directories = ["/var/lib/tailscale"];

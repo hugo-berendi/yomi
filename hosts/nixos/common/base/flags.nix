@@ -17,7 +17,7 @@
     };
 
     interactible = lib.mkOption {
-      default = config.satellite.machine.graphical;
+      default = config.yomi.machine.graphical;
       type = lib.types.bool;
       description = ''
         Whether this machine is physically interactible with. Enables things

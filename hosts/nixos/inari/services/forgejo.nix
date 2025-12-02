@@ -11,7 +11,10 @@
   };
   # }}}
   # {{{ Reverse proxy
-  yomi.cloudflared.at.git.port = config.yomi.ports.forgejo;
+  yomi.cloudflared.at.git = {
+    port = config.yomi.ports.forgejo;
+    enableAnubis = true;
+  };
   # }}}
   # {{{ DNS records
   yomi.dns.records = [

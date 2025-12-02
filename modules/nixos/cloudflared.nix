@@ -57,7 +57,7 @@ in {
               enableAnubis = lib.mkOption {
                 description = "Enable Anubis bot protection for this service";
                 type = lib.types.bool;
-                default = true;
+                default = false;
               };
 
               url = lib.mkOption {
@@ -84,7 +84,10 @@ in {
         ...
       }: let
         anubisPort = port + 200;
-        targetPort = if enableAnubis then anubisPort else port;
+        targetPort =
+          if enableAnubis
+          then anubisPort
+          else port;
       in {
         name = host;
         value = {

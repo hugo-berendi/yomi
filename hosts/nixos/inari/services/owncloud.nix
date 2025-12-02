@@ -1,13 +1,68 @@
-{config, ...}: {
+{config, ...}: let
+  pocketIdUrl = config.yomi.cloudflared.at.pocket-id.url;
+  ocisUrl = config.yomi.cloudflared.at.cloud.url;
+in {
   # {{{ reverse proxy
-  yomi.nginx.at.cloud.port = config.yomi.ports.owncloud;
+  yomi.cloudflared.at.cloud.port = config.yomi.ports.owncloud;
+  # }}}
+  # {{{ secrets
+  sops.secrets.ocis_oidc_client_id.sopsFile = ../secrets.yaml;
+  sops.secrets.ocis_oidc_client_secret.sopsFile = ../secrets.yaml;
+
+  sops.templates."ocis.env" = {
+    content = ''
+      WEB_OIDC_CLIENT_ID=${config.sops.placeholder."ocis_oidc_client_id"}
+    '';
+    owner = config.users.users.ocis.name;
+    group = config.users.users.ocis.group;
+  };
+  # }}}
+  # {{{ csp config
+  environment.etc."ocis/csp.yaml".text = ''
+    directives:
+      child-src:
+        - '''self'''
+      connect-src:
+        - '''self'''
+        - 'blob:'
+        - 'https://raw.githubusercontent.com/owncloud/awesome-ocis/'
+        - '${pocketIdUrl}/'
+      default-src:
+        - '''none'''
+      font-src:
+        - '''self'''
+      frame-ancestors:
+        - '''none'''
+      frame-src:
+        - '''self'''
+        - 'blob:'
+        - 'https://embed.diagrams.net/'
+      img-src:
+        - '''self'''
+        - 'data:'
+        - 'blob:'
+        - 'https://raw.githubusercontent.com/owncloud/awesome-ocis/'
+      manifest-src:
+        - '''self'''
+      media-src:
+        - '''self'''
+      object-src:
+        - '''self'''
+        - 'blob:'
+      script-src:
+        - '''self'''
+        - '''unsafe-inline'''
+      style-src:
+        - '''self'''
+        - '''unsafe-inline'''
+  '';
   # }}}
   # {{{ general config
   services.ocis = {
     enable = true;
     address = "0.0.0.0";
     port = config.yomi.ports.owncloud;
-    url = config.yomi.nginx.at.cloud.url;
+    url = ocisUrl;
     stateDir = "/raid5pool/cloud";
     configDir = "/var/lib/ocis/config";
     environment = {
@@ -25,9 +80,18 @@
       OCIS_INSECURE = "true";
       PROXY_TLS = "false";
 
-      # Disable non-essential services
-      OCIS_EXCLUDE_RUN_SERVICES = "search,graph";
+      # Disable non-essential services (including idp since we use Pocket ID)
+      OCIS_EXCLUDE_RUN_SERVICES = "search,idp";
+
+      # OIDC configuration with Pocket ID
+      OCIS_OIDC_ISSUER = pocketIdUrl;
+      PROXY_OIDC_REWRITE_WELLKNOWN = "true";
+      PROXY_AUTOPROVISION_ACCOUNTS = "true";
+      PROXY_ROLE_ASSIGNMENT_DRIVER = "oidc";
+      PROXY_USER_OIDC_CLAIM = "preferred_username";
+      PROXY_CSP_CONFIG_FILE_LOCATION = "${config.services.ocis.configDir}/csp.yaml";
     };
+    environmentFile = config.sops.templates."ocis.env".path;
   };
   # }}}
   # {{{ storage

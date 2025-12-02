@@ -8,6 +8,15 @@
     host = "0.0.0.0";
     port = config.yomi.nginx.at.adguard.port;
     settings = {
+      dns = {
+        bind_hosts = ["127.0.0.1" "::1"];
+        port = config.yomi.ports.adguard-dns;
+        upstream_dns = [
+          "9.9.9.9#dns.quad9.net"
+          "149.112.112.112#dns.quad9.net"
+        ];
+      };
+
       filtering = {
         protection_enabled = true;
         filtering_enabled = true;
@@ -30,13 +39,13 @@
   };
   # }}}
   # {{{ Persistence
-  # environment.persistence."/persist/state".directories = [
-  #   {
-  #     directory = "/var/lib/AdGuardHome";
-  #     user = "adguardhome";
-  #     group = "adguardhome";
-  #     mode = "0750";
-  #   }
-  # ];
+  environment.persistence."/persist/state".directories = [
+    {
+      directory = "/var/lib/AdGuardHome";
+      user = "adguardhome";
+      group = "adguardhome";
+      mode = "0750";
+    }
+  ];
   # }}}
 }

@@ -36,7 +36,7 @@
     gimp
     krita
     libreoffice
-    bitwarden
+    bitwarden-desktop
     qbittorrent
     overskride
     mpv

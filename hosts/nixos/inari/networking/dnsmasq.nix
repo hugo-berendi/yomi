@@ -1,11 +1,11 @@
-{
+{config, ...}: {
   services.resolved.enable = false;
   services.dnsmasq = {
     enable = true;
     settings = {
       # upstream DNS servers
       server = [
-        "127.0.0.1#53" # AdGuard Home
+        "127.0.0.1#${toString config.yomi.ports.adguard-dns}" # AdGuard Home
         "9.9.9.9" # Quad9
       ];
 

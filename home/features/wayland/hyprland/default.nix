@@ -19,7 +19,7 @@ in {
   home.packages = with pkgs; [
     hyprcursor
     rosePineCursor
-    qt6ct
+    qt6Packages.qt6ct
     inputs.pyprland.packages.${pkgs.system}.pyprland
   ];
   # }}}
@@ -89,7 +89,7 @@ in {
       # {{{ Autostart
       exec = ["systemctl --user import-environment PATH && systemctl --user restart xdg-desktop-portal.service"];
       exec-once = [
-        "${config.yomi.settings.terminal-cmd} & zen & vesktop & spotify & obsidiantui & pypr & xwaylandvideobridge"
+        "${config.yomi.settings.terminal-cmd} & zen & vesktop & spotify & obsidiantui & pypr"
         "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
         "ln -sf ${pkgs.fish}/bin/fish /usr/bin/fish"
       ];
@@ -128,7 +128,7 @@ in {
           # {{{ Power
           "$mod, Escape, exec, wlogout"
           # }}}
-        )
+        ]
         ++ (
           builtins.concatLists (
             builtins.genList (

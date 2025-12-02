@@ -24,6 +24,8 @@
   yomi.wireless.enable = true;
   yomi.wireless.backend = "wpa-supplicant";
 
+  boot.loader.systemd-boot.enable = true;
+
   # {{{ Machine ids
   networking.hostName = "tsukuyomi";
   # }}}

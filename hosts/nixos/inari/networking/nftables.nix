@@ -13,14 +13,9 @@
 
   exitNodeForwardRule = lib.optionalString config.yomi.tailscale.exitNode ''
     # Allow Tailscale exit node traffic
-    iifname "tailscale0" oifname "eno1" accept
+    iifname "tailscale0" oifname "br0" accept
   '';
 
-  exitNodePreroutingChain = lib.optionalString config.yomi.tailscale.exitNode ''
-    chain prerouting {
-      type nat hook prerouting priority -100; policy accept;
-    }
-  '';
 in {
   systemd.services.nftables = {
     postStart = ''
@@ -32,7 +27,6 @@ in {
   };
 
   networking = {
-    # No local firewall.
     nat.enable = false;
     firewall.enable = false;
 
@@ -44,65 +38,49 @@ in {
           chain input {
             type filter hook input priority 0; policy drop;
 
-            # Basic security hardening
-            ct state invalid drop comment "Drop invalid packets"
-            ct state { established, related } accept comment "Allow established and related connections"
-            iifname "lo" accept comment "Accept all loopback traffic"
+            iifname "lo" accept comment "Accept loopback"
+            iifname "br0" accept comment "Allow LAN to router"
+            iifname {"docker0", "veth*"} accept comment "Allow Docker to router"
+            iifname "wg-br" accept comment "Allow VPN namespace to router"
+            iifname "tailscale0" accept comment "Allow Tailscale to router"
 
-            # Rate limiting to prevent DoS attacks
-            iifname "eno1" tcp dport { 80, 443 } meter flood { ip saddr limit rate 10/second burst 20 packets } accept
-
-            # Jump to service chains
-            iifname "eno1" jump public_services
-            iifname { "br0", "br1", "tailscale0" } jump private_services
-
-            # Drop all other traffic
-            counter drop
+            iifname "eno1" ct state { established, related } accept comment "Allow established from WAN"
+            iifname "eno1" icmp type { echo-request, destination-unreachable, time-exceeded } counter accept comment "Allow select ICMP from WAN"
+            iifname "eno1" counter drop comment "Drop other unsolicited WAN traffic"
           }
 
           chain forward {
-            type filter hook forward priority 0; policy drop;
+            type filter hook forward priority filter; policy drop;
 
-            # Allow forwarding from LAN to WAN
-            iifname { "br0", "br1" } oifname "eno1" accept
+            # Internal networks (VLANs, WiFi, Docker, Tailscale) to upstream bridge (WAN toward home router)
+            iifname { "vlan20", "vlan30", "br1", "docker0", "tailscale0" } oifname "br0" accept comment "internal to WAN"
+            iifname "br0" oifname { "vlan20", "vlan30", "br1", "docker0", "tailscale0" } ct state { established, related } accept comment "WAN back to internal"
 
-            # Allow WiFi hotspot (br1) to access main LAN (br0)
-            iifname "br1" oifname "br0" accept
+            # WiFi hotspot access to main LAN address space
+            iifname "br1" oifname "br0" accept comment "WiFi to LAN"
 
+            # VPN namespace bridge access
+            iifname "wg-br" oifname "br0" accept comment "VPN namespace to WAN"
+            iifname "br0" oifname "wg-br" ct state { established, related } accept comment "WAN back to VPN namespace"
+
+            # Explicit Tailscale exit node rule (in addition to internal set)
             ${exitNodeForwardRule}
-
-            # Allow established and related connections back to LAN
-            ct state { established, related } accept
           }
 
           chain output {
             type filter hook output priority 0; policy accept;
-          }
-
-          chain public_services {
-            # Public services
-            tcp dport { ${publicPortsString} } accept
-          }
-
-          chain private_services {
-            # Private services
-            tcp dport { ${privatePortsString} } accept
-            tcp dport { 22, 80, 443 } accept comment "SSH, HTTP and HTTPS"
-            udp dport { 53, 67, 9876, 9877 } accept comment "DNS, DHCP, and VRising"
           }
         }
 
         table ip nat {
           chain postrouting {
             type nat hook postrouting priority 100; policy accept;
-            oifname { "eno1", "br0" } masquerade
-          }
 
-          ${exitNodePreroutingChain}
+            # Masquerade traffic from internal networks towards upstream bridge (WAN toward home router)
+            iifname {"vlan20", "vlan30", "br1", "docker0", "tailscale0"} oifname "br0" masquerade comment "NAT towards WAN"
+          }
         }
       '';
     };
   };
-
-  # oifname "enp0s25" ip saddr 192.168.10.0/24 masquerade
 }

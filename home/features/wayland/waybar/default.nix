@@ -80,7 +80,13 @@
           "tooltip-format" = "{}";
           "escape" = true;
           "return-type" = "json";
-          "exec" = "nix-store --query --requisites /run/current-system | wc -l | xargs -I {} echo '{\"text\": \"{}\" }'";
+          "exec" = "${pkgs.writeShellScript "waybar-updates" ''
+            if [ -e /run/current-system ]; then
+              nix-store --query --requisites /run/current-system | wc -l | xargs -I {} echo '{"text": "{}" }'
+            else
+              echo '{"text": "N/A" }'
+            fi
+          ''}";
           "restart-interval" = 30;
           "tooltip" = false;
         };

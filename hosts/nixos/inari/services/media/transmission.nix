@@ -1,6 +1,9 @@
 {config, ...}: {
   # {{{ reverse proxy
-  yomi.nginx.at.torrent.port = config.yomi.ports.transmission_ui;
+  yomi.nginx.at.torrent = {
+    port = config.yomi.ports.transmission_ui;
+    proxyAddress = "192.168.15.1";
+  };
   # }}}
   sops.secrets.transmission_credentialsFile.sopsFile = ../../secrets.yaml;
   #{{{ settings
@@ -30,7 +33,8 @@
 
   # Ensure download directories exist with broad permissions
   systemd.tmpfiles.rules = [
-    "d /raid5pool/media/downloads 0777 - - -"
-    "d /raid5pool/media/downloads/incomplete 0777 - - -"
+    "d /raid5pool/media/downloads 2777 - - -"
+    "d /raid5pool/media/downloads/incomplete 2777 - - -"
+    "Z /raid5pool/media/downloads 2777 - - -"
   ];
 }

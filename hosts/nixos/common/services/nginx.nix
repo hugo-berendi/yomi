@@ -8,6 +8,7 @@
   mkNginxConfig = {
     host,
     port,
+    proxyAddress,
     files,
     subdomain,
     ...
@@ -18,7 +19,7 @@
         if port != null
         then {
           locations."/" = {
-            proxyPass = "http://localhost:${toString port}";
+            proxyPass = "http://${proxyAddress}:${toString port}";
             proxyWebsockets = true;
           };
         }
@@ -90,6 +91,12 @@ in {
           description = "Port to proxy requests to";
           type = lib.types.nullOr lib.types.port;
           default = null;
+        };
+
+        options.proxyAddress = lib.mkOption {
+          description = "Address to proxy requests to (defaults to localhost)";
+          type = lib.types.str;
+          default = "localhost";
         };
 
         options.files = lib.mkOption {

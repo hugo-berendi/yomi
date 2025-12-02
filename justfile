@@ -76,6 +76,45 @@ bump-common:
 rebuild:
 	sudo nh switch .#$(hostname)
 
+# {{{ CI/Quality checks
+[doc("Run all flake checks (builds hosts, DNS, formatter)")]
+[group("ci")]
+check:
+  nix flake check --all-systems --show-trace
+
+[doc("Check Nix code formatting")]
+[group("ci")]
+format-check:
+  nix fmt -- --check .
+
+[doc("Format Nix code")]
+[group("ci")]
+format:
+  nix fmt
+
+[doc("Check Lua code formatting")]
+[group("ci")]
+format-lua-check:
+  stylua --check .
+
+[doc("Format Lua code")]
+[group("ci")]
+format-lua:
+  stylua .
+
+[doc("Run all formatting checks (Nix + Lua)")]
+[group("ci")]
+lint: format-check format-lua-check
+
+[doc("Format all code (Nix + Lua)")]
+[group("ci")]
+fmt: format format-lua
+
+[doc("Pre-commit check: format + flake check")]
+[group("ci")]
+pre-commit: fmt check
+# }}}
+
 # {{{ Garbage collection
 [doc("Completely clean up the system by removing old generations and running garbage collection")]
 [group("nix")]
@@ -128,7 +167,7 @@ sops-rekey:
 [group("secrets")]
 export-keys:
   #!/usr/bin/env bash
-  set -euo pipefail # Fail on errors and whatnot
+  set -euo pipefail
 
   dir=/kagutsuchi/secrets/{{hostname}}/
   mkdir -p $dir
@@ -136,7 +175,6 @@ export-keys:
   cp /persist/state/etc/ssh/ssh* $dir
   cp /home/*/.ssh/id* $dir
 
-  # Perhaps I should ask this as a prompt instead?
   touch $dir/disk.key
   echo "💫 Don't forget to provide a disk encryption key!"
 # }}}

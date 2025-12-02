@@ -73,7 +73,7 @@ in {
   in
     hosts ["inari" "amaterasu"];
 
-  console.keyMap = "de";
+  console.keyMap = lib.mkForce "de";
 
   # Customize tty colors
   stylix.targets.console.enable = lib.mkIf config.yomi.machine.interactible true;

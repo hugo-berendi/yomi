@@ -4,7 +4,7 @@
   inputs = {
     zen-browser.url = "github:0xc000022070/zen-browser-flake";
     # {{{ Nixpkgs instances
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
     nixpkgs-old.url = "github:nixos/nixpkgs/nixos-25.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     flake-parts = {
@@ -14,7 +14,6 @@
     # {{{ Additional package repositories
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
 
-    # Firefox addons
     firefox-addons.url = "git+https://gitlab.com/rycee/nur-expressions?dir=pkgs/firefox-addons";
     firefox-addons.inputs.nixpkgs.follows = "nixpkgs";
     # }}}
@@ -29,17 +28,15 @@
     opencode-flake.url = "github:aodhanhayter/opencode-flake";
     nix-ai-tools.url = "github:numtide/nix-ai-tools";
 
-    # Home manager
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
     # {{{ Hyprland
     hyprland = {
-      url = "github:hyprwm/Hyprland"; # ?ref=v0.42.0";
+      url = "github:hyprwm/Hyprland";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
-    # Hyprland plugins
     pyprland.url = "github:hyprland-community/pyprland";
     hyprland-plugins = {
       url = "github:hyprwm/hyprland-plugins";
@@ -68,7 +65,6 @@
     # {{{ Storage
     impermanence.url = "github:nix-community/impermanence";
 
-    # Declarative partitioning
     disko.url = "github:nix-community/disko";
     disko.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -81,23 +77,19 @@
 
     korora.url = "github:adisbladis/korora";
 
-
     # }}}
     # {{{ Standalone software
     # {{{ Nightly versions of things
     neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
-    # neovim-nightly-overlay.inputs.nixpkgs.follows = "nixpkgs";
     # }}}
     # {{{ Nixvim
     nixvim = {
       url = "github:nix-community/nixvim";
-      # inputs.nixpkgs.follows = "nixpkgs-old";
     };
     # }}}
 
     nix-flatpak.url = "github:gmodena/nix-flatpak";
 
-    # Spotify client with theming support
     spicetify-nix.url = "github:Gerg-L/spicetify-nix";
     spicetify-nix.inputs.nixpkgs.follows = "nixpkgs";
     # }}}
@@ -118,148 +110,155 @@
     playit-nixos-module.url = "github:pedorich-n/playit-nixos-module";
   };
 
-  outputs = {
+  outputs = inputs @ {
     self,
-    nixpkgs,
-    home-manager,
+    flake-parts,
     ...
-  } @ inputs: let
-    # {{{ Common helpers
-    inherit (self) outputs;
-    forAllSystems = nixpkgs.lib.genAttrs [
-      "aarch64-linux"
-      "i686-linux"
-      "x86_64-linux"
-      "aarch64-darwin"
-      "x86_64-darwin"
-    ];
+  }:
+    flake-parts.lib.mkFlake {inherit inputs;} {
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+      ];
 
-    specialArgs = system: {
-      inherit inputs outputs;
+      imports = [];
 
-      upkgs = inputs.nixpkgs-unstable.legacyPackages.${system};
-    };
-  in
-    # }}}
-    {
-      # {{{ Packages
-      # Accessible through 'nix build', 'nix shell', etc
-      packages = forAllSystems (
-        system: let
-          pkgs = nixpkgs.legacyPackages.${system};
-          upkgs = inputs.nixpkgs-unstable.legacyPackages.${system};
-          myPkgs = import ./pkgs {inherit pkgs upkgs;};
-        in
-          myPkgs
-          // (import ./dns/implementation) {
-            inherit pkgs;
-            extraModules = [./dns/config/common.nix];
-            octodnsConfig = ./dns/config/octodns.yaml;
-            nixosConfigurations = builtins.removeAttrs self.nixosConfigurations ["iso"];
-          }
-      );
-      # }}}
-      # {{{ Bootstrapping and other pinned devshells
-      # Accessible through 'nix develop'
-      devShells = forAllSystems (
-        system: let
-          pkgs = nixpkgs.legacyPackages.${system};
-          args =
-            {
-              inherit pkgs;
-            }
-            // specialArgs system;
-        in
-          import ./devshells args
-      );
-      # }}}
-      # {{{ Overlays and modules
-      # Custom packages and modifications, exported as overlays
-      overlays = import ./overlays;
+      flake = {
+        overlays = import ./overlays;
+        nixosModules = import ./modules/nixos // import ./modules/common;
+        homeManagerModules = import ./modules/home-manager // import ./modules/common;
 
-      # Reusable nixos modules
-      nixosModules = import ./modules/nixos // import ./modules/common;
-
-      # Reusable home-manager modules
-      homeManagerModules = import ./modules/home-manager // import ./modules/common;
-      # }}}
-      # {{{ Nixos
-      # NixOS configuration entrypoint
-      # Available through 'nixos-rebuild --flake .#your-hostname'
-      nixosConfigurations = let
-        nixos = {
-          system,
-          hostname,
-        }:
-          nixpkgs.lib.nixosSystem {
-            inherit system;
-            specialArgs = specialArgs system;
-
-            modules = [
-              # {{{ Import home manager
-              (
-                {lib, ...}: {
-                  imports = lib.lists.optionals (builtins.pathExists ./home/${hostname}.nix) [
-                    home-manager.nixosModules.home-manager
-                    {
-                      home-manager.users.pilot = ./home/${hostname}.nix;
-                      home-manager.extraSpecialArgs =
-                        specialArgs system
-                        // {
-                          inherit hostname;
-                        };
-                      home-manager.useUserPackages = true;
-                      home-manager.backupFileExtension = "backy";
-
-                      stylix.homeManagerIntegration.followSystem = false;
-                      stylix.homeManagerIntegration.autoImport = false;
-                    }
-                  ];
-                }
-              )
-              # }}}
-
-              ./hosts/nixos/${hostname}
-            ];
+        nixosConfigurations = let
+          inherit (inputs.nixpkgs) lib;
+          
+          specialArgs = system: {
+            inherit inputs;
+            outputs = self;
+            upkgs = inputs.nixpkgs-unstable.legacyPackages.${system};
           };
-      in {
-        amaterasu = nixos {
-          system = "x86_64-linux";
-          hostname = "amaterasu";
-        };
-        tsukuyomi = nixos {
-          system = "x86_64-linux";
-          hostname = "tsukuyomi";
-        };
-        inari = nixos {
-          system = "x86_64-linux";
-          hostname = "inari";
-        };
-        iso = nixos {
-          system = "x86_64-linux";
-          hostname = "iso";
+
+          mkHost = {
+            system,
+            hostname,
+          }:
+            lib.nixosSystem {
+              inherit system;
+              specialArgs = specialArgs system;
+
+              modules = [
+                (
+                  {lib, ...}: {
+                    imports = lib.lists.optionals (builtins.pathExists ./home/${hostname}.nix) [
+                      inputs.home-manager.nixosModules.home-manager
+                      {
+                        home-manager.users.pilot = ./home/${hostname}.nix;
+                        home-manager.extraSpecialArgs =
+                          specialArgs system
+                          // {
+                            inherit hostname;
+                          };
+                        home-manager.useUserPackages = true;
+                        home-manager.backupFileExtension = "backy";
+
+                        stylix.homeManagerIntegration.followSystem = false;
+                        stylix.homeManagerIntegration.autoImport = false;
+                      }
+                    ];
+                  }
+                )
+
+                ./hosts/nixos/${hostname}
+              ];
+            };
+        in {
+          amaterasu = mkHost {
+            system = "x86_64-linux";
+            hostname = "amaterasu";
+          };
+          tsukuyomi = mkHost {
+            system = "x86_64-linux";
+            hostname = "tsukuyomi";
+          };
+          inari = mkHost {
+            system = "x86_64-linux";
+            hostname = "inari";
+          };
+          iso = mkHost {
+            system = "x86_64-linux";
+            hostname = "iso";
+          };
         };
       };
+
+      perSystem = {
+        config,
+        self',
+        inputs',
+        pkgs,
+        system,
+        ...
+      }: let
+        upkgs = inputs.nixpkgs-unstable.legacyPackages.${system};
+        myPkgs = import ./pkgs {inherit pkgs upkgs;};
+        
+        specialArgs = {
+          inherit inputs;
+          outputs = self;
+          inherit upkgs;
+        };
+
+        dnsPackages = (import ./dns/implementation) {
+          inherit pkgs;
+          extraModules = [./dns/config/common.nix];
+          octodnsConfig = ./dns/config/octodns.yaml;
+          nixosConfigurations = builtins.removeAttrs self.nixosConfigurations ["iso"];
+        };
+      in {
+        packages = myPkgs // dnsPackages;
+
+        devShells = import ./devshells (
+          {
+            inherit pkgs;
+          }
+          // specialArgs
+        );
+
+        checks = let
+          hosts = ["amaterasu" "tsukuyomi" "inari"];
+        in
+          (builtins.listToAttrs (
+            map (
+              hostname: {
+                name = "nixos-${hostname}";
+                value = self.nixosConfigurations.${hostname}.config.system.build.toplevel;
+              }
+            )
+            hosts
+          ))
+          // {
+            dns-zones = dnsPackages.octodns-zones;
+            dns-sync = dnsPackages.octodns-sync;
+          };
+
+        formatter = pkgs.alejandra;
+      };
+
+      # {{{ Caching and whatnot
+      flake.nixConfig = {
+        extra-substituters = [
+          "https://nix-community.cachix.org"
+          "https://smos.cachix.org"
+          "https://intray.cachix.org"
+          "https://playit-nixos-module.cachix.org"
+        ];
+
+        extra-trusted-public-keys = [
+          "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+          "smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM="
+          "intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ="
+          "playit-nixos-module.cachix.org-1:22hBXWXBbd/7o1cOnh+p0hpFUVk9lPdRLX3p5YSfRz4="
+        ];
+      };
+      # }}}
     };
-
-  # {{{ Caching and whatnot
-  # TODO: persist trusted substituters file
-  nixConfig = {
-    extra-substituters = [
-      "https://nix-community.cachix.org"
-      # "https://anyrun.cachix.org"
-      "https://smos.cachix.org"
-      "https://intray.cachix.org"
-      "https://playit-nixos-module.cachix.org"
-    ];
-
-    extra-trusted-public-keys = [
-      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-      # "anyrun.cachix.org-1:pqBobmOjI7nKlsUMV25u9QHa9btJK65/C8vnO3p346s="
-      "smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM="
-      "intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ="
-      "playit-nixos-module.cachix.org-1:22hBXWXBbd/7o1cOnh+p0hpFUVk9lPdRLX3p5YSfRz4="
-    ];
-  };
-  # }}}
 }

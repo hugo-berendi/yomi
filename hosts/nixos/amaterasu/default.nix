@@ -20,6 +20,8 @@
   yomi.wireless.enable = true;
   yomi.wireless.backend = "iwd";
 
+  boot.loader.systemd-boot.enable = true;
+
   # {{{ Machine ids
   networking.hostName = "amaterasu";
   environment.etc.machine-id.text = "08357db3540c4cd2b76d4bb7f825ec88";
