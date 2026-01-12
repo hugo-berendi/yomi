@@ -1,5 +1,6 @@
 {
   config,
+  lib,
   pkgs,
   ...
 }: let
@@ -67,6 +68,19 @@ in {
       logo64 = "${env}/${env.sitePackages}/ipykernel/resources/logo-64x64.png";
     };
   };
+
+  systemd.services.jupyterhub.serviceConfig = lib.mkMerge [
+    config.yomi.hardening.presets.base
+    {
+      ProtectClock = true;
+      ProtectControlGroups = true;
+      ProtectKernelLogs = true;
+      ProtectKernelModules = true;
+      ProtectKernelTunables = true;
+      RestrictSUIDSGID = true;
+      SystemCallArchitectures = "native";
+    }
+  ];
   # }}}
   # {{{ Networking & persistence
   yomi.cloudflared.at.jupyter.port = config.yomi.ports.jupyterhub;
