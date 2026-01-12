@@ -3,6 +3,13 @@
   lib,
   ...
 }: {
+  # {{{ User/Group
+  users.groups.uptime-kuma = {};
+  users.users.uptime-kuma = {
+    isSystemUser = true;
+    group = "uptime-kuma";
+  };
+  # }}}
   # {{{ Reverse proxy
   yomi.cloudflared.at.uptime.port = config.yomi.ports.uptime-kuma;
   # }}}
@@ -14,11 +21,20 @@
       UPTIME_KUMA_PORT = builtins.toString config.yomi.cloudflared.at.uptime.port;
     };
   };
-  
-  systemd.services.uptime-kuma.serviceConfig.DynamicUser = lib.mkForce false;
-  
+
+  systemd.services.uptime-kuma.serviceConfig = {
+    DynamicUser = lib.mkForce false;
+    User = "uptime-kuma";
+    Group = "uptime-kuma";
+  };
+
   environment.persistence."/persist/state".directories = [
-    "/var/lib/uptime-kuma"
+    {
+      directory = "/var/lib/uptime-kuma";
+      user = "uptime-kuma";
+      group = "uptime-kuma";
+      mode = "0700";
+    }
   ];
   # }}}
 }
