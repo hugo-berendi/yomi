@@ -1,4 +1,4 @@
-{config, ...}: {
+{config, lib, ...}: {
   # {{{ Reverse proxy
   yomi.cloudflared.at.pocket-id = {
     port = config.yomi.ports.pocket-id;
@@ -75,5 +75,12 @@
       group = config.users.users.pocket-id.group;
     }
   ];
+  # }}}
+  # {{{ Hardening
+  systemd.services.pocket-id.serviceConfig =
+    config.yomi.hardening.presets.standard
+    // {
+      ReadWritePaths = [config.services.pocket-id.dataDir];
+    };
   # }}}
 }
