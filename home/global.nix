@@ -19,7 +19,6 @@
     inputs.ags.homeManagerModules.default
     inputs.nixvim.homeModules.nixvim
     inputs.nixcord.homeModules.nixcord
-    inputs.zen-browser.homeModules.beta
     # inputs.ghostty.homeModules.default
     # }}}
     # {{{ global configuration
