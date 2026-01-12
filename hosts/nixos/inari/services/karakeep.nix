@@ -1,4 +1,4 @@
-{config, ...}: {
+{config, lib, ...}: {
   yomi.nginx.at.karakeep.port = config.yomi.ports.karakeep;
   # {{{ Secrets
   sops.secrets.karakeep_env = {
@@ -49,6 +49,11 @@
       user = config.users.users.karakeep.name;
       group = config.users.users.karakeep.group;
     }
+  ];
+
+  systemd.services.karakeep.serviceConfig = lib.mkMerge [
+    (lib.mapAttrs (_: lib.mkForce) config.yomi.hardening.presets.standard)
+    {ReadWritePaths = ["/var/lib/karakeep"];}
   ];
   # }}}
 }
