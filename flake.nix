@@ -2,7 +2,6 @@
   description = "Your new nix config";
 
   inputs = {
-    zen-browser.url = "github:0xc000022070/zen-browser-flake";
     # {{{ Nixpkgs instances
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
     nixpkgs-old.url = "github:nixos/nixpkgs/nixos-25.05";
@@ -26,9 +25,9 @@
     nix-minecraft.url = "github:Infinidoge/nix-minecraft";
 
     opencode-flake.url = "github:aodhanhayter/opencode-flake";
-    nix-ai-tools.url = "github:numtide/nix-ai-tools";
+    llm-agents.url = "github:numtide/llm-agents.nix";
 
-    home-manager.url = "github:nix-community/home-manager";
+    home-manager.url = "github:nix-community/home-manager/release-25.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
     # {{{ Hyprland
@@ -94,7 +93,7 @@
     spicetify-nix.inputs.nixpkgs.follows = "nixpkgs";
     # }}}
     # {{{ Theming
-    stylix.url = "github:danth/stylix";
+    stylix.url = "github:nix-community/stylix/release-25.11";
     stylix.inputs.nixpkgs.follows = "nixpkgs";
 
     base16-schemes.url = "github:tinted-theming/schemes";
@@ -133,7 +132,7 @@
 
         nixosConfigurations = let
           inherit (inputs.nixpkgs) lib;
-          
+
           specialArgs = system: {
             inherit inputs;
             outputs = self;
@@ -165,6 +164,7 @@
 
                         stylix.homeManagerIntegration.followSystem = false;
                         stylix.homeManagerIntegration.autoImport = false;
+                        stylix.enableReleaseChecks = false;
                       }
                     ];
                   }
@@ -207,7 +207,7 @@
       }: let
         upkgs = inputs.nixpkgs-unstable.legacyPackages.${system};
         myPkgs = import ./pkgs {inherit pkgs upkgs;};
-        
+
         specialArgs = {
           inherit inputs;
           outputs = self;
@@ -257,6 +257,7 @@
           "https://smos.cachix.org"
           "https://intray.cachix.org"
           "https://playit-nixos-module.cachix.org"
+          "https://cache.numtide.com"
         ];
 
         extra-trusted-public-keys = [
@@ -264,6 +265,7 @@
           "smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM="
           "intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ="
           "playit-nixos-module.cachix.org-1:22hBXWXBbd/7o1cOnh+p0hpFUVk9lPdRLX3p5YSfRz4="
+          "niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g="
         ];
       };
       # }}}
