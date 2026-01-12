@@ -1,4 +1,4 @@
-{config, ...}: {
+{config, lib, ...}: {
   yomi.nginx.at.warden.port = config.yomi.ports.vaultwarden;
 
   # {{{ Secrets
@@ -37,5 +37,12 @@
       group = config.users.users.vaultwarden.group;
     }
   ];
+  # }}}
+  # {{{ Hardening
+  systemd.services.vaultwarden.serviceConfig =
+    config.yomi.hardening.presets.standard
+    // {
+      ReadWritePaths = ["/var/lib/bitwarden_rs"];
+    };
   # }}}
 }
