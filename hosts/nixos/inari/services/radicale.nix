@@ -1,4 +1,4 @@
-{config, ...}: let
+{config, lib, ...}: let
   port = config.yomi.ports.radicale;
   dataDir = "/persist/data/radicale";
 in {
@@ -23,4 +23,9 @@ in {
     owner = config.systemd.services.radicale.serviceConfig.User;
     group = config.systemd.services.radicale.serviceConfig.Group;
   };
+
+  systemd.services.radicale.serviceConfig = lib.mkMerge [
+    (lib.mapAttrs (_: lib.mkForce) config.yomi.hardening.presets.standard)
+    {ReadWritePaths = [dataDir];}
+  ];
 }
