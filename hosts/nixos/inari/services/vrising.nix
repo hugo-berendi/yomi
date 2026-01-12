@@ -1,4 +1,4 @@
-{...}: {
+{config, lib, ...}: {
   sops.secrets.vrising_rcon_password = {
     sopsFile = ../secrets.yaml;
   };
@@ -32,4 +32,15 @@
       castleHeartLevel5ServantLimit = 24;
     };
   };
+
+  systemd.services.vrising.serviceConfig = lib.mkMerge [
+    config.yomi.hardening.presets.base
+    {
+      ProtectClock = true;
+      ProtectControlGroups = true;
+      ProtectKernelLogs = true;
+      ProtectKernelModules = true;
+      ProtectKernelTunables = true;
+    }
+  ];
 }
