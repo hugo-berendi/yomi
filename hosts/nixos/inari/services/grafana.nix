@@ -1,4 +1,4 @@
-{config, ...}: let
+{config, lib, ...}: let
   port = config.yomi.ports.grafana;
   secret = name: "$__file{${config.sops.secrets.${name}.path}}";
   sopsSettings = {
@@ -100,6 +100,11 @@ in {
       user = "grafana";
       group = "grafana";
     }
+  ];
+
+  systemd.services.grafana.serviceConfig = lib.mkMerge [
+    (lib.mapAttrs (_: lib.mkForce) config.yomi.hardening.presets.standard)
+    {ReadWritePaths = [config.services.grafana.dataDir];}
   ];
   # }}}
 }
