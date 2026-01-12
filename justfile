@@ -254,3 +254,31 @@ dns-clear zoneid bearerfile="/run/secrets/cloudflare_dns_api_token":
 
   print("🚀 All done!")
 # }}}
+# {{{ Security
+[doc("Audit systemd service hardening using systemd-analyze security")]
+[group("security")]
+security-audit host=hostname services="":
+  #!/usr/bin/env bash
+  set -euo pipefail
+
+  host="{{host}}"
+  services="{{services}}"
+
+  if [[ "$host" == "{{hostname}}" ]]; then
+    if [[ -n "$services" ]]; then
+      for svc in $services; do
+        systemd-analyze security "$svc" 2>/dev/null || echo "Service $svc not found"
+      done
+    else
+      systemd-analyze security 2>/dev/null | head -80
+    fi
+  else
+    if [[ -n "$services" ]]; then
+      for svc in $services; do
+        ssh "$host" "systemd-analyze security $svc" 2>/dev/null || echo "Service $svc not found"
+      done
+    else
+      ssh "$host" "systemd-analyze security" 2>/dev/null | head -80
+    fi
+  fi
+# }}}
