@@ -1,4 +1,4 @@
-{config, ...}: {
+{config, lib, ...}: {
   # {{{ Service
   services.loki = {
     enable = true;
@@ -111,6 +111,16 @@
       user = "promtail";
       group = "promtail";
     }
+  ];
+
+  systemd.services.loki.serviceConfig = lib.mkMerge [
+    (lib.mapAttrs (_: lib.mkForce) config.yomi.hardening.presets.standard)
+    {ReadWritePaths = [config.services.loki.dataDir];}
+  ];
+
+  systemd.services.promtail.serviceConfig = lib.mkMerge [
+    (lib.mapAttrs (_: lib.mkForce) config.yomi.hardening.presets.base)
+    {ReadWritePaths = ["/var/lib/promtail"];}
   ];
   # }}}
 }
