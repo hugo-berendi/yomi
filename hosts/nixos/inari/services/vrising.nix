@@ -10,6 +10,11 @@
     autosaveRetention = 6 * 60 * 60;
     gameSettings = {
       teleportBoundItems = false;
+      batBoundItems = false;
+      batBoundShards = false;
+      dropTableModifierGeneral = 2.0;
+      dropTableModifierMissions = 2.0;
+      dropTableModifierStygianShards = 2.0;
       castleHeartLevel1FloorLimit = 60;
       castleHeartLevel1HeightLimit = 3;
       castleHeartLevel1ServantLimit = 6;

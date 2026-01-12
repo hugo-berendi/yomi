@@ -16,6 +16,6 @@ pkgs.mkShell {
     pkgs.sops # just sops-rekey
     pkgs.ssh-to-age # just ssh-to-age
     pkgs.age # just age-public-key
-    upkgs.nixos-rebuild-ng
+    pkgs.nixos-rebuild-ng
   ];
 }

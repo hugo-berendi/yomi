@@ -108,6 +108,9 @@
     ngrok.url = "github:ngrok/ngrok-nix";
 
     playit-nixos-module.url = "github:pedorich-n/playit-nixos-module";
+
+    nixos-wsl.url = "github:nix-community/NixOS-WSL/main";
+    nixos-wsl.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = inputs @ {
@@ -186,6 +189,10 @@
           iso = mkHost {
             system = "x86_64-linux";
             hostname = "iso";
+          };
+          wsl = mkHost {
+            system = "x86_64-linux";
+            hostname = "wsl";
           };
         };
       };

@@ -3,9 +3,9 @@
   lib,
   ...
 }: {
-  yomi.cloudflared.at.ai.port = config.yomi.ports.open-webui;
+  # yomi.cloudflared.at.ai.port = config.yomi.ports.open-webui;
   services.ollama = {
-    enable = true;
+    enable = false;
     host = "0.0.0.0";
     port = config.yomi.ports.ollama;
     user = "ollama";
@@ -28,7 +28,7 @@
   };
 
   services.open-webui = {
-    enable = true;
+    enable = false;
     port = config.yomi.ports.open-webui;
     environment = {
       ANONYMIZED_TELEMETRY = "False";

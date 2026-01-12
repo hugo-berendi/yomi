@@ -7,16 +7,18 @@ hostname := `hostname`
 # {{{ Nixos rebuilds
 [doc("Wrapper around `nixos-rebuild`, taking care of the generic arguments")]
 [group("nix")]
-nixos-rebuild action="switch" host=hostname ng="1":
+nixos-rebuild action="switch" host=hostname ng="1" install_bootloader="0":
   #!/usr/bin/env python3
   import subprocess
 
+  install_bootloader = "{{install_bootloader}}" != "0"
   ng = "{{ng}}" != "0"
   host = "{{host}}"
   users = {
     'amaterasu': 'hugob',
     'inari': 'hugob',
     'tsukuyomi': 'hugob',
+    'wsl': 'hugob',
   }
 
   args = [
@@ -28,6 +30,9 @@ nixos-rebuild action="switch" host=hostname ng="1":
     ".#{{host}}",
     "--no-reexec" if ng else "--fast"
   ]
+
+  if install_bootloader:
+    args.append("--install-bootloader")
 
   if host == "{{hostname}}":
     print("🧬 Switching nixos configuration (locally) for '{{BLUE + host + NORMAL}}'")
