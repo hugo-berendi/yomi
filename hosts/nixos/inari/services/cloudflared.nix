@@ -1,5 +1,6 @@
 {
   config,
+  lib,
   pkgs,
   ...
 }: {
@@ -20,5 +21,11 @@
   };
 
   yomi.anubis.enable = true;
+
+  systemd.services."cloudflared-tunnel-${config.yomi.cloudflared.tunnel}".serviceConfig =
+    lib.mkMerge [
+      (lib.mapAttrs (_: lib.mkForce) config.yomi.hardening.presets.standard)
+      {}
+    ];
   # }}}
 }
