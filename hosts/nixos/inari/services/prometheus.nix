@@ -1,4 +1,4 @@
-{config, ...}: {
+{config, lib, ...}: {
   # {{{ Secrets
   sops.secrets = {
     radarr_api_key.sopsFile = ../secrets.yaml;
@@ -150,6 +150,11 @@
       user = "prometheus";
       group = "prometheus";
     }
+  ];
+
+  systemd.services.prometheus.serviceConfig = lib.mkMerge [
+    (lib.mapAttrs (_: lib.mkForce) config.yomi.hardening.presets.standard)
+    {ReadWritePaths = ["/var/lib/prometheus2"];}
   ];
   # }}}
 }
