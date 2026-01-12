@@ -5,15 +5,14 @@
   inputs,
   ...
 }: {
-  home.packages = with inputs.nix-ai-tools.packages.${pkgs.system}; [
-    gemini-cli
+  home.packages = with inputs.llm-agents.packages.${pkgs.system}; [
     pkgs.nodejs
     pkgs.nix
     pkgs.bash
   ];
   programs.opencode = {
     enable = true;
-    package = inputs.opencode-flake.packages.${pkgs.system}.default;
+    package = inputs.llm-agents.packages.${pkgs.system}.opencode;
 
     settings = {
       provider = {
