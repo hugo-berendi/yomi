@@ -40,9 +40,10 @@
     };
   };
 
-  systemd.services.microbin.serviceConfig = {
-    ReadWritePaths = lib.mkForce [];
-  };
+  systemd.services.microbin.serviceConfig = lib.mkMerge [
+    (lib.mapAttrs (_: lib.mkForce) config.yomi.hardening.presets.standard)
+    {ReadWritePaths = lib.mkForce [];}
+  ];
   # }}}
 
 }
