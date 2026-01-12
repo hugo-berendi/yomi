@@ -2,6 +2,7 @@
 {
   # example = import ./example.nix;
   cloudflared = import ./cloudflared.nix;
+  hardening = import ./hardening.nix;
   playit = import ./playit.nix;
   ports = import ./ports.nix;
   pilot = import ./pilot.nix;
