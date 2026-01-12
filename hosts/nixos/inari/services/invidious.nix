@@ -37,11 +37,14 @@
     package = pkgs.invidious;
   };
 
-  systemd.services.invidious.serviceConfig = {
-    DynamicUser = lib.mkForce false;
-    User = "invidious";
-    Group = "invidious";
-  };
+  systemd.services.invidious.serviceConfig =
+    config.yomi.hardening.presets.standard
+    // {
+      DynamicUser = lib.mkForce false;
+      User = "invidious";
+      Group = "invidious";
+      ReadWritePaths = ["/var/lib/invidious"];
+    };
 
   environment.persistence."/persist/state".directories = [
     {
