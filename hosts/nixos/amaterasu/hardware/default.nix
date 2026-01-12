@@ -15,4 +15,10 @@
   hardware.amdgpu.initrd.enable = true;
   # }}}
   powerManagement.cpuFreqGovernor = "performance";
+
+  services.logind.settings.Login = {
+    HandleLidSwitch = "ignore";
+    HandleLidSwitchExternalPower = "ignore";
+    HandleLidSwitchDocked = "ignore";
+  };
 }

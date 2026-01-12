@@ -4,21 +4,16 @@
   pkgs,
   ...
 }: let
-  cfg = config.yomi.greetd;
+  cfg = config.yomi.machine.graphical;
   current_wm = lib.getExe config.programs.hyprland.package;
 in {
-  options.yomi.greetd = {
-    enable = lib.mkEnableOption "yomi's greetd integration";
-  };
-
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf cfg {
     services.greetd = {
       enable = true;
-      vt = 1;
       settings = {
         default_session = {
           command = ''
-            ${lib.getExe pkgs.greetd.tuigreet} \
+            ${lib.getExe pkgs.tuigreet} \
               -c ${current_wm} \
               -g " (.>_>.) Welcome to ${config.networking.hostName}! (.<_<.)" \
               --user-menu \

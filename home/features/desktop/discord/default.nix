@@ -18,14 +18,6 @@
         betterFolders.enable = true;
         betterUploadButton.enable = true;
         biggerStreamPreview.enable = true;
-        clearURLs.enable = true;
-        copyUserURLs.enable = true;
-        customRPC = {
-          enable = true;
-          appID = "882206464102686740";
-          appName = "NixOS";
-          details = "Configuring NixOS";
-        };
         dearrow.enable = true;
         fakeNitro.enable = true;
         imageLink.enable = true;

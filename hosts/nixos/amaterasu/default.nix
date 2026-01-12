@@ -18,7 +18,7 @@
   yomi.machine.gaming = true;
   yomi.machine.interactible = true;
   yomi.wireless.enable = true;
-  yomi.wireless.backend = "iwd";
+  yomi.wireless.backend = "wpa-supplicant";
 
   boot.loader.systemd-boot.enable = true;
 

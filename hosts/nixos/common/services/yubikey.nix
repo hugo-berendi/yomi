@@ -1,6 +1,6 @@
 {config, ...}: {
 	yomi.yubikey = {
-		enable = true;
+		enable = false;
 		users = ["pilot"];
 
 		pam = {

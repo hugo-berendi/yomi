@@ -22,7 +22,6 @@
       signal-desktop
       qbittorrent
       # upkgs.unityhub
-      upkgs.overskride
       # upkgs.nerdfetch # for displaying pc/laptop stats
       upkgs.alejandra # nix formatter
       upkgs.nh
@@ -65,9 +64,21 @@
 
     monitors = [
       {
+        name = "DP-2";
+        width = 2560;
+        height = 1440;
+        refreshRate = 165;
+        x = 0;
+        y = 0;
+        workspace = "1";
+      }
+      {
         name = "eDP-1";
         width = 2256;
         height = 1504;
+        x = 2560;
+        y = 0;
+        workspace = "6";
       }
     ];
   };

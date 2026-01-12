@@ -28,7 +28,7 @@ in {
   wayland.windowManager.hyprland = {
     enable = true;
 
-    package = null;
+    package = pkgs.hyprland;
     portalPackage = null;
 
     extraConfig = builtins.readFile ./hyprland.conf;
@@ -69,27 +69,35 @@ in {
       };
       # }}}
       # {{{ Monitors
-      monitor = lib.forEach config.yomi.monitors (
-        m:
-          lib.concatStringsSep "," [
-            m.name
-            "${toString m.width}x${toString m.height}@${toString m.refreshRate}"
-            "${toString m.x}x${toString m.y}"
-            "1"
-          ]
-      );
+      monitor =
+        (lib.forEach config.yomi.monitors (
+          m:
+            lib.concatStringsSep "," [
+              m.name
+              "${toString m.width}x${toString m.height}@${toString m.refreshRate}"
+              "${toString m.x}x${toString m.y}"
+              "1"
+            ]
+        ))
+        ++ [",preferred,auto,1"];
 
-      # Map monitors to workspaces
-      workspace =
-        lib.lists.concatMap (
-          m: lib.lists.optional (m.workspace != null) "${m.name},${m.workspace}"
-        )
-        config.yomi.monitors;
+      workspace = let
+        monitorWorkspaces = lib.lists.concatMap (
+          m:
+            if m.workspace != null
+            then let
+              startWs = lib.toInt m.workspace;
+            in
+              lib.genList (i: "${m.name},${toString (startWs + i)}") 5
+            else []
+        ) config.yomi.monitors;
+      in
+        monitorWorkspaces;
       # }}}
       # {{{ Autostart
       exec = ["systemctl --user import-environment PATH && systemctl --user restart xdg-desktop-portal.service"];
       exec-once = [
-        "${config.yomi.settings.terminal-cmd} & zen & vesktop & spotify & obsidiantui & pypr"
+        "${config.yomi.settings.terminal-cmd} & librewolf & vesktop & spotify & obsidiantui & pypr"
         "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
         "ln -sf ${pkgs.fish}/bin/fish /usr/bin/fish"
       ];
@@ -99,7 +107,7 @@ in {
       "$mod" = "SUPER";
       bind =
         [
-          "$mod, C, exec, cliphist list | wofi --dmenu | cliphist decode | wl-copy"
+          "$mod, C, exec, walker --modules clipboard"
           # {{{ pyprland plugins
           "$mod, V, exec, pypr toggle volume"
           "$mod Shift, Return, exec, pypr toggle term"
@@ -113,7 +121,7 @@ in {
           ", XF86AudioPlay, exec, volume --play-pause"
           # }}}
           # {{{ Execute external things
-          "$mod, Space, exec, ${lib.getExe pkgs.wofi}"
+          "$mod, Space, exec, walker"
           "$mod, T, exec, wl-ocr"
           "$mod SHIFT, T, exec, wl-qr"
           "$mod CONTROL, T, exec, hyprpicker | wl-copy && notify-send 'Copied color $(wp-paste)'"
@@ -159,7 +167,7 @@ in {
         "$mod, mouse:273, resizewindow"
       ];
       windowrule = [
-        "workspace 2 silent, title:^(.*Zen Browser.*)$"
+        "workspace 2 silent, class:^(.*LibreWolf.*)$"
         "workspace 3 silent, title:^(.*((Disc|WebC|Venc)ord)|Vesktop.*)$"
         "workspace 3 silent, title:^(.*Element.*)$"
         "workspace 5 silent, title:^(.*(S|s)pot(ify)?.*)$"
@@ -172,7 +180,7 @@ in {
         "noinitialfocus, class:^(xwaylandvideobridge)$"
         "maxsize 1 1, class:^(xwaylandvideobridge)$"
         "noblur, class:^(xwaylandvideobridge)$"
-        "idleinhibit fullscreen, title:^(.*Zen Browser.*)$"
+        "idleinhibit fullscreen, class:^(.*LibreWolf.*)$"
         "idleinhibit focus, class:^(mpv|.+exe)$"
         "idleinhibit focus, title:^(.*Zen Browser.*)$, title:^(.*YouTube.*)$"
       ];

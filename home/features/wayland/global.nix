@@ -9,7 +9,7 @@
     ./waybar
     ./wlogout.nix
     ./wlsunset.nix
-    ./wofi.nix
+    ./walker.nix
 
     ../desktop
   ];
@@ -47,7 +47,7 @@
       wl-ocr
       wl-qr
       wl-clipboard
-      hyprpicker-new
+      hyprpicker
       grimblast
       brightnessctl
       pamixer

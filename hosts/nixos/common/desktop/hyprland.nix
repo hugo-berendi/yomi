@@ -5,20 +5,9 @@
   lib,
   ...
 }: let
-  cfg = config.yomi.hyprland;
+  cfg = config.yomi.machine.graphical;
 in {
-  options.yomi.hyprland = {
-    enable = lib.mkEnableOption "yomi's hyprland integration";
-  };
-
-  config = lib.mkIf cfg.enable {
-    assertions = [
-      {
-        message = "Hyprland can only be used on graphical machines";
-        assertion = config.yomi.machine.graphical;
-      }
-    ];
-
+  config = lib.mkIf cfg {
     security.pam.services.hyprlock = {};
 
     programs.hyprland = {
