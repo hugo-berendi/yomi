@@ -1,4 +1,4 @@
-{config, ...}: {
+{config, lib, ...}: {
   # {{{ Reverse proxy
   yomi.nginx.at.adguard.port = config.yomi.ports.adguard;
   # }}}
@@ -37,6 +37,15 @@
         ];
     };
   };
+
+  systemd.services.adguardhome.serviceConfig = lib.mkMerge [
+    (lib.mapAttrs (_: lib.mkForce) config.yomi.hardening.presets.standard)
+    {
+      AmbientCapabilities = lib.mkForce ["CAP_NET_BIND_SERVICE"];
+      CapabilityBoundingSet = lib.mkForce ["CAP_NET_BIND_SERVICE"];
+      ReadWritePaths = ["/var/lib/AdGuardHome"];
+    }
+  ];
   # }}}
   # {{{ Persistence
   # environment.persistence."/persist/state".directories = [
