@@ -11,6 +11,7 @@ When working on NixOS configuration changes, the agent should:
 - **Check conventions**: Follow fold markers, use lib.mkOption for module options, maintain existing patterns
 - **Manage secrets**: Use sops-nix for any secrets (EXA_API_KEY, GITHUB_TOKEN, SEARXNG_URL)
 - **Code style**: No comments unless requested, use camelCase for options, kebab-case for packages
+- **Commit workflow**: Commit each individual change separately with a descriptive message; do not batch multiple unrelated changes into one commit
 
 ## Build/Lint/Test Commands
 - **Build config**: `just nixos-rebuild build <hostname>` (hosts: amaterasu, tsukuyomi, inari, iso)
