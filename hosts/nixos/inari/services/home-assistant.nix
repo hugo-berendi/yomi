@@ -61,9 +61,9 @@
       "accuweather"
       "radio_browser"
       "tuya"
-      "ibeacon"
       "roborock"
       "mqtt"
+      "sonos"
     ];
     customComponents = [
       (pkgs.buildHomeAssistantComponent {
