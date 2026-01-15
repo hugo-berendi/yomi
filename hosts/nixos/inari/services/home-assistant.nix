@@ -52,15 +52,6 @@
     extraPackages = python3Packages:
       with python3Packages; [
         gtts
-        (weconnect.overridePythonAttrs (old: {
-          src = pkgs.fetchFromGitHub {
-            owner = "tillsteinbach";
-            repo = "WeConnect-python";
-            rev = "7a0eafc33ec82fe04d9ad3e7abd32ab1966733f0";
-            hash = "sha256-q4jttmN4kaUSeXE4qilq+02CSuhSibbISHvD/ZhOe3s=";
-          };
-          version = "0.60.8+git";
-        }))
         ascii-magic
       ];
     extraComponents = [
@@ -76,15 +67,36 @@
     ];
     customComponents = [
       (pkgs.buildHomeAssistantComponent {
-        owner = "mitch-dc";
-        domain = "volkswagen_we_connect_id";
-        version = "0.2.6";
+        owner = "robinostlund";
+        domain = "volkswagencarnet";
+        version = "5.4.0";
         src = pkgs.fetchFromGitHub {
-          owner = "mitch-dc";
-          repo = "volkswagen_we_connect_id";
-          rev = "v0.2.6";
-          hash = "sha256-f5guxLE93QtTPV1zw1313bzF521pVr0vsUa3hzcRmJo=";
+          owner = "robinostlund";
+          repo = "homeassistant-volkswagencarnet";
+          rev = "v5.4.0";
+          hash = "sha256-uIsOuc+UXhLbPm4/koANQjzPFfRVwt/rMhYw6keVgYI=";
         };
+        sourceDir = "custom_components/volkswagencarnet";
+        dependencies = [
+          (pkgs.python3Packages.buildPythonPackage {
+            pname = "volkswagencarnet";
+            version = "5.4.0";
+            pyproject = true;
+            src = pkgs.fetchPypi {
+              pname = "volkswagencarnet";
+              version = "5.4.0";
+              hash = "sha256-+NTpUVe82CB1ESwLxEkm67ZlvIGk0vTxYjVKVeUrhhY=";
+            };
+            build-system = with pkgs.python3Packages; [setuptools setuptools-scm];
+            dependencies = with pkgs.python3Packages; [
+              lxml
+              beautifulsoup4
+              aiohttp
+              pyjwt
+            ];
+            doCheck = false;
+          })
+        ];
         dontCheckManifest = true;
       })
       (pkgs.buildHomeAssistantComponent {
