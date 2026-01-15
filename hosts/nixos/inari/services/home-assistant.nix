@@ -21,6 +21,8 @@
     ./home-assistant/automations/forecast-based-car-climate.nix
     ./home-assistant/automations/weather-alert.nix
     ./home-assistant/automations/weather-based-lights.nix
+    ./home-assistant/automations/webuntis-wake-up.nix
+    ./home-assistant/automations/webuntis-lesson-change.nix
   ];
   # }}}
   # {{{ Reverse proxy
