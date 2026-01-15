@@ -102,18 +102,17 @@
       (pkgs.buildHomeAssistantComponent {
         owner = "JonasJoKuJonas";
         domain = "webuntis";
-        version = "2.0.1";
+        version = "2.0.3";
         dependencies = [
           pkgs.python-webuntis
         ];
         src = pkgs.fetchFromGitHub {
-          owner = "hugo-berendi";
+          owner = "JonasJoKuJonas";
           repo = "homeassistant-WebUntis";
-          rev = "5d310b7bdc11ffff1e78e6dcbdad0ece6306ef6d";
-          hash = "sha256-7vLVzT+46IUN0++BlNmItZrwhqwiqFgVT0/yD91FRkQ=";
+          rev = "v2.0.3";
+          hash = "sha256-gK9v+Yl8svXbg1KDqb8+ximhxCqhaJwzme0fU4lBwak=";
         };
-        dontCheckManifest = false;
-        patches = [];
+        dontCheckManifest = true;
       })
     ];
     config = {
@@ -150,6 +149,16 @@
           };
         };
       };
+      notify = [
+        {
+          name = "all_devices";
+          platform = "group";
+          services = [
+            {service = "mobile_app_hotei";}
+            {service = "mobile_app_raijin";}
+          ];
+        }
+      ];
     };
   };
   systemd.tmpfiles.rules = [
