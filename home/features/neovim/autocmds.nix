@@ -1,101 +1,69 @@
-{
-  programs.nixvim = {
-    autoGroups = {
-      highlight_yank = {};
-      vim_enter = {};
-      indentscope = {};
-      restore_cursor = {};
-      autosave = {};
-    };
-
-    autoCmd = [
-      {
-        group = "highlight_yank";
-        event = ["TextYankPost"];
-        pattern = "*";
-        callback = {
-          __raw = ''
-            function()
-              vim.highlight.on_yank()
+{...}: {
+  programs.nvf.settings.vim.autocmds = [
+    {
+      event = ["TextYankPost"];
+      pattern = ["*"];
+      callback = {
+        _type = "lua-inline";
+        expr = ''
+          function()
+            vim.highlight.on_yank()
+          end
+        '';
+      };
+      desc = "Highlight on yank";
+    }
+    {
+      event = ["FileType"];
+      pattern = ["help" "Startup" "startup" "Trouble" "trouble" "notify" "snacks_dashboard"];
+      callback = {
+        _type = "lua-inline";
+        expr = ''
+          function()
+            vim.b.miniindentscope_disable = true
+          end
+        '';
+      };
+      desc = "Disable mini indentscope for certain filetypes";
+    }
+    {
+      event = ["BufReadPost"];
+      pattern = ["*"];
+      callback = {
+        _type = "lua-inline";
+        expr = ''
+          function()
+            if
+              vim.fn.line "'\"" > 1
+              and vim.fn.line "'\"" <= vim.fn.line "$"
+              and vim.bo.filetype ~= "commit"
+              and vim.fn.index({ "xxd", "gitrebase" }, vim.bo.filetype) == -1
+            then
+              vim.cmd "normal! g`\""
             end
-          '';
-        };
-      }
-      {
-        group = "indentscope";
-        event = ["FileType"];
-        pattern = [
-          "help"
-          "Startup"
-          "startup"
-          "neo-tree"
-          "Trouble"
-          "trouble"
-          "notify"
-        ];
-        callback = {
-          __raw = ''
-            function()
-              vim.b.miniindentscope_disable = true
+          end
+        '';
+      };
+      desc = "Restore cursor position";
+    }
+    {
+      event = ["User"];
+      pattern = ["VeryLazy"];
+      callback = {
+        _type = "lua-inline";
+        expr = ''
+          function()
+            _G.dd = function(...)
+              Snacks.debug.inspect(...)
             end
-          '';
-        };
-      }
-      # from NVChad https://nvchad.com/docs/recipes (this autocmd will restore the cursor position when opening a file)
-      {
-        group = "restore_cursor";
-        event = ["BufReadPost"];
-        pattern = "*";
-        callback = {
-          __raw = ''
-            function()
-              if
-                vim.fn.line "'\"" > 1
-                and vim.fn.line "'\"" <= vim.fn.line "$"
-                and vim.bo.filetype ~= "commit"
-                and vim.fn.index({ "xxd", "gitrebase" }, vim.bo.filetype) == -1
-              then
-                vim.cmd "normal! g`\""
-              end
+            _G.bt = function()
+              Snacks.debug.backtrace()
             end
-          '';
-        };
-      }
-      # {
-      #   group = "autosave";
-      #   event = ["TextChangedI"];
-      #   pattern = "*";
-      #   callback = {
-      #     __raw =
-      #       /*
-      #       lua
-      #       */
-      #       ''
-      #         function()
-      #           -- Define a set of filetypes to be checked
-      #           local excluded_filetypes = {
-      #             ["help"] = true,
-      #             ["Startup"] = true,
-      #             ["startup"] = true,
-      #             ["neo-tree"] = true,
-      #             ["Trouble"] = true,
-      #             ["trouble"] = true,
-      #             ["notify"] = true,
-      #             ["Telescope"] = true,
-      #             ["telescope"] = true,
-      #           }
-
-      #           -- Check if the current filetype is in the excluded set
-      #           if excluded_filetypes[vim.bo.filetype] then
-      #             return
-      #           end
-
-      #           -- execute command
-      #           vim.cmd 'silent write'
-      #         end
-      #       '';
-      #   };
-      # }
-    ];
-  };
+            vim.print = _G.dd
+          end
+        '';
+      };
+      desc = "Setup Snacks debug helpers";
+    }
+  ];
 }

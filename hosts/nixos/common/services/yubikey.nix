@@ -1,32 +1,32 @@
 {config, ...}: {
-	yomi.yubikey = {
-		enable = false;
-		users = ["pilot"];
+  yomi.yubikey = {
+    enable = false;
+    users = ["pilot"];
 
-		pam = {
-			u2f = {
-				enable = true;
-				appId = "pam://yomi";
-				secretPath = ../secrets.yaml;
-			};
+    pam = {
+      u2f = {
+        enable = true;
+        appId = "pam://yomi";
+        secretPath = ../secrets.yaml;
+      };
 
-			challengeResponse = {
-				enable = true;
-				ids = ["30636315"];
-			};
-		};
+      challengeResponse = {
+        enable = true;
+        ids = ["30636315"];
+      };
+    };
 
-		ssh = {
-			enableAgent = true;
-			publicKeys = ["67D63C5F40CC55DA"];
-		};
+    ssh = {
+      enableAgent = true;
+      publicKeys = ["67D63C5F40CC55DA"];
+    };
 
-		age = {
-			enable = true;
-			recipients = [];
-		};
+    age = {
+      enable = true;
+      recipients = [];
+    };
 
-		touchDetector.enable = true;
-		lockOnRemoval.enable = true;
-	};
+    touchDetector.enable = true;
+    lockOnRemoval.enable = true;
+  };
 }

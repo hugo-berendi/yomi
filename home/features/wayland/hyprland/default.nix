@@ -82,15 +82,17 @@ in {
         ++ [",preferred,auto,1"];
 
       workspace = let
-        monitorWorkspaces = lib.lists.concatMap (
-          m:
-            if m.workspace != null
-            then let
-              startWs = lib.toInt m.workspace;
-            in
-              lib.genList (i: "${m.name},${toString (startWs + i)}") 5
-            else []
-        ) config.yomi.monitors;
+        monitorWorkspaces =
+          lib.lists.concatMap (
+            m:
+              if m.workspace != null
+              then let
+                startWs = lib.toInt m.workspace;
+              in
+                lib.genList (i: "${m.name},${toString (startWs + i)}") 5
+              else []
+          )
+          config.yomi.monitors;
       in
         monitorWorkspaces;
       # }}}

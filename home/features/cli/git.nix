@@ -41,7 +41,7 @@
         # Pull with rebase enabled
         rp = "pull --rebase";
       };
-    # }}}
+      # }}}
 
       github.user = "hugo-berendi";
       hub.protocol = "ssh";
@@ -83,7 +83,7 @@
     enable = true;
     options = {};
     enableGitIntegration = true;
-  };  # }}}
+  }; # }}}
 
   sops.secrets.GITHUB_TOKEN.sopsFile = ./secrets.yaml;
 

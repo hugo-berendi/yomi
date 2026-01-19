@@ -3,8 +3,10 @@
     ./acme.nix
     ./anubis.nix
     ./greetd.nix
+    ./iocaine.nix
     ./kanata.nix
     ./meilisearch.nix
+    ./memory.nix
     ./nginx.nix
     ./oci.nix
     ./openssh.nix

@@ -2,289 +2,327 @@ title: Yomi Dashboard
 views:
   - title: Home
     path: home
-    icon: mdi:home-assistant
-    cards:
-      - type: weather-forecast
-        entity: weather.forecast_home
-        show_forecast: true
-        forecast_type: hourly
-        name: Weather & Forecast
-      - type: entities
-        title: Sun Schedule
-        show_header_toggle: false
-        entities:
-          - entity: sun.sun
-            name: Sun
-          - entity: sensor.sun_next_dawn
-            name: Next Dawn
-          - entity: sensor.sun_next_rising
-            name: Next Sunrise
-          - entity: sensor.sun_next_setting
-            name: Next Sunset
-      - type: entities
-        title: Person Status
-        show_header_toggle: false
-        entities:
-          - entity: person.hugo_berendi
-            name: Hugo
-          - entity: device_tracker.hotei
-            name: Phone Location
-          - entity: sensor.hotei_battery_level
-            name: Phone Battery
-          - entity: sensor.hotei_battery_state
-            name: Battery State
+    icon: mdi:home
+    type: sections
+    sections:
+      - type: grid
+        cards:
+          - type: custom:mushroom-person-card
+            entity: person.hugo_berendi
+            icon_type: entity-picture
+            secondary_info: state
+          - type: custom:mushroom-chips-card
+            chips:
+              - type: weather
+                entity: weather.forecast_home
+                show_conditions: true
+                show_temperature: true
+              - type: template
+                icon: mdi:car-electric
+                content: "{{ states('sensor.id_3_battery_level') }}%"
+                tap_action:
+                  action: navigate
+                  navigation_path: /lovelace-yomi/car
+              - type: template
+                icon: mdi:school
+                content: "{{ states('sensor.school_day_status') }}"
+                tap_action:
+                  action: navigate
+                  navigation_path: /lovelace-yomi/school
+      - type: grid
+        cards:
+          - type: weather-forecast
+            entity: weather.forecast_home
+            show_forecast: true
+            forecast_type: daily
+            name: Weather
+          - type: entities
+            title: Quick Status
+            show_header_toggle: false
+            entities:
+              - entity: sensor.webuntis_wake_time
+                name: Wake Time
+                icon: mdi:alarm
+              - entity: sensor.id_3_battery_level
+                name: Car Battery
+              - entity: sensor.id_3_electric_range
+                name: Car Range
+              - entity: binary_sensor.id_3_charging_cable_connected
+                name: Car Plugged In
+      - type: grid
+        cards:
+          - type: entities
+            title: Lights
+            show_header_toggle: true
+            entities:
+              - entity: light.schlafzimmer_1
+                name: Bedroom 1
+              - entity: light.schlafzimmer_2
+                name: Bedroom 2
+              - entity: switch.scenic_dreamview1_power_switch
+                name: Dreamview
+          - type: entities
+            title: Sun & Time
+            show_header_toggle: false
+            entities:
+              - entity: sensor.sun_next_rising
+                name: Sunrise
+              - entity: sensor.sun_next_setting
+                name: Sunset
+
   - title: Car
     path: car
     icon: mdi:car-electric
-    cards:
-      - type: entities
-        title: VW ID.3 Status
-        show_header_toggle: false
-        entities:
-          - entity: binary_sensor.id_3_connection_online
-            name: Online
-          - entity: binary_sensor.id_3_connection_active
-            name: Active
-          - entity: device_tracker.id_3_position
-            name: Location
-          - entity: sensor.id_3_odometer
-            name: Odometer
-          - entity: sensor.id_3_last_connected
-            name: Last Connected
-      - type: entities
-        title: Battery & Charging
-        show_header_toggle: false
-        entities:
-          - entity: sensor.id_3_battery_level
-            name: Battery Level
-          - entity: sensor.id_3_electric_range
-            name: Range
-          - entity: sensor.id_3_charging_state
-            name: Charging State
-          - entity: sensor.id_3_charging_power
-            name: Charging Power
-          - entity: sensor.id_3_charging_time_left
-            name: Time Remaining
-          - entity: binary_sensor.id_3_charging_cable_connected
-            name: Cable Connected
-          - entity: binary_sensor.id_3_insufficient_battery_level_warning
-            name: Low Battery Warning
-      - type: entities
-        title: Charging Controls
-        show_header_toggle: false
-        entities:
-          - entity: switch.id_3_charging
-            name: Charging
-          - entity: number.id_3_battery_target_charge_level
-            name: Target Charge Level
-          - entity: switch.id_3_battery_care_mode
-            name: Battery Care Mode
-          - entity: switch.id_3_reduced_ac_charging
-            name: Reduced AC Charging
-      - type: thermostat
-        entity: climate.id_3_electric_climatisation
-        name: Climate Control
-      - type: entities
-        title: Climate Options
-        show_header_toggle: false
-        entities:
-          - entity: switch.id_3_window_heater
-            name: Window Heater
-          - entity: switch.id_3_automatic_window_heating
-            name: Auto Window Heating
-          - entity: switch.id_3_zone_front_left
-            name: Zone Front Left
-          - entity: switch.id_3_zone_front_right
-            name: Zone Front Right
-          - entity: sensor.id_3_climatisation_state
-            name: Climate State
-          - entity: sensor.id_3_electric_remaining_climatisation_time
-            name: Climate Time Left
-      - type: entities
-        title: Security
-        show_header_toggle: false
-        entities:
-          - entity: lock.id_3_door_locked
-            name: Door Lock
-          - entity: lock.id_3_trunk_locked
-            name: Trunk Lock
-          - entity: binary_sensor.id_3_doors_locked
-            name: All Doors Locked
-          - entity: binary_sensor.id_3_windows_closed
-            name: All Windows Closed
-          - entity: binary_sensor.id_3_trunk_closed
-            name: Trunk Closed
-          - entity: binary_sensor.id_3_hood_closed
-            name: Hood Closed
-      - type: entities
-        title: Climate Automations
-        show_header_toggle: false
-        entities:
-          - entity: automation.start_id_3_climate_mon_thu_07_20_if_15degc
-            name: Mon-Thu 07:20 (if <15C)
-          - entity: automation.start_id_3_climate_fri_08_10_if_15degc
-            name: Fri 08:10 (if <15C)
-          - entity: automation.auto_start_id_3_climate_when_leaving_home_if_cold
-            name: Auto on Leaving (if cold)
-          - entity: automation.start_id_3_climate_based_on_weather_forecast
-            name: Forecast-based Climate
-      - type: entities
-        title: Car Alerts
-        show_header_toggle: false
-        entities:
-          - entity: automation.morning_id_3_status_summary
-            name: Morning Summary
-          - entity: automation.warn_if_car_doors_windows_left_open_when_leaving
-            name: Doors/Windows Open
-          - entity: automation.warn_when_id_3_battery_is_low
-            name: Low Battery Alert
-          - entity: automation.notify_when_id_3_charging_complete
-            name: Charging Complete
-          - entity: automation.remind_to_plug_in_car_when_arriving_home
-            name: Plug-in Reminder
-  - title: Lights
-    path: lights
-    icon: mdi:lightbulb-group
-    cards:
-      - type: entities
-        title: Bedroom Lights
-        show_header_toggle: true
-        entities:
-          - entity: light.schlafzimmer_1
-            name: Bedroom Light 1
-          - entity: light.schlafzimmer_2
-            name: Bedroom Light 2
-      - type: entities
-        title: Scenic Dreamview
-        show_header_toggle: false
-        entities:
-          - entity: switch.scenic_dreamview1_power_switch
-            name: Dreamview Power
-          - entity: sensor.scenic_dreamview1_status
-            name: Dreamview Status
-      - type: entities
-        title: Light Automations
-        show_header_toggle: false
-        entities:
-          - entity: automation.turn_on_bedroom_lights_at_sunset_when_home
-            name: On at Sunset
-          - entity: automation.turn_off_bedroom_lights_at_bedtime
-            name: Off at Bedtime
-          - entity: automation.turn_off_bedroom_lights_when_leaving_home
-            name: Off When Away
-          - entity: automation.welcome_home_with_warm_lighting
-            name: Welcome Home
-          - entity: automation.turn_on_lights_on_dark_cloudy_mornings
-            name: On Cloudy Mornings
-          - entity: automation.adjust_light_brightness_based_on_weather
-            name: Weather Brightness
-      - type: entities
-        title: Sun Schedule
-        show_header_toggle: false
-        entities:
-          - entity: sensor.sun_next_setting
-            name: Next Sunset
-          - entity: sensor.sun_next_dusk
-            name: Next Dusk
-          - entity: sensor.sun_next_midnight
-            name: Next Midnight
+    type: sections
+    sections:
+      - type: grid
+        cards:
+          - type: gauge
+            entity: sensor.id_3_battery_level
+            name: Battery
+            min: 0
+            max: 100
+            severity:
+              green: 50
+              yellow: 20
+              red: 10
+            needle: true
+          - type: entities
+            title: Status
+            show_header_toggle: false
+            entities:
+              - entity: sensor.id_3_electric_range
+                name: Range
+              - entity: sensor.id_3_charging_state
+                name: Charging
+              - entity: sensor.id_3_charging_power
+                name: Power
+              - entity: sensor.id_3_charging_time_left
+                name: Time Left
+              - entity: binary_sensor.id_3_charging_cable_connected
+                name: Plugged In
+      - type: grid
+        cards:
+          - type: thermostat
+            entity: climate.id_3_electric_climatisation
+            name: Climate
+          - type: entities
+            title: Climate Controls
+            show_header_toggle: false
+            entities:
+              - entity: switch.id_3_window_heater
+                name: Window Heater
+              - entity: sensor.id_3_climatisation_state
+                name: Status
+      - type: grid
+        cards:
+          - type: entities
+            title: Charging Controls
+            show_header_toggle: false
+            entities:
+              - entity: switch.id_3_charging
+                name: Charging
+              - entity: number.id_3_battery_target_charge_level
+                name: Target Level
+              - entity: switch.id_3_battery_care_mode
+                name: Battery Care
+              - entity: switch.id_3_reduced_ac_charging
+                name: Reduced AC
+          - type: entities
+            title: Security
+            show_header_toggle: false
+            entities:
+              - entity: lock.id_3_door_locked
+                name: Doors
+              - entity: lock.id_3_trunk_locked
+                name: Trunk
+              - entity: binary_sensor.id_3_doors_locked
+                name: All Locked
+              - entity: binary_sensor.id_3_windows_closed
+                name: Windows Closed
+      - type: grid
+        cards:
+          - type: map
+            entities:
+              - device_tracker.id_3_position
+            hours_to_show: 24
+            default_zoom: 14
+
   - title: School
     path: school
     icon: mdi:school
-    cards:
-      - type: entities
-        title: Today's Schedule
-        show_header_toggle: false
-        entities:
-          - entity: sensor.webuntis_today_school_start
-            name: School Start
-          - entity: sensor.webuntis_today_school_end
-            name: School End
-          - entity: sensor.webuntis_next_lesson
-            name: Next Lesson
-          - entity: sensor.webuntis_wake_time
-            name: Calculated Wake Time
-      - type: markdown
-        title: Today's Lessons
-        content: >
-          {% set json = state_attr('sensor.webuntis_next_lesson_to_wake_up', 'day') %}
-          {% if json %}
-            {% set lessons = json | from_json %}
-            {% for lesson in lessons %}
-          - **{{ lesson.subjects[0].long_name if lesson.subjects else 'Free' }}** ({{ lesson.start | as_datetime | as_local | as_timestamp | timestamp_custom('%H:%M') }} - {{ lesson.end | as_datetime | as_local | as_timestamp | timestamp_custom('%H:%M') }}) {% if lesson.rooms %}in {{ lesson.rooms[0].name }}{% endif %}
+    type: sections
+    sections:
+      - type: grid
+        cards:
+          - type: entities
+            title: Today
+            show_header_toggle: false
+            entities:
+              - entity: sensor.webuntis_today_s_school_start
+                name: Start
+              - entity: sensor.webuntis_today_s_school_end
+                name: End
+              - entity: sensor.webuntis_next_lesson
+                name: Next Lesson
+              - entity: sensor.webuntis_wake_time
+                name: Wake Time
+              - entity: sensor.webuntis_prep_time
+                name: Leave Time
+              - entity: sensor.school_day_status
+                name: Status
+          - type: markdown
+            title: Today's Schedule
+            content: >
+              {% set json = state_attr('sensor.webuntis_next_lesson_to_wake_up', 'day') %}
+              {% if json and json is string and json.startswith('[') %}
+                {% set lessons = json | from_json %}
+                {% for lesson in lessons %}
+              **{{ lesson.start | as_datetime | as_local | as_timestamp | timestamp_custom('%H:%M') }}** {{ lesson.subjects[0].long_name if lesson.subjects else 'Free' }}{% if lesson.rooms %} ({{ lesson.rooms[0].name }}){% endif %}
 
-            {% endfor %}
-          {% else %}
-          No lessons scheduled
-          {% endif %}
-      - type: calendar
-        title: Lesson Calendar
-        entities:
-          - calendar.webuntis
-      - type: entity
-        entity: event.webuntis_lesson_change
-        name: Last Lesson Change
-      - type: entities
-        title: School Automations
-        show_header_toggle: false
-        entities:
-          - entity: automation.webuntis_dynamic_wake_up
-            name: Dynamic Wake-Up
-          - entity: automation.webuntis_lesson_change_notification
-            name: Lesson Change Alerts
-          - entity: automation.alarm_wake_up_lights_and_message
-            name: Fallback Wake-Up (07:30)
+                {% endfor %}
+              {% elif json and 'disabled' in (json | lower) %}
+              *Enable JSON in WebUntis settings*
+              {% else %}
+              No lessons scheduled
+              {% endif %}
+      - type: grid
+        cards:
+          - type: calendar
+            title: Timetable
+            entities:
+              - calendar.webuntis
+            initial_view: listWeek
+          - type: entity
+            entity: event.webuntis_lesson_change
+            name: Last Change
+      - type: grid
+        cards:
+          - type: entities
+            title: Automations
+            show_header_toggle: false
+            entities:
+              - entity: automation.webuntis_dynamic_wake_up
+                name: Dynamic Wake-Up
+              - entity: automation.webuntis_leave_reminder
+                name: Leave Reminder
+              - entity: automation.webuntis_lesson_change_notification
+                name: Change Alerts
+              - entity: automation.fallback_wake_up_07_00
+                name: Fallback (07:00)
+
+  - title: Lights
+    path: lights
+    icon: mdi:lightbulb-group
+    type: sections
+    sections:
+      - type: grid
+        cards:
+          - type: light
+            entity: light.schlafzimmer_1
+            name: Bedroom 1
+          - type: light
+            entity: light.schlafzimmer_2
+            name: Bedroom 2
+      - type: grid
+        cards:
+          - type: entities
+            title: All Lights
+            show_header_toggle: true
+            entities:
+              - entity: light.schlafzimmer_1
+                name: Bedroom 1
+              - entity: light.schlafzimmer_2
+                name: Bedroom 2
+              - entity: switch.scenic_dreamview1_power_switch
+                name: Dreamview
+              - entity: sensor.scenic_dreamview1_status
+                name: Dreamview Status
+          - type: entities
+            title: Automations
+            show_header_toggle: false
+            entities:
+              - entity: automation.sunset_lighting
+                name: Sunset
+              - entity: automation.bedtime_lights_off
+                name: Bedtime
+              - entity: automation.lights_off_when_away
+                name: Away
+              - entity: automation.welcome_home_lighting
+                name: Welcome Home
+              - entity: automation.cloudy_morning_lights
+                name: Cloudy Morning
+              - entity: automation.weather_based_light_adjustment
+                name: Weather Adjust
+
   - title: System
     path: system
     icon: mdi:cog
-    cards:
-      - type: entities
-        title: System Info
-        show_header_toggle: false
-        entities:
-          - entity: sun.sun
-            name: Sun
-          - entity: zone.home
-            name: Home Zone
-          - entity: zone.school
-            name: School Zone
-          - entity: zone.work
-            name: Work Zone
-      - type: entities
-        title: Phone (Hotei)
-        show_header_toggle: false
-        entities:
-          - entity: device_tracker.hotei
-            name: Location
-          - entity: sensor.hotei_geocoded_location
-            name: Geocoded Location
-          - entity: sensor.hotei_battery_level
-            name: Battery Level
-          - entity: sensor.hotei_battery_state
-            name: Battery State
-          - entity: sensor.hotei_charger_type
-            name: Charger Type
-          - entity: sensor.hotei_wi_fi_connection
-            name: Wi-Fi Connection
-          - entity: sensor.hotei_network_type
-            name: Network Type
-          - entity: sensor.hotei_next_alarm
-            name: Next Alarm
-      - type: entities
-        title: Weather Automations
-        show_header_toggle: false
-        entities:
-          - entity: automation.morning_weather_alert
-            name: Morning Weather Alert
-          - entity: automation.extreme_weather_alert
-            name: Extreme Weather Alert
-      - type: entities
-        title: Backup Status
-        show_header_toggle: false
-        entities:
-          - entity: sensor.backup_backup_manager_state
-            name: Backup State
-          - entity: sensor.backup_last_successful_automatic_backup
-            name: Last Backup
-          - entity: sensor.backup_next_scheduled_automatic_backup
-            name: Next Backup
+    type: sections
+    sections:
+      - type: grid
+        cards:
+          - type: entities
+            title: Phone (Hotei)
+            show_header_toggle: false
+            entities:
+              - entity: device_tracker.hotei
+                name: Location
+              - entity: sensor.hotei_battery_level
+                name: Battery
+              - entity: sensor.hotei_battery_state
+                name: State
+              - entity: sensor.hotei_next_alarm
+                name: Next Alarm
+              - entity: sensor.hotei_wi_fi_connection
+                name: WiFi
+          - type: entities
+            title: Zones
+            show_header_toggle: false
+            entities:
+              - entity: zone.home
+                name: Home
+              - entity: zone.school
+                name: School
+              - entity: zone.work
+                name: Work
+      - type: grid
+        cards:
+          - type: entities
+            title: Weather Automations
+            show_header_toggle: false
+            entities:
+              - entity: automation.morning_weather_briefing
+                name: Morning Briefing
+              - entity: automation.extreme_weather_alert
+                name: Weather Alerts
+              - entity: automation.rain_reminder_when_leaving
+                name: Rain Reminder
+          - type: entities
+            title: Backup
+            show_header_toggle: false
+            entities:
+              - entity: sensor.backup_backup_manager_state
+                name: Status
+              - entity: sensor.backup_last_successful_automatic_backup
+                name: Last Backup
+              - entity: sensor.backup_next_scheduled_automatic_backup
+                name: Next Backup
+      - type: grid
+        cards:
+          - type: entities
+            title: Car Automations
+            show_header_toggle: false
+            entities:
+              - entity: automation.smart_id_3_climate_for_school_days
+                name: Smart Climate
+              - entity: automation.fallback_id_3_climate_mon_thu_07_00
+                name: Fallback Climate
+              - entity: automation.id_3_security_alert_doors_windows_open
+                name: Security Alert
+              - entity: automation.id_3_low_battery_warning
+                name: Low Battery
+              - entity: automation.remind_to_plug_in_id_3
+                name: Plug-in Reminder
+              - entity: automation.id_3_charging_complete
+                name: Charging Complete

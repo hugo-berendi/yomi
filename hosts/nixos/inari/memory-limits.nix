@@ -36,9 +36,14 @@
       MemoryHigh = "1536M";
     };
 
+    paperless-task-queue.serviceConfig = {
+      MemoryMax = "2G";
+      MemoryHigh = "1536M";
+    };
+
     loki.serviceConfig = {
-      MemoryMax = "1G";
-      MemoryHigh = "768M";
+      MemoryMax = "2G";
+      MemoryHigh = "1536M";
     };
 
     grafana.serviceConfig = {
@@ -59,16 +64,6 @@
     postgresql.serviceConfig = {
       MemoryMax = "4G";
       MemoryHigh = "3G";
-    };
-
-    adguardhome.serviceConfig = {
-      MemoryMax = "512M";
-      MemoryHigh = "384M";
-    };
-
-    navidrome.serviceConfig = {
-      MemoryMax = "512M";
-      MemoryHigh = "384M";
     };
 
     invidious.serviceConfig = {

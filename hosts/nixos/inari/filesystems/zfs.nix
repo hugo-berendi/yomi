@@ -1,7 +1,4 @@
-{
-  pkgs,
-  ...
-}: {
+{pkgs, ...}: {
   # Configure ZFS
   boot.supportedFilesystems = ["zfs"];
   boot.zfs.extraPools = ["zroot" "raid5pool"];

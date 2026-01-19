@@ -4,6 +4,7 @@
   ...
 }: let
   cfg = config.yomi.cloudflared;
+  iocaineCfg = config.yomi.iocaine;
 in {
   options.yomi.cloudflared = {
     tunnel = lib.mkOption {
@@ -56,6 +57,12 @@ in {
 
               enableAnubis = lib.mkOption {
                 description = "Enable Anubis bot protection for this service";
+                type = lib.types.bool;
+                default = false;
+              };
+
+              enableIocaine = lib.mkOption {
+                description = "Enable iocaine AI crawler trap for this service";
                 type = lib.types.bool;
                 default = false;
               };
@@ -126,6 +133,29 @@ in {
     };
   in
     lib.attrsets.mapAttrs' mkAnubisInstance (lib.attrsets.filterAttrs (_: cfg: cfg.enableAnubis) cfg.at);
+
+  config.services.nginx.virtualHosts = let
+    iocaineServices = lib.attrsets.filterAttrs (_: svc: svc.enableIocaine) cfg.at;
+    mkIocaineVhost = _: {
+      host,
+      port,
+      ...
+    }: {
+      name = host;
+      value = {
+        extraConfig = iocaineCfg.nginxExtraConfig;
+        locations."/.well-known/@iocaine" = {
+          proxyPass = "http://127.0.0.1:${toString iocaineCfg.port}";
+          extraConfig = ''
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          '';
+        };
+      };
+    };
+  in
+    lib.mkIf iocaineCfg.enable (lib.attrsets.mapAttrs' mkIocaineVhost iocaineServices);
 
   config.yomi.dns.records = let
     mkDnsRecord = {subdomain, ...}: {

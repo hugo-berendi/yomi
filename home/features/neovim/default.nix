@@ -2,12 +2,9 @@
   pkgs,
   config,
   lib,
-  inputs,
   ...
 }: let
   # {{{ Client wrapper
-  # Wraps a neovim client, providing the dependencies
-  # and setting some flags:
   wrapClient = {
     base,
     name,
@@ -16,8 +13,7 @@
     wrapFlags ? lib.id,
   }: let
     startupScript =
-      config.yomi.lib.lua.writeFile "." "startup" # lua
-      
+      config.yomi.lib.lua.writeFile "." "startup"
       ''
         vim.g.nix_theme = ${config.yomi.colorscheme.lua}
       '';
@@ -35,53 +31,41 @@
       '';
     };
   # }}}
-  # {{{ Clients
+  # {{{ Neovide client
   neovide = wrapClient {
     base = pkgs.neovide;
     name = "neovide";
     extraArgs = "--set NEOVIDE_MULTIGRID true";
     wrapFlags = flags: "-- ${flags}";
   };
-
-  neovim =
-    if config.yomi.toggles.neovim-nightly.enable
-    then inputs.neovim-nightly-overlay.packages.${pkgs.system}.default
-    else pkgs.neovim-unwrapped;
   # }}}
 in {
-  # {{{ Imports
   imports = [
-    ./settings.nix
-    ./autocmds.nix
-    ./clipboard.nix
+    ./options.nix
     ./keymaps.nix
-    ./colorschemes.nix
+    ./autocmds.nix
+    ./lsp.nix
+    ./treesitter.nix
+    ./completion.nix
+    ./ui.nix
+    ./format.nix
     ./plugins
   ];
-  # }}}
-  # {{{ nixvim config
-  programs.nixvim = {
+
+  # {{{ nvf config
+  programs.nvf = {
     enable = true;
+    enableManpages = true;
     defaultEditor = true;
-    vimdiffAlias = true;
-    package = neovim;
-    viAlias = true;
-    vimAlias = true;
   };
   # }}}
+  # {{{ Lua stylua config for this project
   yomi.lua.styluaConfig = ../../../stylua.toml;
-
+  # }}}
   # {{{ Basic config
-  # We want other modules to know that we are using neovim!
   yomi.toggles.neovim.enable = true;
-
-  # Link files in the appropriate places
-  # xdg.configFile.nvim.source = config.yomi.dev.path "home/features/cli/neovim/config";
   home.sessionVariables.EDITOR = "nvim";
-
-  home.packages = [
-    pkgs.vimclip
-  ];
+  home.packages = [pkgs.vimclip];
 
   programs.neovide = {
     enable = false;
@@ -117,7 +101,6 @@ in {
 
   yomi.persistence.at.cache.apps.neovim.directories = [
     "${config.xdg.cacheHome}/nvim"
-    # mirosSnippetCache
   ];
   # }}}
 }

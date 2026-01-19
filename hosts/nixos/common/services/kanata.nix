@@ -4,7 +4,7 @@
   ...
 }: let
   cfg = config.yomi.kanata;
-  
+
   mkConfig = {
     blueTrigger,
     redTrigger,

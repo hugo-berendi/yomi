@@ -4,7 +4,7 @@
   lib,
   ...
 }: let
-  port = config.yomi.ports.homepage or 8082;
+  port = config.yomi.ports.homepage;
 in {
   sops.secrets.homepage_env = {
     sopsFile = ../secrets.yaml;

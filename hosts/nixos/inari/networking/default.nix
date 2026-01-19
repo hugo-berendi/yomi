@@ -1,6 +1,9 @@
-{ lib, config, ... }:
 {
-  users.users.pilot.extraGroups = [ "networkmanager" ];
+  lib,
+  config,
+  ...
+}: {
+  users.users.pilot.extraGroups = ["networkmanager"];
 
   imports = [
     ./dnsmasq.nix
@@ -10,5 +13,5 @@
   ];
 
   networking.wireless.enable = lib.mkForce false;
-  networking.wireless.interfaces = [ "wlp2s0" ];
+  networking.wireless.interfaces = ["wlp2s0"];
 }

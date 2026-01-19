@@ -30,6 +30,8 @@
     # services
     ./services/acme.nix
     ./services/greetd.nix
+    ./services/iocaine.nix
+    ./services/memory.nix
     ./services/nginx.nix
     ./services/oci.nix
     ./services/openssh.nix
@@ -86,10 +88,13 @@ in {
   # Boot using systemd
   boot.initrd.systemd.enable = true;
   # }}}
-  # {{{ Disable sudo default lecture
-  security.sudo.extraConfig = ''
-    Defaults lecture = never
-  '';
+  # {{{ Sudo configuration
+  security.sudo = {
+    wheelNeedsPassword = false;
+    extraConfig = ''
+      Defaults lecture = never
+    '';
+  };
   # }}}
 
   # Root domain used throughout my config

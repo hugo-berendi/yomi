@@ -1,4 +1,8 @@
-{config, lib, ...}: {
+{
+  config,
+  lib,
+  ...
+}: {
   sops.secrets.vrising_rcon_password = {
     sopsFile = ../secrets.yaml;
   };

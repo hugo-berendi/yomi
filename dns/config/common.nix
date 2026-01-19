@@ -85,6 +85,12 @@ in
           value = "wan.hugo-berendi.de.";
           ttl = 600;
         }
+        {
+          at = "_atproto";
+          type = "TXT";
+          value = "did=did:plc:xvhbsibo5hrwepntbe3i4qv6";
+          ttl = 600;
+        }
       ]
     ];
   }

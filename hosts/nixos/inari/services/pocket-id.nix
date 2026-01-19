@@ -1,4 +1,8 @@
-{config, lib, ...}: {
+{
+  config,
+  lib,
+  ...
+}: {
   # {{{ Reverse proxy
   yomi.cloudflared.at.pocket-id = {
     port = config.yomi.ports.pocket-id;

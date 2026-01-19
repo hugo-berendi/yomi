@@ -6,21 +6,11 @@
   # {{{ Import automations
   imports = [
     ./home-assistant/automations/car-climate-weekday.nix
-    ./home-assistant/automations/car-climate-friday.nix
     ./home-assistant/automations/car-climate-on-leaving.nix
-    ./home-assistant/automations/morning-car-summary.nix
-    ./home-assistant/automations/car-doors-windows-open-warning.nix
-    ./home-assistant/automations/car-low-battery-warning.nix
-    ./home-assistant/automations/remind-plug-in-car.nix
-    ./home-assistant/automations/notify-charging-complete.nix
-    ./home-assistant/automations/lights-off-when-away.nix
-    ./home-assistant/automations/lights-on-at-sunset.nix
-    ./home-assistant/automations/lights-off-at-bedtime.nix
-    ./home-assistant/automations/welcome-home-lights.nix
+    ./home-assistant/automations/car-alerts.nix
+    ./home-assistant/automations/lights.nix
     ./home-assistant/automations/alarm-wake-up.nix
-    ./home-assistant/automations/forecast-based-car-climate.nix
-    ./home-assistant/automations/weather-alert.nix
-    ./home-assistant/automations/weather-based-lights.nix
+    ./home-assistant/automations/weather.nix
     ./home-assistant/automations/webuntis-wake-up.nix
     ./home-assistant/automations/webuntis-lesson-change.nix
   ];
@@ -119,6 +109,15 @@
     ];
     config = {
       default_config = {};
+      bluetooth = {};
+      logger = {
+        default = "info";
+        logs = {
+          "habluetooth" = "critical";
+          "habluetooth.scanner" = "critical";
+          "bleak" = "critical";
+        };
+      };
       http = {
         server_host = [
           "0.0.0.0"

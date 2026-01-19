@@ -28,8 +28,7 @@ nixos-rebuild action="switch" host=hostname ng="1" install_bootloader="0":
     "--accept-flake-config",
     "--flake",
     ".#{{host}}",
-    "--no-reexec" if ng else "--fast",
-    "--install-bootloader"
+    "--no-reexec" if ng else "--fast"
   ]
 
   if install_bootloader:

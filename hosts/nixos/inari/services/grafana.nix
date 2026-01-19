@@ -1,4 +1,8 @@
-{config, lib, ...}: let
+{
+  config,
+  lib,
+  ...
+}: let
   port = config.yomi.ports.grafana;
   secret = name: "$__file{${config.sops.secrets.${name}.path}}";
   sopsSettings = {

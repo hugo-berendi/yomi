@@ -81,9 +81,10 @@
     # {{{ Nightly versions of things
     neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
     # }}}
-    # {{{ Nixvim
-    nixvim = {
-      url = "github:nix-community/nixvim";
+    # {{{ nvf
+    nvf = {
+      url = "github:NotAShelf/nvf";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     # }}}
 
@@ -258,6 +259,7 @@
           "https://intray.cachix.org"
           "https://playit-nixos-module.cachix.org"
           "https://cache.numtide.com"
+          "https://nvf.cachix.org"
         ];
 
         extra-trusted-public-keys = [
@@ -266,6 +268,7 @@
           "intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ="
           "playit-nixos-module.cachix.org-1:22hBXWXBbd/7o1cOnh+p0hpFUVk9lPdRLX3p5YSfRz4="
           "niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g="
+          "nvf.cachix.org-1:GMQzlEPrdqVlEzWsdk/6NH9TIoRmFVMZLUfBMvNxzlo="
         ];
       };
       # }}}

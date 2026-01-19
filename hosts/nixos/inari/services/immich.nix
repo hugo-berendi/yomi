@@ -29,6 +29,8 @@
     mediaLocation = "/raid5pool/media/photos";
     secretsFile = config.sops.secrets.immich_secrets.path;
 
+    settings.backup.database.keepLastAmount = 60;
+
     settings.oauth = {
       enabled = true;
       issuerUrl = config.yomi.cloudflared.at.pocket-id.url;

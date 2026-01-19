@@ -82,58 +82,58 @@
     };
   # }}}
   # {{{ Actions runner
-  users.users.gitea-runner = {
-    isSystemUser = true;
-    group = "gitea-runner";
-  };
+  # users.users.gitea-runner = {
+  #   isSystemUser = true;
+  #   group = "gitea-runner";
+  # };
+  #
+  # users.groups.gitea-runner = {};
+  #
+  # services.gitea-actions-runner = {
+  #   instances.default = {
+  #     enable = true;
+  #     name = "inari-runner";
+  #     url = "http://localhost:${toString config.yomi.ports.forgejo}";
+  #     tokenFile = config.sops.templates."forgejo_runner_token.env".path;
+  #     labels = [
+  #       "nix:docker://nixos/nix:latest"
+  #       "ubuntu-latest:docker://node:20-bullseye"
+  #     ];
+  #     settings = {
+  #       runner.capacity = 2;
+  #     };
+  #   };
+  # };
+  #
+  # systemd.services.gitea-runner-default.serviceConfig =
+  #   config.yomi.hardening.presets.base
+  #   // config.yomi.hardening.overrides.devices
+  #   // {
+  #     DynamicUser = lib.mkForce false;
+  #     User = "gitea-runner";
+  #     Group = "gitea-runner";
+  #     ReadWritePaths = ["/var/lib/gitea-runner"];
+  #   };
+  #
+  # sops.secrets.forgejo_runner_token = {
+  #   sopsFile = ../secrets.yaml;
+  #   owner = "gitea-runner";
+  #   group = "gitea-runner";
+  # };
 
-  users.groups.gitea-runner = {};
+  # sops.templates."forgejo_runner_token.env".content = ''
+  #   TOKEN=${config.sops.placeholder.forgejo_runner_token}
+  # '';
+  #
+  # sops.templates."forgejo_runner_token.env".owner = "gitea-runner";
+  # sops.templates."forgejo_runner_token.env".group = "gitea-runner";
 
-  services.gitea-actions-runner = {
-    instances.default = {
-      enable = true;
-      name = "inari-runner";
-      url = "http://localhost:${toString config.yomi.ports.forgejo}";
-      tokenFile = config.sops.templates."forgejo_runner_token.env".path;
-      labels = [
-        "nix:docker://nixos/nix:latest"
-        "ubuntu-latest:docker://node:20-bullseye"
-      ];
-      settings = {
-        runner.capacity = 2;
-      };
-    };
-  };
-
-  systemd.services.gitea-runner-default.serviceConfig =
-    config.yomi.hardening.presets.base
-    // config.yomi.hardening.overrides.devices
-    // {
-      DynamicUser = lib.mkForce false;
-      User = "gitea-runner";
-      Group = "gitea-runner";
-      ReadWritePaths = ["/var/lib/gitea-runner"];
-    };
-
-  sops.secrets.forgejo_runner_token = {
-    sopsFile = ../secrets.yaml;
-    owner = "gitea-runner";
-    group = "gitea-runner";
-  };
-
-  sops.templates."forgejo_runner_token.env".content = ''
-    TOKEN=${config.sops.placeholder.forgejo_runner_token}
-  '';
-
-  sops.templates."forgejo_runner_token.env".owner = "gitea-runner";
-  sops.templates."forgejo_runner_token.env".group = "gitea-runner";
-
-  environment.persistence."/persist/state".directories = [
-    {
-      directory = "/var/lib/gitea-runner";
-      user = "gitea-runner";
-      group = "gitea-runner";
-    }
-  ];
+  # environment.persistence."/persist/state".directories = [
+  #   {
+  #     directory = "/var/lib/gitea-runner";
+  #     user = "gitea-runner";
+  #     group = "gitea-runner";
+  #   }
+  # ];
   # }}}
 }

@@ -76,7 +76,8 @@ in {
     warnings = lib.pipe config.systemd.services [
       (lib.filterAttrs (
         _: svc:
-          (svc.serviceConfig.DynamicUser or true) == false
+          (svc.serviceConfig.DynamicUser or true)
+          == false
           && !(svc.serviceConfig ? User)
       ))
       lib.attrNames

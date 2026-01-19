@@ -9,13 +9,10 @@
   publicPortsString = lib.strings.concatStringsSep ", " publicPorts;
   privatePortsString = lib.strings.concatStringsSep ", " privatePorts;
 
-
-
   exitNodeForwardRule = lib.optionalString config.yomi.tailscale.exitNode ''
     # Allow Tailscale exit node traffic
     iifname "tailscale0" oifname "br0" accept
   '';
-
 in {
   systemd.services.nftables = {
     postStart = ''

@@ -1,7 +1,4 @@
-{
-  inputs,
-  ...
-}: {
+{inputs, ...}: {
   yomi.settings = {
     terminal = "ghostty";
     terminal-cmd = "ghostty";

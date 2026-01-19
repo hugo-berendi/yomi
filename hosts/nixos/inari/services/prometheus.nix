@@ -1,4 +1,8 @@
-{config, lib, ...}: {
+{
+  config,
+  lib,
+  ...
+}: {
   # {{{ Secrets
   sops.secrets = {
     radarr_api_key.sopsFile = ../secrets.yaml;

@@ -1,4 +1,8 @@
-{config, lib, ...}: {
+{
+  config,
+  lib,
+  ...
+}: {
   yomi.nginx.at.warden.port = config.yomi.ports.vaultwarden;
 
   # {{{ Secrets

@@ -1,4 +1,8 @@
-{config, lib, ...}: {
+{
+  config,
+  lib,
+  ...
+}: {
   yomi.nginx.at.karakeep.port = config.yomi.ports.karakeep;
   # {{{ Secrets
   sops.secrets.karakeep_env = {

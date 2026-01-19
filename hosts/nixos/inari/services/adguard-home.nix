@@ -1,4 +1,8 @@
-{config, lib, ...}: {
+{
+  config,
+  lib,
+  ...
+}: {
   # {{{ Reverse proxy
   yomi.nginx.at.adguard.port = config.yomi.ports.adguard;
   # }}}

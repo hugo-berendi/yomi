@@ -62,16 +62,16 @@
       hourly = 24;
     };
 
-    # Minimal snapshots for system state on zroot
+    # Snapshots for system state on zroot (includes databases like Immich)
     datasets."zroot/root/persist/state" = {
       autosnap = true;
       autoprune = true;
       recursive = true;
       yearly = 0;
-      monthly = 1;
-      weekly = 1;
-      daily = 3;
-      hourly = 6;
+      monthly = 6;
+      weekly = 4;
+      daily = 7;
+      hourly = 24;
     };
   };
   # }}}

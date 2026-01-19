@@ -6,6 +6,7 @@
     ./networking
     ./filesystems
     ./hardware
+    ./memory-limits.nix
 
     ../common/services/anubis.nix
     ../common/services/meilisearch.nix

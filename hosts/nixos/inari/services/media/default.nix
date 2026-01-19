@@ -20,7 +20,7 @@
     enable = true;
     stateDir = "/var/lib/media";
     mediaDir = "/raid5pool/media";
-    mediaUsers = [ "jellyfin" "sonarr" "radarr" "bazarr" ];
+    mediaUsers = ["jellyfin" "sonarr" "radarr" "bazarr"];
   };
   # }}}
   # {{{ Persistence

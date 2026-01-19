@@ -1,4 +1,8 @@
-{config, lib, ...}: {
+{
+  config,
+  lib,
+  ...
+}: {
   yomi.nginx.at.pdf.port = config.yomi.ports.stirling-pdf;
 
   services.stirling-pdf = {

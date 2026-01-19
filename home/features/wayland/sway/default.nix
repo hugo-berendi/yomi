@@ -31,7 +31,7 @@ in {
       modifier = "Mod4";
 
       terminal = "${pkgs.foot}/bin/footclient";
-menu = "walker";
+      menu = "walker";
 
       bars = [];
 

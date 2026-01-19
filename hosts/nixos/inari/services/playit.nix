@@ -1,4 +1,8 @@
-{config, lib, ...}: {
+{
+  config,
+  lib,
+  ...
+}: {
   sops.secrets.playit_secret = lib.mkIf config.yomi.playit.enable {
     sopsFile = ../secrets.yaml;
   };
