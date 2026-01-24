@@ -18,6 +18,33 @@
   searxng = engines."searxng";
   defaultSearchURL = "${searxng.url}?${searxng.param}={searchTerms}";
 
+  extensions = [
+    "cjpalhdlnbpafiamejdnhcphjbkeiagm" # uBlock Origin
+    "nngceckbapebfimnlniiiahkandclblb" # Bitwarden
+    "lckanjgmijmafbedplaimeclbjfcpbdk" # ClearURLs
+    "njdfdhgchcpfjjberbghaegflmagbdoo" # LocalCDN
+    "ajhmfdgkijocedmfjonnpjfojldioehi" # Privacy Pass
+    "hjdoplcnndgiblooccencgcggcoedceo" # Terms of Service; Didn't Read
+    "iplffkdpngmdjhlpjmppncnlhomiipha" # Unpaywall
+    "hfjbmagddngcpeloejdejnfgbamkjaeg" # Vimium C
+    "eimadpbcbfnmbkopoojfekhnkhdbieeh" # Dark Reader
+    "bhchdcejhohfmigjdonfgnilgcjgocgl" # User-Agent Switcher and Manager
+    "hlepfoohegkhhmjieoechaddaejaokhf" # Refined GitHub
+    "dnhpnfgdlenaccegplpojghhmaamnnfp" # Augmented Steam
+    "fkagelmloambgokoeokbpihmgpkbgbfm" # Indie Wiki Buddy
+    "bbeicapbemckcnkmnppddgpljaaicpbe" # BlockTube
+    "gebbhagfogifgggkldgodflihgfeippi" # Return YouTube Dislike
+    "jiaopdjbehhjgokpphdfgmapkobbnmjp" # YouTube Shorts Block
+    "nipdbleimjhfpfdkopbfeagjjkmcfhbj" # Mouse Gesture (Replacement for Gesturefy)
+    "ohjebgkppidheiajbgnnmmieaapjppje" # Rose Pine Moon Theme
+  ];
+
+  # Helper to create extension settings policy
+  mkExtensionPolicy = id: {
+    installation_mode = "force_installed";
+    update_url = "https://clients2.google.com/service/update2/crx";
+  };
+
   policyConfig = {
     # Privacy & Telemetry
     "SigninAllowed" = false;
@@ -51,15 +78,18 @@
       lib.attrsets.mapAttrsToList mkChromiumSearch engines;
 
     # Extension Settings
-    "ExtensionSettings" = {
-      "*" = {
-        "installation_mode" = "allowed";
+    "ExtensionSettings" = 
+      (lib.genAttrs extensions mkExtensionPolicy) // {
+        "*" = {
+          "installation_mode" = "allowed";
+        };
+        # Pin uBlock Origin
+        "cjpalhdlnbpafiamejdnhcphjbkeiagm" = {
+          "toolbar_pin" = "force_pinned";
+          "installation_mode" = "force_installed";
+          "update_url" = "https://clients2.google.com/service/update2/crx";
+        };
       };
-      # Pin uBlock Origin
-      "cjpalhdlnbpafiamejdnhcphjbkeiagm" = {
-        "toolbar_pin" = "force_pinned";
-      };
-    };
   };
 
   flags = [
@@ -86,33 +116,21 @@
   };
 
 in {
-  programs.chromium = {
-    enable = true;
-    package = heliumPackage;
+  home.packages = [ heliumPackage ];
 
-    # {{{ Extensions
-    extensions = [
-      "cjpalhdlnbpafiamejdnhcphjbkeiagm" # uBlock Origin
-      "nngceckbapebfimnlniiiahkandclblb" # Bitwarden
-      "lckanjgmijmafbedplaimeclbjfcpbdk" # ClearURLs
-      "njdfdhgchcpfjjberbghaegflmagbdoo" # LocalCDN
-      "ajhmfdgkijocedmfjonnpjfojldioehi" # Privacy Pass
-      "hjdoplcnndgiblooccencgcggcoedceo" # Terms of Service; Didn't Read
-      "iplffkdpngmdjhlpjmppncnlhomiipha" # Unpaywall
-      "hfjbmagddngcpeloejdejnfgbamkjaeg" # Vimium C
-      "eimadpbcbfnmbkopoojfekhnkhdbieeh" # Dark Reader
-      "bhchdcejhohfmigjdonfgnilgcjgocgl" # User-Agent Switcher and Manager
-      "hlepfoohegkhhmjieoechaddaejaokhf" # Refined GitHub
-      "dnhpnfgdlenaccegplpojghhmaamnnfp" # Augmented Steam
-      "fkagelmloambgokoeokbpihmgpkbgbfm" # Indie Wiki Buddy
-      "bbeicapbemckcnkmnppddgpljaaicpbe" # BlockTube
-      "gebbhagfogifgggkldgodflihgfeippi" # Return YouTube Dislike
-      "jiaopdjbehhjgokpphdfgmapkobbnmjp" # YouTube Shorts Block
-      "nipdbleimjhfpfdkopbfeagjjkmcfhbj" # Mouse Gesture (Replacement for Gesturefy)
-      "ohjebgkppidheiajbgnnmmieaapjppje" # Rose Pine Moon Theme
-    ];
-    # }}}
+  # {{{ Desktop Entry
+  # Override desktop entry to pass flags (since we are not using programs.chromium)
+  xdg.desktopEntries.helium = {
+    name = "Helium";
+    genericName = "Web Browser";
+    exec = "helium %U";
+    terminal = false;
+    icon = "helium";
+    type = "Application";
+    categories = ["Network" "WebBrowser"];
+    mimeType = ["text/html" "text/xml" "x-scheme-handler/http" "x-scheme-handler/https"];
   };
+  # }}}
 
   # {{{ Default Browser
   xdg.mimeApps.defaultApplications = {
