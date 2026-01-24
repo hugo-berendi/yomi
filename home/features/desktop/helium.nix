@@ -73,6 +73,10 @@
     "DefaultSearchProviderSearchURL" = defaultSearchURL;
     "DefaultSearchProviderIconURL" = searxng.icon;
     
+    # Helium Specific Settings
+    "helium.services.enabled" = false;
+    "helium.services.browser_updates" = false;
+    
     # Map other engines from engines.toml
     "SiteSearchSettings" = 
       lib.attrsets.mapAttrsToList mkChromiumSearch engines;

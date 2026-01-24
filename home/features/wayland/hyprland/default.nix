@@ -3,6 +3,7 @@
   lib,
   config,
   inputs,
+  upkgs,
   ...
 }: let
   rosePineCursor = import ./rose-pine-cursor.nix {inherit pkgs;};
@@ -21,6 +22,7 @@ in {
     rosePineCursor
     qt6Packages.qt6ct
     inputs.pyprland.packages.${pkgs.system}.pyprland
+    upkgs.hyprpolkitagent
   ];
   # }}}
   # {{{ Hyprland
@@ -102,6 +104,7 @@ in {
         "${config.yomi.settings.terminal-cmd} & helium & vesktop & spotify & obsidiantui & pypr"
         "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
         "ln -sf ${pkgs.fish}/bin/fish /usr/bin/fish"
+        "systemctl --user start hyprpolkitagent"
       ];
       # }}}
 
