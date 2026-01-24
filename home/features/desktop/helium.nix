@@ -45,6 +45,23 @@
     update_url = "https://clients2.google.com/service/update2/crx";
   };
 
+  initialPrefs = {
+    helium = {
+      services = {
+        enabled = false;
+        browser_updates = false;
+        bangs = false;
+        ext_proxy = false;
+        spellcheck_files = false;
+      };
+      completed_onboarding = true;
+    };
+    distribution = {
+      skip_first_run_ui = true;
+      suppress_first_run_default_browser_prompt = true;
+    };
+  };
+
   policyConfig = {
     # Privacy & Telemetry
     "SigninAllowed" = false;
@@ -106,6 +123,7 @@
     "--disable-sync"
     "--disable-speech-api"
     "--disable-wake-on-wifi"
+    "--initial-preferences-file=${pkgs.writeText "helium-initial-prefs.json" (builtins.toJSON initialPrefs)}"
   ];
 
   # Wrapper to pass flags
