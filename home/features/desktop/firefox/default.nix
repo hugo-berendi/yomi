@@ -157,14 +157,14 @@
   stylix.targets.firefox.enable = true;
 
   # {{{ Make librewolf the default
-  xdg.mimeApps.defaultApplications = {
-    "text/html" = ["librewolf.desktop"];
-    "text/xml" = ["librewolf.desktop"];
-    "x-scheme-handler/http" = ["librewolf.desktop"];
-    "x-scheme-handler/https" = ["librewolf.desktop"];
-  };
+  # xdg.mimeApps.defaultApplications = {
+  #   "text/html" = ["librewolf.desktop"];
+  #   "text/xml" = ["librewolf.desktop"];
+  #   "x-scheme-handler/http" = ["librewolf.desktop"];
+  #   "x-scheme-handler/https" = ["librewolf.desktop"];
+  # };
 
-  home.sessionVariables.BROWSER = "librewolf";
+  # home.sessionVariables.BROWSER = "librewolf";
   # }}}
 
   # {{{ Persistence

@@ -75,6 +75,9 @@
 
     korora.url = "github:adisbladis/korora";
 
+    helium.url = "github:AlvaroParker/helium-nix";
+
+
     # }}}
     # {{{ Standalone software
     # {{{ Nightly versions of things

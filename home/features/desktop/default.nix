@@ -6,6 +6,7 @@
     ./dunst
     ./discord
     ./firefox
+    ./helium.nix
     ./wakatime
     ./spotify.nix
     ./obsidian.nix

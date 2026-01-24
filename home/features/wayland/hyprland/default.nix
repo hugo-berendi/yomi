@@ -99,7 +99,7 @@ in {
       # {{{ Autostart
       exec = ["systemctl --user import-environment PATH && systemctl --user restart xdg-desktop-portal.service"];
       exec-once = [
-        "${config.yomi.settings.terminal-cmd} & librewolf & vesktop & spotify & obsidiantui & pypr"
+        "${config.yomi.settings.terminal-cmd} & helium & vesktop & spotify & obsidiantui & pypr"
         "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
         "ln -sf ${pkgs.fish}/bin/fish /usr/bin/fish"
       ];
@@ -170,7 +170,7 @@ in {
         "$mod, mouse:273, resizewindow"
       ];
       windowrule = [
-        "workspace 2 silent, class:^(.*LibreWolf.*)$"
+        "workspace 2 silent, class:^(helium)$"
         "workspace 3 silent, title:^(.*((Disc|WebC|Venc)ord)|Vesktop.*)$"
         "workspace 3 silent, title:^(.*Element.*)$"
         "workspace 5 silent, title:^(.*(S|s)pot(ify)?.*)$"
