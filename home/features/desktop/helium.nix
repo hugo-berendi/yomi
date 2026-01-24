@@ -45,6 +45,7 @@
     update_url = "https://clients2.google.com/service/update2/crx";
   };
 
+  # Initial preferences for the browser (applied on first run)
   initialPrefs = {
     helium = {
       services = {
@@ -53,12 +54,21 @@
         bangs = false;
         ext_proxy = false;
         spellcheck_files = false;
+        ublock_assets = false;
       };
       completed_onboarding = true;
     };
     distribution = {
       skip_first_run_ui = true;
       suppress_first_run_default_browser_prompt = true;
+    };
+    # General Privacy
+    signin = {
+      allowed = false;
+    };
+    # Disable AI/GenAI features if possible via prefs
+    optimization_guide = {
+      model_execution_enabled = false;
     };
   };
 
@@ -137,6 +147,19 @@
     '';
   };
 
+  # {{{ External Extensions
+  # Write External Extensions JSONs which works reliably on Linux without policies
+  # https://developer.chrome.com/docs/extensions/how-to/distribute/install-extensions#linux-preferences
+  mkExternalExtFile = id: {
+    name = "helium/External Extensions/${id}.json";
+    value = {
+      text = builtins.toJSON {
+        external_update_url = "https://clients2.google.com/service/update2/crx";
+      };
+    };
+  };
+  
+  externalExtensions = builtins.listToAttrs (map mkExternalExtFile extensions);
 in {
   home.packages = [ heliumPackage ];
 
@@ -165,9 +188,12 @@ in {
   home.sessionVariables.BROWSER = "helium";
   # }}}
 
-  # {{{ Policies
-  # Write to both chromium and helium config dirs to ensure policies are picked up
+  # {{{ Config Files
+  # Write policies
   xdg.configFile."chromium/policies/managed/default.json".text = builtins.toJSON policyConfig;
   xdg.configFile."helium/policies/managed/default.json".text = builtins.toJSON policyConfig;
+  
+  # Write External Extensions
+  xdg.configFile = externalExtensions;
   # }}}
 }
