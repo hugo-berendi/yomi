@@ -126,7 +126,7 @@
         opacity = transparency 0.7;
         polarity = "dark";
         cursor = {
-          package = inputs.rose-pine-hyprcursor.packages.${pkgs.system}.default;
+          package = inputs.rose-pine-hyprcursor.packages.${pkgs.stdenv.hostPlatform.system}.default;
           name = "BreezX-RosePine-Linux";
           size = 36;
         };

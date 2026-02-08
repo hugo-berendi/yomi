@@ -14,7 +14,7 @@
   mcpServersToml = lib.concatStringsSep "\n" (map (name: toCodexMcp name cfg.${name}) (builtins.attrNames cfg));
 in {
   home.packages = [
-    inputs.llm-agents.packages.${pkgs.system}.codex
+    inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.codex
   ];
 
   xdg.configFile."codex/config.toml".text = mcpServersToml;

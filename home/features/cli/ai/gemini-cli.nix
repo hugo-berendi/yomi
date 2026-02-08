@@ -18,7 +18,7 @@
   };
 in {
   home.packages = [
-    inputs.llm-agents.packages.${pkgs.system}.gemini-cli
+    inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.gemini-cli
   ];
 
   xdg.configFile."gemini/settings.json".text = builtins.toJSON geminiConfig;

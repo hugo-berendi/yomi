@@ -15,6 +15,7 @@
         nvim_lsp = "[LSP]";
         buffer = "[Buffer]";
         path = "[Path]";
+        luasnip = "[LuaSnip]";
       };
       sourcePlugins = [
         pkgs.vimPlugins.cmp-nvim-lsp
@@ -22,6 +23,4 @@
       ];
     };
   };
-
-  programs.nvf.settings.vim.snippets.luasnip.enable = true;
 }

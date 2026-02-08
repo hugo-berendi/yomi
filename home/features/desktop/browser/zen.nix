@@ -42,7 +42,7 @@
       # }}}
       # {{{ Extensions
       extensions = {
-        packages = with inputs.firefox-addons.packages.${pkgs.system};
+        packages = with inputs.firefox-addons.packages.${pkgs.stdenv.hostPlatform.system};
         with lib.lists;
           flatten [
             [
@@ -152,16 +152,16 @@
   # }}}
   # {{{ Stylix
   stylix.targets.zen-browser = {
-    enable = true;
+    # enable = true;
     profileNames = [config.home.username];
   };
   # }}}
   # {{{ Default browser
   xdg.mimeApps.defaultApplications = {
-    "text/html" = ["zen.desktop"];
-    "text/xml" = ["zen.desktop"];
-    "x-scheme-handler/http" = ["zen.desktop"];
-    "x-scheme-handler/https" = ["zen.desktop"];
+    "text/html" = ["zen-twilight.desktop"];
+    "text/xml" = ["zen-twilight.desktop"];
+    "x-scheme-handler/http" = ["zen-twilight.desktop"];
+    "x-scheme-handler/https" = ["zen-twilight.desktop"];
   };
 
   home.sessionVariables.BROWSER = "zen";

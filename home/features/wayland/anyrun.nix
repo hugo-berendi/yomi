@@ -5,7 +5,7 @@
   config,
   ...
 }: let
-  normal-plugins = with inputs.anyrun.packages.${pkgs.system}; [
+  normal-plugins = with inputs.anyrun.packages.${pkgs.stdenv.hostPlatform.system}; [
     dictionary
     rink
     stdin
@@ -19,9 +19,9 @@ in {
     config = {
       # {{{ Plugins
       plugins = [
-        inputs.anyrun-plugins.packages.${pkgs.system}.cliphist
-        inputs.anyrun-plugins.packages.${pkgs.system}.applications
-        inputs.anyrun-plugins.packages.${pkgs.system}.symbols
+        inputs.anyrun-plugins.packages.${pkgs.stdenv.hostPlatform.system}.cliphist
+        inputs.anyrun-plugins.packages.${pkgs.stdenv.hostPlatform.system}.applications
+        inputs.anyrun-plugins.packages.${pkgs.stdenv.hostPlatform.system}.symbols
       ];
       # }}}
       # {{{ Geometry

@@ -21,7 +21,7 @@ in {
     hyprcursor
     rosePineCursor
     qt6Packages.qt6ct
-    inputs.pyprland.packages.${pkgs.system}.pyprland
+    inputs.pyprland.packages.${pkgs.stdenv.hostPlatform.system}.pyprland
     upkgs.hyprpolkitagent
   ];
   # }}}

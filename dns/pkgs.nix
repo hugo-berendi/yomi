@@ -23,7 +23,7 @@
     evaluated.config.yomi.dns.octodns;
   octodns-sync = pkgs.symlinkJoin {
     name = "octodns-sync";
-    paths = [self.packages.${pkgs.system}.octodns];
+    paths = [self.packages.${pkgs.stdenv.hostPlatform.system}.octodns];
     buildInputs = [pkgs.makeWrapper pkgs.yq];
     postBuild = ''
       cat ${./octodns.yaml} | yq '.providers.zones.directory="${octodns-zones}"' > $out/config.yaml
