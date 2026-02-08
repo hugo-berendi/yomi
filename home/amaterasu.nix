@@ -9,6 +9,24 @@
     ./features/wayland/hyprland
     ./features/productivity
   ];
+
+  # {{{ Fcitx5 keyboard configuration
+  i18n.inputMethod.fcitx5.settings.inputMethod = {
+    "Groups/0" = {
+      Name = "Default";
+      "Default Layout" = "de";
+      DefaultIM = "keyboard-de";
+    };
+    "Groups/0/Items/0" = {
+      Name = "keyboard-de";
+      Layout = "";
+    };
+    GroupOrder = {
+      "0" = "Default";
+    };
+  };
+  # }}}
+
   home = {
     file = {};
     sessionVariables = {EDITOR = "nvim";};
