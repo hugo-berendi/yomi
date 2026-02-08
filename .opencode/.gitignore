@@ -1,0 +1,6 @@
+node_modules/
+package.json
+bun.lock
+opencode.db
+opencode.db-shm
+opencode.db-wal
