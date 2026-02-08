@@ -101,7 +101,7 @@ in {
       # {{{ Autostart
       exec = ["systemctl --user import-environment PATH && systemctl --user restart xdg-desktop-portal.service"];
       exec-once = [
-        "${config.yomi.settings.terminal-cmd} & helium & vesktop & spotify & obsidiantui & pypr"
+        "${config.yomi.settings.terminal-cmd} & zen & vesktop & spotify & obsidiantui & pypr"
         "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
         "ln -sf ${pkgs.fish}/bin/fish /usr/bin/fish"
         "systemctl --user start hyprpolkitagent"
@@ -173,7 +173,7 @@ in {
         "$mod, mouse:273, resizewindow"
       ];
       windowrule = [
-        "workspace 2 silent, class:^(helium)$"
+        "workspace 2 silent, class:^(zen-alpha|zen)$"
         "workspace 3 silent, title:^(.*((Disc|WebC|Venc)ord)|Vesktop.*)$"
         "workspace 3 silent, title:^(.*Element.*)$"
         "workspace 5 silent, title:^(.*(S|s)pot(ify)?.*)$"
@@ -186,7 +186,7 @@ in {
         "noinitialfocus, class:^(xwaylandvideobridge)$"
         "maxsize 1 1, class:^(xwaylandvideobridge)$"
         "noblur, class:^(xwaylandvideobridge)$"
-        "idleinhibit fullscreen, class:^(.*LibreWolf.*)$"
+        "idleinhibit fullscreen, class:^(zen-alpha|zen)$"
         "idleinhibit focus, class:^(mpv|.+exe)$"
         "idleinhibit focus, title:^(.*Zen Browser.*)$, title:^(.*YouTube.*)$"
       ];

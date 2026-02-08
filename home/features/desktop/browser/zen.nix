@@ -5,7 +5,13 @@
   inputs,
   ...
 }: {
-  programs.librewolf = {
+  # {{{ Imports
+  imports = [
+    inputs.zen-browser.homeModules.twilight
+  ];
+  # }}}
+  # {{{ Programs
+  programs.zen-browser = {
     enable = true;
 
     policies = {
@@ -36,8 +42,6 @@
       # }}}
       # {{{ Extensions
       extensions = {
-        settings = {
-        };
         packages = with inputs.firefox-addons.packages.${pkgs.system};
         with lib.lists;
           flatten [
@@ -46,30 +50,25 @@
               augmented-steam
               blocktube
               bitwarden
-              clearurls
-              cliget
               darkreader
               dearrow
               don-t-fuck-with-paste
               gesturefy
               indie-wiki-buddy
               leechblock-ng
+              libredirect
               localcdn
               octolinker
               privacy-pass
-              privacy-redirect
               refined-github
               return-youtube-dislikes
               sponsorblock
-              skip-redirect
               steam-database
               terms-of-service-didnt-read
-              translate-web-pages
               ublock-origin
               unpaywall
               user-agent-string-switcher
               vimium-c
-              youtube-shorts-block
               karakeep
             ]
           ];
@@ -103,7 +102,7 @@
         }
         // lib.attrsets.mapAttrs (_: mkBasicSearchEngine) (lib.importTOML ./engines.toml);
       # }}}
-      # {{{ Other lower level settings
+      # {{{ Settings
       settings = {
         "dom.events.asyncClipboard.clipboardItem" = true;
         "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
@@ -119,15 +118,12 @@
         # }}}
         "browser.startup.homepage" = "https://lab.hugo-berendi.de";
         # {{{ New tab page
-        "browser.newtabpage.activity-stream.asrouter.userprefs.cfr.addons" =
-          false;
-        "browser.newtabpage.activity-stream.asrouter.userprefs.cfr.features" =
-          false;
+        "browser.newtabpage.activity-stream.asrouter.userprefs.cfr.addons" = false;
+        "browser.newtabpage.activity-stream.asrouter.userprefs.cfr.features" = false;
         "browser.newtabpage.activity-stream.feeds.snippets" = false;
         "browser.newtabpage.activity-stream.improvesearch.topSiteSearchShortcuts.havePinned" = "";
         "browser.newtabpage.activity-stream.improvesearch.topSiteSearchShortcuts.searchEngines" = "";
-        "browser.newtabpage.activity-stream.section.highlights.includePocket" =
-          false;
+        "browser.newtabpage.activity-stream.section.highlights.includePocket" = false;
         "browser.newtabpage.activity-stream.showSponsored" = false;
         "browser.newtabpage.activity-stream.showSponsoredTopSites" = false;
         "browser.newtabpage.pinned" = false;
@@ -153,35 +149,30 @@
       # }}}
     };
   };
-
-  stylix.targets.firefox.enable = true;
-
-  # {{{ Make librewolf the default
-  # xdg.mimeApps.defaultApplications = {
-  #   "text/html" = ["librewolf.desktop"];
-  #   "text/xml" = ["librewolf.desktop"];
-  #   "x-scheme-handler/http" = ["librewolf.desktop"];
-  #   "x-scheme-handler/https" = ["librewolf.desktop"];
-  # };
-
-  # home.sessionVariables.BROWSER = "librewolf";
   # }}}
+  # {{{ Stylix
+  stylix.targets.zen-browser = {
+    enable = true;
+    profileNames = [config.home.username];
+  };
+  # }}}
+  # {{{ Default browser
+  xdg.mimeApps.defaultApplications = {
+    "text/html" = ["zen.desktop"];
+    "text/xml" = ["zen.desktop"];
+    "x-scheme-handler/http" = ["zen.desktop"];
+    "x-scheme-handler/https" = ["zen.desktop"];
+  };
 
+  home.sessionVariables.BROWSER = "zen";
+  # }}}
   # {{{ Persistence
-  yomi.persistence.at.state.apps.firefox.directories = [
-    ".mozilla/firefox"
+  yomi.persistence.at.state.apps.zen-browser.directories = [
+    ".zen"
   ];
 
-  yomi.persistence.at.cache.apps.firefox.directories = [
-    "${config.xdg.cacheHome}/mozilla/firefox"
-  ];
-
-  yomi.persistence.at.state.apps.librewolf.directories = [
-    ".librewolf"
-  ];
-
-  yomi.persistence.at.cache.apps.librewolf.directories = [
-    "${config.xdg.cacheHome}/librewolf"
+  yomi.persistence.at.cache.apps.zen-browser.directories = [
+    "${config.xdg.cacheHome}/zen"
   ];
   # }}}
 }

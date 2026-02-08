@@ -75,8 +75,8 @@
 
     korora.url = "github:adisbladis/korora";
 
-    helium.url = "github:AlvaroParker/helium-nix";
-
+    zen-browser.url = "github:0xc000022070/zen-browser-flake";
+    zen-browser.inputs.nixpkgs.follows = "nixpkgs";
 
     # }}}
     # {{{ Standalone software

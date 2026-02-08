@@ -5,8 +5,7 @@
     ./ghostty.nix
     ./dunst
     ./discord
-    ./firefox
-    ./helium.nix
+    ./browser
     ./wakatime
     ./spotify.nix
     ./obsidian.nix
