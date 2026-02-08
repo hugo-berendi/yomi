@@ -13,6 +13,7 @@
     ./home-assistant/automations/weather.nix
     ./home-assistant/automations/webuntis-wake-up.nix
     ./home-assistant/automations/webuntis-lesson-change.nix
+    ./home-assistant/automations/webuntis-filtered.nix
   ];
   # }}}
   # {{{ Reverse proxy

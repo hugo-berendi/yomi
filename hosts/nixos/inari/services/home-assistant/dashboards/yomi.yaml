@@ -40,9 +40,10 @@ views:
             title: Quick Status
             show_header_toggle: false
             entities:
-              - entity: sensor.webuntis_wake_time
-                name: Wake Time
-                icon: mdi:alarm
+              - entity: sensor.webuntis_my_wake_time
+                name: My Wake Time
+              - entity: sensor.webuntis_my_next_lesson
+                name: My Next Lesson
               - entity: sensor.id_3_battery_level
                 name: Car Battery
               - entity: sensor.id_3_electric_range
@@ -156,29 +157,45 @@ views:
       - type: grid
         cards:
           - type: entities
-            title: Today
+            title: My Schedule (Filtered)
             show_header_toggle: false
             entities:
-              - entity: sensor.webuntis_today_s_school_start
-                name: Start
-              - entity: sensor.webuntis_today_s_school_end
-                name: End
-              - entity: sensor.webuntis_next_lesson
-                name: Next Lesson
-              - entity: sensor.webuntis_wake_time
+              - entity: sensor.webuntis_my_wake_time
                 name: Wake Time
-              - entity: sensor.webuntis_prep_time
+              - entity: sensor.webuntis_my_prep_time
                 name: Leave Time
+              - entity: sensor.webuntis_my_next_lesson
+                name: Next Lesson
+              - entity: sensor.webuntis_my_lessons_today
+                name: Lessons Today
               - entity: sensor.school_day_status
                 name: Status
           - type: markdown
-            title: Today's Schedule
+            title: My Lessons Today
+            content: >
+              {{ state_attr('sensor.webuntis_my_lessons_today', 'schedule') | default('No lessons today') }}
+      - type: grid
+        cards:
+          - type: entities
+            title: All Classes (Unfiltered)
+            show_header_toggle: false
+            entities:
+              - entity: sensor.webuntis_today_s_school_start
+                name: Class Start
+              - entity: sensor.webuntis_today_s_school_end
+                name: Class End
+              - entity: sensor.webuntis_next_lesson
+                name: Next Class
+              - entity: sensor.webuntis_wake_time
+                name: Class Wake Time
+          - type: markdown
+            title: Full Schedule
             content: >
               {% set json = state_attr('sensor.webuntis_next_lesson_to_wake_up', 'day') %}
               {% if json and json is string and json.startswith('[') %}
                 {% set lessons = json | from_json %}
                 {% for lesson in lessons %}
-              **{{ lesson.start | as_datetime | as_local | as_timestamp | timestamp_custom('%H:%M') }}** {{ lesson.subjects[0].long_name if lesson.subjects else 'Free' }}{% if lesson.rooms %} ({{ lesson.rooms[0].name }}){% endif %}
+              **{{ lesson.start | as_datetime | as_local | as_timestamp | timestamp_custom('%H:%M') }}** {{ lesson.subjects[0].long_name if lesson.subjects else 'Free' }}{% if lesson.rooms %} ({{ lesson.rooms[0].name }}){% endif %}{% if lesson.teachers %} - {{ lesson.teachers[0].name }}{% endif %}
 
                 {% endfor %}
               {% elif json and 'disabled' in (json | lower) %}
@@ -199,7 +216,17 @@ views:
       - type: grid
         cards:
           - type: entities
-            title: Automations
+            title: My Automations (Filtered)
+            show_header_toggle: false
+            entities:
+              - entity: automation.webuntis_filtered_wake_up
+                name: Filtered Wake-Up
+              - entity: automation.webuntis_filtered_leave_reminder
+                name: Filtered Leave Reminder
+              - entity: automation.webuntis_filtered_lesson_change
+                name: Filtered Change Alerts
+          - type: entities
+            title: All-Class Automations
             show_header_toggle: false
             entities:
               - entity: automation.webuntis_dynamic_wake_up
@@ -210,6 +237,17 @@ views:
                 name: Change Alerts
               - entity: automation.fallback_wake_up_07_00
                 name: Fallback (07:00)
+      - type: grid
+        cards:
+          - type: markdown
+            title: My Teachers
+            content: >
+              **Always:** SP, KT, MM, KO, FR, BU, WA, TO
+
+              **Conditional:**
+              - LO (Math only)
+              - MÜ (WR only)
+              - WJ (PuG only)
 
   - title: Lights
     path: lights
