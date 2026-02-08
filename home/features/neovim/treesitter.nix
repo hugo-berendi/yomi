@@ -18,6 +18,7 @@
       bash.enable = true;
       csharp.enable = true;
       helm.enable = true;
+      astro.enable = true;
     };
 
     treesitter = {
