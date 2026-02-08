@@ -1,20 +1,13 @@
 {
   config,
   inputs,
-  pkgs,
   ...
 }: let
-  pkgs-old = import inputs.nixpkgs-old {
-    system = "x86_64-linux";
-    config.allowUnfree = true;
-  };
-
-  pocketIdUrl = config.yomi.cloudflared.at.pocket-id.url;
   jellyfinUrl = config.yomi.cloudflared.at.media.url;
 in {
   # {{{ Imports
   imports = [
-    inputs.declarative-jellyfin.nixosModules.default
+    inputs.jellarr.nixosModules.default
   ];
   # }}}
   # {{{ Reverse proxy
@@ -23,109 +16,123 @@ in {
   # {{{ Secrets
   sops.secrets.jellyfin_oidc_secret = {
     sopsFile = ../../secrets.yaml;
-    owner = config.services.declarative-jellyfin.user;
-    group = config.services.declarative-jellyfin.group;
+    owner = config.services.jellyfin.user;
+    group = config.services.jellyfin.group;
+  };
+
+  sops.secrets.jellarr_api_key = {
+    sopsFile = ../../secrets.yaml;
+  };
+
+  sops.templates.jellarr-env = {
+    content = ''
+      JELLARR_API_KEY=${config.sops.placeholder.jellarr_api_key}
+    '';
+    owner = config.services.jellarr.user;
+    group = config.services.jellarr.group;
   };
   # }}}
-  # {{{ Service
-  services.declarative-jellyfin = {
+  # {{{ Jellyfin service
+  services.jellyfin = {
     enable = true;
-    package = pkgs-old.jellyfin;
+    openFirewall = false;
+  };
+  # }}}
+  # {{{ Jellarr service
+  services.jellarr = {
+    enable = true;
+    user = "jellyfin";
+    group = "jellyfin";
+    environmentFile = config.sops.templates.jellarr-env.path;
 
-    dataDir = "/var/lib/jellyfin";
-    configDir = "/var/lib/jellyfin/config";
-    cacheDir = "/var/cache/jellyfin";
-    logDir = "/var/lib/jellyfin/log";
-
-    backups = true;
-    backupCount = 5;
-    backupDir = "/var/lib/jellyfin/backups";
-
-    system = {
-      serverName = "Inari Media Server";
-
-      pluginRepositories = [
-        {
-          content = {
-            Name = "Jellyfin Stable";
-            Url = "https://repo.jellyfin.org/files/plugin/manifest.json";
-          };
-          tag = "RepositoryInfo";
-        }
-        {
-          content = {
-            Name = "Jellyfin SSO Plugin";
-            Url = "https://raw.githubusercontent.com/9p4/jellyfin-plugin-sso/manifest-release/manifest.json";
-          };
-          tag = "RepositoryInfo";
-        }
-      ];
+    bootstrap = {
+      enable = true;
+      apiKeyFile = config.sops.secrets.jellarr_api_key.path;
     };
 
-    network = {
-      internalHttpPort = config.yomi.ports.jellyfin;
-    };
+    config = {
+      version = 1;
+      base_url = "http://localhost:${toString config.yomi.ports.jellyfin}";
 
-    libraries = {
-      Movies = {
-        enabled = true;
-        contentType = "movies";
-        pathInfos = ["/raid5pool/media/movies"];
+      system = {
+        pluginRepositories = [
+          {
+            name = "Jellyfin Stable";
+            url = "https://repo.jellyfin.org/files/plugin/manifest.json";
+            enabled = true;
+          }
+          {
+            name = "Jellyfin SSO Plugin";
+            url = "https://raw.githubusercontent.com/9p4/jellyfin-plugin-sso/manifest-release/manifest.json";
+            enabled = true;
+          }
+        ];
       };
 
-      Shows = {
-        enabled = true;
-        contentType = "tvshows";
-        pathInfos = ["/raid5pool/media/tv"];
+      library = {
+        virtualFolders = [
+          {
+            name = "Movies";
+            collectionType = "movies";
+            libraryOptions.pathInfos = [{path = "/raid5pool/media/movies";}];
+          }
+          {
+            name = "Shows";
+            collectionType = "tvshows";
+            libraryOptions.pathInfos = [{path = "/raid5pool/media/tv";}];
+          }
+          {
+            name = "Music";
+            collectionType = "music";
+            libraryOptions.pathInfos = [{path = "/raid5pool/media/music";}];
+          }
+          {
+            name = "Books";
+            collectionType = "books";
+            libraryOptions.pathInfos = [{path = "/raid5pool/media/books";}];
+          }
+        ];
       };
 
-      Music = {
-        enabled = true;
-        contentType = "music";
-        pathInfos = ["/raid5pool/media/music"];
+      branding = {
+        loginDisclaimer = ''
+          <form action="${jellyfinUrl}/sso/OID/start/PocketID">
+            <button class="raised block emby-button button-submit">
+              Sign in with Pocket ID
+            </button>
+          </form>
+        '';
+
+        customCss = ''
+          a.raised.emby-button {
+            padding: 0.9em 1em;
+            color: inherit !important;
+          }
+          .disclaimerContainer {
+            display: block;
+          }
+        '';
       };
 
-      Books = {
-        enabled = true;
-        contentType = "books";
-        pathInfos = ["/raid5pool/media/books"];
+      startup = {
+        completeStartupWizard = true;
       };
-    };
-
-    branding = {
-      loginDisclaimer = ''
-        <form action="${jellyfinUrl}/sso/OID/start/PocketID">
-          <button class="raised block emby-button button-submit">
-            Sign in with Pocket ID
-          </button>
-        </form>
-      '';
-
-      customCss = ''
-        a.raised.emby-button {
-          padding: 0.9em 1em;
-          color: inherit !important;
-        }
-        .disclaimerContainer {
-          display: block;
-        }
-      '';
     };
   };
   # }}}
   # {{{ Persistence
   environment.persistence."/persist/state".directories = [
     {
-      directory = config.services.declarative-jellyfin.dataDir;
+      directory = config.services.jellyfin.dataDir;
       mode = "u=rwx,g=rx,o=";
-      user = config.services.declarative-jellyfin.user;
-      group = config.services.declarative-jellyfin.group;
+      user = config.services.jellyfin.user;
+      group = config.services.jellyfin.group;
     }
     {
-      directory = config.services.declarative-jellyfin.cacheDir;
+      directory = config.services.jellyfin.cacheDir;
       mode = "u=rwx,g=rx,o=";
-      user = config.services.declarative-jellyfin.user;
-      group = config.services.declarative-jellyfin.group;
+      user = config.services.jellyfin.user;
+      group = config.services.jellyfin.group;
     }
   ];
   # }}}
