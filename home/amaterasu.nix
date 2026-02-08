@@ -19,11 +19,13 @@
       thunderbird
       pay-respects
       sxiv
+      # {{{ messaging
       signal-desktop
+      teams-for-linux
+      # }}}
       qbittorrent
       # upkgs.unityhub
       # upkgs.nerdfetch # for displaying pc/laptop stats
-      upkgs.alejandra # nix formatter
       upkgs.nh
       upkgs.nix-output-monitor
       upkgs.nvd
