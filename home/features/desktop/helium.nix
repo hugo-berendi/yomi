@@ -19,7 +19,6 @@
   defaultSearchURL = "${searxng.url}?${searxng.param}={searchTerms}";
 
   extensions = [
-    "cjpalhdlnbpafiamejdnhcphjbkeiagm" # uBlock Origin
     "nngceckbapebfimnlniiiahkandclblb" # Bitwarden
     "lckanjgmijmafbedplaimeclbjfcpbdk" # ClearURLs
     "njdfdhgchcpfjjberbghaegflmagbdoo" # LocalCDN
@@ -55,6 +54,8 @@
         ext_proxy = false;
         spellcheck_files = false;
         ublock_assets = false;
+        user_consented = true;
+        origin_override = "";
       };
       completed_onboarding = true;
     };
@@ -99,26 +100,21 @@
     "DefaultSearchProviderKeyword" = "@s";
     "DefaultSearchProviderSearchURL" = defaultSearchURL;
     "DefaultSearchProviderIconURL" = searxng.icon;
-    
+
     # Helium Specific Settings
     "helium.services.enabled" = false;
     "helium.services.browser_updates" = false;
-    
+
     # Map other engines from engines.toml
-    "SiteSearchSettings" = 
+    "SiteSearchSettings" =
       lib.attrsets.mapAttrsToList mkChromiumSearch engines;
 
     # Extension Settings
-    "ExtensionSettings" = 
-      (lib.genAttrs extensions mkExtensionPolicy) // {
+    "ExtensionSettings" =
+      (lib.genAttrs extensions mkExtensionPolicy)
+      // {
         "*" = {
           "installation_mode" = "allowed";
-        };
-        # Pin uBlock Origin
-        "cjpalhdlnbpafiamejdnhcphjbkeiagm" = {
-          "toolbar_pin" = "force_pinned";
-          "installation_mode" = "force_installed";
-          "update_url" = "https://clients2.google.com/service/update2/crx";
         };
       };
   };
@@ -139,8 +135,8 @@
   # Wrapper to pass flags
   heliumPackage = pkgs.symlinkJoin {
     name = "helium";
-    paths = [ inputs.helium.packages.${pkgs.system}.default ];
-    buildInputs = [ pkgs.makeWrapper ];
+    paths = [inputs.helium.packages.${pkgs.system}.default];
+    buildInputs = [pkgs.makeWrapper];
     postBuild = ''
       wrapProgram $out/bin/helium \
         --add-flags "${lib.concatStringsSep " " flags}"
@@ -158,10 +154,10 @@
       };
     };
   };
-  
+
   externalExtensions = builtins.listToAttrs (map mkExternalExtFile extensions);
 in {
-  home.packages = [ heliumPackage ];
+  home.packages = [heliumPackage];
 
   # {{{ Desktop Entry
   # Override desktop entry to pass flags (since we are not using programs.chromium)
@@ -189,11 +185,12 @@ in {
   # }}}
 
   # {{{ Config Files
-  # Write policies
-  xdg.configFile."chromium/policies/managed/default.json".text = builtins.toJSON policyConfig;
-  xdg.configFile."helium/policies/managed/default.json".text = builtins.toJSON policyConfig;
-  
-  # Write External Extensions
-  xdg.configFile = externalExtensions;
+  # We merge the policy files and the external extensions into one attribute set
+  xdg.configFile =
+    externalExtensions
+    // {
+      "chromium/policies/managed/default.json".text = builtins.toJSON policyConfig;
+      "helium/policies/managed/default.json".text = builtins.toJSON policyConfig;
+    };
   # }}}
 }
