@@ -20,7 +20,7 @@
     ./cava.nix
     ./hyfetch.nix
     ./rbw.nix
-    ./opencode.nix
+    ./ai
     ./yubikey-scripts.nix
   ];
   # }}}
