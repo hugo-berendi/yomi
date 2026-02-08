@@ -11,7 +11,7 @@
       owner = "ThePrimeagen";
       repo = "99";
       rev = "master";
-      hash = "sha256-B6uvk9dje5IfXEffg36yyjV5Cq8N0+DC+8K1GjAME8M=";
+      hash = "sha256-TZ/5TRUN1HC8mobs9cewJ5+7cBWt0zFO4KsY6hH29GU=";
     };
     nvimSkipModule = ["99.editor.lsp"];
     meta.homepage = "https://github.com/ThePrimeagen/99";
