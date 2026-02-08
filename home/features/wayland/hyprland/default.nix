@@ -134,6 +134,7 @@ in {
           "$mod, PRINT, exec, grimblast --notify copysave area"
           "$mod SHIFT, PRINT, exec, grimblast --notify copysave active"
           "$mod CONTROL, PRINT, exec, grimblast --notify copysave screen"
+          "$mod ALT, PRINT, exec, wl-immich"
           # }}}
           # {{{ Power
           "$mod, Escape, exec, wlogout"
