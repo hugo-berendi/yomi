@@ -94,19 +94,19 @@ icon = "https://static.wikia.nocookie.net/warframe/images/e/e6/Site-logo.png"
 
 ["Hollow Knight wiki"]
 aliases = ["@hk", "@hollow-knight"]
-url = "https://hollowknight.wiki/w/index.php"
+url = "https://hollowknight.wiki/mw/index.php"
 param = "search"
 icon = "https://hollowknight.wiki/favicon.ico"
 
 ["Silksong wiki"]
 aliases = ["@ss", "@silksong"]
-url = "https://hollowknight.wiki/w/index.php"
+url = "https://hollowknight.wiki/mw/index.php"
 param = "search"
 icon = "https://hollowknight.wiki/favicon.ico"
 
 ["Celeste wiki"]
 aliases = ["@cel", "@celeste"]
-url = "https://celeste.ink/w/index.php"
+url = "https://celeste.ink/mw/index.php"
 param = "search"
 icon = "https://celeste.ink/favicon.ico"
 
