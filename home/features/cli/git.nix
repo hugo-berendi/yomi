@@ -85,7 +85,22 @@
     enableGitIntegration = true;
   }; # }}}
 
-  sops.secrets.GITHUB_TOKEN.sopsFile = ./secrets.yaml;
+  # {{{ GitHub token from sops
+  sops.secrets.GITHUB_TOKEN.sopsFile = ./ai/secrets.yaml;
 
+  # Set GH_TOKEN for gh CLI authentication
+  # This sources the token from sops-nix managed secret
+  programs.bash.initExtra = ''
+    export GH_TOKEN="$(cat ${config.sops.secrets.GITHUB_TOKEN.path} 2>/dev/null)"
+  '';
+  programs.zsh.initExtra = ''
+    export GH_TOKEN="$(cat ${config.sops.secrets.GITHUB_TOKEN.path} 2>/dev/null)"
+  '';
+  programs.fish.interactiveShellInit = ''
+    set -gx GH_TOKEN (cat ${config.sops.secrets.GITHUB_TOKEN.path} 2>/dev/null)
+  '';
+  # }}}
+
+  # Keep alias as fallback for explicit token usage
   home.shellAliases.ghub = "GH_TOKEN=$(cat ${config.sops.secrets.GITHUB_TOKEN.path}) gh";
 }
