@@ -10,8 +10,8 @@
     src = pkgs.fetchFromGitHub {
       owner = "ThePrimeagen";
       repo = "99";
-      rev = "master";
-      hash = "sha256-TZ/5TRUN1HC8mobs9cewJ5+7cBWt0zFO4KsY6hH29GU=";
+      rev = "489e132d4aec29970e0981ee12252d3925ad49c3";
+      hash = "sha256-Ca3Grg5zUFe1tQZ2i1xA6/Lay3faQfm22c/HIgtVkVA=";
     };
     nvimSkipModule = ["99.editor.lsp"];
     meta.homepage = "https://github.com/ThePrimeagen/99";
