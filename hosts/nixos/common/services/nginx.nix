@@ -11,6 +11,7 @@
     proxyAddress,
     files,
     subdomain,
+    clientMaxBodySize,
     ...
   }: {
     name = host;
@@ -26,13 +27,17 @@
         else {
           root = files;
         };
+      bodySize = lib.optionalAttrs (clientMaxBodySize != null) {
+        extraConfig = "client_max_body_size ${clientMaxBodySize};";
+      };
     in
       {
         enableACME = true;
         acmeRoot = null;
         forceSSL = true;
       }
-      // extra;
+      // extra
+      // bodySize;
   };
 
   mkDnsRecord = {subdomain, ...}: {
@@ -103,6 +108,13 @@ in {
           description = "Path to serve files from";
           type = lib.types.nullOr lib.types.path;
           default = null;
+        };
+
+        options.clientMaxBodySize = lib.mkOption {
+          description = "Maximum allowed size of the client request body for this host";
+          type = lib.types.nullOr lib.types.str;
+          default = null;
+          example = "50000M";
         };
       }));
     };

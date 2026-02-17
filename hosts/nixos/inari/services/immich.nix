@@ -11,7 +11,10 @@
   };
   # }}}
   # {{{ Reverse proxy
-  yomi.nginx.at.immich.port = config.yomi.ports.immich;
+  yomi.nginx.at.immich = {
+    port = config.yomi.ports.immich;
+    clientMaxBodySize = "50000M";
+  };
   yomi.cloudflared.at."share.immich".port = config.yomi.ports.ipp;
   # }}}
   # {{{ Public proxy
@@ -45,10 +48,5 @@
     settings.server.externalDomain = config.yomi.nginx.at.immich.url;
   };
 
-  # }}}
-  # {{{ Persistence
-  environment.persistence."/persist/state".directories = [
-    "/var/lib/immich"
-  ];
   # }}}
 }
