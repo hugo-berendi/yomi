@@ -84,6 +84,6 @@
       direnv hook fish | source
 
       # setup pay-respects
-      pay-respects --alias | source
+      pay-respects fish | source
     '';
 }
