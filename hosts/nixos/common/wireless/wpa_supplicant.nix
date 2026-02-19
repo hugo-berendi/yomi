@@ -41,6 +41,14 @@ in {
             "SAE"
           ];
         };
+        "Pfarrei Heufeld" = {
+          pskRaw = "ext:PFARREI_HEUFELD_WIFI_PASS";
+          priority = 3;
+          authProtocols = [
+            "WPA-PSK"
+            "SAE"
+          ];
+        };
       };
 
       # Imperative
