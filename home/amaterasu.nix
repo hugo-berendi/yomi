@@ -39,6 +39,7 @@
       sxiv
       # {{{ messaging
       signal-desktop
+      upkgs.fluffychat
       teams-for-linux
       # }}}
       qbittorrent

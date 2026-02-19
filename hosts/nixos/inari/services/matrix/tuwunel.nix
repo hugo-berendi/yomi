@@ -50,11 +50,13 @@ in {
     ];
 
     locations."= /.well-known/matrix/server".extraConfig = ''
+      add_header Access-Control-Allow-Origin * always;
       default_type application/json;
       return 200 '{"m.server":"${matrixHost}:443"}';
     '';
 
     locations."= /.well-known/matrix/client".extraConfig = ''
+      add_header Access-Control-Allow-Origin * always;
       default_type application/json;
       return 200 '{"m.homeserver":{"base_url":"https://${matrixHost}"}}';
     '';
