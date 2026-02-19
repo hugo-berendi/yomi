@@ -30,6 +30,8 @@
     "komga"
     "lidarr"
     "loki"
+    "matrix-tuwunel"
+    "matrix-tuwunel-proxy"
     "meilisearch"
     "microbin"
     "minecraft"
