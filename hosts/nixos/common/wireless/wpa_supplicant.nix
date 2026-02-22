@@ -4,6 +4,7 @@
   ...
 }: let
   cfg = config.yomi.wireless;
+  networks = import ./networks.nix;
 in {
   config = lib.mkIf (cfg.enable && cfg.backend == "wpa-supplicant") {
     sops.secrets.wireless.sopsFile = ../secrets.yaml;
@@ -16,40 +17,16 @@ in {
 
       # Declarative
       secretsFile = config.sops.secrets.wireless.path;
-      networks = {
-        "Susanoo" = {
-          pskRaw = "ext:SUSANOO_HOTSPOT_PASS";
-          priority = 0;
+      networks =
+        lib.mapAttrs (_: network: {
+          pskRaw = "ext:${network.pskEnv}";
+          priority = network.priority;
           authProtocols = [
             "WPA-PSK"
             "SAE"
           ];
-        };
-        "FRITZ!Box 6591 Cable OY" = {
-          pskRaw = "ext:HOME_WIFI_PASS";
-          priority = 1;
-          authProtocols = [
-            "WPA-PSK"
-            "SAE"
-          ];
-        };
-        "KROKOnet" = {
-          pskRaw = "ext:KROKOnet_WIFI_PASS";
-          priority = 2;
-          authProtocols = [
-            "WPA-PSK"
-            "SAE"
-          ];
-        };
-        "Pfarrei Heufeld" = {
-          pskRaw = "ext:PFARREI_HEUFELD_WIFI_PASS";
-          priority = 3;
-          authProtocols = [
-            "WPA-PSK"
-            "SAE"
-          ];
-        };
-      };
+        })
+        networks;
 
       # Imperative
       allowAuxiliaryImperativeNetworks = true;

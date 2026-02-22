@@ -13,6 +13,7 @@
 
       type = lib.types.enum [
         "iwd"
+        "networkmanager"
         "wpa-supplicant"
       ];
     };
@@ -20,6 +21,7 @@
 
   imports = [
     ./iwd
+    ./networkmanager.nix
     ./wpa_supplicant.nix
   ];
 }
