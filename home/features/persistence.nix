@@ -94,6 +94,17 @@
     "${config.xdg.configHome}/Signal" # Why tf does signal store it's state here 💀
   ];
   # }}}
+  # {{{ Teams
+  yomi.persistence.at.state.apps.teams-for-linux.directories = [
+    "${config.xdg.configHome}/teams-for-linux"
+  ];
+  # }}}
+  # {{{ WasIstLos
+  yomi.persistence.at.state.apps.wasistlos.directories = [
+    "${config.xdg.configHome}/wasistlos"
+    "${config.xdg.dataHome}/wasistlos"
+  ];
+  # }}}
   # {{{ Lutris
   # TODO: there might be more to cache in .cache/lutris
   yomi.persistence.at.state.apps.lutris.directories = [
