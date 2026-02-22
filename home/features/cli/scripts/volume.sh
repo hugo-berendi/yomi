@@ -1,130 +1,95 @@
 #!/usr/bin/env bash
 
-iDIR="$HOME/dotfiles/yomi/home/features/desktop/dunst/icons"
+set -euo pipefail
 
-# Get Volume
+SINK="@DEFAULT_AUDIO_SINK@"
+SOURCE="@DEFAULT_AUDIO_SOURCE@"
+STEP="5%"
+MAX_VOL="1.0"
+
+to_percent() {
+	awk '{printf "%d", $1 * 100}'
+}
+
 get_volume() {
-	volume=$(pamixer --get-volume)
-	echo "$volume"
+	wpctl get-volume "$SINK" | awk '{print $2}' | to_percent
 }
 
-# Get Microphone Volume
 get_mic_volume() {
-	mic_volume=$(pamixer --default-source --get-volume)
-	echo "$mic_volume"
+	wpctl get-volume "$SOURCE" | awk '{print $2}' | to_percent
 }
 
-# Get icons for Volume
-get_icon() {
-	current=$(get_volume)
-	if [[ "$current" -eq "0" ]]; then
-		echo "$iDIR/volume-mute.png"
-	elif [[ "$current" -le "30" ]]; then
-		echo "$iDIR/volume-low.png"
-	elif [[ "$current" -le "60" ]]; then
-		echo "$iDIR/volume-mid.png"
-	else
-		echo "$iDIR/volume-high.png"
-	fi
-}
-
-# Get icons for Microphone
-get_mic_icon() {
-	current=$(get_mic_volume)
-	if [[ "$current" -eq "0" ]]; then
-		echo "$iDIR/microphone-mute.png"
-	else
-		echo "$iDIR/microphone.png"
-	fi
-}
-
-# Notify Volume
-notify_volume() {
-	local volume=$(get_volume)
-	notify-send -u low -i "$(get_icon)" "Volume: $volume%" -h int:value:"$volume"
-}
-
-# Notify Microphone Volume
-notify_mic() {
-	local mic_volume=$(get_mic_volume)
-	notify-send -u low -i "$(get_mic_icon)" "Mic Level: $mic_volume%" -h int:value:"$mic_volume"
-}
-
-# Increase Volume
 inc_volume() {
-	pamixer -i 5 && notify_volume
+	wpctl set-volume -l "$MAX_VOL" "$SINK" "${STEP}+"
 }
 
-# Decrease Volume
 dec_volume() {
-	pamixer -d 5 && notify_volume
+	wpctl set-volume "$SINK" "${STEP}-"
 }
 
-# Toggle Mute Volume
 toggle_mute() {
-	if [ "$(pamixer --get-mute)" == "false" ]; then
-		pamixer -m && notify-send -u low -i "$iDIR/volume-mute.png" "Volume Muted" -h int:value:0
-	else
-		pamixer -u && notify_volume
-	fi
+	wpctl set-mute "$SINK" toggle
 }
 
-# Toggle Mute Microphone
 toggle_mic() {
-	if [ "$(pamixer --default-source --get-mute)" == "false" ]; then
-		pamixer --default-source -m && notify-send -u low -i "$iDIR/microphone-mute.png" "Microphone Muted" -h int:value:0
-	else
-		pamixer --default-source -u && notify_mic
-	fi
+	wpctl set-mute "$SOURCE" toggle
 }
 
-# Increase Microphone Volume
 inc_mic_volume() {
-	pamixer --default-source -i 5 && notify_mic
+	wpctl set-volume "$SOURCE" "${STEP}+"
 }
 
-# Decrease Microphone Volume
 dec_mic_volume() {
-	pamixer --default-source -d 5 && notify_mic
+	wpctl set-volume "$SOURCE" "${STEP}-"
 }
 
-# Media Controls
 media_control() {
 	case "$1" in
-		--stop)
-			playerctl stop
-			notify-send -u low -i "$iDIR/media-stop.png" "Media Stopped"
-			;;
-		--previous)
-			playerctl previous
-			notify-send -u low -i "$iDIR/media-previous.png" "Previous Track"
-			;;
-		--next)
-			playerctl next
-			notify-send -u low -i "$iDIR/media-next.png" "Next Track"
-			;;
-		--play-pause)
-			playerctl play-pause
-			notify-send -u low -i "$iDIR/media-play-pause.png" "Play/Pause Toggled"
-			;;
+	--stop)
+		playerctl stop
+		;;
+	--previous)
+		playerctl previous
+		;;
+	--next)
+		playerctl next
+		;;
+	--play-pause)
+		playerctl play-pause
+		;;
 	esac
 }
 
-# Execute based on the argument provided
-if [[ "$1" == "--inc" ]]; then
+case "${1:-}" in
+--get)
+	get_volume
+	;;
+--get-mic)
+	get_mic_volume
+	;;
+--inc)
 	inc_volume
-elif [[ "$1" == "--dec" ]]; then
+	;;
+--dec)
 	dec_volume
-elif [[ "$1" == "--toggle" ]]; then
+	;;
+--toggle)
 	toggle_mute
-elif [[ "$1" == "--mic-inc" ]]; then
+	;;
+--mic-inc)
 	inc_mic_volume
-elif [[ "$1" == "--mic-dec" ]]; then
+	;;
+--mic-dec)
 	dec_mic_volume
-elif [[ "$1" == "--toggle-mic" ]]; then
+	;;
+--toggle-mic)
 	toggle_mic
-elif [[ "$1" == "--stop" || "$1" == "--previous" || "$1" == "--next" || "$1" == "--play-pause" ]]; then
+	;;
+--stop | --previous | --next | --play-pause)
 	media_control "$1"
-else
-	echo "Usage: $0 [--inc | --dec | --toggle | --mic-inc | --mic-dec | --toggle-mic | --stop | --previous | --next | --play-pause]"
-fi
+	;;
+*)
+	echo "Usage: $0 [--get | --get-mic | --inc | --dec | --toggle | --mic-inc | --mic-dec | --toggle-mic | --stop | --previous | --next | --play-pause]"
+	exit 1
+	;;
+esac

@@ -6,18 +6,14 @@
 }: {
   # {{{ Imports
   imports = [
-    ./ags
-    ./waybar
-    ./wlogout.nix
+    ./caelestia
     ./wlsunset.nix
-    ./walker.nix
 
     ../desktop
   ];
   # }}}
   # {{{ Session variables
   home.sessionVariables.NIXOS_OZONES_WL = "1";
-  services.swayosd.enable = true;
   # }}}
   # {{{ Packages
   home.packages = let

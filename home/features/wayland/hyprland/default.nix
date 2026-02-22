@@ -7,6 +7,10 @@
   ...
 }: let
   rosePineCursor = import ./rose-pine-cursor.nix {inherit pkgs;};
+  spotifyCmd =
+    if config.programs.spicetify.enable
+    then lib.getExe config.programs.spicetify.spicedSpotify
+    else "spotify";
 in {
   # {{{ Imports
   imports = [
@@ -101,7 +105,9 @@ in {
       # {{{ Autostart
       exec = ["systemctl --user import-environment PATH && systemctl --user restart xdg-desktop-portal.service"];
       exec-once = [
-        "${config.yomi.settings.terminal-cmd} & zen & vesktop & spotify & obsidiantui & pypr"
+        "${config.yomi.settings.terminal-cmd} & zen & vesktop & ${spotifyCmd} & obsidiantui & pypr"
+        "command -v wasistlos >/dev/null 2>&1 && wasistlos || true"
+        "command -v teams-for-linux >/dev/null 2>&1 && teams-for-linux || true"
         "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
         "ln -sf ${pkgs.fish}/bin/fish /usr/bin/fish"
         "systemctl --user start hyprpolkitagent"
@@ -112,7 +118,7 @@ in {
       "$mod" = "SUPER";
       bind =
         [
-          "$mod, C, exec, walker --modules clipboard"
+          "$mod, C, exec, caelestia shell drawers toggle launcher"
           # {{{ pyprland plugins
           "$mod, V, exec, pypr toggle volume"
           "$mod Shift, Return, exec, pypr toggle term"
@@ -120,13 +126,14 @@ in {
           # }}}
           # {{{ control media
           ", XF86AudioMute, exec, volume --toggle"
+          ", XF86AudioMicMute, exec, volume --toggle-mic"
           ", XF86AudioStop, exec, volume --stop"
           ", XF86AudioPrev, exec, volume --previous"
           ", XF86AudioNext, exec, volume --next"
           ", XF86AudioPlay, exec, volume --play-pause"
           # }}}
           # {{{ Execute external things
-          "$mod, Space, exec, walker"
+          "$mod, Space, exec, caelestia shell drawers toggle launcher"
           "$mod, T, exec, wl-ocr"
           "$mod SHIFT, T, exec, wl-qr"
           "$mod CONTROL, T, exec, hyprpicker | wl-copy && notify-send 'Copied color $(wp-paste)'"
@@ -140,7 +147,7 @@ in {
           "$mod ALT, PRINT, exec, wl-immich"
           # }}}
           # {{{ Power
-          "$mod, Escape, exec, wlogout"
+          "$mod, Escape, exec, caelestia shell drawers toggle session"
           # }}}
         ]
         ++ (
@@ -173,9 +180,12 @@ in {
         "$mod, mouse:273, resizewindow"
       ];
       windowrule = [
-        "workspace 2 silent, class:^(zen-alpha|zen)$"
+        "workspace 2 silent, class:^(zen|zen-.*)$"
+        "workspace 2 silent, title:^(.*Zen Browser.*)$"
         "workspace 3 silent, title:^(.*((Disc|WebC|Venc)ord)|Vesktop.*)$"
         "workspace 3 silent, title:^(.*Element.*)$"
+        "workspace 3 silent, class:^(teams-for-linux|teams|wasistlos)$"
+        "workspace 3 silent, title:^(.*(Teams|wasistlos|WhatsApp).*)$"
         "workspace 5 silent, title:^(.*(S|s)pot(ify)?.*)$"
         "workspace 4 silent, class:^(.*Obsidian.*)$"
         "workspace 4 silent, title:^(.*stellar-sanctum)$"
@@ -186,7 +196,7 @@ in {
         "noinitialfocus, class:^(xwaylandvideobridge)$"
         "maxsize 1 1, class:^(xwaylandvideobridge)$"
         "noblur, class:^(xwaylandvideobridge)$"
-        "idleinhibit fullscreen, class:^(zen-alpha|zen)$"
+        "idleinhibit fullscreen, class:^(zen|zen-.*)$"
         "idleinhibit focus, class:^(mpv|.+exe)$"
         "idleinhibit focus, title:^(.*Zen Browser.*)$, title:^(.*YouTube.*)$"
       ];

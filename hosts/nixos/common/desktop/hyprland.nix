@@ -15,8 +15,6 @@ in {
       package = pkgs.hyprland;
     };
 
-    services.udev.packages = [pkgs.swayosd];
-
     environment.systemPackages = [config.programs.hyprland.package];
   };
 }

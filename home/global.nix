@@ -16,7 +16,7 @@
     inputs.nix-index-database.homeModules.nix-index
     inputs.sops-nix.homeManagerModules.sops
     inputs.hyprland.homeManagerModules.default
-    inputs.ags.homeManagerModules.default
+    inputs.caelestia-shell.homeManagerModules.default
     inputs.nvf.homeManagerModules.default
     inputs.nixcord.homeModules.nixcord
     # inputs.ghostty.homeModules.default

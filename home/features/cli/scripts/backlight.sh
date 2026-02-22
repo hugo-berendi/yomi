@@ -1,54 +1,44 @@
-
 #!/usr/bin/env bash
 
-iDIR="$HOME/dotfiles/yomi/home/features/desktop/dunst/icons"
+set -euo pipefail
+
+STEP="5%"
+MIN_BRIGHTNESS=5
 
 # Get brightness
 get_backlight() {
-    max=$(brightnessctl m)
-    current=$(brightnessctl g)
-	LIGHT=$(awk "BEGIN {printf \"%.0f\n\", $current / $max * 100}")
-	echo "${LIGHT}"
-}
-
-# Get icons
-get_icon() {
-	current="$(get_backlight)"
-	if [[ ("$current" -ge "0") && ("$current" -le "19200") ]]; then
-		icon="$iDIR/brightness-20.png"
-	elif [[ ("$current" -ge "19200") && ("$current" -le "38400") ]]; then
-		icon="$iDIR/brightness-40.png"
-	elif [[ ("$current" -ge "38400") && ("$current" -le "57600") ]]; then
-		icon="$iDIR/brightness-60.png"
-	elif [[ ("$current" -ge "57600") && ("$current" -le "76800") ]]; then
-		icon="$iDIR/brightness-80.png"
-	elif [[ ("$current" -ge "76800") && ("$current" -le "96000") ]]; then
-		icon="$iDIR/brightness-100.png"
-	fi
-}
-
-# Notify
-notify_user() {
-	dunstify -h string:x-canonical-private-synchronous:sys-notify -u low -i "$icon" "Brightness: $(get_backlight)%" -h int:value:"$(get_backlight)"
+	max=$(brightnessctl m)
+	current=$(brightnessctl g)
+	awk "BEGIN {printf \"%.0f\n\", $current / $max * 100}"
 }
 
 # Increase brightness
 inc_backlight() {
-	brightnessctl s +5% && get_icon && notify_user
+	brightnessctl s "${STEP}+"
 }
 
 # Decrease brightness
 dec_backlight() {
-	brightnessctl s 5%- && get_icon && notify_user
+	current="$(get_backlight)"
+	if [ "$current" -le "$MIN_BRIGHTNESS" ]; then
+		brightnessctl s "${MIN_BRIGHTNESS}%"
+	else
+		brightnessctl s "${STEP}-"
+	fi
 }
 
-# Execute accordingly
-if [[ "$1" == "--get" ]]; then
+case "${1:-}" in
+--get)
 	get_backlight
-elif [[ "$1" == "--inc" ]]; then
+	;;
+--inc)
 	inc_backlight
-elif [[ "$1" == "--dec" ]]; then
+	;;
+--dec)
 	dec_backlight
-else
-	get_backlight
-fi
+	;;
+*)
+	echo "Usage: $0 [--get | --inc | --dec]"
+	exit 1
+	;;
+esac

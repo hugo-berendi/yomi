@@ -51,6 +51,11 @@
     ags.url = "github:Aylur/ags";
     # }}}
 
+    caelestia-shell = {
+      url = "github:caelestia-dots/shell";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # {{{ Yazi flakes
     yazi.url = "github:sxyazi/yazi";
     # }}}
