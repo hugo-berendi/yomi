@@ -1,15 +1,11 @@
 {
   lib,
-  pkgs,
   config,
   ...
 }: {
   config = lib.mkIf config.yomi.machine.graphical {
-    boot.plymouth = {
-      enable = true;
-      themePackages = [pkgs.plymouthThemeLone];
-      theme = "lone";
-    };
+    boot.plymouth.enable = true;
+    stylix.targets.plymouth.enable = true;
 
     console = {
       useXkbConfig = true;
