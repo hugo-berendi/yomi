@@ -3,7 +3,6 @@
   imports = [
     ./foot.nix
     ./ghostty.nix
-    ./dunst
     ./discord
     ./browser
     ./wakatime
@@ -17,6 +16,7 @@
   # }}}
   # {{{ Services
   services.batsignal.enable = true;
+  services.trayscale.enable = true;
 
   services.gnome-keyring = {
     enable = true;
