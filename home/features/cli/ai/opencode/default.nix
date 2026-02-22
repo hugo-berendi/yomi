@@ -31,6 +31,16 @@
     fzf
     systemd
   ]);
+  stylixScheme = config.lib.stylix.colors.scheme;
+
+  opencodeTheme =
+    if lib.hasPrefix "catppuccin" stylixScheme
+    then "catppuccin"
+    else if lib.hasPrefix "gruvbox" stylixScheme
+    then "gruvbox"
+    else if lib.hasPrefix "nord" stylixScheme
+    then "nord"
+    else "system";
 
   toOpencodeMcp = name: value: {
     ${name} = {
@@ -83,6 +93,9 @@ in {
     package = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.opencode;
 
     settings = {
+      model = "openai/gpt-5.3-codex";
+      theme = opencodeTheme;
+
       # {{{ MCP Servers
       mcp = mcpServers;
       # }}}
