@@ -1,0 +1,90 @@
+name: Update Flake Inputs
+concurrency:
+  group: nix-flake
+  cancel-in-progress: false
+on:
+  schedule:
+    - cron: "0 4 * * *"
+  workflow_dispatch:
+jobs:
+  update-and-setup:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      changed: ${{ steps.check-changes.outputs.changed }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install nix
+        uses: DeterminateSystems/nix-installer-action@main
+      - name: Use magic nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+      - name: Update flake inputs
+        run: nix flake update
+      - name: Check for changes
+        id: check-changes
+        run: |
+          if git diff --quiet flake.lock; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No changes in flake.lock. Stopping early."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "flake.lock updated. Proceeding with checks."
+          fi
+      - name: Run nix flake check
+        if: steps.check-changes.outputs.changed == 'true'
+        run: nix flake check
+      - name: Generate host matrix
+        if: steps.check-changes.outputs.changed == 'true'
+        id: set-matrix
+        run: |
+          HOSTS=$(nix eval .#nixosConfigurations --apply builtins.attrNames --json)
+          echo "matrix=$HOSTS" >> "$GITHUB_OUTPUT"
+      - name: Upload updated flake.lock
+        if: steps.check-changes.outputs.changed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: flake-lock
+          path: flake.lock
+          retention-days: 1
+  evaluate:
+    needs: update-and-setup
+    if: needs.update-and-setup.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        host: ${{ fromJson(needs.update-and-setup.outputs.matrix) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Download updated flake.lock
+        uses: actions/download-artifact@v4
+        with:
+          name: flake-lock
+          path: .
+      - name: Install nix
+        uses: DeterminateSystems/nix-installer-action@main
+      - name: Use magic nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+      - name: Evaluate NixOS Configuration (${{ matrix.host }})
+        run: nix build --dry-run ".#nixosConfigurations.\"${{ matrix.host }}\".config.system.build.toplevel"
+  commit-update:
+    needs: [update-and-setup, evaluate]
+    if: needs.update-and-setup.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Download updated flake.lock
+        uses: actions/download-artifact@v4
+        with:
+          name: flake-lock
+          path: .
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Update flake lock file"
+          file_pattern: "flake.lock"

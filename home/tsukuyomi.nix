@@ -6,7 +6,7 @@
   imports = [
     ./global.nix
 
-    ./features/desktop/firefox
+    ./features/desktop/browser
     ./features/desktop/discord
     ./features/desktop/wakatime
     ./features/desktop/spotify.nix

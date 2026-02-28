@@ -1,0 +1,46 @@
+name: Check NixOS Flake
+concurrency:
+  group: nix-flake
+  cancel-in-progress: false
+on:
+  push:
+    paths-ignore:
+      - ".github/**"
+      - ".gemini/**"
+  pull_request:
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install nix
+        uses: DeterminateSystems/nix-installer-action@main
+      - name: Use magic nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+      - name: Run nix flake check
+        run: nix flake check
+      - name: Generate host matrix
+        id: set-matrix
+        run: |
+          HOSTS=$(nix eval .#nixosConfigurations --apply builtins.attrNames --json)
+          echo "matrix=$HOSTS" >> "$GITHUB_OUTPUT"
+  evaluate:
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        host: ${{ fromJson(needs.setup.outputs.matrix) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install nix
+        uses: DeterminateSystems/nix-installer-action@main
+      - name: Use magic nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+      - name: Evaluate configuration (${{ matrix.host }})
+        run: |
+          nix build --dry-run ".#nixosConfigurations.\"${{ matrix.host }}\".config.system.build.toplevel"
