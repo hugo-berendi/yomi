@@ -15,6 +15,7 @@
       "electron-27.3.11"
       "aspnetcore-runtime-6.0.36"
       "openssl-1.1.1w"
+      "olm-3.2.16"
     ];
   };
 }

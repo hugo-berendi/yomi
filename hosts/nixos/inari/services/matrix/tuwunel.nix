@@ -16,6 +16,60 @@ in {
     owner = config.services.matrix-tuwunel.user;
     group = config.services.matrix-tuwunel.group;
   };
+
+  sops.templates."tuwunel-appservices.toml" = {
+    content = ''
+      [global.appservice.whatsapp]
+      url = "http://127.0.0.1:29318"
+      as_token = "${config.sops.placeholder.matrix_tuwunel_registration_token}"
+      hs_token = "${config.sops.placeholder.matrix_tuwunel_registration_token}"
+      sender_localpart = "whatsappbot"
+      rate_limited = false
+      receive_ephemeral = false
+
+      [[global.appservice.whatsapp.users]]
+      exclusive = true
+      regex = "@whatsapp_.*:${matrixHost}"
+
+      [[global.appservice.whatsapp.users]]
+      exclusive = true
+      regex = "@whatsappbot:${matrixHost}"
+
+      [global.appservice.signal]
+      url = "http://127.0.0.1:29328"
+      as_token = "${config.sops.placeholder.matrix_tuwunel_registration_token}"
+      hs_token = "${config.sops.placeholder.matrix_tuwunel_registration_token}"
+      sender_localpart = "signalbot"
+      rate_limited = false
+      receive_ephemeral = false
+
+      [[global.appservice.signal.users]]
+      exclusive = true
+      regex = "@signal_.*:${matrixHost}"
+
+      [[global.appservice.signal.users]]
+      exclusive = true
+      regex = "@signalbot:${matrixHost}"
+
+      [global.appservice.discord]
+      url = "http://127.0.0.1:29334"
+      as_token = "${config.sops.placeholder.matrix_tuwunel_registration_token}"
+      hs_token = "${config.sops.placeholder.matrix_tuwunel_registration_token}"
+      sender_localpart = "discordbot"
+      rate_limited = false
+      receive_ephemeral = true
+
+      [[global.appservice.discord.users]]
+      exclusive = true
+      regex = "@discord_.*:${matrixHost}"
+
+      [[global.appservice.discord.users]]
+      exclusive = true
+      regex = "@discordbot:${matrixHost}"
+    '';
+    owner = config.services.matrix-tuwunel.user;
+    group = config.services.matrix-tuwunel.group;
+  };
   # }}}
 
   # {{{ Service
@@ -36,6 +90,15 @@ in {
         "tchncs.de"
       ];
     };
+  };
+
+  systemd.services.tuwunel = {
+    serviceConfig.ExecStart = lib.mkForce ''
+      ${lib.getExe config.services.matrix-tuwunel.package} \
+        --config "$TUWUNEL_CONFIG" \
+        --config "${config.sops.templates."tuwunel-appservices.toml".path}"
+    '';
+    restartTriggers = [config.sops.templates."tuwunel-appservices.toml".path];
   };
   # }}}
 
