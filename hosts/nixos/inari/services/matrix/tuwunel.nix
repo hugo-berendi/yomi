@@ -21,8 +21,8 @@ in {
     content = ''
       [global.appservice.whatsapp]
       url = "http://127.0.0.1:29318"
-      as_token = "${config.sops.placeholder.matrix_tuwunel_registration_token}"
-      hs_token = "${config.sops.placeholder.matrix_tuwunel_registration_token}"
+      as_token = "${config.sops.placeholder.matrix_tuwunel_registration_token}_whatsapp"
+      hs_token = "${config.sops.placeholder.matrix_tuwunel_registration_token}_whatsapp"
       sender_localpart = "whatsappbot"
       rate_limited = false
       receive_ephemeral = false
@@ -37,8 +37,8 @@ in {
 
       [global.appservice.signal]
       url = "http://127.0.0.1:29328"
-      as_token = "${config.sops.placeholder.matrix_tuwunel_registration_token}"
-      hs_token = "${config.sops.placeholder.matrix_tuwunel_registration_token}"
+      as_token = "${config.sops.placeholder.matrix_tuwunel_registration_token}_signal"
+      hs_token = "${config.sops.placeholder.matrix_tuwunel_registration_token}_signal"
       sender_localpart = "signalbot"
       rate_limited = false
       receive_ephemeral = false
@@ -53,8 +53,8 @@ in {
 
       [global.appservice.discord]
       url = "http://127.0.0.1:29334"
-      as_token = "${config.sops.placeholder.matrix_tuwunel_registration_token}"
-      hs_token = "${config.sops.placeholder.matrix_tuwunel_registration_token}"
+      as_token = "${config.sops.placeholder.matrix_tuwunel_registration_token}_discord"
+      hs_token = "${config.sops.placeholder.matrix_tuwunel_registration_token}_discord"
       sender_localpart = "discordbot"
       rate_limited = false
       receive_ephemeral = true

@@ -60,6 +60,7 @@ in {
                   '';
                 };
 
+                allowOther = true;
                 directories = lib.mkOption {
                   default = [];
                   description = ''
@@ -121,7 +122,8 @@ in {
       # }}}
     in
       # {{{ Impermanence config generation
-      lib.attrsets.nameValuePair location.path {
+      lib.attrsets.nameValuePair location.home {
+        allowOther = true;
         directories =
           lib.lists.flatten
           (lib.attrsets.mapAttrsToList (_: mkAppDirectory) location.apps);
