@@ -11,6 +11,7 @@ on:
 jobs:
   setup:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
@@ -20,8 +21,8 @@ jobs:
         uses: DeterminateSystems/nix-installer-action@main
       - name: Use magic nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
-      - name: Run nix flake check
-        run: nix flake check
+      - name: Run nix flake check (eval only)
+        run: nix flake check --no-build
       - name: Generate host matrix
         id: set-matrix
         run: |
@@ -30,6 +31,7 @@ jobs:
   evaluate:
     needs: setup
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:

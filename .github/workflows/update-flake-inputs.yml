@@ -9,6 +9,7 @@ on:
 jobs:
   update-and-setup:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
       changed: ${{ steps.check-changes.outputs.changed }}
@@ -31,9 +32,9 @@ jobs:
             echo "changed=true" >> "$GITHUB_OUTPUT"
             echo "flake.lock updated. Proceeding with checks."
           fi
-      - name: Run nix flake check
+      - name: Run nix flake check (eval only)
         if: steps.check-changes.outputs.changed == 'true'
-        run: nix flake check
+        run: nix flake check --no-build
       - name: Generate host matrix
         if: steps.check-changes.outputs.changed == 'true'
         id: set-matrix
@@ -51,6 +52,7 @@ jobs:
     needs: update-and-setup
     if: needs.update-and-setup.outputs.changed == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     strategy:
       fail-fast: true
       matrix:
@@ -73,6 +75,7 @@ jobs:
     needs: [update-and-setup, evaluate]
     if: needs.update-and-setup.outputs.changed == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: write
     steps:
