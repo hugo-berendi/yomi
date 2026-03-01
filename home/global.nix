@@ -5,12 +5,13 @@
   outputs,
   lib,
   config,
+  options,
   ...
 }: let
   imports = [
     # {{{ flake inputs
     inputs.stylix.homeModules.stylix
-    inputs.impermanence.nixosModules.home-manager.impermanence
+    (inputs.impermanence + "/home-manager.nix")
     inputs.spicetify-nix.homeManagerModules.spicetify
     # inputs.anyrun.homeManagerModules.default
     inputs.nix-index-database.homeModules.nix-index
@@ -39,11 +40,16 @@ in {
   };
   # }}}
   # {{{ Set reasonable defaults for some settings
-  home = {
-    username = lib.mkDefault "hugob";
-    homeDirectory = lib.mkDefault "/home/${config.home.username}";
-    stateVersion = lib.mkDefault "24.11"; # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
-  };
+  home = lib.mkMerge [
+    {
+      username = lib.mkDefault "hugob";
+      homeDirectory = lib.mkDefault "/home/${config.home.username}";
+      stateVersion = lib.mkDefault "24.11"; # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
+    }
+    (lib.optionalAttrs (options.home ? _nixosModuleImported) {
+      _nixosModuleImported = true;
+    })
+  ];
   # }}}
   # {{{ Ad-hoc settings
   # Nicely reload system units when changing configs

@@ -113,10 +113,7 @@ in {
       # {{{ Constructors
       mkDirectory = appName: directory:
         if builtins.isAttrs directory
-        then {
-          method = directory.method;
-          directory = processPath appName directory.directory;
-        }
+        then {directory = processPath appName directory.directory;}
         else processPath appName directory;
 
       mkAppDirectory = app: builtins.map (mkDirectory app.name) app.directories;
@@ -124,9 +121,7 @@ in {
       # }}}
     in
       # {{{ Impermanence config generation
-      lib.attrsets.nameValuePair location.home {
-        removePrefixDirectory = location.prefixDirectories;
-        allowOther = true;
+      lib.attrsets.nameValuePair location.path {
         directories =
           lib.lists.flatten
           (lib.attrsets.mapAttrsToList (_: mkAppDirectory) location.apps);
