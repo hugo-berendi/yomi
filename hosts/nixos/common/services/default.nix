@@ -2,6 +2,7 @@
   imports = [
     ./acme.nix
     ./anubis.nix
+    ./beszel-agent.nix
     ./greetd.nix
     ./iocaine.nix
     ./kanata.nix

@@ -28,6 +28,7 @@
     ./users/pilot.nix
 
     # services
+    ./services/beszel-agent.nix
     ./services/acme.nix
     ./services/greetd.nix
     ./services/iocaine.nix
