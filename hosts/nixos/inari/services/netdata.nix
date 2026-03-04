@@ -7,7 +7,7 @@
   healthNotify = pkgs.writeText "health_alarm_notify.conf" ''
     SEND_EMAIL="YES"
     DEFAULT_RECIPIENT_EMAIL="personal@hugo-berendi.de"
-    EMAIL_SENDER="noreply@tengu.hugo-berendi.de"
+    EMAIL_SENDER="no-reply@tengu.hugo-berendi.de"
   '';
 in {
   # {{{ Service
@@ -20,9 +20,6 @@ in {
       "health_alarm_notify.conf" = healthNotify;
     };
     config = {
-      "plugin:freeipmi" = {
-        "command options" = "ignore 43,44";
-      };
       web = {
         "bind to" = "127.0.0.1:${toString port}";
       };

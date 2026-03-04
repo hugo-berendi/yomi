@@ -28,8 +28,8 @@
         auth = "login";
         host = "smtp.migadu.com";
         passwordeval = "cat ${config.sops.secrets.msmtp_password.path}";
-        user = "msmtp@tengu.hugo-berendi.de";
-        from = "msmtp@tengu.hugo-berendi.de";
+        user = "no-reply@tengu.hugo-berendi.de";
+        from = "no-reply@tengu.hugo-berendi.de";
       };
     };
   };
