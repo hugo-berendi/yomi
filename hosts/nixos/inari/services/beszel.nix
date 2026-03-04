@@ -10,10 +10,12 @@ in {
     environment = {
       BESZEL_HUB_APP_URL = "https://monitoring.hugo-berendi.de";
       BESZEL_HUB_AUTO_LOGIN = "personal@hugo-berendi.de";
+      DISABLE_PASSWORD_AUTH = "true";
+      USER_CREATION = "true";
     };
   };
-  # }}
+  # }}}
   # {{{ Networking
   yomi.nginx.at.monitoring.port = port;
-  # }}
+  # }}}
 }
