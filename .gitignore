@@ -14,3 +14,6 @@ result
 *.idea
 !.envrc
 .env
+
+# worktrees
+.worktrees/
