@@ -2,6 +2,7 @@
   config,
   inputs,
   lib,
+  pkgs,
   ...
 }: let
   jellyfinUrl = config.yomi.cloudflared.at.media.url;
@@ -38,8 +39,15 @@ in {
     enable = true;
     openFirewall = false;
   };
-  systemd.services.jellyfin.environment = lib.mkIf config.services.jellyfin.enable {
-    JELLYFIN_HttpServerPortNumber = toString config.yomi.ports.jellyfin;
+  systemd.services.jellyfin = lib.mkIf config.services.jellyfin.enable {
+    preStart = let
+      port = toString config.yomi.ports.jellyfin;
+      networkXml = "${config.services.jellyfin.configDir}/network.xml";
+    in ''
+      if [ -f "${networkXml}" ]; then
+        ${lib.getExe pkgs.gnused} -i 's|<InternalHttpPort>[0-9]*</InternalHttpPort>|<InternalHttpPort>${port}</InternalHttpPort>|' "${networkXml}"
+      fi
+    '';
   };
   # }}}
   # {{{ Jellarr service
