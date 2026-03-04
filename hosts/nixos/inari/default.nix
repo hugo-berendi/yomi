@@ -48,7 +48,7 @@
     ./services/stirling-pdf.nix
     ./services/vrising.nix
     ./services/octodns-ddns.nix
-    ./services/netdata.nix
+    ./services/beszel.nix
     ./services/matrix
   ];
   # }}}

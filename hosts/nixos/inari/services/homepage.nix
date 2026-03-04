@@ -139,9 +139,9 @@ in {
             };
           }
           {
-            Netdata = {
-              icon = "netdata.svg";
-              href = "https://netdata.hugo-berendi.de";
+            Beszel = {
+              icon = "mdi-chart-areaspline";
+              href = "https://monitoring.hugo-berendi.de";
               description = "Server metrics";
             };
           }

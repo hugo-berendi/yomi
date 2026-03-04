@@ -5,6 +5,7 @@
     "adguard-dns"
     "anonaddy"
     "bazarr"
+    "beszel"
     "commafeed"
     "flaresolverr"
     "forgejo"
