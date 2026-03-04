@@ -53,6 +53,7 @@
       MAXMIND_LICENSE_KEY_FILE = config.sops.secrets.pocket_id_maxmind_api_key.path;
 
       ALLOW_USER_SIGNUPS = "withToken";
+      EMAILS_VERIFIED = true;
       SIGNUP_DEFAULT_USER_GROUP_IDS = "[\"7428ce20-1c46-4ac3-8a8c-49e0da0b652a\"]";
 
       ACCENT_COLOR = "hsl(267deg, 57%, 78%)";
