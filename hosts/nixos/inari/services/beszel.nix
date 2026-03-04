@@ -16,13 +16,4 @@ in {
   # {{{ Networking
   yomi.nginx.at.monitoring.port = port;
   # }}
-  # {{{ Persistence
-  environment.persistence."/persist/state".directories = [
-    {
-      directory = "/var/lib/beszel-hub";
-      user = "beszel";
-      group = "beszel";
-    }
-  ];
-  # }}
 }
