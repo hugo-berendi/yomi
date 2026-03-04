@@ -17,12 +17,48 @@ in {
     group = config.services.matrix-tuwunel.group;
   };
 
+  sops.secrets.matrix_tuwunel_appservice_whatsapp_as_token = {
+    sopsFile = ../../secrets.yaml;
+    owner = config.services.matrix-tuwunel.user;
+    group = config.services.matrix-tuwunel.group;
+  };
+
+  sops.secrets.matrix_tuwunel_appservice_whatsapp_hs_token = {
+    sopsFile = ../../secrets.yaml;
+    owner = config.services.matrix-tuwunel.user;
+    group = config.services.matrix-tuwunel.group;
+  };
+
+  sops.secrets.matrix_tuwunel_appservice_signal_as_token = {
+    sopsFile = ../../secrets.yaml;
+    owner = config.services.matrix-tuwunel.user;
+    group = config.services.matrix-tuwunel.group;
+  };
+
+  sops.secrets.matrix_tuwunel_appservice_signal_hs_token = {
+    sopsFile = ../../secrets.yaml;
+    owner = config.services.matrix-tuwunel.user;
+    group = config.services.matrix-tuwunel.group;
+  };
+
+  sops.secrets.matrix_tuwunel_appservice_discord_as_token = {
+    sopsFile = ../../secrets.yaml;
+    owner = config.services.matrix-tuwunel.user;
+    group = config.services.matrix-tuwunel.group;
+  };
+
+  sops.secrets.matrix_tuwunel_appservice_discord_hs_token = {
+    sopsFile = ../../secrets.yaml;
+    owner = config.services.matrix-tuwunel.user;
+    group = config.services.matrix-tuwunel.group;
+  };
+
   sops.templates."tuwunel-appservices.toml" = {
     content = ''
       [global.appservice.whatsapp]
       url = "http://127.0.0.1:29318"
-      as_token = "${config.sops.placeholder.matrix_tuwunel_registration_token}_whatsapp"
-      hs_token = "${config.sops.placeholder.matrix_tuwunel_registration_token}_whatsapp"
+      as_token = "${config.sops.placeholder.matrix_tuwunel_appservice_whatsapp_as_token}"
+      hs_token = "${config.sops.placeholder.matrix_tuwunel_appservice_whatsapp_hs_token}"
       sender_localpart = "whatsappbot"
       rate_limited = false
       receive_ephemeral = false
@@ -37,8 +73,8 @@ in {
 
       [global.appservice.signal]
       url = "http://127.0.0.1:29328"
-      as_token = "${config.sops.placeholder.matrix_tuwunel_registration_token}_signal"
-      hs_token = "${config.sops.placeholder.matrix_tuwunel_registration_token}_signal"
+      as_token = "${config.sops.placeholder.matrix_tuwunel_appservice_signal_as_token}"
+      hs_token = "${config.sops.placeholder.matrix_tuwunel_appservice_signal_hs_token}"
       sender_localpart = "signalbot"
       rate_limited = false
       receive_ephemeral = false
@@ -53,8 +89,8 @@ in {
 
       [global.appservice.discord]
       url = "http://127.0.0.1:29334"
-      as_token = "${config.sops.placeholder.matrix_tuwunel_registration_token}_discord"
-      hs_token = "${config.sops.placeholder.matrix_tuwunel_registration_token}_discord"
+      as_token = "${config.sops.placeholder.matrix_tuwunel_appservice_discord_as_token}"
+      hs_token = "${config.sops.placeholder.matrix_tuwunel_appservice_discord_hs_token}"
       sender_localpart = "discordbot"
       rate_limited = false
       receive_ephemeral = true
@@ -84,6 +120,16 @@ in {
       allow_federation = true;
       allow_registration = true;
       registration_token_file = config.sops.secrets.matrix_tuwunel_registration_token.path;
+      ip_range_denylist = [
+        "10.0.0.0/8"
+        "172.16.0.0/12"
+        "192.168.0.0/16"
+        "100.64.0.0/10"
+        "169.254.0.0/16"
+        "::1/128"
+        "fe80::/10"
+        "fc00::/7"
+      ];
       trusted_servers = [
         "matrix.org"
         "constellatory.net"

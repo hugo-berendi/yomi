@@ -9,16 +9,17 @@
 
   basePermissions = {
     "*" = "relay";
-    "${config.yomi.dns.domain}" = "user";
+    "${matrixHost}" = "user";
     "${adminMxid}" = "admin";
+    "@kamachi:${matrixHost}" = "user";
   };
 in {
   # {{{ Secrets
   sops.templates = {
     "mautrix-whatsapp.env" = {
       content = ''
-        MAUTRIX_WHATSAPP_APPSERVICE_AS_TOKEN=${config.sops.placeholder.matrix_tuwunel_registration_token}_whatsapp
-        MAUTRIX_WHATSAPP_APPSERVICE_HS_TOKEN=${config.sops.placeholder.matrix_tuwunel_registration_token}_whatsapp
+        MAUTRIX_WHATSAPP_APPSERVICE_AS_TOKEN=${config.sops.placeholder.matrix_tuwunel_appservice_whatsapp_as_token}
+        MAUTRIX_WHATSAPP_APPSERVICE_HS_TOKEN=${config.sops.placeholder.matrix_tuwunel_appservice_whatsapp_hs_token}
       '';
       owner = config.users.users.mautrix-whatsapp.name;
       group = config.users.groups.mautrix-whatsapp.name;
@@ -26,8 +27,8 @@ in {
 
     "mautrix-signal.env" = {
       content = ''
-        MAUTRIX_SIGNAL_APPSERVICE_AS_TOKEN=${config.sops.placeholder.matrix_tuwunel_registration_token}_signal
-        MAUTRIX_SIGNAL_APPSERVICE_HS_TOKEN=${config.sops.placeholder.matrix_tuwunel_registration_token}_signal
+        MAUTRIX_SIGNAL_APPSERVICE_AS_TOKEN=${config.sops.placeholder.matrix_tuwunel_appservice_signal_as_token}
+        MAUTRIX_SIGNAL_APPSERVICE_HS_TOKEN=${config.sops.placeholder.matrix_tuwunel_appservice_signal_hs_token}
       '';
       owner = config.users.users.mautrix-signal.name;
       group = config.users.groups.mautrix-signal.name;
@@ -35,8 +36,8 @@ in {
 
     "mautrix-discord.env" = {
       content = ''
-        MAUTRIX_DISCORD_APPSERVICE_AS_TOKEN=${config.sops.placeholder.matrix_tuwunel_registration_token}_discord
-        MAUTRIX_DISCORD_APPSERVICE_HS_TOKEN=${config.sops.placeholder.matrix_tuwunel_registration_token}_discord
+        MAUTRIX_DISCORD_APPSERVICE_AS_TOKEN=${config.sops.placeholder.matrix_tuwunel_appservice_discord_as_token}
+        MAUTRIX_DISCORD_APPSERVICE_HS_TOKEN=${config.sops.placeholder.matrix_tuwunel_appservice_discord_hs_token}
       '';
       owner = config.users.users.mautrix-discord.name;
       group = config.users.groups.mautrix-discord.name;
