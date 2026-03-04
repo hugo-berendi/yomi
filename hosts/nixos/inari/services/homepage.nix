@@ -138,6 +138,13 @@ in {
               description = "Domain management";
             };
           }
+          {
+            Netdata = {
+              icon = "netdata.svg";
+              href = "https://netdata.hugo-berendi.de";
+              description = "Server metrics";
+            };
+          }
         ];
       }
       {

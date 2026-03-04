@@ -38,6 +38,7 @@
     "mqtt"
     "n8n"
     "navidrome"
+    "netdata"
     "ntfy"
     "ollama"
     "open-webui"
