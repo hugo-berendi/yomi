@@ -132,10 +132,8 @@ in {
     after = ["mautrix-discord-registration.service"];
   };
 
-  # Pre-create registrations for tuwunel token matching
   systemd.services.mautrix-whatsapp.preStart = lib.mkBefore ''
-        if [ ! -f /var/lib/mautrix-whatsapp/whatsapp-registration.yaml ]; then
-          cat > /var/lib/mautrix-whatsapp/whatsapp-registration.yaml <<IN_EOF
+    cat > /var/lib/mautrix-whatsapp/whatsapp-registration.yaml <<IN_EOF
     as_token: "$MAUTRIX_WHATSAPP_APPSERVICE_AS_TOKEN"
     hs_token: "$MAUTRIX_WHATSAPP_APPSERVICE_HS_TOKEN"
     id: whatsapp
@@ -148,12 +146,10 @@ in {
         - exclusive: true
           regex: '@whatsappbot:matrix.${config.yomi.dns.domain}'
     IN_EOF
-        fi
   '';
 
   systemd.services.mautrix-signal.preStart = lib.mkBefore ''
-        if [ ! -f /var/lib/mautrix-signal/signal-registration.yaml ]; then
-          cat > /var/lib/mautrix-signal/signal-registration.yaml <<IN_EOF
+    cat > /var/lib/mautrix-signal/signal-registration.yaml <<IN_EOF
     as_token: "$MAUTRIX_SIGNAL_APPSERVICE_AS_TOKEN"
     hs_token: "$MAUTRIX_SIGNAL_APPSERVICE_HS_TOKEN"
     id: signal
@@ -166,7 +162,6 @@ in {
         - exclusive: true
           regex: '@signalbot:matrix.${config.yomi.dns.domain}'
     IN_EOF
-        fi
   '';
   # }}}
 }
