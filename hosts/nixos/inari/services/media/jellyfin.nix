@@ -1,6 +1,7 @@
 {
   config,
   inputs,
+  lib,
   ...
 }: let
   jellyfinUrl = config.yomi.cloudflared.at.media.url;
@@ -36,6 +37,9 @@ in {
   services.jellyfin = {
     enable = true;
     openFirewall = false;
+  };
+  systemd.services.jellyfin.environment = lib.mkIf config.services.jellyfin.enable {
+    JELLYFIN_HttpServerPortNumber = toString config.yomi.ports.jellyfin;
   };
   # }}}
   # {{{ Jellarr service
