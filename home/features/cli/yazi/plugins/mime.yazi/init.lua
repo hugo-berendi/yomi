@@ -1409,7 +1409,8 @@ local ext_mime_map = {
 	["sisx"] = "x-epoc/x-sisx-app",
 }
 
-local SUPPORTED_TYPES = "application/audio/biosig/chemical/font/image/inode/message/model/rinex/text/vector/video/x-epoc/"
+local SUPPORTED_TYPES =
+	"application/audio/biosig/chemical/font/image/inode/message/model/rinex/text/vector/video/x-epoc/"
 
 local function match_mimetype(s)
 	local type, sub = s:match("([-a-z]+/)([+-.a-zA-Z0-9]+)%s*$")
@@ -1423,55 +1424,54 @@ function M:fetch()
 	local unmatch_ext_urls = {}
 
 	for _, file in ipairs(self.files) do
-	  local url = tostring(file.url)
+		local url = tostring(file.url)
 
-	  local ext = tostring(file.name):match("^.+%.(.+)$")
-	  if ext then
-		ext = ext:lower()
-		local ext_mime = ext_mime_map[ext]
-		if ext_mime then
-		  mimes[url] = ext_mime
-		  goto continue
+		local ext = tostring(file.name):match("^.+%.(.+)$")
+		if ext then
+			ext = ext:lower()
+			local ext_mime = ext_mime_map[ext]
+			if ext_mime then
+				mimes[url] = ext_mime
+				goto continue
+			end
 		end
-	  end
-	  unmatch_ext_urls[#unmatch_ext_urls + 1] = url
-	  ::continue::
+		unmatch_ext_urls[#unmatch_ext_urls + 1] = url
+		::continue::
 	end
-
 
 	if #unmatch_ext_urls then
 		local file_one_path = os.getenv("YAZI_FILE_ONE") or "file"
-	  local command = Command(file_one_path):arg("--mime-type"):stdout(Command.PIPED):stderr(Command.PIPED)
-	  if ya.target_family() == "windows" then
-		command:arg("-b")
-	  else
-		command:arg("-bL")
-	  end
-
-	  local i = 1
-	  local mime
-	  local output = command:args(unmatch_ext_urls):output()
-	  for line in output.stdout:gmatch("[^\r\n]+") do
-		if i > #unmatch_ext_urls then
-		  break
+		local command = Command(file_one_path):arg("--mime-type"):stdout(Command.PIPED):stderr(Command.PIPED)
+		if ya.target_family() == "windows" then
+			command:arg("-b")
+		else
+			command:arg("-bL")
 		end
 
-		mime = match_mimetype(line)
+		local i = 1
+		local mime
+		local output = command:args(unmatch_ext_urls):output()
+		for line in output.stdout:gmatch("[^\r\n]+") do
+			if i > #unmatch_ext_urls then
+				break
+			end
 
-		if mime and string.find(line, mime, 1, true) ~= 1 then
-			goto continue
-		elseif mime then
-			mimes[unmatch_ext_urls[i]] = mime
-		i = i + 1
+			mime = match_mimetype(line)
+
+			if mime and string.find(line, mime, 1, true) ~= 1 then
+				goto continue
+			elseif mime then
+				mimes[unmatch_ext_urls[i]] = mime
+				i = i + 1
+			end
+			::continue::
 		end
-		::continue::
-	  end
 	end
 
 	if #mimes then
-	  ya.manager_emit("update_mimetype", { updates = mimes })
-	  return 3
+		ya.manager_emit("update_mimetype", { updates = mimes })
+		return 3
 	end
 	return 2
-  end
+end
 return M
