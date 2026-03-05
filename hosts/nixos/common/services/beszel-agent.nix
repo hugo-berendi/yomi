@@ -28,6 +28,7 @@ in {
       environment = {
         HUB_URL = "https://monitoring.hugo-berendi.de";
       };
+      smartmon.enable = true;
     };
   };
 }
