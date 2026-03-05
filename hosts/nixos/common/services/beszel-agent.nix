@@ -3,9 +3,9 @@
   lib,
   ...
 }: let
-  cfg = config.yomi.beszelAgent;
+  cfg = config.yomi.beszel-agent;
 in {
-  options.yomi.beszelAgent = {
+  options.yomi.beszel-agent = {
     enable =
       lib.mkEnableOption "yomi's beszel agent"
       // {
