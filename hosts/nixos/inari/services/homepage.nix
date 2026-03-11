@@ -220,6 +220,13 @@ in {
             };
           }
           {
+            AFFiNE = {
+              icon = "mdi-notebook-outline";
+              href = "https://notes.hugo-berendi.de";
+              description = "Knowledge base, docs, whiteboards";
+            };
+          }
+          {
             Anonaddy = {
               icon = "anonaddy.svg";
               href = "https://alias.hugo-berendi.de";

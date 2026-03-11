@@ -15,6 +15,7 @@
     ./services/karakeep.nix
     ./services/n8n.nix
     ./services/actual.nix
+    ./services/affine.nix
     ./services/cloudflared.nix
     ./services/forgejo.nix
     ./services/guacamole

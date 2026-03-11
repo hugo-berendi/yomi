@@ -2,6 +2,7 @@
   knownServices = [
     "actual"
     "adguard"
+    "affine"
     "adguard-dns"
     "anonaddy"
     "bazarr"
