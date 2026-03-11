@@ -44,7 +44,6 @@ in {
   sops.secrets.affine_db_password.sopsFile = ../secrets.yaml;
   sops.secrets.affine_oidc_client_id.sopsFile = ../secrets.yaml;
   sops.secrets.affine_oidc_client_secret.sopsFile = ../secrets.yaml;
-  sops.secrets.affine_app_key.sopsFile = ../secrets.yaml;
 
   sops.templates."affine.env".content = ''
     DB_USERNAME=affine
@@ -53,7 +52,6 @@ in {
     POSTGRES_USER=affine
     POSTGRES_PASSWORD=${config.sops.placeholder.affine_db_password}
     POSTGRES_DB=affine
-    AFFINE_PRIVATE_KEY=${config.sops.placeholder.affine_app_key}
     AFFINE_SERVER_HTTPS=true
     AFFINE_SERVER_HOST=${host}
     AFFINE_SERVER_EXTERNAL_URL=${url}

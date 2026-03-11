@@ -67,7 +67,10 @@
   networking.hostId = "14725dd3";
   # }}}
   # {{{ Bootloader
-  boot.loader.systemd-boot.enable = true;
+  boot.loader.systemd-boot = {
+    enable = true;
+    configurationLimit = 5;
+  };
   # }}}
   # {{{ DNS records
   yomi.dns.records = [
