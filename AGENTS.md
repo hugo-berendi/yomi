@@ -141,6 +141,7 @@ in {
 1. Use nixos MCP server to search packages and options
 2. Check existing patterns in similar modules
 3. Understand the module structure before editing
+4. Do not create branches or git worktrees unless the user explicitly requests them
 
 ### Building and Testing
 1. **Always build first:** `just nixos-rebuild build <hostname>`
