@@ -17,7 +17,7 @@
     ./services/actual.nix
     ./services/affine.nix
     ./services/cloudflared.nix
-    ./services/forgejo.nix
+    ./services/forgejo
     ./services/guacamole
     ./services/paperless.nix
     ./services/paperless-ai.nix
