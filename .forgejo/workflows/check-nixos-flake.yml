@@ -1,0 +1,18 @@
+name: Check NixOS Flake
+on:
+  push:
+    paths-ignore:
+      - ".forgejo/**"
+      - ".gemini/**"
+  pull_request:
+jobs:
+  check:
+    runs-on: native
+    timeout-minutes: 180
+    steps:
+      - name: Checkout repository
+        uses: https://data.forgejo.org/actions/checkout@v4
+      - name: Check formatting
+        run: just lint
+      - name: Run flake checks
+        run: just check
