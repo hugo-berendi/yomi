@@ -103,6 +103,8 @@
       gawk
       gitMinimal
       gnused
+      hostname
+      nix
       nodejs
       wget
       just
