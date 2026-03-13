@@ -96,9 +96,17 @@
     url = "http://localhost:${toString config.yomi.ports.forgejo}";
     tokenFile = config.sops.templates."forgejo_runner_token.env".path;
     labels = ["native:host"];
-    hostPackages = [
-      pkgs.just
-      pkgs.stylua
+    hostPackages = with pkgs; [
+      bash
+      coreutils
+      curl
+      gawk
+      gitMinimal
+      gnused
+      nodejs
+      wget
+      just
+      stylua
     ];
     settings = {
       runner.capacity = 2;
