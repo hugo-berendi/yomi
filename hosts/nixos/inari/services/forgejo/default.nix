@@ -1,3 +1,6 @@
 {
-  imports = [./service.nix];
+  imports = [
+    ./service.nix
+    ./theme.nix
+  ];
 }
