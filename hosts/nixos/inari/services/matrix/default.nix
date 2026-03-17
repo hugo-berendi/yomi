@@ -4,5 +4,6 @@
     ./bridges.nix
     ./fluffychat-web.nix
     ./element-web.nix
+    ./sable.nix
   ];
 }

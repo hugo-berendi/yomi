@@ -445,6 +445,13 @@ in {
               description = "Game server panel";
             };
           }
+          {
+            Sable = {
+              icon = "mdi-chat-processing-outline";
+              href = "https://sable.hugo-berendi.de";
+              description = "Matrix web client";
+            };
+          }
         ];
       }
     ];

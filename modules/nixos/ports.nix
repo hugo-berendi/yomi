@@ -72,6 +72,7 @@
     "readarr"
     "redlib"
     "sabnzbd"
+    "sable"
     "searxng"
     "smos-api"
     "smos-client"
