@@ -14,7 +14,6 @@
       pay-respects
       sxiv
       # upkgs.unityhub
-      upkgs.overskride
       # upkgs.nerdfetch # for displaying pc/laptop stats
       upkgs.nh
       upkgs.nix-output-monitor

@@ -37,7 +37,6 @@
       signal-desktop
       qbittorrent
       # upkgs.unityhub
-      upkgs.overskride
       # upkgs.nerdfetch # for displaying pc/laptop stats
       upkgs.alejandra # nix formatter
       upkgs.nh
