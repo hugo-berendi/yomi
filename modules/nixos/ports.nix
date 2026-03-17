@@ -1,121 +1,95 @@
-{lib, ...}: let
-  knownServices = [
-    "actual"
-    "adguard"
-    "affine"
-    "adguard-dns"
-    "anonaddy"
-    "bazarr"
-    "beszel"
-    "commafeed"
-    "flaresolverr"
-    "forgejo"
-    "forgejo-ssh"
-    "glance"
-    "grafana"
-    "guacamole"
-    "home-assistant"
-    "homepage"
-    "immich"
-    "intray-api"
-    "intray-client"
-    "invidious"
-    "iocaine"
-    "ipp"
-    "jellyfin"
-    "jellyseerr"
-    "jupyter-ai"
-    "jupyterhub"
-    "karakeep"
-    "karakeep-browser"
-    "keycloak"
-    "komga"
-    "lidarr"
-    "loki"
-    "matrix-tuwunel"
-    "matrix-tuwunel-proxy"
-    "meilisearch"
-    "microbin"
-    "minecraft"
-    "mqtt"
-    "n8n"
-    "navidrome"
-    "netdata"
-    "ntfy"
-    "ollama"
-    "open-webui"
-    "owncloud"
-    "paperless"
-    "paperless-ai"
-    "paperless-ai-rag"
-    "pelican-node1"
-    "pelican-panel"
-    "pocket-id"
-    "prometheus"
-    "prometheus-exportarr-bazarr"
-    "prometheus-exportarr-lidarr"
-    "prometheus-exportarr-prowlarr"
-    "prometheus-exportarr-radarr"
-    "prometheus-exportarr-readarr"
-    "prometheus-exportarr-sonarr"
-    "prometheus-nginx-exporter"
-    "prometheus-node-exporter"
-    "prometheus-postgres-exporter"
-    "prometheus-smartctl-exporter"
-    "prometheus-systemd-exporter"
-    "prometheus-zfs-exporter"
-    "promtail"
-    "prowlarr"
-    "qbittorrent"
-    "radarr"
-    "radicale"
-    "readarr"
-    "redlib"
-    "sabnzbd"
-    "sable"
-    "searxng"
-    "smos-api"
-    "smos-client"
-    "smos-docs"
-    "sonarr"
-    "stirling-pdf"
-    "suwayomi"
-    "syncthing"
-    "transmission_peer"
-    "transmission_ui"
-    "uptime-kuma"
-    "vaultwarden"
-    "whoogle"
-  ];
+{lib, ...}: {
+  options.yomi.ports = lib.mkOption {
+    type = lib.types.lazyAttrsOf lib.types.port;
+    description = "Fixed port allocation for Yomi services";
+  };
 
-  basePort = 8400;
-
-  portAssignments = lib.listToAttrs (
-    lib.imap0 (i: name: {
-      inherit name;
-      value = basePort + i;
-    })
-    knownServices
-  );
-
-  mkPortOption = name: defaultPort:
-    lib.mkOption {
-      type = lib.types.port;
-      default = defaultPort;
-      description = "Port for ${name}";
-    };
-
-  portOptions = lib.mapAttrs mkPortOption portAssignments;
-in {
-  options.yomi.ports = portOptions;
-
-  config.assertions = [
-    {
-      assertion = true;
-      message = ''
-        To add a new service port, add the service name to the knownServices list
-        in modules/nixos/ports.nix. Ports are auto-assigned alphabetically from ${toString basePort}.
-      '';
-    }
-  ];
+  config.yomi.ports = {
+    actual = lib.mkDefault 8400;
+    adguard = lib.mkDefault 8401;
+    affine = lib.mkDefault 8402;
+    adguard-dns = lib.mkDefault 8403;
+    anonaddy = lib.mkDefault 8404;
+    bazarr = lib.mkDefault 8405;
+    beszel = lib.mkDefault 8406;
+    commafeed = lib.mkDefault 8407;
+    flaresolverr = lib.mkDefault 8408;
+    forgejo = lib.mkDefault 8409;
+    forgejo-ssh = lib.mkDefault 8410;
+    glance = lib.mkDefault 8411;
+    grafana = lib.mkDefault 8412;
+    guacamole = lib.mkDefault 8413;
+    home-assistant = lib.mkDefault 8414;
+    homepage = lib.mkDefault 8415;
+    immich = lib.mkDefault 8416;
+    intray-api = lib.mkDefault 8417;
+    intray-client = lib.mkDefault 8418;
+    invidious = lib.mkDefault 8419;
+    iocaine = lib.mkDefault 8420;
+    ipp = lib.mkDefault 8421;
+    jellyfin = lib.mkDefault 8422;
+    jellyseerr = lib.mkDefault 8423;
+    jupyter-ai = lib.mkDefault 8424;
+    jupyterhub = lib.mkDefault 8425;
+    karakeep = lib.mkDefault 8426;
+    karakeep-browser = lib.mkDefault 8427;
+    keycloak = lib.mkDefault 8428;
+    komga = lib.mkDefault 8429;
+    lidarr = lib.mkDefault 8430;
+    loki = lib.mkDefault 8431;
+    matrix-tuwunel = lib.mkDefault 8432;
+    matrix-tuwunel-proxy = lib.mkDefault 8433;
+    meilisearch = lib.mkDefault 8434;
+    microbin = lib.mkDefault 8435;
+    minecraft = lib.mkDefault 8436;
+    mqtt = lib.mkDefault 8437;
+    n8n = lib.mkDefault 8438;
+    navidrome = lib.mkDefault 8439;
+    netdata = lib.mkDefault 8440;
+    ntfy = lib.mkDefault 8441;
+    ollama = lib.mkDefault 8442;
+    open-webui = lib.mkDefault 8443;
+    owncloud = lib.mkDefault 8444;
+    paperless = lib.mkDefault 8445;
+    paperless-ai = lib.mkDefault 8446;
+    paperless-ai-rag = lib.mkDefault 8447;
+    pelican-node1 = lib.mkDefault 8448;
+    pelican-panel = lib.mkDefault 8449;
+    pocket-id = lib.mkDefault 8450;
+    prometheus = lib.mkDefault 8451;
+    prometheus-exportarr-bazarr = lib.mkDefault 8452;
+    prometheus-exportarr-lidarr = lib.mkDefault 8453;
+    prometheus-exportarr-prowlarr = lib.mkDefault 8454;
+    prometheus-exportarr-radarr = lib.mkDefault 8455;
+    prometheus-exportarr-readarr = lib.mkDefault 8456;
+    prometheus-exportarr-sonarr = lib.mkDefault 8457;
+    prometheus-nginx-exporter = lib.mkDefault 8458;
+    prometheus-node-exporter = lib.mkDefault 8459;
+    prometheus-postgres-exporter = lib.mkDefault 8460;
+    prometheus-smartctl-exporter = lib.mkDefault 8461;
+    prometheus-systemd-exporter = lib.mkDefault 8462;
+    prometheus-zfs-exporter = lib.mkDefault 8463;
+    promtail = lib.mkDefault 8464;
+    prowlarr = lib.mkDefault 8465;
+    qbittorrent = lib.mkDefault 8466;
+    radarr = lib.mkDefault 8467;
+    radicale = lib.mkDefault 8468;
+    readarr = lib.mkDefault 8469;
+    redlib = lib.mkDefault 8470;
+    sabnzbd = lib.mkDefault 8471;
+    sable = lib.mkDefault 8472;
+    searxng = lib.mkDefault 8473;
+    smos-api = lib.mkDefault 8474;
+    smos-client = lib.mkDefault 8475;
+    smos-docs = lib.mkDefault 8476;
+    sonarr = lib.mkDefault 8477;
+    stirling-pdf = lib.mkDefault 8478;
+    suwayomi = lib.mkDefault 8479;
+    syncthing = lib.mkDefault 8480;
+    transmission_peer = lib.mkDefault 8481;
+    transmission_ui = lib.mkDefault 8482;
+    uptime-kuma = lib.mkDefault 8483;
+    vaultwarden = lib.mkDefault 8484;
+    whoogle = lib.mkDefault 8485;
+  };
 }
