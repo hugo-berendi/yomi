@@ -16,3 +16,8 @@ jobs:
         run: just lint
       - name: Run flake checks
         run: just check
+      - name: Build NixOS hosts
+        run: |
+          just nixos-rebuild build amaterasu
+          just nixos-rebuild build tsukuyomi
+          just nixos-rebuild build inari
