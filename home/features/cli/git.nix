@@ -91,13 +91,25 @@
   # Set GH_TOKEN for gh CLI authentication
   # This sources the token from sops-nix managed secret
   programs.bash.initExtra = ''
-    export GH_TOKEN="$(cat ${config.sops.secrets.GITHUB_TOKEN.path} 2>/dev/null)"
+        export GH_TOKEN="$(cat ${config.sops.secrets.GITHUB_TOKEN.path} 2>/dev/null)"
+        if [ -n "$GH_TOKEN" ]; then
+          export NIX_CONFIG="$NIX_CONFIG
+    access-tokens = github.com=$GH_TOKEN"
+        fi
   '';
   programs.zsh.initExtra = ''
-    export GH_TOKEN="$(cat ${config.sops.secrets.GITHUB_TOKEN.path} 2>/dev/null)"
+        export GH_TOKEN="$(cat ${config.sops.secrets.GITHUB_TOKEN.path} 2>/dev/null)"
+        if [ -n "$GH_TOKEN" ]; then
+          export NIX_CONFIG="$NIX_CONFIG
+    access-tokens = github.com=$GH_TOKEN"
+        fi
   '';
   programs.fish.interactiveShellInit = ''
-    set -gx GH_TOKEN (cat ${config.sops.secrets.GITHUB_TOKEN.path} 2>/dev/null)
+        set -gx GH_TOKEN (cat ${config.sops.secrets.GITHUB_TOKEN.path} 2>/dev/null)
+        if test -n "$GH_TOKEN"
+          set -gx NIX_CONFIG "$NIX_CONFIG
+    access-tokens = github.com=$GH_TOKEN"
+        end
   '';
   # }}}
 
