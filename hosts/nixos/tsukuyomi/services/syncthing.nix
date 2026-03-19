@@ -11,7 +11,7 @@ in {
 
   services.syncthing.settings.folders = {
     "stellar-sanctum" = {
-      path = "${config.users.users.pilot.home}/projects/stellar-sanctum/";
+      path = "${config.users.users.${config.yomi.pilot.name}.home}/projects/stellar-sanctum/";
       devices = ["nothing" "ipad"];
       versioning = commonVersioning;
     };

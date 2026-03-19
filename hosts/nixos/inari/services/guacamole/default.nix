@@ -15,7 +15,7 @@
     environment.TZ = config.time.timeZone;
   };
 
-  users.users.pilot.openssh.authorizedKeys.keyFiles = [./ed25519.pub];
+  users.users.${config.yomi.pilot.name}.openssh.authorizedKeys.keyFiles = [./ed25519.pub];
 
   environment.persistence."/persist/state".directories = [
     "/var/lib/guacamole"

@@ -18,11 +18,11 @@
 
     # Sync up root and `pilot` shell
     users.root = {
-      shell = config.users.users.pilot.shell;
+      shell = config.users.users.${config.yomi.pilot.name}.shell;
       hashedPasswordFile = config.sops.secrets.pilot_password.path;
     };
 
-    users.pilot = {
+    users.${config.yomi.pilot.name} = {
       inherit (config.yomi.pilot) name;
 
       description = "Hugo Berendi";
@@ -67,7 +67,7 @@
   # This is mainly useful because home-manager can often fail if the perms on
   # `~/.ssh` are incorrect.
   systemd.tmpfiles.rules = let
-    user = config.users.users.pilot;
+    user = config.users.users.${config.yomi.pilot.name};
     root = "/persist/state/${user.home}/ssh";
   in [
     "d ${root}                 0755 ${user.name} ${user.group}"

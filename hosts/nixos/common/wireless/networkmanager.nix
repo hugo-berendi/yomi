@@ -55,6 +55,6 @@ in {
 
     networking.wireless.enable = lib.mkForce false;
 
-    users.users.pilot.extraGroups = ["networkmanager"];
+    users.users.${config.yomi.pilot.name}.extraGroups = ["networkmanager"];
   };
 }

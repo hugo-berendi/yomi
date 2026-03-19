@@ -3,7 +3,7 @@
   config,
   ...
 }: {
-  users.users.pilot.extraGroups = ["networkmanager"];
+  users.users.${config.yomi.pilot.name}.extraGroups = ["networkmanager"];
 
   imports = [
     ./dnsmasq.nix

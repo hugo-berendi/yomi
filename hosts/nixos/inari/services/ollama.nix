@@ -20,8 +20,9 @@
     ];
   };
 
-  systemd.services.ollama.serviceConfig = {
+  systemd.services.ollama.serviceConfig = lib.mkIf config.services.ollama.enable {
     DynamicUser = lib.mkForce false;
+    User = lib.mkForce config.services.ollama.user;
     MemoryMax = "0";
     LimitAS = "infinity";
     LimitMEMLOCK = "infinity";

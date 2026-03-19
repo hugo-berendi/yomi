@@ -157,11 +157,15 @@
 
               modules = [
                 (
-                  {lib, ...}: {
+                  {
+                    lib,
+                    config,
+                    ...
+                  }: {
                     imports = lib.lists.optionals (builtins.pathExists ./home/${hostname}.nix) [
                       inputs.home-manager.nixosModules.home-manager
                       {
-                        home-manager.users.pilot = ./home/${hostname}.nix;
+                        home-manager.users.${config.yomi.pilot.name} = ./home/${hostname}.nix;
                         home-manager.extraSpecialArgs =
                           specialArgs system
                           // {

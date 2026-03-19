@@ -18,7 +18,7 @@
     initialize = true;
     repository = "sftp:${backupUrl}:backups/${name}";
     passwordFile = config.sops.secrets.backup_password.path;
-    extraOptions = ["sftp.args='-i ${config.users.users.pilot.home}/.ssh/id_ed25519'"];
+    extraOptions = ["sftp.args='-i ${config.users.users.${config.yomi.pilot.name}.home}/.ssh/id_ed25519'"];
 
     exclude =
       [
@@ -53,7 +53,7 @@ in {
         paths = ["/persist/data"];
         exclude = [
           # projects are available on github and in my own forge already
-          "/persist/data${config.users.users.pilot.home}/projects"
+          "/persist/data${config.users.users.${config.yomi.pilot.name}.home}/projects"
         ];
       };
       # }}}
@@ -69,7 +69,7 @@ in {
 
         paths = ["/persist/state"];
         exclude = let
-          home = "/persist/state/${config.users.users.pilot.home}";
+          home = "/persist/state/${config.users.users.${config.yomi.pilot.name}.home}";
         in [
           "${home}/discord" # There's lots of cache stored in here
           "${home}/steam" # Games can be quite big
