@@ -109,6 +109,7 @@
       wget
       just
       stylua
+      python313
     ];
     settings = {
       runner.capacity = 2;
