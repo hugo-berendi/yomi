@@ -15,7 +15,7 @@ in {
       description = "Record of persistent locations (eg: /persist)";
       type = lib.types.attrsOf (lib.types.submodule (args: {
         config = {
-          home = "${args.config.path}${config.home.homeDirectory}";
+          home = args.config.path;
         };
 
         options = {
@@ -60,7 +60,6 @@ in {
                   '';
                 };
 
-                allowOther = true;
                 directories = lib.mkOption {
                   default = [];
                   description = ''
@@ -123,7 +122,6 @@ in {
     in
       # {{{ Impermanence config generation
       lib.attrsets.nameValuePair location.home {
-        allowOther = true;
         directories =
           lib.lists.flatten
           (lib.attrsets.mapAttrsToList (_: mkAppDirectory) location.apps);
