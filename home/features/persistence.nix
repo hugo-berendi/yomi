@@ -4,14 +4,14 @@
     enable = true;
 
     # Actual data/media (eg: projects, images, videos, etc)
-    at.data.path = "/persist/data";
+    at.data.path = "/persist/data${config.home.homeDirectory}";
     at.data.prefixDirectories = false;
 
     # App state I want to keep
-    at.state.path = "/persist/state";
+    at.state.path = "/persist/state${config.home.homeDirectory}";
 
     # App state which I should be able to delete on a whim
-    at.cache.path = "/persist/local/cache";
+    at.cache.path = "/persist/local/cache${config.home.homeDirectory}";
   };
   # }}}
   # {{{ XDG dirs
