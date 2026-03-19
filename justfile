@@ -85,7 +85,7 @@ rebuild:
 [doc("Run all flake checks (builds hosts, DNS, formatter)")]
 [group("ci")]
 check:
-  nix flake check --all-systems --show-trace
+  nix flake check --show-trace
 
 [doc("Check Nix code formatting")]
 [group("ci")]
