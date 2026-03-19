@@ -38,7 +38,7 @@
       qbittorrent
       # upkgs.unityhub
       # upkgs.nerdfetch # for displaying pc/laptop stats
-      upkgs.alejandra # nix formatter
+      pkgs.alejandra # nix formatter
       upkgs.nh
       upkgs.nix-output-monitor
       upkgs.nvd

@@ -21,7 +21,7 @@
     packages = with pkgs; [
       # {{{ Nix tooling
       sops
-      upkgs.alejandra
+      pkgs.alejandra
       upkgs.nh
       upkgs.nix-output-monitor
       upkgs.nvd
@@ -45,7 +45,7 @@
     ];
   };
 
-  home.persistence."/persist/home/${config.home.username}" = lib.mkForce {};
+  home.persistence."/persist" = lib.mkForce {};
 
   sops.age.sshKeyPaths = lib.mkForce ["/etc/ssh/ssh_host_ed25519_key"];
 
