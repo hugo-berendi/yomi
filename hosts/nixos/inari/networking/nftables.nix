@@ -16,10 +16,10 @@
 in {
   systemd.services.nftables = {
     postStart = ''
-      ${lib.getExe' config.systemd.package "systemctl"} restart docker.service
+      ${lib.getExe' config.systemd.package "systemctl"} try-restart --no-block docker.service || true
     '';
     serviceConfig.ExecReload = lib.mkAfter [
-      "${lib.getExe' config.systemd.package "systemctl"} restart docker.service"
+      "-${lib.getExe' config.systemd.package "systemctl"} try-restart --no-block docker.service"
     ];
   };
 
