@@ -35,20 +35,36 @@ in
       name = "octodns-sync";
       paths = [fullOctodns];
       buildInputs = [
-        pkgs.makeWrapper
         pkgs.yq
       ];
 
       postBuild = ''
-        cat ${octodnsConfig} | yq '.providers.zones.directory="${octodns-zones}"' > $out/config.yaml
-        wrapProgram $out/bin/octodns-sync \
-          --run 'export CLOUDFLARE_TOKEN=$( \
-              sops \
-                --decrypt \
-                --extract "[\"cloudflare_dns_api_token\"]" \
-                ./hosts/nixos/common/secrets.yaml \
-            )' \
-          --add-flags "--config-file $out/config.yaml"
+        cat ${octodnsConfig} | yq '.providers.zones.directory="${octodns-zones}"' > $out/config.base.yaml
+
+        cat > $out/bin/octodns-sync <<'EOF'
+        #!${pkgs.bash}/bin/bash
+        set -euo pipefail
+
+        export CLOUDFLARE_TOKEN="$(${pkgs.sops}/bin/sops --decrypt --extract '["cloudflare_dns_api_token"]' ./hosts/nixos/common/secrets.yaml)"
+
+        zones_dir="${octodns-zones}"
+        dkim_public_key="$(${pkgs.sops}/bin/sops --decrypt --extract '["simplelogin_dkim_public_key"]' ./hosts/nixos/inari/secrets.yaml 2>/dev/null || true)"
+
+        if [ -n "''${dkim_public_key}" ]; then
+          zones_dir="$(mktemp -d)"
+          cp -R "${octodns-zones}/." "$zones_dir/"
+          export SIMPLELOGIN_DKIM_VALUE="v=DKIM1; k=rsa; p=''${dkim_public_key}"
+          ${pkgs.yq}/bin/yq -i '(.yokai[] | select(.type == "TXT" and .value == "v=DKIM1; k=rsa; p=__SIMPLELOGIN_DKIM_PUBLIC_KEY__") | .value) = strenv(SIMPLELOGIN_DKIM_VALUE)' "$zones_dir/hugo-berendi.de.yaml"
+        fi
+
+        config_file="$(mktemp)"
+        cp "$out/config.base.yaml" "$config_file"
+        ${pkgs.yq}/bin/yq -i ".providers.zones.directory = \"$zones_dir\"" "$config_file"
+
+        exec ${fullOctodns}/bin/octodns-sync --config-file "$config_file" "$@"
+        EOF
+
+        chmod +x $out/bin/octodns-sync
       '';
     };
     #  }}}

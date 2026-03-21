@@ -1,26 +1,27 @@
 manager:
   max_workers: 10
-
 providers:
   zones:
     class: octodns.provider.yaml.YamlProvider
     default_ttl: 300
     enforce_order: true
     directory: this is set by nix :3
-
   wan:
     class: octodns_ddns.DdnsSource
     types:
       - A
-
+  mx:
+    class: octodns_ddns.DdnsSource
+    types:
+      - A
   cloudflare:
     class: octodns_cloudflare.CloudflareProvider
     token: "env/CLOUDFLARE_TOKEN"
-
 zones:
   hugo-berendi.de.:
     sources:
       - zones
       - wan
+      - mx
     targets:
       - cloudflare

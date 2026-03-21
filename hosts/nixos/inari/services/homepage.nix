@@ -227,9 +227,9 @@ in {
             };
           }
           {
-            Anonaddy = {
-              icon = "anonaddy.svg";
-              href = "https://alias.hugo-berendi.de";
+            SimpleLogin = {
+              icon = "mdi-email-fast-outline";
+              href = "https://app.simplelogin.io";
               description = "Email aliasing";
             };
           }

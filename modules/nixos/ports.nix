@@ -9,7 +9,7 @@
     adguard = lib.mkDefault 8401;
     affine = lib.mkDefault 8402;
     adguard-dns = lib.mkDefault 8403;
-    anonaddy = lib.mkDefault 8404;
+    simplelogin = lib.mkDefault 8404;
     bazarr = lib.mkDefault 8405;
     beszel = lib.mkDefault 8406;
     commafeed = lib.mkDefault 8407;

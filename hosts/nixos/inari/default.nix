@@ -43,7 +43,7 @@
     ./services/grafana.nix
     ./services/loki.nix
     ./services/playit.nix
-    # ./services/anonaddy.nix
+    ./services/simplelogin.nix
     # ./services/pelican
     ./services/owncloud.nix
     ./services/stirling-pdf.nix

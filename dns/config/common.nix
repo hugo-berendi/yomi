@@ -62,6 +62,42 @@
       ttl = 600;
     }
   ];
+  simpleLoginMail = at: let
+    atPrefix = prefix:
+      if at == ""
+      then prefix
+      else "${prefix}.${at}";
+  in [
+    {
+      inherit at;
+      ttl = 600;
+      type = "MX";
+      value = [
+        {
+          exchange = "mx.hugo-berendi.de.";
+          preference = 10;
+        }
+      ];
+    }
+    {
+      inherit at;
+      ttl = 600;
+      type = "TXT";
+      value = "v=spf1 mx ~all";
+    }
+    {
+      at = atPrefix "_dmarc";
+      type = "TXT";
+      value = ''v=DMARC1\; p=quarantine\;'';
+      ttl = 600;
+    }
+    {
+      at = atPrefix "dkim._domainkey";
+      type = "TXT";
+      value = "v=DKIM1; k=rsa; p=__SIMPLELOGIN_DKIM_PUBLIC_KEY__";
+      ttl = 600;
+    }
+  ];
 in
   # }}}
   {
@@ -71,8 +107,14 @@ in
       # (ghPage "giftstogo")
       (migaduMail "" "xmycngew")
       (migaduMail "tengu" "t5fehqan")
-      (migaduMail "yokai" "dnvlmbud")
+      (simpleLoginMail "yokai")
       [
+        {
+          at = "mx";
+          type = "CNAME";
+          value = "wan.hugo-berendi.de.";
+          ttl = 600;
+        }
         {
           at = "classattack";
           type = "CNAME";

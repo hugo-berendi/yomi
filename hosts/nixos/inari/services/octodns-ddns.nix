@@ -16,25 +16,29 @@ in {
     };
   };
 
-  config = lib.mkIf cfg.enable {
-    systemd.services.octodns-ddns-sync = {
-      description = "OctoDNS DDNS synchronization";
-      serviceConfig = {
-        Type = "oneshot";
-        ExecStart = "${lib.getExe pkgs.bash} -c 'cd /etc/nixos && ${pkgs.octodns-sync}/bin/octodns-sync'";
-        User = "root";
+  config =
+    {
+      services.octodns-ddns.enable = lib.mkDefault true;
+    }
+    // lib.mkIf cfg.enable {
+      systemd.services.octodns-ddns-sync = {
+        description = "OctoDNS DDNS synchronization";
+        serviceConfig = {
+          Type = "oneshot";
+          ExecStart = "${lib.getExe pkgs.bash} -c 'cd /etc/nixos && ${pkgs.octodns-sync}/bin/octodns-sync'";
+          User = "root";
+        };
       };
-    };
 
-    systemd.timers.octodns-ddns-sync = {
-      description = "OctoDNS DDNS synchronization timer";
-      wantedBy = ["timers.target"];
-      timerConfig = {
-        OnBootSec = "5m";
-        OnUnitActiveSec = cfg.interval;
-        AccuracySec = "5m";
-        Persistent = true;
+      systemd.timers.octodns-ddns-sync = {
+        description = "OctoDNS DDNS synchronization timer";
+        wantedBy = ["timers.target"];
+        timerConfig = {
+          OnBootSec = "5m";
+          OnUnitActiveSec = cfg.interval;
+          AccuracySec = "5m";
+          Persistent = true;
+        };
       };
     };
-  };
 }
