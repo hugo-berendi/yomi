@@ -43,7 +43,7 @@
     ./services/grafana.nix
     ./services/loki.nix
     ./services/playit.nix
-    ./services/simplelogin.nix
+    # ./services/simplelogin.nix
     # ./services/pelican
     ./services/owncloud.nix
     ./services/stirling-pdf.nix
@@ -59,6 +59,7 @@
   yomi.pilot.name = "hugob";
   yomi.machine.interactible = true;
   yomi.containers.enable = true;
+  yomi.postgres.enable = true;
   yomi.wireless.enable = false;
   yomi.tailscale.exitNode = true;
 
