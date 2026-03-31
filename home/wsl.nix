@@ -55,7 +55,7 @@
 
   programs.ssh = {
     enable = true;
-    addKeysToAgent = "yes";
+    matchBlocks."*".addKeysToAgent = "yes";
   };
 
   services.ssh-agent.enable = true;

@@ -30,6 +30,8 @@
   # Tell sops-nix to use the hermes keys for decrypting secrets
   sops.age.sshKeyPaths = lib.mkForce ["/kagutsuchi/secrets/kagutsuchi/ssh_host_ed25519_key"];
 
+  users.users.root.hashedPasswordFile = lib.mkForce null;
+
   environment.systemPackages = let
     cloneConfig = pkgs.writeShellScriptBin "liftoff" ''
       git clone https://github.com:hugo-berendi/yomi.git

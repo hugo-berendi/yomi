@@ -41,6 +41,8 @@ in
       postBuild = ''
         cat ${octodnsConfig} | yq '.providers.zones.directory="${octodns-zones}"' > $out/config.base.yaml
 
+        rm -f $out/bin/octodns-sync
+
         cat > $out/bin/octodns-sync <<'EOF'
         #!${pkgs.bash}/bin/bash
         set -euo pipefail

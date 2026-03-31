@@ -1,6 +1,6 @@
-{upkgs, ...}: {
+{pkgs, ...}: {
   yomi.nginx.at.fluffychat = {
-    files = upkgs.fluffychat-web;
+    files = pkgs.fluffychat-web;
     subdomain = "fluffy";
   };
 }
