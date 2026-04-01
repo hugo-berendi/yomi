@@ -26,6 +26,7 @@
 
     opencode-flake.url = "github:aodhanhayter/opencode-flake";
     llm-agents.url = "github:numtide/llm-agents.nix";
+    nix-openclaw.url = "github:openclaw/nix-openclaw";
 
     home-manager.url = "github:nix-community/home-manager/release-25.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
