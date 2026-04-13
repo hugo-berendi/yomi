@@ -12,4 +12,5 @@ in rec {
   pelican-wings = pkgs.callPackage ./pelican-wings.nix {};
   perplexica = pkgs.callPackage ./perplexica.nix {};
   python-webuntis = pkgs.callPackage ./python-webuntis.nix {};
+  komf = pkgs.callPackage ./komf.nix {};
 }

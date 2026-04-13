@@ -35,6 +35,7 @@
     karakeep-browser = lib.mkDefault 8427;
     keycloak = lib.mkDefault 8428;
     komga = lib.mkDefault 8429;
+    komf = lib.mkDefault 8486;
     lidarr = lib.mkDefault 8430;
     loki = lib.mkDefault 8431;
     matrix-tuwunel = lib.mkDefault 8432;

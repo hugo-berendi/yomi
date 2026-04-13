@@ -312,6 +312,13 @@ in {
             };
           }
           {
+            Komga = {
+              icon = "mdi-bookshelf";
+              href = "https://komga.hugo-berendi.de";
+              description = "Comics library";
+            };
+          }
+          {
             Jellyseerr = {
               icon = "jellyseerr.svg";
               href = "https://request-media.hugo-berendi.de";

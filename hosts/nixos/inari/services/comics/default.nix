@@ -1,6 +1,7 @@
 {...}: {
   imports = [
     ./suwayomi.nix
-    # ./komga.nix
+    ./komga.nix
+    ./komf.nix
   ];
 }
