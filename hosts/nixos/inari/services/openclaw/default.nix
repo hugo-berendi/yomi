@@ -1,6 +1,7 @@
 {
   config,
   inputs,
+  pkgs,
   ...
 }: let
   pilot = config.yomi.pilot.name;
@@ -9,6 +10,7 @@ in {
 
   home-manager.users.${pilot} = {
     config,
+    lib,
     pkgs,
     ...
   }: {
@@ -26,6 +28,11 @@ in {
 
     sops.templates."openclaw.env".content = ''
       OPENCLAW_GATEWAY_TOKEN=${config.sops.placeholder.openclaw_gateway_auth_token}
+      GH_TOKEN=${config.sops.placeholder.GITHUB_TOKEN}
+      EXA_API_KEY=${config.sops.placeholder.EXA_API_KEY}
+      SEARXNG_URL=${config.sops.placeholder.SEARXNG_URL}
+      SEARXNG_BASE_URL=${config.sops.placeholder.SEARXNG_URL}
+      OPENCODE_BIN=opencode
     '';
 
     programs.openclaw = {
@@ -33,23 +40,61 @@ in {
       toolNames = [
         "nodejs_22"
         "pnpm_10"
+        "uv"
         "git"
         "gh"
+        "lazygit"
         "just"
         "nix"
         "ripgrep"
         "fd"
+        "ast-grep"
         "jq"
+        "yq-go"
+        "delta"
         "curl"
         "wget"
+        "httpie"
+        "zoxide"
       ];
-      documents = ./documents;
-
       bundledPlugins = {
         summarize.enable = true;
       };
 
       config = {
+        acp = {
+          enabled = true;
+          backend = "acpx";
+          defaultAgent = "opencode";
+          allowedAgents = [
+            "opencode"
+            "codex"
+            "claude"
+            "gemini"
+            "kimi"
+            "pi"
+          ];
+          maxConcurrentSessions = 8;
+          dispatch.enabled = true;
+        };
+
+        tools.web = {
+          search = {
+            enabled = true;
+            provider = "searxng";
+            maxResults = 8;
+            timeoutSeconds = 20;
+          };
+          fetch.enabled = true;
+        };
+
+        plugins.entries = {
+          searxng.enabled = true;
+          duckduckgo.enabled = true;
+          exa.enabled = true;
+          browser.enabled = true;
+        };
+
         gateway = {
           mode = "local";
           auth.token = {
@@ -85,5 +130,23 @@ in {
     ];
 
     systemd.user.services.openclaw-gateway.Service.EnvironmentFile = config.sops.templates."openclaw.env".path;
+
+    home.activation.openclawMaterializeDocuments = lib.hm.dag.entryAfter ["writeBoundary"] ''
+      workspace_dir="${config.programs.openclaw.workspaceDir}"
+      mkdir -p "$workspace_dir"
+      rm -f "$workspace_dir/AGENTS.md" "$workspace_dir/SOUL.md" "$workspace_dir/TOOLS.md"
+      install -m 0644 "${./documents}/AGENTS.md" "$workspace_dir/AGENTS.md"
+      install -m 0644 "${./documents}/SOUL.md" "$workspace_dir/SOUL.md"
+      install -m 0644 "${./documents}/TOOLS.md" "$workspace_dir/TOOLS.md"
+    '';
+
+    home.activation.openclawSessionReset = lib.hm.dag.entryAfter ["openclawMaterializeDocuments"] ''
+      if [ -f "${config.sops.templates."openclaw.env".path}" ]; then
+        token="$(sed -n 's/^OPENCLAW_GATEWAY_TOKEN=//p' "${config.sops.templates."openclaw.env".path}" | head -n1)"
+        if [ -n "$token" ]; then
+          ${pkgs.openclaw}/bin/openclaw gateway call --token "$token" --params '{"key":"agent:main:main"}' sessions.reset >/dev/null 2>&1 || true
+        fi
+      fi
+    '';
   };
 }
