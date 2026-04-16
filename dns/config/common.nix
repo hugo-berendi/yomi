@@ -94,7 +94,7 @@
     {
       at = atPrefix "dkim._domainkey";
       type = "TXT";
-      value = "v=DKIM1; k=rsa; p=__SIMPLELOGIN_DKIM_PUBLIC_KEY__";
+      value = ''v=DKIM1\; k=rsa\; p=__SIMPLELOGIN_DKIM_PUBLIC_KEY__'';
       ttl = 600;
     }
   ];
@@ -109,12 +109,6 @@ in
       (migaduMail "tengu" "t5fehqan")
       (simpleLoginMail "yokai")
       [
-        {
-          at = "mx";
-          type = "CNAME";
-          value = "wan.hugo-berendi.de.";
-          ttl = 600;
-        }
         {
           at = "classattack";
           type = "CNAME";

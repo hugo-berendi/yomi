@@ -55,13 +55,14 @@ in
         if [ -n "''${dkim_public_key}" ]; then
           zones_dir="$(mktemp -d)"
           cp -R "${octodns-zones}/." "$zones_dir/"
-          export SIMPLELOGIN_DKIM_VALUE="v=DKIM1; k=rsa; p=''${dkim_public_key}"
-          ${pkgs.yq}/bin/yq -i '(.yokai[] | select(.type == "TXT" and .value == "v=DKIM1; k=rsa; p=__SIMPLELOGIN_DKIM_PUBLIC_KEY__") | .value) = strenv(SIMPLELOGIN_DKIM_VALUE)' "$zones_dir/hugo-berendi.de.yaml"
+          export SIMPLELOGIN_DKIM_VALUE="v=DKIM1\\; k=rsa\\; p=''${dkim_public_key}"
+          ${pkgs.yq}/bin/yq -y -i '(.yokai[] | select(.type == "TXT" and .value == "v=DKIM1\\; k=rsa\\; p=__SIMPLELOGIN_DKIM_PUBLIC_KEY__") | .value) = strenv(SIMPLELOGIN_DKIM_VALUE)' "$zones_dir/hugo-berendi.de.yaml"
         fi
 
         config_file="$(mktemp)"
-        cp "$out/config.base.yaml" "$config_file"
-        ${pkgs.yq}/bin/yq -i ".providers.zones.directory = \"$zones_dir\"" "$config_file"
+        package_root="$(dirname "$(dirname "$(readlink -f "$0")")")"
+        cp "$package_root/config.base.yaml" "$config_file"
+        ${pkgs.yq}/bin/yq -y -i ".providers.zones.directory = \"$zones_dir\"" "$config_file"
 
         exec ${fullOctodns}/bin/octodns-sync --config-file "$config_file" "$@"
         EOF
