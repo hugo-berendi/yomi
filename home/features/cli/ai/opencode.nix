@@ -3,10 +3,16 @@
   config,
   lib,
   inputs,
+  osConfig ? null,
   ...
 }: let
   cfg = config.yomi.ai.mcp;
   cfgRemote = config.yomi.ai.mcpRemote;
+  opencodePort =
+    if osConfig != null && osConfig ? yomi && osConfig.yomi ? ports && osConfig.yomi.ports ? opencode
+    then osConfig.yomi.ports.opencode
+    else 8487;
+  opencodeAttachUrl = "http://127.0.0.1:${toString opencodePort}";
 
   toOpencodeMcp = name: value: {
     ${name} = {
@@ -296,6 +302,49 @@ in {
   };
 
   yomi.persistence.at.state.apps.opencode.directories = ["${config.home.homeDirectory}/.local/share/opencode"];
+
+  systemd.user.services.opencode-web = {
+    Unit = {
+      Description = "OpenCode Web Server";
+      After = ["network.target"];
+    };
+    Service = {
+      ExecStart = "${lib.getExe inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.opencode} web --hostname 127.0.0.1 --port ${toString opencodePort}";
+      Restart = "always";
+      RestartSec = 2;
+    };
+    Install.WantedBy = ["default.target"];
+  };
+
+  programs.bash.initExtra = ''
+    opencode() {
+      if [ "$#" -eq 0 ]; then
+        command opencode attach ${opencodeAttachUrl}
+      else
+        command opencode "$@"
+      fi
+    }
+  '';
+
+  programs.zsh.initExtra = ''
+    opencode() {
+      if [ "$#" -eq 0 ]; then
+        command opencode attach ${opencodeAttachUrl}
+      else
+        command opencode "$@"
+      fi
+    }
+  '';
+
+  programs.fish.interactiveShellInit = ''
+    function opencode
+      if test (count $argv) -eq 0
+        command opencode attach ${opencodeAttachUrl}
+      else
+        command opencode $argv
+      end
+    end
+  '';
 
   # {{{ Skills
   xdg.configFile."opencode/skills/frontend-design/SKILL.md".text = ''

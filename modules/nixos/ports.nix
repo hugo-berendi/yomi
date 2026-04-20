@@ -50,6 +50,7 @@
     ntfy = lib.mkDefault 8441;
     ollama = lib.mkDefault 8442;
     open-webui = lib.mkDefault 8443;
+    opencode = lib.mkDefault 8487;
     owncloud = lib.mkDefault 8444;
     paperless = lib.mkDefault 8445;
     paperless-ai = lib.mkDefault 8446;

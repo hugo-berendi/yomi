@@ -51,7 +51,7 @@
     ./services/octodns-ddns.nix
     ./services/beszel.nix
     ./services/matrix
-    ./services/openclaw
+    ./services/opencode.nix
   ];
   # }}}
 
