@@ -9,6 +9,7 @@ hostname := `hostname`
 [group("nix")]
 nixos-rebuild action="switch" host=hostname ng="1" install_bootloader="0":
   #!/usr/bin/env python3
+  import os
   import subprocess
 
   install_bootloader = "{{install_bootloader}}" != "0"
@@ -36,7 +37,9 @@ nixos-rebuild action="switch" host=hostname ng="1" install_bootloader="0":
 
   if host == "{{hostname}}":
     print("🧬 Switching nixos configuration (locally) for '{{BLUE + host + NORMAL}}'")
-    args = ["sudo", *args]
+    if "{{action}}" in {"switch", "boot", "test", "dry-activate"}:
+      sudo_bin = "/run/wrappers/bin/sudo" if os.path.exists("/run/wrappers/bin/sudo") else "sudo"
+      args = [sudo_bin, *args]
   else:
     print("🧬 Switching nixos configuration (remotely) for '{{BLUE + host + NORMAL}}'")
     args += [ "--target-host", f"{users[host]}@{host}" ]
@@ -238,7 +241,8 @@ dns-clear zoneid bearerfile="/run/secrets/cloudflare_dns_api_token":
           print(f"⚠️ Failed to delete record '{record_id}': {response.status_code} {response.text}")
 
   if os.geteuid() != 0:
-    os.execvp('sudo', ['sudo', 'python3'] + sys.argv)
+    sudo_bin = "/run/wrappers/bin/sudo" if os.path.exists("/run/wrappers/bin/sudo") else "sudo"
+    os.execvp(sudo_bin, [sudo_bin, 'python3'] + sys.argv)
 
   bearer = load_bearer_token(bearerfile)
   print(f"🔍 Fetching DNS records for zone: {zoneid}")

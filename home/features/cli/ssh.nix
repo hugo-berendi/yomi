@@ -6,5 +6,8 @@
       identityFile = "~/.ssh/id_ed25519";
     };
   };
-  yomi.persistence.at.state.apps.ssh.directories = [".ssh"];
+  yomi.persistence.at.state.apps.ssh = {
+    name = "";
+    directories = [".ssh"];
+  };
 }

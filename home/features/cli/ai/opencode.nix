@@ -301,7 +301,13 @@ in {
     };
   };
 
-  yomi.persistence.at.state.apps.opencode.directories = ["${config.home.homeDirectory}/.local/share/opencode"];
+  yomi.persistence.at.state.apps.opencode = {
+    name = "";
+    directories = [
+      "${config.home.homeDirectory}/.local/share/opencode"
+      "${config.xdg.configHome}/opencode"
+    ];
+  };
 
   systemd.user.services.opencode-web = {
     Unit = {

@@ -47,7 +47,17 @@ in
         #!${pkgs.bash}/bin/bash
         set -euo pipefail
 
-        export CLOUDFLARE_TOKEN="$(${pkgs.sops}/bin/sops --decrypt --extract '["cloudflare_dns_api_token"]' ./hosts/nixos/common/secrets.yaml)"
+        cloudflare_token="$(${pkgs.sops}/bin/sops --decrypt --extract '["cloudflare_dns_api_token"]' ./hosts/nixos/common/secrets.yaml)" || {
+          echo "failed to decrypt cloudflare_dns_api_token via sops" >&2
+          exit 1
+        }
+
+        if [ -z "$cloudflare_token" ] || [ "$cloudflare_token" = "null" ]; then
+          echo "cloudflare_dns_api_token is empty" >&2
+          exit 1
+        fi
+
+        export CLOUDFLARE_TOKEN="$cloudflare_token"
 
         zones_dir="${octodns-zones}"
         dkim_public_key="$(${pkgs.sops}/bin/sops --decrypt --extract '["simplelogin_dkim_public_key"]' ./hosts/nixos/inari/secrets.yaml 2>/dev/null || true)"

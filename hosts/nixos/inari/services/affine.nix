@@ -149,11 +149,19 @@ in {
   # }}}
   # {{{ Service ordering
   systemd.services.docker-affine-postgres = {
+    path = [pkgs.docker];
+    preStart = ''
+      docker network inspect ${networkName} >/dev/null 2>&1 || docker network create ${networkName}
+    '';
     after = ["docker-network-affine_default.service"];
     requires = ["docker-network-affine_default.service"];
   };
 
   systemd.services.docker-affine-valkey = {
+    path = [pkgs.docker];
+    preStart = ''
+      docker network inspect ${networkName} >/dev/null 2>&1 || docker network create ${networkName}
+    '';
     after = ["docker-network-affine_default.service"];
     requires = ["docker-network-affine_default.service"];
   };

@@ -145,7 +145,10 @@
   # }}}
   # {{{ Cli
   # {{{ Sops
-  yomi.persistence.at.state.apps.sops.directories = ["${config.xdg.configHome}/sops/age"];
+  yomi.persistence.at.state.apps.sops = {
+    name = "";
+    directories = ["${config.xdg.configHome}/sops/age"];
+  };
   # }}}
   # }}}
 }
