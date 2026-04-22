@@ -13,6 +13,24 @@
     then osConfig.yomi.ports.opencode
     else 8487;
   opencodeAttachUrl = "http://127.0.0.1:${toString opencodePort}";
+  opencodeRuntimePath = lib.makeBinPath (with pkgs; [
+    bash
+    coreutils
+    findutils
+    gnugrep
+    gnused
+    gawk
+    which
+    git
+    just
+    nix
+    openssh
+    util-linux
+    procps
+    ripgrep
+    fzf
+    systemd
+  ]);
 
   toOpencodeMcp = name: value: {
     ${name} = {
@@ -315,6 +333,9 @@ in {
       After = ["network.target"];
     };
     Service = {
+      Environment = [
+        "PATH=${opencodeRuntimePath}:${config.home.profileDirectory}/bin:/run/current-system/sw/bin:/run/wrappers/bin"
+      ];
       ExecStart = "${lib.getExe inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.opencode} web --hostname 127.0.0.1 --port ${toString opencodePort}";
       Restart = "always";
       RestartSec = 2;
