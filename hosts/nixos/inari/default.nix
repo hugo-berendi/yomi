@@ -26,6 +26,7 @@
     ./services/invidious.nix
     ./services/jupyter.nix
     ./services/microbin.nix
+    ./services/mealie.nix
     ./services/radicale.nix
     ./services/redlib.nix
     ./services/vaultwarden.nix

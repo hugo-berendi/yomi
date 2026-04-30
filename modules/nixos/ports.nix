@@ -40,6 +40,7 @@
     loki = lib.mkDefault 8431;
     matrix-tuwunel = lib.mkDefault 8432;
     matrix-tuwunel-proxy = lib.mkDefault 8433;
+    mealie = lib.mkDefault 8488;
     meilisearch = lib.mkDefault 8434;
     microbin = lib.mkDefault 8435;
     minecraft = lib.mkDefault 8436;
