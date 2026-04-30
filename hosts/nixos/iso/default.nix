@@ -1,7 +1,3 @@
-# See the wiki for more details https://wiki.nixos.org/wiki/Creating_a_NixOS_live_CD
-#
-# Can be built with
-# nix build .#nixosConfigurations.iso.config.system.build.isoImage
 {
   modulesPath,
   pkgs,
@@ -15,6 +11,7 @@
     ../common
   ];
   # }}}
+
   # {{{ Automount kagutsuchi
   fileSystems."/kagutsuchi" = {
     device = "/dev/disk/by-uuid/9e2345c6-7c31-4a76-97d8-73adc71c1a19";
@@ -27,9 +24,6 @@
   };
   # }}}
 
-  # Tell sops-nix to use the hermes keys for decrypting secrets
-  sops.age.sshKeyPaths = lib.mkForce ["/kagutsuchi/secrets/kagutsuchi/ssh_host_ed25519_key"];
-
   users.users.root.hashedPasswordFile = lib.mkForce null;
 
   environment.systemPackages = let
@@ -40,10 +34,14 @@
   in
     with pkgs; [
       git
-      sops # Secret editing
-      neovim # Text editor
-      cloneConfig # Clones my nixos config from github
+      neovim
+      just
+      nixos-install-tools
+      disko
+      cloneConfig
     ];
+
+  environment.defaultPackages = [];
 
   boot.initrd.systemd.enable = lib.mkForce false;
 

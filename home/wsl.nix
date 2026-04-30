@@ -20,6 +20,7 @@
     };
     packages = with pkgs; [
       # {{{ Nix tooling
+      just
       sops
       pkgs.alejandra
       upkgs.nh
@@ -31,12 +32,20 @@
       nodejs_22
       python3
       go
-      rustup
+      cargo
+      rustc
       # }}}
 
       # {{{ Development tools
       lazydocker
       dive
+      # }}}
+
+      # {{{ General usability
+      pay-respects
+      mpv
+      imv
+      sxiv
       # }}}
 
       # {{{ WSL utilities
