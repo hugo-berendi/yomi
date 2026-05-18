@@ -3,10 +3,10 @@
   yomi.nginx.at.readarr.port = config.yomi.ports.readarr;
   # }}}
   #{{{ settings
-  nixarr.readarr = {
+  services.readarr = {
     enable = true;
-    port = config.yomi.nginx.at.readarr.port;
-    vpn.enable = false;
+    dataDir = "/var/lib/media/readarr";
+    settings.server.port = config.yomi.nginx.at.readarr.port;
   };
   # }}}
 }
