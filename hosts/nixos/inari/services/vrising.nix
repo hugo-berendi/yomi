@@ -8,7 +8,7 @@
   };
 
   services.vrising = {
-    enable = true;
+    enable = false;
     serverName = "FischGHGesicht";
     worldName = "Yomi";
     autosaveRetention = 6 * 60 * 60;
@@ -37,7 +37,7 @@
     };
   };
 
-  systemd.services.vrising.serviceConfig = lib.mkMerge [
+  systemd.services.vrising.serviceConfig = lib.mkIf config.services.vrising.enable (lib.mkMerge [
     config.yomi.hardening.presets.base
     {
       ProtectClock = true;
@@ -46,5 +46,5 @@
       ProtectKernelModules = true;
       ProtectKernelTunables = true;
     }
-  ];
+  ]);
 }

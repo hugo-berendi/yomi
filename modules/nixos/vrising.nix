@@ -856,39 +856,24 @@ in {
       sopsFile = ../../hosts/nixos/inari/secrets.yaml;
     };
 
-    systemd.services.vrising = {
+    services.steamGameServers.vrising = {
+      enable = true;
+      serviceName = "vrising";
       description = "V Rising Dedicated Server";
-      wantedBy = ["multi-user.target"];
-      after = ["network-online.target"];
-      wants = ["network-online.target"];
+      appId = steamAppId;
+      steamPlatform = "windows";
+      installDir = serverDir;
+      dataDir = dataDir;
       restartTriggers = [
         configHash
       ];
-
-      serviceConfig = {
-        Type = "simple";
-        Restart = "on-failure";
-        RestartSec = "10s";
-        User = "vrising";
-        Group = "vrising";
-        WorkingDirectory = serverDir;
-        EnvironmentFile = config.sops.secrets.vrising_rcon_password.path;
-      };
-
+      useXvfb = true;
       environment = {
         WINEDEBUG = "-all";
         WINEPREFIX = "${dataDir}/.wine";
-        DISPLAY = ":0";
       };
-
+      environmentFiles = [config.sops.secrets.vrising_rcon_password.path];
       preStart = ''
-        ${pkgs.steamcmd}/bin/steamcmd \
-          +@sSteamCmdForcePlatformType windows \
-          +force_install_dir ${serverDir} \
-          +login anonymous \
-          +app_update ${steamAppId} validate \
-          +quit
-
         mkdir -p ${dataDir}/Settings
         if [ ! -f ${dataDir}/Settings/ServerHostSettings.json ]; then
           cp ${serverDir}/VRisingServer_Data/StreamingAssets/Settings/ServerHostSettings.json ${dataDir}/Settings/
@@ -1088,43 +1073,21 @@ in {
           EOF
         ''}
       '';
-
       script = ''
-        rm -f /tmp/.X0-lock || true
-
-        ${pkgs.xorg.xorgserver}/bin/Xvfb :0 -screen 0 1024x768x16 2>/dev/null &
-        XVFB_PID=$!
-
-        sleep 2
-
         ${pkgs.wineWowPackages.stable}/bin/wine64 ${serverDir}/VRisingServer.exe \
           -persistentDataPath ${dataDir} \
           -logFile ${dataDir}/VRisingServer.log 2>&1 | grep -v "XKEYBOARD\|keysym" &
 
         WINE_PID=$!
 
-        trap "kill $WINE_PID $XVFB_PID; ${pkgs.wineWowPackages.stable}/bin/wineserver -k; wait" SIGTERM SIGINT
+        trap "kill $WINE_PID; ${pkgs.wineWowPackages.stable}/bin/wineserver -k; wait" SIGTERM SIGINT
 
         wait $WINE_PID
-        kill $XVFB_PID
       '';
+      tmpfilesRules = [
+        "e ${dataDir}/Saves/v4/${cfg.worldName}/AutoSave_* - - - ${toString cfg.autosaveRetention}s -"
+      ];
+      allowedUDPPorts = [cfg.gamePort cfg.queryPort];
     };
-
-    users.users.vrising = {
-      isSystemUser = true;
-      group = "vrising";
-      home = serverDir;
-    };
-
-    users.groups.vrising = {};
-
-    systemd.tmpfiles.rules = [
-      "d /persist/data/vrising 0755 vrising vrising -"
-      "d ${serverDir} 0755 vrising vrising -"
-      "d ${dataDir} 0755 vrising vrising -"
-      "e ${dataDir}/Saves/v4/${cfg.worldName}/AutoSave_* - - - ${toString cfg.autosaveRetention}s -"
-    ];
-
-    networking.firewall.allowedUDPPorts = [cfg.gamePort cfg.queryPort];
   };
 }
