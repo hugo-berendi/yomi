@@ -79,6 +79,12 @@ in {
       default = null;
       description = "Optional static invite code";
     };
+
+    serviceConfig = lib.mkOption {
+      type = lib.types.attrs;
+      default = {};
+      description = "Additional systemd serviceConfig entries";
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -129,7 +135,7 @@ in {
         EOF
       '';
       script = ''
-        ${pkgs.wineWowPackages.stable}/bin/wine64 ${serverDir}/WindroseServer.exe -log 2>&1 | grep -v "XKEYBOARD\|keysym" &
+        ${pkgs.wineWowPackages.stable}/bin/wine64 ${serverDir}/R5/Binaries/Win64/WindroseServer-Win64-Shipping.exe -log -Server &
 
         WINE_PID=$!
 
@@ -139,6 +145,7 @@ in {
       '';
       allowedTCPPorts = lib.optionals cfg.useDirectConnection [cfg.directConnectionServerPort];
       allowedUDPPorts = lib.optionals cfg.useDirectConnection [cfg.directConnectionServerPort];
+      serviceConfig = cfg.serviceConfig;
     };
   };
 }
