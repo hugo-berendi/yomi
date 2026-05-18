@@ -1,49 +1,14 @@
 {
+  config,
   lib,
   pkgs,
   ...
-}: {
+}: let
+  cfg = config.services.steamGameServers;
+in {
   # {{{ Options
   options.services.steamGameServers = lib.mkOption {
-    type = lib.types.attrsOf (lib.types.submodule ({
-      config,
-      name,
-      ...
-    }: let
-      cfg = config;
-      serviceEnvironment =
-        cfg.environment
-        // (lib.optionalAttrs cfg.useXvfb {
-          DISPLAY = cfg.xvfbDisplay;
-        });
-
-      steamUpdateScript = lib.optionalString cfg.updateOnStart ''
-        ${pkgs.steamcmd}/bin/steamcmd \
-          +@sSteamCmdForcePlatformType ${cfg.steamPlatform} \
-          +force_install_dir ${cfg.installDir} \
-          +login anonymous \
-          +app_update ${cfg.appId} validate \
-          +quit
-      '';
-
-      serviceScript =
-        lib.optionalString cfg.useXvfb ''
-          rm -f /tmp/.X0-lock || true
-
-          ${pkgs.xorg.xorgserver}/bin/Xvfb ${cfg.xvfbDisplay} -screen 0 ${cfg.xvfbScreen} 2>/dev/null &
-          XVFB_PID=$!
-
-          sleep 2
-        ''
-        + cfg.script
-        + lib.optionalString cfg.useXvfb ''
-
-          status=$?
-          kill "$XVFB_PID" 2>/dev/null || true
-          wait "$XVFB_PID" 2>/dev/null || true
-          exit "$status"
-        '';
-    in {
+    type = lib.types.attrsOf (lib.types.submodule ({name, ...}: {
       options = {
         enable = lib.mkEnableOption "Steam game server ${name}";
 
@@ -195,56 +160,124 @@
           description = "Additional systemd serviceConfig entries";
         };
       };
-
-      config = lib.mkIf cfg.enable {
-        users.users.${cfg.user} = {
-          isSystemUser = true;
-          group = cfg.group;
-          home = cfg.installDir;
-        };
-
-        users.groups.${cfg.group} = {};
-
-        systemd.tmpfiles.rules =
-          [
-            "d ${builtins.dirOf cfg.installDir} 0755 ${cfg.user} ${cfg.group} -"
-            "d ${cfg.installDir} 0755 ${cfg.user} ${cfg.group} -"
-            "d ${cfg.dataDir} 0755 ${cfg.user} ${cfg.group} -"
-          ]
-          ++ cfg.tmpfilesRules;
-
-        systemd.services.${cfg.serviceName} = {
-          description = cfg.description;
-          wantedBy = cfg.wantedBy;
-          after = cfg.after;
-          wants = cfg.wants;
-          restartTriggers = cfg.restartTriggers;
-
-          environment = serviceEnvironment;
-
-          preStart = steamUpdateScript + cfg.preStart;
-
-          script = serviceScript;
-
-          serviceConfig =
-            {
-              Type = "simple";
-              Restart = "on-failure";
-              RestartSec = "10s";
-              User = cfg.user;
-              Group = cfg.group;
-              WorkingDirectory = cfg.installDir;
-              EnvironmentFile = cfg.environmentFiles;
-            }
-            // cfg.serviceConfig;
-        };
-
-        networking.firewall.allowedTCPPorts = lib.optionals cfg.openFirewall cfg.allowedTCPPorts;
-        networking.firewall.allowedUDPPorts = lib.optionals cfg.openFirewall cfg.allowedUDPPorts;
-      };
     }));
     default = {};
     description = "Multi-instance Steam game server runtime";
+  };
+  # }}}
+
+  # {{{ Config
+  config = {
+    users.users = lib.mkMerge (lib.mapAttrsToList (
+        name: serverCfg:
+          lib.mkIf serverCfg.enable {
+            "${serverCfg.user}" = {
+              isSystemUser = true;
+              group = serverCfg.group;
+              home = serverCfg.installDir;
+            };
+          }
+      )
+      cfg);
+
+    users.groups = lib.mkMerge (lib.mapAttrsToList (
+        name: serverCfg:
+          lib.mkIf serverCfg.enable {
+            "${serverCfg.group}" = {};
+          }
+      )
+      cfg);
+
+    systemd.tmpfiles.rules = lib.flatten (lib.mapAttrsToList (
+        name: serverCfg:
+          lib.optionals serverCfg.enable (
+            [
+              "d ${builtins.dirOf serverCfg.installDir} 0755 ${serverCfg.user} ${serverCfg.group} -"
+              "d ${serverCfg.installDir} 0755 ${serverCfg.user} ${serverCfg.group} -"
+              "d ${serverCfg.dataDir} 0755 ${serverCfg.user} ${serverCfg.group} -"
+            ]
+            ++ serverCfg.tmpfilesRules
+          )
+      )
+      cfg);
+
+    systemd.services = lib.mkMerge (lib.mapAttrsToList (
+        name: serverCfg:
+          lib.mkIf serverCfg.enable {
+            "${serverCfg.serviceName}" = let
+              serviceEnvironment =
+                serverCfg.environment
+                // (lib.optionalAttrs serverCfg.useXvfb {
+                  DISPLAY = serverCfg.xvfbDisplay;
+                });
+
+              steamUpdateScript = lib.optionalString serverCfg.updateOnStart ''
+                ${pkgs.steamcmd}/bin/steamcmd \
+                  +@sSteamCmdForcePlatformType ${serverCfg.steamPlatform} \
+                  +force_install_dir ${serverCfg.installDir} \
+                  +login anonymous \
+                  +app_update ${serverCfg.appId} validate \
+                  +quit
+              '';
+
+              serviceScript =
+                lib.optionalString serverCfg.useXvfb ''
+                  rm -f /tmp/.X0-lock || true
+
+                  ${pkgs.xorg.xorgserver}/bin/Xvfb ${serverCfg.xvfbDisplay} -screen 0 ${serverCfg.xvfbScreen} 2>/dev/null &
+                  XVFB_PID=$!
+
+                  sleep 2
+                ''
+                + serverCfg.script
+                + lib.optionalString serverCfg.useXvfb ''
+
+                  status=$?
+                  kill "$XVFB_PID" 2>/dev/null || true
+                  wait "$XVFB_PID" 2>/dev/null || true
+                  exit "$status"
+                '';
+            in {
+              description = serverCfg.description;
+              wantedBy = serverCfg.wantedBy;
+              after = serverCfg.after;
+              wants = serverCfg.wants;
+              restartTriggers = serverCfg.restartTriggers;
+
+              environment = serviceEnvironment;
+
+              preStart = steamUpdateScript + serverCfg.preStart;
+
+              script = serviceScript;
+
+              serviceConfig =
+                {
+                  Type = "simple";
+                  Restart = "on-failure";
+                  RestartSec = "10s";
+                  User = serverCfg.user;
+                  Group = serverCfg.group;
+                  WorkingDirectory = serverCfg.installDir;
+                  EnvironmentFile = serverCfg.environmentFiles;
+                  ReadWritePaths = [serverCfg.installDir serverCfg.dataDir];
+                }
+                // serverCfg.serviceConfig;
+            };
+          }
+      )
+      cfg);
+
+    networking.firewall.allowedTCPPorts = lib.flatten (lib.mapAttrsToList (
+        name: serverCfg:
+          lib.optionals (serverCfg.enable && serverCfg.openFirewall) serverCfg.allowedTCPPorts
+      )
+      cfg);
+
+    networking.firewall.allowedUDPPorts = lib.flatten (lib.mapAttrsToList (
+        name: serverCfg:
+          lib.optionals (serverCfg.enable && serverCfg.openFirewall) serverCfg.allowedUDPPorts
+      )
+      cfg);
   };
   # }}}
 }
