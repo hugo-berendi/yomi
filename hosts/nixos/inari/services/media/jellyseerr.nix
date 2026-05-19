@@ -27,7 +27,7 @@ in {
   yomi.cloudflared.at.request-media.port = config.yomi.ports.jellyseerr;
   # }}}
   #{{{ settings
-  nixarr.jellyseerr = {
+  nixarr.seerr = {
     enable = true;
     port = config.yomi.cloudflared.at.request-media.port;
     vpn.enable = false;
