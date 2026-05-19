@@ -7,7 +7,7 @@
 
       nix.enable = true;
       lua.enable = true;
-      ts.enable = true;
+      typescript.enable = true;
       python.enable = true;
       go.enable = true;
       html.enable = true;
