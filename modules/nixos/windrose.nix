@@ -113,11 +113,6 @@ in {
           "DeploymentId": "",
           "ServerDescription_Persistent": {
             "PersistentServerId": "",
-            "InviteCode": ${builtins.toJSON (
-          if cfg.inviteCode == null
-          then ""
-          else cfg.inviteCode
-        )},
             "IsPasswordProtected": ${lib.boolToString (cfg.password != "")},
             "Password": ${builtins.toJSON cfg.password},
             "ServerName": ${builtins.toJSON cfg.serverName},
@@ -135,13 +130,25 @@ in {
         EOF
       '';
       script = ''
-        ${pkgs.wineWowPackages.stable}/bin/wine64 ${serverDir}/R5/Binaries/Win64/WindroseServer-Win64-Shipping.exe -log -Server &
+        mkdir -p ${serverDir}/R5/Saved/Logs
+        touch ${serverDir}/R5/Saved/Logs/R5.log
+
+        tail -n0 -F ${serverDir}/R5/Saved/Logs/R5.log | systemd-cat --identifier=windrose-r5 &
+        LOG_TAIL_PID=$!
+
+        ${pkgs.wineWowPackages.stable}/bin/wine64 ${serverDir}/R5/Binaries/Win64/WindroseServer-Win64-Shipping.exe -log -Server \
+          > >(systemd-cat --identifier=windrose) 2>&1 &
 
         WINE_PID=$!
 
-        trap "kill $WINE_PID; ${pkgs.wineWowPackages.stable}/bin/wineserver -k; wait" SIGTERM SIGINT
+        trap "kill $WINE_PID $LOG_TAIL_PID; ${pkgs.wineWowPackages.stable}/bin/wineserver -k; wait" SIGTERM SIGINT
 
         wait $WINE_PID
+        status=$?
+
+        kill "$LOG_TAIL_PID" 2>/dev/null || true
+        wait "$LOG_TAIL_PID" 2>/dev/null || true
+        exit "$status"
       '';
       allowedTCPPorts = lib.optionals cfg.useDirectConnection [cfg.directConnectionServerPort];
       allowedUDPPorts = lib.optionals cfg.useDirectConnection [cfg.directConnectionServerPort];
