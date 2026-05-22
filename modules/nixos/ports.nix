@@ -54,6 +54,7 @@
     opencode = lib.mkDefault 8487;
     owncloud = lib.mkDefault 8444;
     windrose-direct = lib.mkDefault 8489;
+    windrose-rcon = lib.mkDefault 8490;
     paperless = lib.mkDefault 8445;
     paperless-ai = lib.mkDefault 8446;
     paperless-ai-rag = lib.mkDefault 8447;
