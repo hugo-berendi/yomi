@@ -19,6 +19,7 @@
       csharp.enable = true;
       helm.enable = true;
       astro.enable = true;
+      svelte.enable = true;
     };
 
     treesitter = {
