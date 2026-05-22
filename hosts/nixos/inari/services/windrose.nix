@@ -11,7 +11,7 @@ in {
   config = {
     virtualisation.oci-containers.containers.windrose = {
       image = "indifferentbroccoli/windrose-server-docker:latest";
-      ports = ["${toString serverPort}:8489/tcp" "${toString serverPort}:8489/udp"];
+      ports = ["${toString serverPort}:8489/tcp" "${toString serverPort}:8489/udp" "${toString rconPort}:${toString rconPort}/tcp"];
       volumes = ["${dataDir}/server:/home/steam/server-files"];
       environment = {
         PUID = "1000";
