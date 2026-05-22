@@ -44,7 +44,7 @@
     ./services/grafana.nix
     ./services/loki.nix
     ./services/playit.nix
-    ./services/windrose-docker-config.nix
+    ./services/windrose.nix
     # ./services/simplelogin.nix
     # ./services/pelican
     ./services/owncloud.nix
