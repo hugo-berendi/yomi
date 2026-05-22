@@ -42,7 +42,6 @@
     # {{{ Catppuccin latte
     catppuccin-latte = {
       stylix = {
-        image = ./wallpapers/field_diamond.jpg;
         base16Scheme = base16 "catppuccin-latte";
         opacity = transparency 0.6;
         polarity = "light";
@@ -259,9 +258,38 @@
         };
       };
     };
+
+    cloudcore = {
+      stylix = {
+        image = ./wallpapers/something-beautiful-in-nature.jpg;
+        base16Scheme = base16 "everforest-dark-soft";
+        opacity = transparency 0.5;
+        polarity = "dark";
+        cursor = {
+          package = pkgs.phinger-cursors;
+          name = "phinger-cursors-dark";
+          size = 20;
+        };
+      };
+      yomi = {
+        gaps = {
+          outer = 18;
+          inner = 6;
+        };
+        rounding = {
+          enable = true;
+          radius = 10;
+          size = 3;
+        };
+        blur = {
+          passes = 2;
+          size = 8;
+        };
+      };
+    };
   };
 
-  currentTheme = themes.rosepine-moon;
+  currentTheme = themes.cloudcore;
 in {
   # We apply the current theme here.
   # The rest is handled by the respective modules!

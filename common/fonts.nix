@@ -1,22 +1,22 @@
 {upkgs, ...}: {
   stylix.fonts = {
     monospace = {
-      name = "Maple Mono NF";
-      package = upkgs.maple-mono.NF;
+      name = "Iosevka Term Nerd Font";
+      package = upkgs.iosevka-bin;
     };
     sansSerif = {
-      name = "Maple Mono NF";
-      package = upkgs.maple-mono.NF;
+      name = "IBM Plex Sans";
+      package = upkgs.ibm-plex;
     };
     serif = {
-      name = "Quicksand";
-      package = upkgs.quicksand;
+      name = "IBM Plex Serif";
+      package = upkgs.ibm-plex;
     };
 
     sizes = {
-      terminal = 13;
-      desktop = 15;
-      applications = 15;
+      terminal = 12;
+      desktop = 14;
+      applications = 14;
     };
   };
 

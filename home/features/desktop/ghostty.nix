@@ -10,11 +10,11 @@
     enableFishIntegration = true;
     installVimSyntax = true;
     settings = {
-      # font-size = config.stylix.fonts.sizes.terminal;
-      # font-family = toString config.stylix.fonts.monospace.name;
-      # theme = "rose-pine-moon";
-      # background-opacity = config.stylix.opacity.terminal;
-      # background-blur-radius = 7;
+      font-size = config.stylix.fonts.sizes.terminal;
+      font-family = "Iosevka Term Nerd Font";
+      theme = "cloudcore";
+      background-opacity = config.stylix.opacity.terminal;
+      background-blur-radius = 7;
     };
   };
 }
