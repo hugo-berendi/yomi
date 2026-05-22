@@ -21,12 +21,6 @@ in {
       description = "Maximum number of connected users";
     };
 
-    inviteCode = lib.mkOption {
-      type = lib.types.nullOr lib.types.str;
-      default = null;
-      description = "Optional static invite code";
-    };
-
     dataDir = lib.mkOption {
       type = lib.types.str;
       default = "/persist/data/windrose";
@@ -54,9 +48,9 @@ in {
         STEAM_APP_ID = "4129620";
         SERVER_NAME = cfg.serverName;
         MAX_PLAYERS = toString cfg.maxPlayerCount;
-      } // (lib.optionalAttrs (cfg.inviteCode != null) {
-        INVITE_CODE = cfg.inviteCode;
-      });
+        PUID = "1000";
+        PGID = "1000";
+      };
     };
 
     networking.firewall.allowedTCPPorts = [serverPort];
