@@ -13,4 +13,6 @@ in rec {
   perplexica = pkgs.callPackage ./perplexica.nix {};
   python-webuntis = pkgs.callPackage ./python-webuntis.nix {};
   komf = pkgs.callPackage ./komf.nix {};
+  hermes-mcp-changedetection = pkgs.callPackage ./hermes-mcp-changedetection {};
+  hermes-mcp-radicale = pkgs.callPackage ./hermes-mcp-radicale {};
 }
