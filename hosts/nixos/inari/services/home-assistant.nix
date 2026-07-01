@@ -58,8 +58,11 @@
       "mqtt"
       "sonos"
     ];
-    customComponents = [
-      (pkgs.buildHomeAssistantComponent {
+    customComponents = let
+      buildHAComponent = pkgs.buildHomeAssistantComponent;
+      python3 = pkgs.home-assistant.python3Packages.python;
+    in [
+      (buildHAComponent {
         owner = "robinostlund";
         domain = "volkswagencarnet";
         version = "5.4.0";
@@ -71,7 +74,7 @@
         };
         sourceDir = "custom_components/volkswagencarnet";
         dependencies = [
-          (pkgs.python3Packages.buildPythonPackage {
+          (python3.pkgs.buildPythonPackage {
             pname = "volkswagencarnet";
             version = "5.4.0";
             pyproject = true;
@@ -80,8 +83,8 @@
               version = "5.4.0";
               hash = "sha256-+NTpUVe82CB1ESwLxEkm67ZlvIGk0vTxYjVKVeUrhhY=";
             };
-            build-system = with pkgs.python3Packages; [setuptools setuptools-scm];
-            dependencies = with pkgs.python3Packages; [
+            build-system = with python3.pkgs; [setuptools setuptools-scm];
+            dependencies = with python3.pkgs; [
               lxml
               beautifulsoup4
               aiohttp
@@ -92,12 +95,24 @@
         ];
         dontCheckManifest = true;
       })
-      (pkgs.buildHomeAssistantComponent {
+      (buildHAComponent {
         owner = "JonasJoKuJonas";
         domain = "webuntis";
         version = "2.0.3";
         dependencies = [
-          pkgs.python-webuntis
+          (python3.pkgs.buildPythonPackage {
+            pname = "webuntis";
+            version = "0.1.24";
+            pyproject = false;
+            src = pkgs.fetchPypi {
+              pname = "webuntis";
+              version = "0.1.24";
+              hash = "sha256-4Z0N1MxuCAflSfRsPZAPQZ3EaPXzc92P3AdE8dWKG3E=";
+            };
+            build-system = with python3.pkgs; [setuptools];
+            dependencies = with python3.pkgs; [requests];
+            doCheck = false;
+          })
         ];
         src = pkgs.fetchFromGitHub {
           owner = "JonasJoKuJonas";
