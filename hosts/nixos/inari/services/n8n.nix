@@ -19,7 +19,6 @@
   systemd.services.n8n = {
     path = with pkgs; [
       nodejs
-      nodePackages.npm
       git
       python3 # Für native Node-Module
       gcc # Für native Node-Module
