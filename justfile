@@ -23,7 +23,7 @@ nixos-rebuild action="switch" host=hostname ng="1" install_bootloader="0":
   }
 
   args = [
-    "nixos-rebuild-ng" if ng else "nixos-rebuild",
+    "nixos-rebuild" if ng else "nixos-rebuild",
     "{{action}}",
     "--show-trace",
     "--accept-flake-config",
