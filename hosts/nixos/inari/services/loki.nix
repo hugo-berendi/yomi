@@ -66,40 +66,6 @@
     };
   };
 
-  services.promtail = {
-    enable = true;
-    configuration = {
-      server = {
-        http_listen_port = config.yomi.ports.promtail;
-        grpc_listen_port = 0;
-      };
-
-      positions.filename = "/var/lib/promtail/positions.yaml";
-
-      clients = [
-        {url = "http://127.0.0.1:${toString config.yomi.ports.loki}/loki/api/v1/push";}
-      ];
-
-      scrape_configs = [
-        {
-          job_name = "journal";
-          journal = {
-            max_age = "12h";
-            labels = {
-              job = "systemd-journal";
-              host = "inari";
-            };
-          };
-          relabel_configs = [
-            {
-              source_labels = ["__journal__systemd_unit"];
-              target_label = "unit";
-            }
-          ];
-        }
-      ];
-    };
-  };
   # }}}
   # {{{ Networking & persistence
   yomi.nginx.at.loki.port = config.services.loki.configuration.server.http_listen_port;
@@ -110,21 +76,11 @@
       user = "loki";
       group = "loki";
     }
-    {
-      directory = "/var/lib/promtail";
-      user = "promtail";
-      group = "promtail";
-    }
   ];
 
   systemd.services.loki.serviceConfig = lib.mkMerge [
     (lib.mapAttrs (_: lib.mkForce) config.yomi.hardening.presets.standard)
     {ReadWritePaths = [config.services.loki.dataDir];}
-  ];
-
-  systemd.services.promtail.serviceConfig = lib.mkMerge [
-    (lib.mapAttrs (_: lib.mkForce) config.yomi.hardening.presets.base)
-    {ReadWritePaths = ["/var/lib/promtail"];}
   ];
   # }}}
 }
