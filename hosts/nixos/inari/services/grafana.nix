@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }: let
   port = config.yomi.ports.grafana;
@@ -24,6 +25,8 @@ in {
         root_url = "https://${domain}";
         http_port = port;
       };
+
+      security.secret_key = "$__file{${config.services.grafana.dataDir}/.secret_key}";
 
       smtp = rec {
         enabled = true;
@@ -110,5 +113,17 @@ in {
     (lib.mapAttrs (_: lib.mkForce) config.yomi.hardening.presets.standard)
     {ReadWritePaths = [config.services.grafana.dataDir];}
   ];
+
+  system.activationScripts.grafana-secret-key =
+    lib.stringAfter ["var"]
+    ''
+      secret_file="${config.services.grafana.dataDir}/.secret_key"
+      if [ ! -f "$secret_file" ]; then
+        mkdir -p "${config.services.grafana.dataDir}"
+        ${lib.getExe pkgs.openssl} rand -hex 32 > "$secret_file"
+        chown grafana:grafana "$secret_file"
+        chmod 600 "$secret_file"
+      fi
+    '';
   # }}}
 }
