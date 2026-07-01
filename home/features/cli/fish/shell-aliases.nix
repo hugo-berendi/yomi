@@ -25,6 +25,6 @@
 
     yolo = "fd --type f --hidden --exclude .git | fzf-tmux -p --reverse | xargs nvim";
 
-    upd = "$XDG_PROJECTS_DIR/yomi/scripts/rebuild.sh";
+    upd = "$PROJECTS/yomi/scripts/rebuild.sh";
   };
 }

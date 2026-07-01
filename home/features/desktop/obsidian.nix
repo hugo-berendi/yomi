@@ -3,7 +3,7 @@
   pkgs,
   ...
 }: let
-  vaultDir = "${config.xdg.userDirs.extraConfig.XDG_PROJECTS_DIR}/stellar-sanctum/stellar-sanctum";
+  vaultDir = "${config.xdg.userDirs.extraConfig.PROJECTS}/stellar-sanctum/stellar-sanctum";
 
   obsidiantui = pkgs.writeShellScriptBin "obsidiantui" ''
     foot -a Obsidian -D ${vaultDir} nvim

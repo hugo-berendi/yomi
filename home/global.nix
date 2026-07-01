@@ -86,15 +86,15 @@ in {
     documents = "${config.home.homeDirectory}/media/documents";
 
     extraConfig = {
-      XDG_SCREENSHOTS_DIR = "${config.xdg.userDirs.pictures}/screenshots";
-      XDG_PROJECTS_DIR = "${config.home.homeDirectory}/projects";
-      XDG_BOOKS_DIR = "${config.home.homeDirectory}/media/books";
+      SCREENSHOTS = "${config.xdg.userDirs.pictures}/screenshots";
+      PROJECTS = "${config.home.homeDirectory}/projects";
+      BOOKS = "${config.home.homeDirectory}/media/books";
     };
   };
 
   systemd.user.tmpfiles.rules = [
     # Clean screenshots older than a week
-    "d ${config.xdg.userDirs.extraConfig.XDG_SCREENSHOTS_DIR} - - - 7d"
+    "d ${config.xdg.userDirs.extraConfig.SCREENSHOTS} - - - 7d"
   ];
   # }}}
 }
