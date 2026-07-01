@@ -1,7 +1,12 @@
-{config, ...}: {
+{
+  config,
+  inputs,
+  ...
+}: {
   # {{{ Imports
   imports = [
     ../common
+    inputs.hermes-agent.nixosModules.default
 
     ./networking
     ./filesystems
@@ -12,6 +17,7 @@
     ../common/services/meilisearch.nix
 
     ./services/ollama.nix
+    ./services/llama-cpp.nix
     ./services/karakeep.nix
     ./services/n8n.nix
     ./services/actual.nix
@@ -54,6 +60,8 @@
     ./services/beszel.nix
     ./services/matrix
     ./services/opencode.nix
+    ./services/hermes-agent.nix
+    ./services/changedetection.nix
   ];
   # }}}
 
