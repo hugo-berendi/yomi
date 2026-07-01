@@ -33,7 +33,6 @@
   boot.kernelParams = ["ip=dhcp"];
   boot.initrd = {
     availableKernelModules = ["r8169"];
-    systemd.users.root.shell = "/bin/cryptsetup-askpass";
     network = {
       enable = true;
       ssh = {
