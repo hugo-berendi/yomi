@@ -3,8 +3,8 @@
 
   inputs = {
     # {{{ Nixpkgs instances
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
-    nixpkgs-old.url = "github:nixos/nixpkgs/nixos-25.05";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
+    nixpkgs-old.url = "github:nixos/nixpkgs/nixos-25.11";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
@@ -26,7 +26,7 @@
 
     opencode-flake.url = "github:aodhanhayter/opencode-flake";
     llm-agents.url = "github:numtide/llm-agents.nix";
-    home-manager.url = "github:nix-community/home-manager/release-25.11";
+    home-manager.url = "github:nix-community/home-manager/release-26.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
     # {{{ Hyprland
@@ -64,6 +64,8 @@
 
     jellarr.url = "github:venkyr77/jellarr";
 
+    hermes-agent.url = "github:NousResearch/hermes-agent";
+
     # {{{ Storage
     impermanence.url = "github:nix-community/impermanence";
 
@@ -100,7 +102,7 @@
     spicetify-nix.inputs.nixpkgs.follows = "nixpkgs";
     # }}}
     # {{{ Theming
-    stylix.url = "github:nix-community/stylix/release-25.11";
+    stylix.url = "github:nix-community/stylix/release-26.05";
     stylix.inputs.nixpkgs.follows = "nixpkgs";
 
     base16-schemes.url = "github:tinted-theming/schemes";
