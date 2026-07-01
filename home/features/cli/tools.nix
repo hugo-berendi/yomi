@@ -8,7 +8,7 @@
     sd
     gping
     speedtest-cli
-    dogdns
+    doggo
   ];
 
   home.shellAliases = {
