@@ -66,8 +66,9 @@
     log-driver = "journald";
   };
 
-  fileSystems."/var/lib/ollama" = {
+  fileSystems."/var/lib/ollama" = lib.mkIf config.services.ollama.enable {
     device = "/raid5pool/ollama/state";
+    fsType = "none";
     options = ["bind"];
   };
 }
