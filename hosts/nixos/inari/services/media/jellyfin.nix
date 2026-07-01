@@ -52,7 +52,7 @@ in {
   # }}}
   # {{{ Jellarr service
   services.jellarr = {
-    enable = true;
+    enable = false;
     user = "jellyfin";
     group = "jellyfin";
     environmentFile = config.sops.templates.jellarr-env.path;
