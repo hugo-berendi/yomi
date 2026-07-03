@@ -1,23 +1,136 @@
-{config, ...}: let
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
   dataDir = "/persist/state/var/lib/changedetection";
+  networkName = "changedetection_default";
+  port = config.yomi.ports.changedetection;
+  notificationUrl = pkgs.writeShellScript "changedetection-notification-url" ''
+    set -euo pipefail
+    password=$(cat ${config.sops.secrets.no_reply_smtp_password.path})
+    encoded=$(printf '%s' "$password" | ${lib.getExe pkgs.jq} -sRr @uri)
+    echo "mailtos://no-reply%40tengu.hugo-berendi.de:$encoded@smtp.migadu.com?to=personal@hugo-berendi.de&from=no-reply%40tengu.hugo-berendi.de&name=Changedetection"
+  '';
+
+  setupNotifications = pkgs.writeShellScript "changedetection-setup-notifications" ''
+    set -euo pipefail
+    url=$(${notificationUrl})
+    api="http://127.0.0.1:${toString port}/api/v1/notifications"
+
+    for i in $(seq 1 60); do
+      if ${lib.getExe pkgs.curl} -sf "http://127.0.0.1:${toString port}/" >/dev/null 2>&1; then
+        break
+      fi
+      sleep 2
+    done
+
+    current=$(${lib.getExe pkgs.curl} -sf "$api" | ${lib.getExe pkgs.jq} -r --arg url "$url" '.notification_urls // [] | index($url)')
+    if [ "$current" = "null" ]; then
+      new_urls=$(${lib.getExe pkgs.curl} -sf "$api" | ${lib.getExe pkgs.jq} --arg url "$url" '{notification_urls: ((.notification_urls // []) + [$url])}')
+      ${lib.getExe pkgs.curl} -sf -X POST \
+        -H "Content-Type: application/json" \
+        -d "$new_urls" \
+        "$api"
+    fi
+  '';
 in {
   # {{{ Reverse proxy
-  yomi.nginx.at.changedetection.port = config.yomi.ports.changedetection;
+  yomi.nginx.at.changedetection.port = port;
   # }}}
-  # {{{ Container
+  # {{{ Secrets
+  sops.secrets.no_reply_smtp_password = {
+    sopsFile = ../secrets.yaml;
+  };
+  # }}}
+  # {{{ Network
+  systemd.services."docker-network-changedetection_default" = {
+    path = [pkgs.docker];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStop = "docker network rm -f ${networkName}";
+    };
+    script = ''
+      docker network inspect ${networkName} || docker network create ${networkName}
+    '';
+    wantedBy = ["multi-user.target"];
+  };
+  # }}}
+  # {{{ Storage
   systemd.tmpfiles.rules = [
     "d ${dataDir} 0750 0 0 - -"
   ];
+  # }}}
+  # {{{ Containers
+  virtualisation.oci-containers.containers.changedetection-browser = {
+    image = "dgtlmoon/sockpuppetbrowser:latest";
+    autoStart = true;
+    environment = {
+      SCREEN_WIDTH = "1920";
+      SCREEN_HEIGHT = "1024";
+      SCREEN_DEPTH = "16";
+      MAX_CONCURRENT_CHROME_PROCESSES = "10";
+    };
+    log-driver = "journald";
+    extraOptions = [
+      "--network-alias=browser"
+      "--network=${networkName}"
+    ];
+  };
 
   virtualisation.oci-containers.containers.changedetection = {
     image = "ghcr.io/dgtlmoon/changedetection.io:latest";
     autoStart = true;
-    ports = ["${toString config.yomi.nginx.at.changedetection.port}:5000"];
+    dependsOn = ["changedetection-browser"];
+    ports = ["127.0.0.1:${toString port}:5000"];
     volumes = ["${dataDir}:/datastore"];
     environment = {
       PORT = "5000";
       BASE_URL = config.yomi.nginx.at.changedetection.url;
+      PLAYWRIGHT_DRIVER_URL = "ws://browser:3000";
     };
+    log-driver = "journald";
+    extraOptions = [
+      "--network-alias=changedetection"
+      "--network=${networkName}"
+    ];
+  };
+  # }}}
+  # {{{ Service ordering
+  systemd.services.docker-changedetection-browser = {
+    path = [pkgs.docker];
+    preStart = ''
+      docker network inspect ${networkName} >/dev/null 2>&1 || docker network create ${networkName}
+    '';
+    after = ["docker-network-changedetection_default.service"];
+    requires = ["docker-network-changedetection_default.service"];
+  };
+
+  systemd.services.docker-changedetection = {
+    path = [pkgs.docker];
+    after = [
+      "docker-network-changedetection_default.service"
+      "docker-changedetection-browser.service"
+    ];
+    requires = [
+      "docker-network-changedetection_default.service"
+      "docker-changedetection-browser.service"
+    ];
+  };
+  # }}}
+  # {{{ Notification setup
+  systemd.services.changedetection-setup-notifications = {
+    description = "Configure changedetection.io global email notification";
+    after = ["docker-changedetection.service"];
+    requires = ["docker-changedetection.service"];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStart = setupNotifications;
+    };
+    wantedBy = ["multi-user.target"];
   };
   # }}}
 }
