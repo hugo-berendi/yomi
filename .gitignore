@@ -11,6 +11,7 @@ result
 
 *.log
 *.backy
+log.txt
 .luarc.json
 *.idea
 !.envrc
