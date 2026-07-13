@@ -88,6 +88,7 @@ in {
 
   # Boot using systemd
   boot.initrd.systemd.enable = true;
+  boot.loader.systemd-boot.configurationLimit = lib.mkDefault 10;
   # }}}
   # {{{ Sudo configuration
   security.sudo = {
