@@ -23,6 +23,12 @@ jobs:
       - name: Run flake checks
         if: steps.check-changes.outputs.changed == 'true'
         run: just check
+      - name: Build NixOS hosts
+        if: steps.check-changes.outputs.changed == 'true'
+        run: |
+          just nixos-rebuild build amaterasu
+          just nixos-rebuild build tsukuyomi
+          just nixos-rebuild build inari
       - name: Commit updated flake.lock
         if: steps.check-changes.outputs.changed == 'true'
         env:

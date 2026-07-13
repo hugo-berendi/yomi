@@ -21,3 +21,4 @@ jobs:
           just nixos-rebuild build amaterasu
           just nixos-rebuild build tsukuyomi
           just nixos-rebuild build inari
+          just nixos-rebuild build wsl

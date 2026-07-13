@@ -15,7 +15,7 @@ OpenCode is configured with Home Manager and includes several useful MCP (Model 
 
 ## Secrets Configuration
 
-MCP servers use sops-nix for secret management. Add the following secrets to `home/features/cli/secrets.yaml`:
+MCP servers use sops-nix for secret management. Add the following secrets to `home/features/cli/ai/secrets.yaml`:
 
 ### Required Secrets
 
