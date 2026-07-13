@@ -5,6 +5,8 @@
 }: let
   cfg = config.yomi.cloudflared;
   iocaineCfg = config.yomi.iocaine;
+  anubisOffset = 200;
+  metricsOffset = 300;
 in {
   options.yomi.cloudflared = {
     tunnel = lib.mkOption {
@@ -80,91 +82,93 @@ in {
     };
   };
 
-  config.services.cloudflared.tunnels.${cfg.tunnel}.ingress =
-    lib.attrsets.mapAttrs' (
-      name: {
-        host,
+  config = lib.mkIf (cfg.at != {}) {
+    services.cloudflared.tunnels.${cfg.tunnel}.ingress =
+      lib.attrsets.mapAttrs' (
+        name: {
+          host,
+          subdomain,
+          port,
+          protocol,
+          enableAnubis,
+          ...
+        }: let
+          anubisPort = port + anubisOffset;
+          targetPort =
+            if enableAnubis
+            then anubisPort
+            else port;
+        in {
+          name = host;
+          value = {
+            service = "${protocol}://localhost:${toString targetPort}";
+            originRequest = {
+              noTLSVerify = protocol != "https";
+              httpHostHeader = host;
+            };
+          };
+        }
+      )
+      cfg.at;
+
+    services.anubis.instances = let
+      mkAnubisInstance = name: {
         subdomain,
         port,
         protocol,
         enableAnubis,
         ...
       }: let
-        anubisPort = port + 200;
-        targetPort =
-          if enableAnubis
-          then anubisPort
-          else port;
+        anubisPort = port + anubisOffset;
+        metricsPort = port + metricsOffset;
       in {
-        name = host;
+        name = subdomain;
         value = {
-          service = "${protocol}://localhost:${toString targetPort}";
-          originRequest = {
-            noTLSVerify = protocol != "https";
-            httpHostHeader = host;
+          settings = {
+            BIND_NETWORK = "tcp";
+            BIND = "127.0.0.1:${toString anubisPort}";
+            METRICS_BIND_NETWORK = "tcp";
+            METRICS_BIND = "127.0.0.1:${toString metricsPort}";
+            TARGET = "${protocol}://localhost:${toString port}";
+            USE_REMOTE_ADDRESS = "true";
           };
         };
-      }
-    )
-    cfg.at;
+      };
+    in
+      lib.attrsets.mapAttrs' mkAnubisInstance (lib.attrsets.filterAttrs (_: svc: svc.enableAnubis) cfg.at);
 
-  config.services.anubis.instances = let
-    mkAnubisInstance = name: {
-      subdomain,
-      port,
-      protocol,
-      enableAnubis,
-      ...
-    }: let
-      anubisPort = port + 200;
-      metricsPort = port + 300;
-    in {
-      name = subdomain;
-      value = {
-        settings = {
-          BIND_NETWORK = "tcp";
-          BIND = "127.0.0.1:${toString anubisPort}";
-          METRICS_BIND_NETWORK = "tcp";
-          METRICS_BIND = "127.0.0.1:${toString metricsPort}";
-          TARGET = "${protocol}://localhost:${toString port}";
-          USE_REMOTE_ADDRESS = "true";
+    services.nginx.virtualHosts = let
+      iocaineServices = lib.attrsets.filterAttrs (_: svc: svc.enableIocaine) cfg.at;
+      mkIocaineVhost = _: {
+        host,
+        port,
+        ...
+      }: {
+        name = host;
+        value = {
+          extraConfig = iocaineCfg.nginxExtraConfig;
+          locations."/.well-known/@iocaine" = {
+            proxyPass = "http://127.0.0.1:${toString iocaineCfg.port}";
+            extraConfig = ''
+              proxy_set_header Host $host;
+              proxy_set_header X-Real-IP $remote_addr;
+              proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            '';
+          };
         };
       };
-    };
-  in
-    lib.attrsets.mapAttrs' mkAnubisInstance (lib.attrsets.filterAttrs (_: cfg: cfg.enableAnubis) cfg.at);
+    in
+      lib.mkIf iocaineCfg.enable (lib.attrsets.mapAttrs' mkIocaineVhost iocaineServices);
 
-  config.services.nginx.virtualHosts = let
-    iocaineServices = lib.attrsets.filterAttrs (_: svc: svc.enableIocaine) cfg.at;
-    mkIocaineVhost = _: {
-      host,
-      port,
-      ...
-    }: {
-      name = host;
-      value = {
-        extraConfig = iocaineCfg.nginxExtraConfig;
-        locations."/.well-known/@iocaine" = {
-          proxyPass = "http://127.0.0.1:${toString iocaineCfg.port}";
-          extraConfig = ''
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-          '';
-        };
+    yomi.dns.records = let
+      mkDnsRecord = {subdomain, ...}: {
+        type = "CNAME";
+        at = subdomain;
+        zone = cfg.domain;
+        value = "${cfg.tunnel}.cfargotunnel.com.";
+        enableCloudflareProxy = true;
       };
-    };
-  in
-    lib.mkIf iocaineCfg.enable (lib.attrsets.mapAttrs' mkIocaineVhost iocaineServices);
-
-  config.yomi.dns.records = let
-    mkDnsRecord = {subdomain, ...}: {
-      type = "CNAME";
-      at = subdomain;
-      zone = cfg.domain;
-      value = "${cfg.tunnel}.cfargotunnel.com.";
-      enableCloudflareProxy = true;
-    };
-  in
-    lib.attrsets.mapAttrsToList (_: mkDnsRecord) cfg.at;
+    in
+      lib.attrsets.mapAttrsToList (_: mkDnsRecord) cfg.at;
+  };
 }
