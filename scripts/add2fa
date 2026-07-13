@@ -1,4 +1,4 @@
-#/usr/bin/env bash
+#!/usr/bin/env bash
 
 ISSUER=$(gum input --placeholder "Issuer")
 ACCOUNTNAME=$(gum input --placeholder "Accountname")
