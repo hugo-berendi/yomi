@@ -13,7 +13,6 @@
     inputs.stylix.homeModules.stylix
     (inputs.impermanence + "/home-manager.nix")
     inputs.spicetify-nix.homeManagerModules.spicetify
-    # inputs.anyrun.homeManagerModules.default
     inputs.nix-index-database.homeModules.nix-index
     inputs.sops-nix.homeManagerModules.sops
     inputs.hyprland.homeManagerModules.default
