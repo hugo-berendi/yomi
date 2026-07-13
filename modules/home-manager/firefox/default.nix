@@ -59,7 +59,7 @@ in {
     };
   };
 
-  config = let
+  config = lib.mkIf (cfg.app != {}) (let
     mkProfile = app: {
       settings = {
         # Customize css
@@ -85,5 +85,5 @@ in {
   in {
     programs.firefox.profiles = lib.mapAttrs (_: mkProfile) cfg.app;
     xdg.desktopEntries = lib.mapAttrs (_: mkDesktopEntry) cfg.app;
-  };
+  });
 }

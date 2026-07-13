@@ -112,11 +112,17 @@ in {
   };
 
   config.yomi.theming = {
-    get = themeMap:
-      themeMap.${config.lib.stylix.colors.scheme}
-      or themeMap.default.${config.stylix.polarity or "dark"}
-      or themeMap.default
-      or (throw "Theme ${config.lib.stylix.colors.scheme} not found in theme map!");
+    get = themeMap: let
+      scheme = config.lib.stylix.colors.scheme;
+      polarity = config.stylix.polarity or "dark";
+    in
+      if themeMap ? ${scheme}
+      then themeMap.${scheme}
+      else if themeMap ? "default" && themeMap.default ? ${polarity}
+      then themeMap.default.${polarity}
+      else if themeMap ? "default"
+      then themeMap.default
+      else throw "Theme ${scheme} not found in theme map!";
 
     colors.rgb = color:
       builtins.concatStringsSep "," [
