@@ -34,7 +34,7 @@
       base05 = color "05";
       base06 = color "06";
       base07 = color "07";
-      base08 = color "07";
+      base08 = color "08";
       base09 = color "09";
       base0A = color "0A";
       base0B = color "0B";
@@ -55,7 +55,7 @@
       base05 = config.lib.stylix.colors.base05;
       base06 = config.lib.stylix.colors.base06;
       base07 = config.lib.stylix.colors.base07;
-      base08 = config.lib.stylix.colors.base07;
+      base08 = config.lib.stylix.colors.base08;
       base09 = config.lib.stylix.colors.base09;
       base0A = config.lib.stylix.colors.base0A;
       base0B = config.lib.stylix.colors.base0B;
