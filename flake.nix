@@ -4,7 +4,6 @@
   inputs = {
     # {{{ Nixpkgs instances
     nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
-    nixpkgs-old.url = "github:nixos/nixpkgs/nixos-25.11";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
@@ -17,14 +16,6 @@
     firefox-addons.inputs.nixpkgs.follows = "nixpkgs";
     # }}}
 
-    nixos-generators = {
-      url = "github:nix-community/nixos-generators";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    nix-minecraft.url = "github:Infinidoge/nix-minecraft";
-
-    opencode-flake.url = "github:aodhanhayter/opencode-flake";
     llm-agents.url = "github:numtide/llm-agents.nix";
     home-manager.url = "github:nix-community/home-manager/release-26.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
@@ -36,19 +27,11 @@
     };
 
     pyprland.url = "github:hyprland-community/pyprland";
-    hyprland-plugins = {
-      url = "github:hyprwm/hyprland-plugins";
-      inputs.hyprland.follows = "hyprland";
-    };
     # }}}
 
     ghostty-pkg = {
       url = "github:ghostty-org/ghostty";
     };
-
-    # {{{ AGS
-    ags.url = "github:Aylur/ags";
-    # }}}
 
     caelestia-shell = {
       url = "github:caelestia-dots/shell";
@@ -86,9 +69,6 @@
 
     # }}}
     # {{{ Standalone software
-    # {{{ Nightly versions of things
-    neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
-    # }}}
     # {{{ nvf
     nvf = {
       url = "github:NotAShelf/nvf";
@@ -113,7 +93,6 @@
 
     nixcord.url = "github:kaylorben/nixcord";
     # }}}
-    ngrok.url = "github:ngrok/ngrok-nix";
 
     playit-nixos-module.url = "github:pedorich-n/playit-nixos-module";
 
