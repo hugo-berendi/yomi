@@ -17,7 +17,7 @@
       }));
     };
     settings = lib.mkOption {
-      default = "";
+      default = {};
       description = "Record of custom settings to use throughput the config";
       type = lib.types.attrsOf lib.types.str;
     };
