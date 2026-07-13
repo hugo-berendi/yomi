@@ -6,7 +6,6 @@
   upkgs,
   ...
 }: let
-  rosePineCursor = import ./rose-pine-cursor.nix {inherit pkgs;};
   spotifyCmd =
     if config.programs.spicetify.enable
     then lib.getExe config.programs.spicetify.spicedSpotify
@@ -23,7 +22,7 @@ in {
   # {{{ Packages
   home.packages = with pkgs; [
     hyprcursor
-    rosePineCursor
+    inputs.rose-pine-hyprcursor.packages.${pkgs.stdenv.hostPlatform.system}.default
     qt6Packages.qt6ct
     inputs.pyprland.packages.${pkgs.stdenv.hostPlatform.system}.pyprland
     upkgs.hyprpolkitagent
