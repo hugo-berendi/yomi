@@ -17,9 +17,11 @@ In case you are not familiar with nix/nixos, this is a collection of configurati
 
 This repo's structure is based on the concept of hosts - individual machines configured by me. I'm naming each host based on things in space/mythology (_they are the same picture_). The hosts I have right now are:
 
-- [amaterasu](./hosts/nixos/amaterasu/) — my personal laptop
-- [tsukuyomi](./hosts/nixos/tsukuyomi/) — my tower pc
-- [inari](./hosts/nixos/inari/) — my tower pc
+- [amaterasu](./hosts/nixos/amaterasu/) — Framework 13 laptop
+- [tsukuyomi](./hosts/nixos/tsukuyomi/) — tower pc
+- [inari](./hosts/nixos/inari/) — home server
+- [iso](./hosts/nixos/iso/) — installation ISO
+- [wsl](./hosts/nixos/wsl/) — WSL environment
 - susanoo — my android phone. Although not configured using nix, this name gets referenced in some places
 
 ## File structure
@@ -38,6 +40,37 @@ This repo's structure is based on the concept of hosts - individual machines con
 | [scripts](./scripts)         | Bash scripts that come in handy when on a live cd   |
 | [.sops.yaml](./.sops.yaml)   | Sops entrypoint                                     |
 | [stylua.toml](./stylua.toml) | Lua formatter config for the repo                   |
+
+## Adding a new host
+
+1. Create `hosts/nixos/<hostname>/` with a `default.nix` that imports `../common` and sets host-specific options (hostname, hostId, hardware, services).
+2. Add `hardware-configuration.nix` (or `hardware/generated.nix` + `hardware/default.nix` with nixos-hardware imports).
+3. Add `filesystems/` with a `partitions.nix` (disko config) and `default.nix` that imports `../../common/filesystems` and sets `yomi.filesystems.btrfs.enable = true` if using BTRFS rollback.
+4. Create `home/<hostname>.nix` for home-manager config (imports `./global.nix` + desired feature modules).
+5. Register the host in `flake.nix` under `nixosConfigurations` using `mkHost`.
+6. Add DNS records in the host's `default.nix` via `yomi.dns.records`.
+7. Generate SSH host keys and add public keys to `keys/` (use `just export-keys`).
+
+## Bootstrap
+
+1. Boot the NixOS installation ISO (or use `just build-iso`).
+2. Partition disks using `scripts/live.sh` (mounts USB key at `/kagutsuchi`, runs disko, nixos-install).
+3. Or manually: `nix run github:nix-community/disko -- --mode destroy,format,mount ./hosts/nixos/<hostname>/filesystems/partitions.nix`
+4. `nixos-install --flake .#<hostname>`
+5. Reboot.
+
+## Option conventions
+
+- Custom options go under the `yomi.*` namespace (see `AGENTS.md` for full style guide).
+- `yomi.pilot.*` — user settings (name, email, keys, etc.)
+- `yomi.machine.*` — host capabilities (graphical, interactible, gaming)
+- `yomi.ports.*` — port allocation registry (see `hosts/nixos/common/base/ports.nix`)
+- `yomi.cloudflared.*` — Cloudflare tunnel ingress
+- `yomi.nginx.*` — nginx virtual hosts
+- `yomi.persistence.*` — impermanence paths
+- `yomi.theming.*` — stylix-derived theming primitives
+- `yomi.location.*` — geographic coordinates
+- Exception: service-wrapper modules that wrap upstream NixOS services (vrising, steam-game-server, pounce) use `services.*` to match upstream conventions.
 
 ## Points of interest
 
