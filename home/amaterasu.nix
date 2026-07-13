@@ -41,7 +41,6 @@
       signal-desktop
       upkgs.fluffychat
       teams-for-linux
-      wasistlos
       # }}}
       qbittorrent
       # upkgs.unityhub

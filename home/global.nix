@@ -19,7 +19,6 @@
     inputs.caelestia-shell.homeManagerModules.default
     inputs.nvf.homeManagerModules.default
     inputs.nixcord.homeModules.nixcord
-    # inputs.ghostty.homeModules.default
     # }}}
     # {{{ global configuration
     ./features/cli
