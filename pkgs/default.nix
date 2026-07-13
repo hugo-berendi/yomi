@@ -1,17 +1,8 @@
 # Custom packages, that can be defined similarly to ones from nixpkgs
 # You can build them using 'nix build .#example' or (legacy) 'nix-build -A example'
-{pkgs ? (import ../nixpkgs.nix) {}, ...}: let
-  plymouthThemes = pkgs.callPackage (import ./plymouth-themes.nix) {};
-in rec {
-  # example = pkgs.callPackage (import ./example.nix) {};
-  hyprpicker-new = pkgs.callPackage (import ./hyprpicker.nix) {};
+{pkgs ? (import ../nixpkgs.nix) {}, ...}: {
   vimclip = pkgs.callPackage (import ./vimclip.nix) {};
-  # octodns-cloudflare = pkgs.python3Packages.callPackage (import ./octodns-cloudflare.nix) {};
-  # calibre-web-automated = pkgs.python3Packages.callPackage (import ./calibre-web-automated.nix) {};
-  plymouthThemeLone = plymouthThemes.lone;
   pelican-wings = pkgs.callPackage ./pelican-wings.nix {};
-  perplexica = pkgs.callPackage ./perplexica.nix {};
-  python-webuntis = pkgs.callPackage ./python-webuntis.nix {};
   komf = pkgs.callPackage ./komf.nix {};
   hermes-mcp-changedetection = pkgs.callPackage ./hermes-mcp-changedetection {};
   hermes-mcp-radicale = pkgs.callPackage ./hermes-mcp-radicale {};
