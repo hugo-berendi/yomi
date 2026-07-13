@@ -72,6 +72,8 @@
   yomi.postgres.enable = true;
   yomi.wireless.enable = false;
   yomi.tailscale.exitNode = true;
+  yomi.meilisearch.sopsFile = ./secrets.yaml;
+  yomi.meilisearch.environment = "production";
 
   # {{{ Machine ids
   networking.hostName = "inari";
