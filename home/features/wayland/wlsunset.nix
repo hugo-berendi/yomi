@@ -1,4 +1,8 @@
-{pkgs, ...}: let
+{
+  pkgs,
+  config,
+  ...
+}: let
   systemctl = "${pkgs.systemd}/bin/systemctl";
 
   wlsunset-toggle = pkgs.writeShellScriptBin "wlsunset-toggle" ''
@@ -15,8 +19,8 @@ in {
   services.wlsunset = {
     enable = true;
 
-    latitude = "51.23";
-    longitude = "14.83";
+    latitude = config.yomi.location.latitude;
+    longitude = config.yomi.location.longitude;
   };
 
   home.packages = [wlsunset-toggle];

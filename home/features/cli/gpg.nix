@@ -6,7 +6,7 @@
   services.gpg-agent = {
     enable = true;
     sshKeys = [
-      "67D63C5F40CC55DA"
+      config.yomi.pilot.gpgKeygrip
     ];
     pinentry.package =
       if config.gtk.enable

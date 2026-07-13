@@ -1,4 +1,8 @@
-{pkgs, ...}: {
+{
+  pkgs,
+  config,
+  ...
+}: {
   programs.fish.shellInit =
     /*
     fish
@@ -34,9 +38,9 @@
           source ~/.fish_profile
       end
 
-      set -p PATH /home/hugob/.local/bin
-      set -p PATH /home/hugob/.cargo/bin
-      set -p PATH /home/hugob/.local/share/gem/ruby/3.0.0/bin
+      set -p PATH ${config.home.homeDirectory}/.local/bin
+      set -p PATH ${config.home.homeDirectory}/.cargo/bin
+      set -p PATH ${config.home.homeDirectory}/.local/share/gem/ruby/3.0.0/bin
 
       # Add ~/.local/bin to PATH
       if test -d ~/.local/bin
@@ -66,11 +70,11 @@
       set -p PATH ~/.config/scripts
 
       # Set screenshot and image folders
-      set HYPRSHOT /home/hugob/Pictures
-      set XDG_PICTURES_DIR /home/hugob/Pictures
+      set HYPRSHOT ${config.home.homeDirectory}/Pictures
+      set XDG_PICTURES_DIR ${config.home.homeDirectory}/Pictures
 
       # Android SDK
-      set ANDROID_HOME /home/hugob/Android/Sdk
+      set ANDROID_HOME ${config.home.homeDirectory}/Android/Sdk
       set -p PATH $ANDROID_HOME/build_tools
       set -p PATH $ANDROID_HOME/platform-tools
       set -p PATH $ANDROID_HOME/cmdline-tools
@@ -78,7 +82,7 @@
       # Add bun to PATH
       set --export BUN_INSTALL "$HOME/.bun"
       set --export PATH $BUN_INSTALL/bin $PATH
-      fish_add_path /home/hugob/.spicetify
+      fish_add_path ${config.home.homeDirectory}/.spicetify
 
       # Direnv hook
       direnv hook fish | source

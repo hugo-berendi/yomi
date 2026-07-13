@@ -33,7 +33,7 @@ in {
     settings = {
       user = {
         name = "hugo-berendi";
-        email = "git@hugo-berendi.de";
+        email = config.yomi.pilot.email;
       };
 
       alias = {
@@ -51,7 +51,7 @@ in {
       };
       # }}}
 
-      github.user = "hugo-berendi";
+      github.user = config.yomi.pilot.githubUser;
       hub.protocol = "ssh";
       core.editor = "nvim";
       init.defaultBranch = "main";
@@ -72,7 +72,7 @@ in {
       # {{{ Signing
       # Sign commits using ssh
       gpg.format = "ssh";
-      user.signingkey = "~/.ssh/yubikey.pub";
+      user.signingkey = config.yomi.pilot.signingKey;
 
       # Sign everything by default
       commit.gpgsign = false;

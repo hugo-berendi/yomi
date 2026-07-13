@@ -1,9 +1,9 @@
-{...}: {
+{config, ...}: {
   programs.ssh = {
     enable = true;
     enableDefaultConfig = false;
     matchBlocks."*" = {
-      identityFile = "~/.ssh/id_ed25519";
+      identityFile = config.yomi.pilot.sshIdentity;
     };
   };
   yomi.persistence.at.state.apps.ssh = {

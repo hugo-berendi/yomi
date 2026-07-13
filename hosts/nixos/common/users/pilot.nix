@@ -5,8 +5,6 @@
   lib,
   ...
 }: {
-  yomi.pilot.name = lib.mkDefault "hugob";
-
   sops.secrets.pilot_password = {
     sopsFile = ../secrets.yaml;
     neededForUsers = true;

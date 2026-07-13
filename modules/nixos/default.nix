@@ -5,7 +5,6 @@
   iocaine = import ./iocaine.nix;
   playit = import ./playit.nix;
   ports = import ./ports.nix;
-  pilot = import ./pilot.nix;
   pounce = import ./pounce.nix;
   protonvpn = import ./protonvpn.nix;
   steam-game-server = import ./steam-game-server.nix;
