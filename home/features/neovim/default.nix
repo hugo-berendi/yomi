@@ -42,7 +42,7 @@
 in {
   imports = [
     ./options.nix
-    ./keymaps.nix
+    ./keymaps
     ./autocmds.nix
     ./lsp.nix
     ./treesitter.nix

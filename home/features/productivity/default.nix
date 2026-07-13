@@ -2,7 +2,7 @@
   imports = [
     # ./smos
     # ./intray.nix
-    ./mail.nix
+    ./mail
     ./calendar.nix
   ];
 }

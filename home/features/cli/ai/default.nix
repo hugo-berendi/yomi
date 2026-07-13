@@ -7,7 +7,7 @@
   # {{{ Imports
   imports = [
     ./mcp.nix
-    ./opencode.nix
+    ./opencode
     ./claude-code.nix
     # ./codex.nix
     # TODO: Re-enable when llm-agents updates gemini-cli hash

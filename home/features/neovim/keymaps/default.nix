@@ -1,0 +1,24 @@
+{
+  imports = [
+    ./wrapped-lines.nix
+    ./window-resize.nix
+    ./move-lines.nix
+    ./undo-breakpoints.nix
+    ./save-quit.nix
+    ./search.nix
+    ./diagnostics.nix
+    ./inspect.nix
+    ./terminal.nix
+    ./window.nix
+    ./tabs.nix
+    ./snacks-pickers.nix
+    ./snacks-notifications.nix
+    ./snacks-buffers.nix
+    ./snacks-git.nix
+    ./snacks-terminal.nix
+    ./snacks-words.nix
+    ./snacks-rename.nix
+    ./avante.nix
+    ./yazi.nix
+  ];
+}
