@@ -15,7 +15,6 @@
     ./yazi
     ./fish
     ./zoxide.nix
-    ./nix-index.nix
     ./lazygit.nix
     ./cava.nix
     ./hyfetch.nix
@@ -27,10 +26,13 @@
   # {{{ Basic programs
   programs.bash.enable = true;
   programs.broot.enable = true;
-  programs.starship.enable = true;
 
   programs.nix-index-database.comma.enable = true;
-  programs.nix-index.enable = true;
+  programs.nix-index = {
+    enable = true;
+    enableFishIntegration = true;
+  };
+  programs.command-not-found.enable = false;
   # }}}
   # {{{ Packages
   home.packages = with pkgs; [
