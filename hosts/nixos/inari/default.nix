@@ -51,7 +51,6 @@
     ./services/loki.nix
     ./services/playit.nix
     ./services/windrose.nix
-    # ./services/simplelogin.nix
     # ./services/pelican
     ./services/owncloud.nix
     ./services/stirling-pdf.nix
