@@ -11,6 +11,7 @@ nixos-rebuild action="switch" host=hostname ng="1" install_bootloader="0":
   #!/usr/bin/env python3
   import os
   import subprocess
+  import sys
 
   install_bootloader = "{{install_bootloader}}" != "0"
   ng = "{{ng}}" != "0"
@@ -23,7 +24,7 @@ nixos-rebuild action="switch" host=hostname ng="1" install_bootloader="0":
   }
 
   args = [
-    "nixos-rebuild" if ng else "nixos-rebuild",
+    "nixos-rebuild",
     "{{action}}",
     "--show-trace",
     "--accept-flake-config",
@@ -48,6 +49,9 @@ nixos-rebuild action="switch" host=hostname ng="1" install_bootloader="0":
     else:
       args += [ "--use-remote-sudo" ]
 
+  if not sys.stdout.isatty():
+    args += ["--log-format", "raw"]
+
   try:
     subprocess.run(args, check=True)
     print("🚀 All done!")
@@ -69,11 +73,9 @@ bump-common:
     nixpkgs \
     nixpkgs-unstable \
     nix-index-database \
-    neovim-nightly-overlay \
     firefox-addons \
     base16-schemes \
     rose-pine-hyprcursor \
-    darkmatter-grub-theme \
     home-manager \
     stylix \
     nixcord \
@@ -110,9 +112,19 @@ format-lua-check:
 format-lua:
   stylua .
 
-[doc("Run all formatting checks (Nix + Lua)")]
+[doc("Check for Nix anti-patterns using statix")]
 [group("ci")]
-lint: format-check format-lua-check
+statix-check:
+  statix check .
+
+[doc("Check for unused Nix bindings using deadnix")]
+[group("ci")]
+deadnix-check:
+  deadnix --fail .
+
+[doc("Run all formatting checks (Nix + Lua + linters)")]
+[group("ci")]
+lint: format-check format-lua-check statix-check deadnix-check
 
 [doc("Format all code (Nix + Lua)")]
 [group("ci")]
