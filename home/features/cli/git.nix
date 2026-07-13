@@ -2,7 +2,15 @@
   pkgs,
   config,
   ...
-}: {
+}: let
+  ghTokenInit = ''
+        export GH_TOKEN="$(cat ${config.sops.secrets.GITHUB_TOKEN.path} 2>/dev/null)"
+        if [ -n "$GH_TOKEN" ]; then
+          export NIX_CONFIG="$NIX_CONFIG
+    access-tokens = github.com=$GH_TOKEN"
+        fi
+  '';
+in {
   home.packages = [pkgs.josh]; # Just One Single History
 
   # https://github.com/lilyinstarlight/foosteros/blob/main/config/base.nix#L163
@@ -88,22 +96,7 @@
   # {{{ GitHub token from sops
   sops.secrets.GITHUB_TOKEN.sopsFile = ./ai/secrets.yaml;
 
-  # Set GH_TOKEN for gh CLI authentication
-  # This sources the token from sops-nix managed secret
-  programs.bash.initExtra = ''
-        export GH_TOKEN="$(cat ${config.sops.secrets.GITHUB_TOKEN.path} 2>/dev/null)"
-        if [ -n "$GH_TOKEN" ]; then
-          export NIX_CONFIG="$NIX_CONFIG
-    access-tokens = github.com=$GH_TOKEN"
-        fi
-  '';
-  programs.zsh.initExtra = ''
-        export GH_TOKEN="$(cat ${config.sops.secrets.GITHUB_TOKEN.path} 2>/dev/null)"
-        if [ -n "$GH_TOKEN" ]; then
-          export NIX_CONFIG="$NIX_CONFIG
-    access-tokens = github.com=$GH_TOKEN"
-        fi
-  '';
+  programs.bash.initExtra = ghTokenInit;
   programs.fish.interactiveShellInit = ''
         set -gx GH_TOKEN (cat ${config.sops.secrets.GITHUB_TOKEN.path} 2>/dev/null)
         if test -n "$GH_TOKEN"

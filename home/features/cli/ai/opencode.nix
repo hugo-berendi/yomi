@@ -353,16 +353,6 @@ in {
     }
   '';
 
-  programs.zsh.initExtra = ''
-    opencode() {
-      if [ "$#" -eq 0 ]; then
-        command opencode attach ${opencodeAttachUrl}
-      else
-        command opencode "$@"
-      fi
-    }
-  '';
-
   programs.fish.interactiveShellInit = ''
     function opencode
       if test (count $argv) -eq 0
