@@ -12,10 +12,12 @@ in {
       inner = lib.mkOption {
         default = 0;
         type = lib.types.int;
+        description = "Inner gaps (padding) in pixels";
       };
       outer = lib.mkOption {
         default = 0;
         type = lib.types.int;
+        description = "Outer gaps (margins) in pixels";
       };
     };
     rounding = {
@@ -24,10 +26,12 @@ in {
       radius = lib.mkOption {
         default = 0;
         type = lib.types.int;
+        description = "Corner radius in pixels";
       };
       size = lib.mkOption {
         default = 0;
         type = lib.types.int;
+        description = "Rounding size in pixels";
       };
     };
 
@@ -39,18 +43,22 @@ in {
       passes = lib.mkOption {
         default = 4;
         type = lib.types.int;
+        description = "Number of blur passes (more passes = smoother blur)";
       };
       brightness = lib.mkOption {
         default = 1;
         type = lib.types.int;
+        description = "Brightness multiplier applied to blurred backgrounds";
       };
       contrast = lib.mkOption {
         default = 1;
         type = lib.types.int;
+        description = "Contrast multiplier applied to blurred backgrounds";
       };
       size = lib.mkOption {
         default = 10;
         type = lib.types.int;
+        description = "Blur kernel size in pixels";
       };
     };
 

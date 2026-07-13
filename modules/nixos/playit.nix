@@ -7,11 +7,7 @@
   cfg = config.yomi.playit;
 in {
   options.yomi.playit = {
-    enable = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = "Whether to enable the playit.gg tunneling service";
-    };
+    enable = lib.mkEnableOption "the playit.gg tunneling service";
 
     secretPath = lib.mkOption {
       type = lib.types.path;

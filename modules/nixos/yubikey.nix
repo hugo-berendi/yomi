@@ -18,11 +18,7 @@ in {
 
     pam = {
       u2f = {
-        enable = lib.mkOption {
-          type = lib.types.bool;
-          default = true;
-          description = "Enable U2F authentication via PAM";
-        };
+        enable = (lib.mkEnableOption "U2F authentication via PAM") // {default = true;};
 
         appId = lib.mkOption {
           type = lib.types.str;
@@ -38,11 +34,7 @@ in {
       };
 
       challengeResponse = {
-        enable = lib.mkOption {
-          type = lib.types.bool;
-          default = false;
-          description = "Enable challenge-response mode";
-        };
+        enable = lib.mkEnableOption "challenge-response mode";
 
         ids = lib.mkOption {
           type = lib.types.listOf lib.types.str;
@@ -53,11 +45,7 @@ in {
     };
 
     ssh = {
-      enableAgent = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = "Enable SSH agent support via GPG agent";
-      };
+      enableAgent = (lib.mkEnableOption "SSH agent support via GPG agent") // {default = true;};
 
       publicKeys = lib.mkOption {
         type = lib.types.listOf lib.types.str;
@@ -67,11 +55,7 @@ in {
     };
 
     age = {
-      enable = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = "Enable AGE encryption with YubiKey plugin";
-      };
+      enable = (lib.mkEnableOption "AGE encryption with YubiKey plugin") // {default = true;};
 
       recipients = lib.mkOption {
         type = lib.types.listOf lib.types.str;
@@ -81,19 +65,11 @@ in {
     };
 
     touchDetector = {
-      enable = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = "Enable YubiKey touch detector for notifications";
-      };
+      enable = (lib.mkEnableOption "YubiKey touch detector for notifications") // {default = true;};
     };
 
     lockOnRemoval = {
-      enable = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = "Lock session when YubiKey is removed";
-      };
+      enable = (lib.mkEnableOption "locking the session when YubiKey is removed") // {default = true;};
 
       lockCommand = lib.mkOption {
         type = lib.types.str;

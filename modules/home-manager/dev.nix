@@ -4,11 +4,7 @@
   ...
 }: {
   options.yomi.dev = {
-    enable = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = "While true, makes out of store symlinks for files in dev mode";
-    };
+    enable = lib.mkEnableOption "out of store symlinks for files in dev mode";
 
     root = lib.mkOption {
       type = lib.types.str;
