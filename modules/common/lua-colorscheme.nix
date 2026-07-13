@@ -77,7 +77,7 @@
         popups = mkTransparencyTarget "popups";
       };
       rounding = {
-        enable = config.yomi.theming.rounding.enable;
+        enable = config.yomi.theming.rounding.radius > 0;
         radius = config.yomi.theming.rounding.radius;
       };
     };

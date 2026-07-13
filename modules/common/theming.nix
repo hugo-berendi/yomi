@@ -8,7 +8,6 @@
 in {
   options.yomi.theming = {
     gaps = {
-      enable = lib.mkEnableOption "gaps (padding / margin) for apps";
       inner = lib.mkOption {
         default = 0;
         type = lib.types.int;
@@ -21,8 +20,6 @@ in {
       };
     };
     rounding = {
-      # Note: this is automatically set to true when the radius is strictly positive
-      enable = lib.mkEnableOption "rounded corners for desktop apps";
       radius = lib.mkOption {
         default = 0;
         type = lib.types.int;
@@ -37,9 +34,6 @@ in {
 
     # These pretty much directly map onto hypland options
     blur = {
-      # Note: this is automatically set to true when the passes are strictly positive
-      enable = lib.mkEnableOption "blurred backgrounds for desktop apps";
-
       passes = lib.mkOption {
         default = 4;
         type = lib.types.int;
@@ -118,9 +112,6 @@ in {
   };
 
   config.yomi.theming = {
-    rounding.enable = cfg.rounding.radius > 0;
-    blur.enable = cfg.blur.passes > 0;
-
     get = themeMap:
       themeMap.${config.lib.stylix.colors.scheme}
       or themeMap.default.${config.stylix.polarity or "dark"}

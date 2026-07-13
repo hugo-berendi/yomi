@@ -52,7 +52,7 @@ in {
         inactive_opacity = 1;
 
         blur = {
-          enabled = config.yomi.theming.blur.enable;
+          enabled = config.yomi.theming.blur.passes > 0;
           ignore_opacity = true;
           xray = false;
           size = config.yomi.theming.blur.size;

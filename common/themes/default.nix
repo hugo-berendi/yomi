@@ -28,7 +28,6 @@
           inner = 5;
         };
         rounding = {
-          enable = true;
           radius = 8;
           size = 3;
         };
@@ -52,7 +51,6 @@
           inner = 5;
         };
         rounding = {
-          enable = true;
           radius = 10;
           size = 2;
         };
@@ -77,7 +75,6 @@
           inner = 5;
         };
         rounding = {
-          enable = true;
           radius = 8;
           size = 3;
         };
@@ -106,7 +103,6 @@
           inner = 5;
         };
         rounding = {
-          enable = true;
           radius = 15;
           size = 3;
         };
@@ -136,7 +132,6 @@
           inner = 5;
         };
         rounding = {
-          enable = true;
           radius = 15;
           size = 3;
         };
@@ -166,7 +161,6 @@
           inner = 5;
         };
         rounding = {
-          enable = true;
           radius = 15;
           size = 3;
         };
@@ -195,7 +189,6 @@
           inner = 5;
         };
         rounding = {
-          enable = true;
           radius = 15;
           size = 3;
         };
@@ -248,7 +241,6 @@
           inner = 5;
         };
         rounding = {
-          enable = true;
           radius = 5;
           size = 2;
         };
@@ -277,7 +269,6 @@
           inner = 6;
         };
         rounding = {
-          enable = true;
           radius = 10;
           size = 3;
         };
