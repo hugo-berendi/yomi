@@ -23,7 +23,7 @@
           content = {
             type = "luks";
             name = "crypted";
-            passwordFile = "/kagutsuchi/secrets/amaterasu/disk.key";
+            passwordFile = "/kagutsuchi/secrets/tsukuyomi/disk.key";
             settings.allowDiscards = true;
             content = {
               type = "btrfs";
