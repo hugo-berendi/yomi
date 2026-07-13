@@ -7,7 +7,6 @@
   home.packages = with pkgs; [
     legendary-gl
     rare
-    heroic
     mangohud
     gamemode
     lutris
@@ -25,9 +24,6 @@
       ".factorio"
       "${config.xdg.dataHome}/Terraria"
       "${config.xdg.dataHome}/Steam"
-    ];
-    heroic.directories = [
-      "media/games/heroic"
     ];
   };
   # }}}
