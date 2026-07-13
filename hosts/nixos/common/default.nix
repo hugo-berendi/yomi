@@ -53,6 +53,7 @@ in {
 
   # /etc/hosts
   networking.extraHosts = let
+    allHostnames = lib.attrNames inputs.self.nixosConfigurations;
     hosts = hostnames:
       lib.concatStringsSep "\n" (
         lib.flatten (
@@ -73,7 +74,7 @@ in {
         )
       );
   in
-    hosts ["inari" "amaterasu"];
+    hosts allHostnames;
 
   console.keyMap = lib.mkForce "de";
 
