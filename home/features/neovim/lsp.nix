@@ -1,4 +1,4 @@
-{...}: {
+{config, ...}: {
   programs.nvf.settings.vim.lsp = {
     enable = true;
     inlayHints.enable = true;
@@ -14,8 +14,8 @@
               formatting = { command = { "alejandra" } },
               nixpkgs = { expr = "import <nixpkgs> { }" },
               options = {
-                nixos = { expr = "(builtins.getFlake \"/home/hugob/projects/yomi\").nixosConfigurations.amaterasu.options" },
-                ["home-manager"] = { expr = "(builtins.getFlake \"/home/hugob/projects/yomi\").homeConfigurations.amaterasu.options" },
+                nixos = { expr = "(builtins.getFlake "${config.home.homeDirectory}/projects/yomi").nixosConfigurations.${config.networking.hostName}.options" },
+                ["home-manager"] = { expr = "(builtins.getFlake "${config.home.homeDirectory}/projects/yomi").homeConfigurations.${config.networking.hostName}.options" },
               },
             },
           },
