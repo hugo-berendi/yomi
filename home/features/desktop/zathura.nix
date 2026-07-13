@@ -52,15 +52,6 @@
       set notification-warning-fg '${base0A}'
       set notification-warning-bg '${base01}'
       # }}}
-      # {{{ TODO: tabs
-      # Tab
-      # set tabbar-fg
-      # set tabbar-bg
-
-      # Focused tab
-      # set tabbar-focus-fg
-      # set tabbar-focus-bg
-      # }}}
       # {{{ Status bar
       set statusbar-fg '${base05}'
       set statusbar-bg '${base00}'

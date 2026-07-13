@@ -9,7 +9,7 @@
     ./mcp.nix
     ./opencode.nix
     ./claude-code.nix
-    ./codex.nix
+    # ./codex.nix
     # TODO: Re-enable when llm-agents updates gemini-cli hash
     # ./gemini-cli.nix
   ];
@@ -32,16 +32,6 @@
     IMMICH_API_KEY = {
       sopsFile = ./secrets.yaml;
     };
-    # TODO: Add these secrets to secrets.yaml for API authentication
-    # ANTHROPIC_API_KEY = {
-    #   sopsFile = ./secrets.yaml;
-    # };
-    # OPENAI_API_KEY = {
-    #   sopsFile = ./secrets.yaml;
-    # };
-    # GEMINI_API_KEY = {
-    #   sopsFile = ./secrets.yaml;
-    # };
   };
   # }}}
 }

@@ -7,16 +7,11 @@
         device = builtins.elemAt disks 0;
         content = {
           type = "gpt";
-          # format = "gpt";
           partitions = {
             # {{{ Boot
             ESP = {
-              # name = "ESP";
-              # start = "0";
               size = "512M";
               type = "EF00";
-              # bootable = true;
-              # priority = 1;
               content = {
                 type = "filesystem";
                 format = "vfat";
@@ -27,10 +22,7 @@
             # }}}
             # {{{ Main
             zfs = {
-              # name = "zfs";
-              # start = "1GiB";
               size = "100%";
-              # priority = 2;
               content = {
                 type = "zfs";
                 pool = "zroot";
@@ -59,7 +51,6 @@
           encryption = "aes-256-gcm";
           keyformat = "passphrase";
           keylocation = "file:///kagutsuchi/secrets/inari/disk.key";
-          # keylocation = "none";
         };
 
         # {{{ Datasets

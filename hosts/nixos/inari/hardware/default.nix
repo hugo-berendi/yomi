@@ -1,10 +1,5 @@
 {inputs, ...}: {
   imports = with inputs.nixos-hardware.nixosModules; [
-    # common-cpu-intel
-    # common-gpu-intel
-    # common-pc-laptop
-    # common-pc-laptop-hdd
-    # common-pc-hdd
     ./generated.nix
   ];
 

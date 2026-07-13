@@ -45,21 +45,12 @@
       ];
 
       hashedPasswordFile = config.sops.secrets.pilot_password.path;
-      # password = "12345678";
       shell = pkgs.fish;
 
       openssh.authorizedKeys.keyFiles =
         (import ./common.nix).authorizedKeys {inherit outputs lib;};
     };
   };
-
-  # virtualisation.virtualbox.host.enable = true;
-  # users.extraGroups.vboxusers.members = [config.users.users.pilot.name];
-  #
-  # virtualisation.virtualbox.host.enableExtensionPack = true;
-  #
-  # virtualisation.virtualbox.guest.enable = true;
-  # virtualisation.virtualbox.guest.dragAndDrop = true;
 
   programs.nix-ld.enable = true;
 

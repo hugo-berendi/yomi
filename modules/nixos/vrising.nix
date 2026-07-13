@@ -845,13 +845,6 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
-    # assertions = [
-    #   {
-    #     assertion = (cfg.preset != "" || cfg.preset != null) && cfg.gameSettings == config._module.config.services.vrising.gameSettings;
-    #     message = "When preset is set, all gameSettings must remain at their default values. Use either preset or custom gameSettings, not both.";
-    #   }
-    # ];
-
     sops.secrets.vrising_rcon_password = {
       sopsFile = ../../hosts/nixos/inari/secrets.yaml;
     };

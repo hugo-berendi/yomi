@@ -1,6 +1,5 @@
 # (https://nixos.wiki/wiki/Module).
 {
-  # example = import ./example.nix;
   cloudflared = import ./cloudflared.nix;
   hardening = import ./hardening.nix;
   iocaine = import ./iocaine.nix;

@@ -5,20 +5,6 @@
 
   # You can change versions, add patches, set compilation flags, anything really.
   # https://nixos.wiki/wiki/Overlays
-  # modifications = _final: prev: {
-  # example = prev.example.overrideAttrs (oldAttrs: rec {
-  # ...
-  # });
-  # glibc =
-  #   (import (builtins.fetchGit {
-  #       name = "glibc_2_39";
-  #       url = "https://github.com/NixOS/nixpkgs/";
-  #       ref = "refs/heads/nixpkgs-unstable";
-  #       rev = "05bbf675397d5366259409139039af8077d695ce";
-  #     }) {
-  #       inherit (final) system;
-  #     })
-  #   .glibc;
 
   modifications = _final: prev: {
     python313 = prev.python313.override {

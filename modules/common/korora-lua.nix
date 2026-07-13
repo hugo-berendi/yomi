@@ -60,23 +60,6 @@
       "${l.name} ∧ ${r.name}"
       (helpers.mkVerify [l r]);
 
-    # dependentAttrsOf =
-    #   name: mkType:
-    #   let
-    #     typeError = name: v: "Expected type '${name}' but value '${toPretty v}' is of type '${typeOf v}'";
-    #     addErrorContext = context: error: if error == null then null else "${context}: ${error}";
-    #
-    #     withErrorContext = addErrorContext "in ${name} value";
-    #   in
-    #   k.typedef' name
-    #     (v:
-    #     if ! lib.isAttrs v then
-    #       typeError name v
-    #     else
-    #       withErrorContext
-    #         (mkVerify
-    #           (lib.mapAttrsToList (k: _: mkType k) v)
-    #           v));
     # }}}
     # {{{ Encoding helpers
     mkRawLuaObject = chunks: ''

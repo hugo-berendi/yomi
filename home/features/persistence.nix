@@ -25,31 +25,10 @@
     config.xdg.userDirs.extraConfig.BOOKS
   ];
   # }}}
-  # {{{ OpenTabletDriver
-  # yomi.persistence.at.state.apps.open-tablet-driver.directories = [
-  #   "${config.xdg.configHome}/OpenTabletDriver"
-  # ];
-  # }}}
   # {{{ yubikey
   yomi.persistence.at.state.apps.yubico.directories = ["${config.home.homeDirectory}/.yubico"];
   # }}}
   # {{{ Programming tooling
-  # {{{ Elm
-  # yomi.persistence.at.cache.apps.elm.directories = [".elm"];
-  # }}}
-  # {{{ Fly.io
-  # yomi.persistence.at.state.apps.fly-io.directories = [".fly"];
-  # }}}
-  # {{{ Haskell
-  # yomi.persistence.at.cache.apps.haskell.directories = [
-  #   ".ghc"
-  #   ".stack"
-  #   ".local/state/cabal"
-  #   "${config.xdg.cacheHome}/stack"
-  #   "${config.xdg.cacheHome}/ghcide"
-  #   "${config.xdg.cacheHome}/cabal"
-  # ];
-  # }}}
   # {{{ Nodejs
   yomi.persistence.at.cache.apps.nodejs = {
     files = [
@@ -107,7 +86,6 @@
   ];
 
   yomi.persistence.at.cache.apps.qbittorrent.directories = [
-    # TODO: investigate which subdirectories/files I actually want to keep
     "${config.xdg.dataHome}/qBittorrent" # Torrent files, logs, etc
   ];
   # }}}

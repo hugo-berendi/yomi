@@ -48,5 +48,4 @@
   yomi.wireless.enable = false;
 
   # Fast but bad compression
-  # isoImage.squashfsCompression = "gzip -Xcompression-level 1";
 }

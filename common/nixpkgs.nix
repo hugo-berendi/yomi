@@ -1,6 +1,5 @@
 {outputs, ...}: {
   nixpkgs = {
-    # pkgs = lib.mkForce pkgs;
     # Add all overlays defined in the overlays directory
     overlays = builtins.attrValues outputs.overlays;
 
