@@ -1,86 +1,77 @@
 {lib, ...}: {
   # {{{ Memory limits for heavy services
-  systemd.services = {
-    immich-server.serviceConfig = {
-      MemoryMax = "4G";
-      MemoryHigh = "3G";
-    };
+  systemd.services =
+    lib.mapAttrs (_: sc: {
+      serviceConfig = lib.mapAttrs (_: lib.mkForce) sc;
+    }) {
+      immich-server = {
+        MemoryMax = "4G";
+        MemoryHigh = "3G";
+      };
 
-    immich-machine-learning.serviceConfig = {
-      MemoryMax = "4G";
-      MemoryHigh = "3G";
-    };
+      immich-machine-learning = {
+        MemoryMax = "4G";
+        MemoryHigh = "3G";
+      };
 
-    jellyfin.serviceConfig = {
-      MemoryMax = "4G";
-      MemoryHigh = "3G";
-    };
+      jellyfin = {
+        MemoryMax = "4G";
+        MemoryHigh = "3G";
+      };
 
-    home-assistant.serviceConfig = {
-      MemoryMax = "2G";
-      MemoryHigh = "1536M";
-    };
+      home-assistant = {
+        MemoryMax = "2G";
+        MemoryHigh = "1536M";
+      };
 
-    paperless-scheduler.serviceConfig = {
-      MemoryMax = "2G";
-      MemoryHigh = "1536M";
-    };
+      paperless-scheduler = {
+        MemoryMax = "2G";
+        MemoryHigh = "1536M";
+      };
 
-    paperless-consumer.serviceConfig = {
-      MemoryMax = "2G";
-      MemoryHigh = "1536M";
-    };
+      paperless-consumer = {
+        MemoryMax = "2G";
+        MemoryHigh = "1536M";
+      };
 
-    paperless-web.serviceConfig = {
-      MemoryMax = "2G";
-      MemoryHigh = "1536M";
-    };
+      paperless-web = {
+        MemoryMax = "2G";
+        MemoryHigh = "1536M";
+      };
 
-    paperless-task-queue.serviceConfig = {
-      MemoryMax = "2G";
-      MemoryHigh = "1536M";
-    };
+      paperless-task-queue = {
+        MemoryMax = "2G";
+        MemoryHigh = "1536M";
+      };
 
-    loki.serviceConfig = {
-      MemoryMax = "2G";
-      MemoryHigh = "1536M";
-    };
+      loki = {
+        MemoryMax = "2G";
+        MemoryHigh = "1536M";
+      };
 
-    grafana.serviceConfig = {
-      MemoryMax = "1G";
-      MemoryHigh = "768M";
-    };
+      grafana = {
+        MemoryMax = "1G";
+        MemoryHigh = "768M";
+      };
 
-    prometheus.serviceConfig = {
-      MemoryMax = "2G";
-      MemoryHigh = "1536M";
-    };
+      forgejo = {
+        MemoryMax = "1G";
+        MemoryHigh = "768M";
+      };
 
-    forgejo.serviceConfig = {
-      MemoryMax = "1G";
-      MemoryHigh = "768M";
-    };
+      postgresql = {
+        MemoryMax = "4G";
+        MemoryHigh = "3G";
+      };
 
-    postgresql.serviceConfig = {
-      MemoryMax = "4G";
-      MemoryHigh = "3G";
+      invidious = {
+        MemoryMax = "1G";
+        MemoryHigh = "768M";
+      };
     };
-
-    invidious.serviceConfig = {
-      MemoryMax = "1G";
-      MemoryHigh = "768M";
-    };
-  };
   # }}}
 
   # {{{ Higher swappiness for servers with many services
   boot.kernel.sysctl."vm.swappiness" = lib.mkForce 30;
-  # }}}
-
-  # {{{ Prometheus retention limits
-  services.prometheus.extraFlags = [
-    "--storage.tsdb.retention.time=30d"
-    "--storage.tsdb.retention.size=10GB"
-  ];
   # }}}
 }

@@ -18,6 +18,10 @@
     enable = true;
     port = config.yomi.ports.prometheus;
     webExternalUrl = config.yomi.nginx.at.prometheus.url;
+    extraFlags = [
+      "--storage.tsdb.retention.time=30d"
+      "--storage.tsdb.retention.size=10GB"
+    ];
 
     exporters = {
       node = {
