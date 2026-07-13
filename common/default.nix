@@ -5,8 +5,4 @@
     ./themes
     ./nixpkgs.nix
   ];
-
-  # {{{ ad-hoc toggles
-  yomi.toggles.neovim-nightly.enable = true;
-  # }}}
 }
