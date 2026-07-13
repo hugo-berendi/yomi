@@ -104,30 +104,29 @@ in {
         WINEDEBUG = "-all";
         WINEPREFIX = "${dataDir}/.wine";
       };
-      preStart = ''
+      preStart = let
+        serverDescription = pkgs.writeText "ServerDescription.json" (builtins.toJSON {
+          Version = 1;
+          DeploymentId = "";
+          ServerDescription_Persistent = {
+            PersistentServerId = "";
+            IsPasswordProtected = cfg.password != "";
+            Password = cfg.password;
+            ServerName = cfg.serverName;
+            WorldIslandId = cfg.worldIslandId;
+            MaxPlayerCount = cfg.maxPlayerCount;
+            UserSelectedRegion = cfg.userSelectedRegion;
+            P2pProxyAddress = cfg.p2pProxyAddress;
+            UseDirectConnection = cfg.useDirectConnection;
+            DirectConnectionServerAddress = "";
+            DirectConnectionServerPort = cfg.directConnectionServerPort;
+            DirectConnectionProxyAddress = cfg.directConnectionProxyAddress;
+            AutoLoadLatestBackupIfHasBroken = cfg.autoLoadLatestBackupIfHasBroken;
+          };
+        });
+      in ''
         mkdir -p ${serverDir}/R5
-
-        cat > ${serverDir}/R5/ServerDescription.json <<EOF
-        {
-          "Version": 1,
-          "DeploymentId": "",
-          "ServerDescription_Persistent": {
-            "PersistentServerId": "",
-            "IsPasswordProtected": ${lib.boolToString (cfg.password != "")},
-            "Password": ${builtins.toJSON cfg.password},
-            "ServerName": ${builtins.toJSON cfg.serverName},
-            "WorldIslandId": ${builtins.toJSON cfg.worldIslandId},
-            "MaxPlayerCount": ${toString cfg.maxPlayerCount},
-            "UserSelectedRegion": ${builtins.toJSON cfg.userSelectedRegion},
-            "P2pProxyAddress": ${builtins.toJSON cfg.p2pProxyAddress},
-            "UseDirectConnection": ${lib.boolToString cfg.useDirectConnection},
-            "DirectConnectionServerAddress": "",
-            "DirectConnectionServerPort": ${toString cfg.directConnectionServerPort},
-            "DirectConnectionProxyAddress": ${builtins.toJSON cfg.directConnectionProxyAddress},
-            "AutoLoadLatestBackupIfHasBroken": ${lib.boolToString cfg.autoLoadLatestBackupIfHasBroken}
-          }
-        }
-        EOF
+        cp ${serverDescription} ${serverDir}/R5/ServerDescription.json
       '';
       script = ''
         mkdir -p ${serverDir}/R5/Saved/Logs
