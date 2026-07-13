@@ -251,6 +251,7 @@
           "https://playit-nixos-module.cachix.org"
           "https://cache.numtide.com"
           "https://nvf.cachix.org"
+          "https://hugo-berendi.cachix.org"
         ];
 
         extra-trusted-public-keys = [
@@ -260,6 +261,7 @@
           "playit-nixos-module.cachix.org-1:22hBXWXBbd/7o1cOnh+p0hpFUVk9lPdRLX3p5YSfRz4="
           "niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g="
           "nvf.cachix.org-1:GMQzlEPrdqVlEzWsdk/6NH9TIoRmFVMZLUfBMvNxzlo="
+          "hugo-berendi.cachix.org-1:bUxGkcUJGjKZUDcSu6WvzecShvqbpxM4YvkfcbnAm2Q="
         ];
       };
       # }}}

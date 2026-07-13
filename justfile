@@ -133,6 +133,12 @@ fmt: format format-lua
 [doc("Pre-commit check: format + flake check")]
 [group("ci")]
 pre-commit: fmt check
+
+[doc("Push wsl build to hugo-berendi cachix cache")]
+[group("ci")]
+push-wsl-cache:
+  nix build .#nixosConfigurations.wsl.config.system.build.toplevel --accept-flake-config
+  nix copy --to ssh://hugo-berendi.cachix.org .#nixosConfigurations.wsl.config.system.build.toplevel
 # }}}
 
 # {{{ Garbage collection
