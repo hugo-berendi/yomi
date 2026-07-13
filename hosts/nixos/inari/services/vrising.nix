@@ -3,12 +3,9 @@
   lib,
   ...
 }: {
-  sops.secrets.vrising_rcon_password = {
-    sopsFile = ../secrets.yaml;
-  };
-
   services.vrising = {
     enable = false;
+    sopsFile = ../secrets.yaml;
     serverName = "FischGHGesicht";
     worldName = "Yomi";
     autosaveRetention = 6 * 60 * 60;

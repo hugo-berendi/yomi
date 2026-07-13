@@ -73,6 +73,12 @@ in {
   options.services.vrising = {
     enable = lib.mkEnableOption "V Rising dedicated server";
 
+    sopsFile = lib.mkOption {
+      type = lib.types.nullOr lib.types.path;
+      default = null;
+      description = "Sops file containing the vrising_rcon_password secret. Must be set when enable is true.";
+    };
+
     serverName = lib.mkOption {
       type = lib.types.str;
       default = "V Rising Server";
@@ -846,7 +852,10 @@ in {
 
   config = lib.mkIf cfg.enable {
     sops.secrets.vrising_rcon_password = {
-      sopsFile = ../../hosts/nixos/inari/secrets.yaml;
+      sopsFile =
+        lib.throwIf (cfg.sopsFile == null)
+        "services.vrising.sopsFile must be set when services.vrising.enable is true"
+        cfg.sopsFile;
     };
 
     services.steamGameServers.vrising = {
