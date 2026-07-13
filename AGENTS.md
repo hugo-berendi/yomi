@@ -79,6 +79,7 @@ CI runs on push/PR to main and checks:
 - camelCase for option names (`yomi.cloudflared.enableAnubis`)
 - kebab-case for package names
 - Custom options go under `yomi.*` namespace
+- Exception: service-wrapper modules that wrap an upstream NixOS service (e.g. `services.vrising`, `services.steamGameServers`, `services.pounce`) may use the `services.*` namespace to match upstream conventions. This keeps the interface familiar and avoids redundant nesting (e.g. `yomi.vrising` would still set `services.steamGameServers.vrising` internally).
 
 **Example Module Pattern:**
 ```nix
