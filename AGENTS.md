@@ -1,164 +1,133 @@
 # Agent Guidelines for Yomi
 
-Yomi is a NixOS configuration flake managing personal dotfiles and system configurations across multiple hosts.
+Flake-based NixOS configuration managing 5 hosts with shared modules, home-manager, sops-nix secrets, and impermanence.
 
-## Project Structure
+## Hosts
 
-| Directory | Purpose |
-|-----------|---------|
-| `common/` | Shared configuration (fonts, themes, nixpkgs settings) |
-| `devshells/` | Nix development shells (yomi, lua, poetry, typescript, etc.) |
-| `dns/` | DNS configuration with octodns/Cloudflare |
-| `home/` | Home-manager configurations (per-host and feature modules) |
-| `home/features/` | Feature modules: cli, desktop, neovim, productivity, wayland |
-| `hosts/nixos/` | NixOS host configurations |
-| `modules/` | Custom modules (nixos, home-manager, common) |
-| `overlays/` | Nix overlays |
-| `pkgs/` | Custom Nix packages |
-| `scripts/` | Utility bash scripts |
+| Host | Role | Notes |
+|------|------|-------|
+| `amaterasu` | Framework 13 laptop | BTRFS + impermanence, hyprland, desktop |
+| `tsukuyomi` | Tower PC | BTRFS + impermanence, hyprland, desktop |
+| `inari` | Home server | ZFS, ~40 services, Docker containers |
+| `iso` | Installation ISO | Bootable installer |
+| `wsl` | WSL environment | No impermanence |
 
-**Hosts:** amaterasu (desktop), tsukuyomi (laptop), inari (server), iso (installation), wsl
+## Commands
 
-## Build/Lint/Test Commands
+```bash
+just nixos-rebuild build <host>     # Dry-build (validates without applying)
+just nixos-rebuild switch           # Apply locally (auto-detects hostname)
+just nixos-rebuild switch <host>    # Apply remotely via SSH
+just nixos-rebuild dry-build <host> # Quick eval check
+just lint                           # alejandra + stylua + statix + deadnix
+just fmt                            # Format everything (runs before pre-commit)
+just pre-commit                     # fmt + nix flake check
+just check                          # nix flake check --show-trace
+just push-wsl-cache                 # Push wsl build to hugo-berendi cachix
+```
 
-### Primary Commands
-| Command | Description |
-|---------|-------------|
-| `just nixos-rebuild build <hostname>` | Build NixOS config (validates without applying) |
-| `just nixos-rebuild switch` | Apply config locally (requires sudo) |
-| `just check` | Run all flake checks (`nix flake check --all-systems`) |
-| `just lint` | Check all formatting (Nix + Lua) |
-| `just fmt` | Format all code (Nix + Lua) |
-| `just pre-commit` | Format + flake check (run before committing) |
+**Always dry-build before committing changes.** The `nixos-rebuild` justfile recipe is a Python wrapper that auto-detects local vs remote, handles sudo, and passes `--no-reexec` (nixos-rebuild-ng).
 
-### Formatting
-| Command | Description |
-|---------|-------------|
-| `nix fmt` / `just format` | Format Nix code (uses alejandra) |
-| `stylua .` / `just format-lua` | Format Lua code |
-| `just format-check` | Check Nix formatting without applying |
-| `just format-lua-check` | Check Lua formatting without applying |
+## CI
 
-### Other Commands
-| Command | Description |
-|---------|-------------|
-| `just build-iso` | Build custom installation ISO |
-| `just bump-common` | Update common flake inputs |
-| `just gc` | Garbage collection (removes old generations) |
-| `just dns-diff` | Preview DNS changes |
-| `just dns-push` | Apply DNS changes |
-| `just sops-rekey` | Rekey all secrets.yaml files |
-| `just security-audit` | Audit systemd service hardening |
+Forgejo Actions (`.forgejo/workflows/`):
+- `check-nixos-flake.yml`: push/PR — runs `just lint`, `just check`, builds amaterasu + tsukuyomi + inari + wsl
+- `update-flake-inputs.yml`: daily cron — `nix flake update`, builds all hosts, auto-commits to main if checks pass
 
-### CI Workflow
-CI runs on push/PR to main and checks:
-1. `nix flake check --all-systems`
-2. Build all host configurations (amaterasu, tsukuyomi, inari)
-3. Build DNS packages
-4. Nix formatting (`nix fmt -- --check`)
-5. Lua formatting (`stylua --check`)
+## Architecture
+
+### Module layers
+
+| Layer | Path | Loaded by | Purpose |
+|-------|------|-----------|---------|
+| Common | `modules/common/` | Both NixOS + HM | Options accessible from both sides (`yomi.pilot`, `yomi.theming`, `yomi.location`, `yomi.ports`) |
+| NixOS | `modules/nixos/` | NixOS only | System-level modules (`yomi.cloudflared`, `yomi.hardening`, `yomi.dns`) |
+| HM | `modules/home-manager/` | Home-manager only | User-level modules (`yomi.monitors`, `yomi.persistence`, `yomi.dev`) |
+| Shared host | `hosts/nixos/common/` | All hosts | Base config: users, networking, boot, filesystems, persistence |
+| Per-host | `hosts/nixos/<host>/` | Single host | Host-specific: hardware, partitions, services |
+| Home features | `home/features/` | Per-host HM | Feature modules: cli, desktop, neovim, productivity, wayland |
+| Per-host home | `home/<host>.nix` | Single host | Host-specific HM config (imports global.nix + features) |
+
+### Flake structure
+
+- `mkHost` in `flake.nix:130` wires each host: imports `hosts/nixos/<hostname>/`, conditionally imports `home/<hostname>.nix` if it exists
+- `specialArgs` passes `inputs`, `outputs`, `upkgs` (unstable nixpkgs) to all modules
+- `home-manager.extraSpecialArgs` also passes `hostname`
+- `nixosModules` = `modules/nixos // modules/common` (merged)
+- `homeManagerModules` = `modules/home-manager // modules/common` (merged)
+
+### Key option namespaces
+
+- `yomi.pilot.*` — user settings (name, email, githubUser, signingKey, gpgKeygrip, sshIdentity)
+- `yomi.machine.*` — host capabilities (graphical, interactible, gaming)
+- `yomi.ports.*` — port registry, source of truth at `hosts/nixos/common/base/ports.nix`
+- `yomi.cloudflared.at.<name>` — Cloudflare tunnel ingress (submodule with port, host, enableAnubis, enableIocaine)
+- `yomi.nginx.at.<name>` — nginx vhost shorthand
+- `yomi.dns.records` — octodns DNS records (consumed by `hosts/nixos/common/default.nix` for /etc/hosts)
+- `yomi.persistence.at.{state,cache}.apps.<name>.directories` — impermanence paths
+- `yomi.theming.*` — stylix-derived primitives (gaps, rounding, blur, colors)
+- `yomi.filesystems.*` — BTRFS rollback + persistPaths (shared via `hosts/nixos/common/filesystems/`)
+- `yomi.hardening.presets.{base,standard,strict}` — systemd hardening tiers
+- `yomi.location.*` — lat/long for wlsunset
+
+### Service-wrapper exception
+
+Modules wrapping upstream NixOS services use `services.*` instead of `yomi.*`: `services.vrising`, `services.steamGameServers`, `services.windrose`, `services.pounce`. This matches upstream conventions.
 
 ## Code Style
 
 ### Nix
+- Fold markers: `# {{{ Section Name` and `# }}}`
+- Destructured args: `{config, lib, pkgs, ...}:`
+- `let cfg = config.yomi.moduleName; in` pattern
+- `lib.mkOption` with `type` + `description` always
+- `lib.mkEnableOption` for boolean toggles
+- `lib.mkDefault` for overridable defaults
+- camelCase for options, kebab-case for packages
+- Custom options under `yomi.*` (except service-wrappers, see above)
+- No comments unless requested — code is self-documenting
+- Use `builtins.toJSON` + `pkgs.writeText` for JSON generation, never shell heredocs
+- Use `lib.mkIf cfg.enable` to gate module config blocks
 
-**File Organization:**
-- Use fold markers to organize sections: `# {{{ Section Name` and `# }}}`
-- Group imports at the top with fold markers
+### Lua (neovim config)
+- Tabs, width 4, max column 120 (`stylua.toml`)
+- Neovim config uses nvf (not LazyVim). Plugin specs go through `programs.nvf.settings.vim`
 
-**Function Arguments:**
-- Use destructured attrsets: `{lib, config, pkgs, ...}:`
-- Access config with `let cfg = config.yomi.moduleName; in`
+## Secrets
 
-**Module Options:**
-- Always use `lib.mkOption` with `type` and `description`
-- Use `lib.mkDefault` for overridable defaults
-- Use `lib.mkEnableOption` for boolean toggles
-
-**Naming Conventions:**
-- camelCase for option names (`yomi.cloudflared.enableAnubis`)
-- kebab-case for package names
-- Custom options go under `yomi.*` namespace
-- Exception: service-wrapper modules that wrap an upstream NixOS service (e.g. `services.vrising`, `services.steamGameServers`, `services.pounce`) may use the `services.*` namespace to match upstream conventions. This keeps the interface familiar and avoids redundant nesting (e.g. `yomi.vrising` would still set `services.steamGameServers.vrising` internally).
-
-**Example Module Pattern:**
-```nix
-{config, lib, ...}: let
-  cfg = config.yomi.myModule;
-in {
-  options.yomi.myModule = {
-    enable = lib.mkEnableOption "My module";
-    setting = lib.mkOption {
-      type = lib.types.str;
-      description = "A setting for my module";
-      default = "value";
-    };
-  };
-
-  config = lib.mkIf cfg.enable {
-    # configuration here
-  };
-}
-```
-
-**Flake Inputs:**
-- Inputs should `follow` nixpkgs where possible
-- Use `inputs.nixpkgs.follows = "nixpkgs";`
-
-### Lua
-
-**Formatting (stylua.toml):**
-- Indent: Tabs (width 4)
-- Max column width: 120
-- Run `stylua .` before committing
-
-**Neovim Plugins:**
-- Follow LazyVim plugin spec format
-- Use tables for plugin configurations
-
-### General Guidelines
-
-- **Match existing patterns:** Check imports, naming, and structure in neighboring files
-- **No comments unless requested:** Keep code self-documenting
-- **No placeholders:** Use actual values matching codebase conventions
-- **Secrets:** Never commit secrets; use sops-nix (files named `secrets.yaml`)
-
-## Secrets Management
-
-- Uses sops-nix with age encryption
-- Secret files are named `secrets.yaml`
-- Keys defined in `.sops.yaml`
-- Rekey with `just sops-rekey`
+- sops-nix with age encryption
+- Secret files named `secrets.yaml` — **never commit their contents, only structure/references**
+- Keys defined in `.sops.yaml` (age + SSH keys)
+- `just sops-rekey` to rekey all secret files
+- `just ssh-to-age` to convert SSH key to age key
+- Modules that need secrets: add a `sopsFile` option (see vrising, meilisearch patterns), don't hardcode host paths
 
 ## Persistence
 
-- Uses impermanence module for stateless root
-- Services with `DynamicUser=true` don't need explicit persistence (`/var/lib/private` is persisted)
-- Home directories use `yomi.persistence.at.{state,cache}.apps.<name>.directories`
+- impermanence module: stateless root on BTRFS (amaterasu/tsukuyomi) and ZFS (inari)
+- `yomi.filesystems.persistPaths` controls `neededForBoot` paths
+- `DynamicUser=true` services auto-persist via `/var/lib/private`
+- Home: `yomi.persistence.at.{state,cache}.apps.<name>.directories`
+
+## Gotchas
+
+- **nix.package = pkgs.lix** — Lix is the default Nix implementation (`hosts/nixos/common/nix.nix`)
+- **hyprland follows nixpkgs-unstable** — not nixpkgs. Breakages can happen on unstable bumps.
+- **stylix release-26.05** — pinned to release branch, not master
+- **permittedInsecurePackages** — only 3 entries needed: `electron-39.8.10` (bitwarden), `olm-3.2.16` (matrix), `pnpm-10.29.2` (vesktop build tool). Remove stale entries when packages update.
+- **Build failures from insecure packages** — nixpkgs marks packages insecure; add to `common/nixpkgs.nix` `permittedInsecurePackages` only if the package is actually needed
+- **ghostty** — no home-manager module exists in the ghostty flake. Install via `home.packages` + `xdg.configFile` (see `home/features/desktop/ghostty.nix`)
+- **wsl and iso don't use impermanence** — `yomi.filesystems.btrfs.enable` defaults to false
+- **New files must be `git add`-ed before flake eval** — flakes only see git-tracked files. Untracked new files cause "path not found" errors.
+- **home-manager backupFileExtension = "backy"** — HM backups old configs with `.backy` extension
 
 ## Agent Workflow
 
-### Before Making Changes
-1. Use nixos MCP server to search packages and options
-2. Check existing patterns in similar modules
-3. Understand the module structure before editing
-4. Do not create branches or git worktrees unless the user explicitly requests them
-
-### Building and Testing
-1. **Always build first:** `just nixos-rebuild build <hostname>`
-2. **Check formatting:** `just lint`
-3. **Apply locally:** `just nixos-rebuild switch` (only after successful build)
-
-### Committing
-- Commit each individual change separately
-- Use descriptive commit messages
-- Do not batch unrelated changes
-- Run `just pre-commit` before committing
-
-## Available MCP Tools
-
-When working on this codebase, prefer using:
-- **nixos MCP:** Search NixOS packages, options, and Home Manager configurations
-- **filesystem MCP:** File operations
-- **github MCP:** Repository operations
-- **deepwiki MCP:** Documentation lookups
+1. Search nixos MCP for packages/options before writing Nix code
+2. Check existing patterns in neighboring modules
+3. Edit files following fold marker + yomi.* conventions
+4. `git add` any new files immediately (flakes need tracked files)
+5. Dry-build: `just nixos-rebuild dry-build <host>` or `nixos-rebuild dry-build --flake .#<host>`
+6. Run `just lint` before committing
+7. Commit each logical change separately with descriptive messages
+8. Do not create branches or worktrees unless explicitly asked
