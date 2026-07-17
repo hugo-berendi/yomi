@@ -19,3 +19,6 @@ log.txt
 
 # worktrees
 .worktrees/
+
+# local secrets / host-specific symlinks (sops-decrypted, never commit)
+.wakatime.cfg
