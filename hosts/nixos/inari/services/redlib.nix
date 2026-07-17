@@ -6,12 +6,15 @@
   port = config.yomi.ports.redlib;
 in {
   services.redlib = {
-    enable = true;
+    enable = false;
     port = port;
   };
-  yomi.nginx.at.redlib.port = port;
 
-  systemd.services.redlib.serviceConfig = lib.mkMerge [
+  yomi.nginx.at.redlib = lib.mkIf config.services.redlib.enable {
+    inherit port;
+  };
+
+  systemd.services.redlib.serviceConfig = lib.mkIf config.services.redlib.enable (lib.mkMerge [
     (lib.mapAttrs (_: lib.mkForce) config.yomi.hardening.presets.standard)
-  ];
+  ]);
 }
