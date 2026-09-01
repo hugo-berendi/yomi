@@ -26,6 +26,15 @@
 
   users.users.root.hashedPasswordFile = lib.mkForce null;
 
+  # {{{ ZFS support (for diagnosing/fixing inari's trim kernel panic)
+  boot.supportedFilesystems = ["zfs"];
+  networking.hostId = "8425e349"; # required by ZFS, arbitrary for a live ISO
+  # }}}
+
+  # {{{ Testing AMD SRSO mitigation workaround (srso_alias_safe_ret panic on AZW EQ/EQ)
+  boot.kernelParams = ["spec_rstack_overflow=ibpb"];
+  # }}}
+
   environment.systemPackages = let
     cloneConfig = pkgs.writeShellScriptBin "liftoff" ''
       git clone https://github.com:hugo-berendi/yomi.git
@@ -39,6 +48,18 @@
       nixos-install-tools
       disko
       cloneConfig
+
+      # ZFS + storage diagnostics
+      zfs
+      smartmontools
+      nvme-cli
+      hdparm
+      sdparm
+      parted
+      gptfdisk
+      pciutils
+      usbutils
+      lsscsi
     ];
 
   environment.defaultPackages = [];
