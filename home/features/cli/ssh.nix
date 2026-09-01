@@ -6,8 +6,5 @@
       identityFile = config.yomi.pilot.sshIdentity;
     };
   };
-  yomi.persistence.at.state.apps.ssh = {
-    name = "";
-    directories = [".ssh"];
-  };
+  yomi.persistence.at.state.apps.ssh.directories = [".ssh"];
 }

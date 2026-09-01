@@ -5,7 +5,6 @@
 
     # Actual data/media (eg: projects, images, videos, etc)
     at.data.path = "/persist/data";
-    at.data.prefixDirectories = false;
 
     # App state I want to keep
     at.state.path = "/persist/state";
@@ -134,10 +133,7 @@
   # }}}
   # {{{ Cli
   # {{{ Sops
-  yomi.persistence.at.state.apps.sops = {
-    name = "";
-    directories = ["${config.xdg.configHome}/sops/age"];
-  };
+  yomi.persistence.at.state.apps.sops.directories = ["${config.xdg.configHome}/sops/age"];
   # }}}
   # }}}
 }

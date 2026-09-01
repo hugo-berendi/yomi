@@ -30,25 +30,13 @@ in {
             type = lib.types.str;
             description = "The path to the home directory for files in this record";
           };
-
-          prefixDirectories = lib.mkOption {
-            type = lib.types.bool;
-            default = true;
-            description = "Whether to enable gnu/stow type prefix directories";
-          };
           # }}}
           # {{{ Apps
           apps = lib.mkOption {
             default = {};
-            description = "Record of gnu/stow-style apps to be stored in this location";
-            type = lib.types.attrsOf (lib.types.submodule ({name, ...}: {
+            description = "Record of gnu/stow-style groups of files/directories to be stored in this location";
+            type = lib.types.attrsOf (lib.types.submodule {
               options = {
-                name = lib.mkOption {
-                  type = lib.types.str;
-                  default = name;
-                  description = "The gnu/stow-style subdirectory name";
-                };
-
                 files = lib.mkOption {
                   type = lib.types.listOf lib.types.str;
                   default = [];
@@ -88,7 +76,7 @@ in {
                   }));
                 };
               };
-            }));
+            });
           };
           # }}}
         };
@@ -100,24 +88,23 @@ in {
   config = let
     makeLocation = location: let
       # {{{ Path processing
-      processPath = appName: path: let
-        suffix = "${lib.strings.removePrefix "${config.home.homeDirectory}/" (builtins.toString path)}";
-        prefix =
-          if location.prefixDirectories
-          then "${appName}/"
-          else "";
-      in
-        # lib.debug.traceSeq "\nProcessing path at location ${location.path} and app ${appName} from original path ${value} to ${prefix + suffix}"
-        (prefix + suffix);
+      # Home Manager's persistence module bind-mounts each directory/file at
+      # the *same* relative path on both the persistent-storage side and the
+      # live $HOME side, so there is no way to namespace persistent storage
+      # by app name without also moving the live mount point away from where
+      # programs actually expect it (eg. it would mount ~/claude-code/.claude
+      # instead of ~/.claude, which nothing reads and which gets silently
+      # wiped every reboot). Paths are kept verbatim to avoid that footgun.
+      processPath = path: lib.strings.removePrefix "${config.home.homeDirectory}/" (builtins.toString path);
       # }}}
       # {{{ Constructors
-      mkDirectory = appName: directory:
+      mkDirectory = directory:
         if builtins.isAttrs directory
-        then {directory = processPath appName directory.directory;}
-        else processPath appName directory;
+        then {directory = processPath directory.directory;}
+        else processPath directory;
 
-      mkAppDirectory = app: builtins.map (mkDirectory app.name) app.directories;
-      mkAppFiles = app: builtins.map (processPath app.name) app.files;
+      mkAppDirectory = app: builtins.map mkDirectory app.directories;
+      mkAppFiles = app: builtins.map processPath app.files;
       # }}}
     in
       # {{{ Impermanence config generation
