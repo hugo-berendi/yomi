@@ -12,6 +12,7 @@
     else "spotify";
   vicinae = lib.getExe config.programs.vicinae.package;
   swayosd = lib.getExe' config.services.swayosd.package "swayosd-client";
+  sessionMenu = "${lib.getExe pkgs.wlogout} --protocol layer-shell --buttons-per-row 3";
 in {
   # {{{ Imports
   imports = [
@@ -150,7 +151,7 @@ in {
           "$mod ALT, PRINT, exec, wl-immich"
           # }}}
           # {{{ Power
-          "$mod, Escape, exec, caelestia shell drawers toggle session"
+          "$mod, Escape, exec, ${sessionMenu}"
           # }}}
         ]
         ++ (

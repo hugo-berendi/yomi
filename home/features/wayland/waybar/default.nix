@@ -207,7 +207,7 @@ in {
       "custom/power" = {
         format = "󰐥";
         tooltip = false;
-        on-click = "caelestia shell drawers toggle session";
+        on-click = "${lib.getExe pkgs.wlogout} --protocol layer-shell --buttons-per-row 3";
       };
     };
   };

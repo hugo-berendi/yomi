@@ -11,6 +11,7 @@
     ./swayosd.nix
     ./vicinae.nix
     ./waybar
+    ./wlogout.nix
     ./wlsunset.nix
 
     ../desktop
