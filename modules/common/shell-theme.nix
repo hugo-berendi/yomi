@@ -61,8 +61,8 @@ in {
     };
 
     opacity = {
-      panel = lib.max 0.78 config.stylix.opacity.desktop;
-      elevated = lib.max 0.9 config.stylix.opacity.popups;
+      panel = config.stylix.opacity.desktop;
+      elevated = config.stylix.opacity.popups;
       muted = 0.64;
     };
 

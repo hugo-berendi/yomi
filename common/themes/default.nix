@@ -118,7 +118,7 @@
       stylix = {
         image = ./wallpapers/rosepine_creepy_moon.jpg;
         base16Scheme = base16 "rose-pine-moon";
-        opacity = transparency 0.9;
+        opacity = transparency 0.78;
         polarity = "dark";
         cursor = {
           package = inputs.rose-pine-hyprcursor.packages.${pkgs.stdenv.hostPlatform.system}.default;

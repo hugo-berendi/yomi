@@ -1,16 +1,16 @@
-{upkgs, ...}: {
+{pkgs, ...}: {
   stylix.fonts = {
     monospace = {
-      name = "Iosevka Term Nerd Font";
-      package = upkgs.iosevka-bin;
+      name = "Maple Mono NF";
+      package = pkgs.maple-mono.NF;
     };
     sansSerif = {
-      name = "IBM Plex Sans";
-      package = upkgs.ibm-plex;
+      name = "Maple Mono NF";
+      package = pkgs.maple-mono.NF;
     };
     serif = {
-      name = "IBM Plex Serif";
-      package = upkgs.ibm-plex;
+      name = "Maple Mono NF";
+      package = pkgs.maple-mono.NF;
     };
 
     sizes = {

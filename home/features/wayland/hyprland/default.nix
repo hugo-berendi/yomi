@@ -55,8 +55,8 @@ in {
       config = {
         decoration = {
           rounding = config.yomi.theming.rounding.radius;
-          active_opacity = 1;
-          inactive_opacity = 1;
+          active_opacity = config.stylix.opacity.applications;
+          inactive_opacity = lib.max 0.65 (config.stylix.opacity.applications - 0.08);
 
           blur = {
             enabled = config.yomi.theming.blur.passes > 0;
