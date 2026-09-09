@@ -7,7 +7,7 @@
   siteSearch = lib.concatMap (
     name:
       map (shortcut: {
-        inherit shortcut;
+        shortcut = lib.removePrefix "@" shortcut;
         name =
           if shortcut == builtins.head engines.${name}.aliases
           then name
