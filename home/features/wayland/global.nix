@@ -7,6 +7,7 @@
   # {{{ Imports
   imports = [
     ./caelestia
+    ./vicinae.nix
     ./wlsunset.nix
 
     ../desktop
