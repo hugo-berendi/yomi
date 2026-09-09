@@ -8,6 +8,7 @@
   imports = [
     ./caelestia
     ./swaync.nix
+    ./swayosd.nix
     ./vicinae.nix
     ./waybar
     ./wlsunset.nix

@@ -11,6 +11,7 @@
     then lib.getExe config.programs.spicetify.spicedSpotify
     else "spotify";
   vicinae = lib.getExe config.programs.vicinae.package;
+  swayosd = lib.getExe' config.services.swayosd.package "swayosd-client";
 in {
   # {{{ Imports
   imports = [
@@ -125,12 +126,12 @@ in {
           "$mod, Y, exec, pypr attach"
           # }}}
           # {{{ control media
-          ", XF86AudioMute, exec, volume --toggle"
-          ", XF86AudioMicMute, exec, volume --toggle-mic"
-          ", XF86AudioStop, exec, volume --stop"
-          ", XF86AudioPrev, exec, volume --previous"
-          ", XF86AudioNext, exec, volume --next"
-          ", XF86AudioPlay, exec, volume --play-pause"
+          ", XF86AudioMute, exec, ${swayosd} --output-volume mute-toggle"
+          ", XF86AudioMicMute, exec, ${swayosd} --input-volume mute-toggle"
+          ", XF86AudioStop, exec, ${lib.getExe pkgs.playerctl} stop"
+          ", XF86AudioPrev, exec, ${lib.getExe pkgs.playerctl} previous"
+          ", XF86AudioNext, exec, ${lib.getExe pkgs.playerctl} next"
+          ", XF86AudioPlay, exec, ${lib.getExe pkgs.playerctl} play-pause"
           # }}}
           # {{{ Execute external things
           "$mod, Space, exec, ${vicinae} toggle"
@@ -170,12 +171,12 @@ in {
         );
       binde = [
         # {{{ control volume
-        ", XF86AudioRaiseVolume, exec, volume --inc"
-        ", XF86AudioLowerVolume, exec, volume --dec"
+        ", XF86AudioRaiseVolume, exec, ${swayosd} --output-volume raise"
+        ", XF86AudioLowerVolume, exec, ${swayosd} --output-volume lower"
         # }}}
         # {{{ control backlight
-        ", XF86MonBrightnessDown, exec, backlight --dec"
-        ", XF86MonBrightnessUp, exec, backlight --inc"
+        ", XF86MonBrightnessDown, exec, ${swayosd} --brightness lower"
+        ", XF86MonBrightnessUp, exec, ${swayosd} --brightness raise"
       ];
       bindm = [
         "$mod, mouse:272, movewindow"
