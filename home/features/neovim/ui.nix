@@ -34,6 +34,8 @@
 
     binds.whichKey.enable = true;
 
+    ui.illuminate.enable = true;
+
     ui = {
       colorizer.enable = true;
       noice = {
@@ -76,6 +78,7 @@
     };
 
     visuals = {
+      fidget-nvim.enable = true;
       rainbow-delimiters.enable = true;
     };
 

@@ -5,6 +5,7 @@
     ./ghostty.nix
     ./discord
     ./browser
+    ./academic.nix
     ./wakatime
     ./spotify.nix
     ./obsidian.nix
@@ -12,16 +13,12 @@
     ./gaming.nix
     ./unity.nix
     ./calibre.nix
+    ./chatgpt.nix
   ];
   # }}}
   # {{{ Services
   services.batsignal.enable = true;
   services.trayscale.enable = true;
-
-  services.gnome-keyring = {
-    enable = true;
-    components = ["pkcs11" "secrets" "ssh"];
-  };
   # }}}
   # {{{ Theming
   stylix.targets.gtk.enable = true;
@@ -37,6 +34,7 @@
     krita
     libreoffice
     bitwarden-desktop
+    karere
     qbittorrent
     overskride
     mpv

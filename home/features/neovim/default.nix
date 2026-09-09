@@ -47,6 +47,7 @@ in {
     ./lsp.nix
     ./treesitter.nix
     ./completion.nix
+    ./writing.nix
     ./ui.nix
     ./format.nix
     ./plugins

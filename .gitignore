@@ -16,6 +16,7 @@ log.txt
 *.idea
 !.envrc
 .env
+.direnv/
 
 # worktrees
 .worktrees/

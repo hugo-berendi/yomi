@@ -1,5 +1,7 @@
-{...}: {
+_: {
   programs.nvf.settings.vim.mini = {
+    ai.enable = true;
+    bufremove.enable = true;
     icons = {
       enable = true;
       setupOpts.style = "glyph";
@@ -16,5 +18,6 @@
     pairs = {
       enable = true;
     };
+    surround.enable = true;
   };
 }

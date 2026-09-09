@@ -73,6 +73,7 @@ in {
   xdg.userDirs = {
     enable = lib.mkDefault true;
     createDirectories = lib.mkDefault true;
+    setSessionVariables = true;
 
     desktop = null;
     templates = null;

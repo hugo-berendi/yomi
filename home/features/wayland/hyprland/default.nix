@@ -32,6 +32,7 @@ in {
   stylix.targets.hyprland.enable = false;
   wayland.windowManager.hyprland = {
     enable = true;
+    configType = "hyprlang";
 
     package = pkgs.hyprland;
     portalPackage = null;
@@ -104,8 +105,8 @@ in {
       # {{{ Autostart
       exec = ["systemctl --user import-environment PATH && systemctl --user restart xdg-desktop-portal.service"];
       exec-once = [
-        "${config.yomi.settings.terminal-cmd} & zen & vesktop & ${spotifyCmd} & obsidiantui & pypr"
-        "command -v wasistlos >/dev/null 2>&1 && wasistlos || true"
+        "${config.yomi.settings.terminal-cmd} & helium & vesktop & ${spotifyCmd} & obsidiantui & pypr"
+        "command -v karere >/dev/null 2>&1 && karere || true"
         "command -v teams-for-linux >/dev/null 2>&1 && teams-for-linux || true"
         "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
         "ln -sf ${pkgs.fish}/bin/fish /usr/bin/fish"
@@ -179,12 +180,12 @@ in {
         "$mod, mouse:273, resizewindow"
       ];
       windowrule = [
-        "workspace 2 silent, class:^(zen|zen-.*)$"
-        "workspace 2 silent, title:^(.*Zen Browser.*)$"
+        "workspace 2 silent, class:^(helium|helium-browser)$"
+        "workspace 2 silent, title:^(.*Helium.*)$"
         "workspace 3 silent, title:^(.*((Disc|WebC|Venc)ord)|Vesktop.*)$"
         "workspace 3 silent, title:^(.*Element.*)$"
-        "workspace 3 silent, class:^(teams-for-linux|teams|wasistlos)$"
-        "workspace 3 silent, title:^(.*(Teams|wasistlos|WhatsApp).*)$"
+        "workspace 3 silent, class:^(teams-for-linux|teams|karere)$"
+        "workspace 3 silent, title:^(.*(Teams|Karere|WhatsApp).*)$"
         "workspace 5 silent, title:^(.*(S|s)pot(ify)?.*)$"
         "workspace 4 silent, class:^(.*Obsidian.*)$"
         "workspace 4 silent, title:^(.*stellar-sanctum)$"
@@ -195,9 +196,9 @@ in {
         "noinitialfocus, class:^(xwaylandvideobridge)$"
         "maxsize 1 1, class:^(xwaylandvideobridge)$"
         "noblur, class:^(xwaylandvideobridge)$"
-        "idleinhibit fullscreen, class:^(zen|zen-.*)$"
+        "idleinhibit fullscreen, class:^(helium|helium-browser)$"
         "idleinhibit focus, class:^(mpv|.+exe)$"
-        "idleinhibit focus, title:^(.*Zen Browser.*)$, title:^(.*YouTube.*)$"
+        "idleinhibit focus, title:^(.*Helium.*)$, title:^(.*YouTube.*)$"
       ];
     };
   };

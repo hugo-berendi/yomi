@@ -2,7 +2,6 @@
   pkgs,
   upkgs,
   lib,
-  config,
   ...
 }: {
   imports = [
@@ -49,7 +48,7 @@
       # }}}
 
       # {{{ WSL utilities
-      wslu
+      wsl-open
       # }}}
     ];
   };

@@ -13,7 +13,7 @@
   ];
   # }}}
   # {{{ Session variables
-  home.sessionVariables.NIXOS_OZONES_WL = "1";
+  home.sessionVariables.NIXOS_OZONE_WL = "1";
   # }}}
   # {{{ Packages
   home.packages = let

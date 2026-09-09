@@ -53,27 +53,7 @@ in {
                   description = ''
                     Modified version of `home.persistence.*.directories` which takes in absolute paths.
                   '';
-
-                  type = lib.types.listOf (lib.types.either lib.types.str (lib.types.submodule {
-                    options = {
-                      directory = lib.mkOption {
-                        type = lib.types.str;
-                        example = "/home/username/.config/nvim";
-                        description = "The directory path to be linked.";
-                      };
-
-                      method = lib.mkOption {
-                        type = lib.types.enum ["bindfs" "symlink"];
-                        default = "symlink";
-                        description = ''
-                          The linking method that should be used for this
-                          directory. bindfs is the default and works for most use
-                          cases, however some programs may behave better with
-                          symlinks.
-                        '';
-                      };
-                    };
-                  }));
+                  type = lib.types.listOf lib.types.str;
                 };
               };
             });
@@ -98,12 +78,7 @@ in {
       processPath = path: lib.strings.removePrefix "${config.home.homeDirectory}/" (builtins.toString path);
       # }}}
       # {{{ Constructors
-      mkDirectory = directory:
-        if builtins.isAttrs directory
-        then {directory = processPath directory.directory;}
-        else processPath directory;
-
-      mkAppDirectory = app: builtins.map mkDirectory app.directories;
+      mkAppDirectory = app: builtins.map processPath app.directories;
       mkAppFiles = app: builtins.map processPath app.files;
       # }}}
     in

@@ -1,4 +1,4 @@
-{...}: {
+_: {
   programs.nvf.settings.vim.keymaps = [
     # {{{ Diagnostics
     {
@@ -10,37 +10,37 @@
     {
       mode = "n";
       key = "]d";
-      action = "<cmd>lua vim.diagnostic.goto_next()<cr>";
+      action = "<cmd>lua vim.diagnostic.jump({ count = 1 })<cr>";
       desc = "Next Diagnostic";
     }
     {
       mode = "n";
       key = "[d";
-      action = "<cmd>lua vim.diagnostic.goto_prev()<cr>";
+      action = "<cmd>lua vim.diagnostic.jump({ count = -1 })<cr>";
       desc = "Prev Diagnostic";
     }
     {
       mode = "n";
       key = "]e";
-      action = "<cmd>lua vim.diagnostic.goto_next({ severity = vim.diagnostic.severity.ERROR })<cr>";
+      action = "<cmd>lua vim.diagnostic.jump({ count = 1, severity = vim.diagnostic.severity.ERROR })<cr>";
       desc = "Next Error";
     }
     {
       mode = "n";
       key = "[e";
-      action = "<cmd>lua vim.diagnostic.goto_prev({ severity = vim.diagnostic.severity.ERROR })<cr>";
+      action = "<cmd>lua vim.diagnostic.jump({ count = -1, severity = vim.diagnostic.severity.ERROR })<cr>";
       desc = "Prev Error";
     }
     {
       mode = "n";
       key = "]w";
-      action = "<cmd>lua vim.diagnostic.goto_next({ severity = vim.diagnostic.severity.WARN })<cr>";
+      action = "<cmd>lua vim.diagnostic.jump({ count = 1, severity = vim.diagnostic.severity.WARN })<cr>";
       desc = "Next Warning";
     }
     {
       mode = "n";
       key = "[w";
-      action = "<cmd>lua vim.diagnostic.goto_prev({ severity = vim.diagnostic.severity.WARN })<cr>";
+      action = "<cmd>lua vim.diagnostic.jump({ count = -1, severity = vim.diagnostic.severity.WARN })<cr>";
       desc = "Prev Warning";
     }
     # }}}

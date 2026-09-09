@@ -16,10 +16,12 @@
         buffer = "[Buffer]";
         path = "[Path]";
         luasnip = "[LuaSnip]";
+        vimtex = "[VimTeX]";
       };
       sourcePlugins = [
         pkgs.vimPlugins.cmp-nvim-lsp
         pkgs.vimPlugins.cmp_luasnip
+        pkgs.vimPlugins.cmp-vimtex
       ];
     };
   };

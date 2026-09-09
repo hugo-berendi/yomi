@@ -10,11 +10,13 @@
     ./unicode.nix
     ./quietboot.nix
     ./hyprland.nix
+    ./helium.nix
   ];
 
   config = lib.mkIf config.yomi.machine.graphical {
     stylix.targets.gtk.enable = true;
 
+    services.gnome.gnome-keyring.enable = true;
     services.upower.enable = true;
 
     # https://nixos.wiki/wiki/Bluetooth

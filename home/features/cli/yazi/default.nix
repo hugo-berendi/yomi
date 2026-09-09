@@ -1,14 +1,11 @@
-{
-  pkgs,
-  inputs,
-  ...
-}: {
+{pkgs, ...}: {
   stylix.targets.yazi.enable = true;
 
   programs.yazi = {
     enable = true;
-    package = inputs.yazi.packages.${pkgs.stdenv.hostPlatform.system}.default;
+    package = pkgs.yazi;
     enableFishIntegration = true;
+    shellWrapperName = "yy";
     theme = builtins.fromTOML (builtins.readFile ./theme.toml);
     settings = builtins.fromTOML (builtins.readFile ./yazi.toml);
     keymap = builtins.fromTOML (builtins.readFile ./keymap.toml);

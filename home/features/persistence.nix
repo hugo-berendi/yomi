@@ -79,6 +79,11 @@
   # }}}
   # }}}
   # {{{ Desktop apps
+  # {{{ GNOME Keyring
+  yomi.persistence.at.state.apps.gnome-keyring.directories = [
+    "${config.xdg.dataHome}/keyrings"
+  ];
+  # }}}
   # {{{ QBittorrent
   yomi.persistence.at.state.apps.qbittorrent.directories = [
     "${config.xdg.configHome}/qBittorrent" # Config options
@@ -98,10 +103,13 @@
     "${config.xdg.configHome}/teams-for-linux"
   ];
   # }}}
-  # {{{ WasIstLos
-  yomi.persistence.at.state.apps.wasistlos.directories = [
-    "${config.xdg.configHome}/wasistlos"
-    "${config.xdg.dataHome}/wasistlos"
+  # {{{ Karere
+  yomi.persistence.at.state.apps.karere.directories = [
+    "${config.xdg.dataHome}/karere"
+  ];
+
+  yomi.persistence.at.cache.apps.karere.directories = [
+    "${config.xdg.cacheHome}/karere"
   ];
   # }}}
   # {{{ Lutris
@@ -111,11 +119,7 @@
     "${config.xdg.cacheHome}/lutris/banners" # Game banners
     "${config.xdg.cacheHome}/lutris/coverart" # Game cover art
 
-    # Aparently IO intensive stuff like games prefer symlinks?
-    {
-      directory = "media/games/lutris";
-      method = "symlink";
-    } # Lutris games
+    "media/games/lutris" # Lutris games
   ];
   # }}}
   # {{{ Wine

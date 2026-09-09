@@ -1,4 +1,4 @@
-{...}: {
+_: {
   programs.nvf.settings.vim.autocmds = [
     {
       event = ["TextYankPost"];
@@ -45,6 +45,32 @@
         '';
       };
       desc = "Restore cursor position";
+    }
+    {
+      event = ["FocusGained" "TermClose" "TermLeave"];
+      pattern = ["*"];
+      command = "checktime";
+      desc = "Reload externally changed files";
+    }
+    {
+      event = ["VimResized"];
+      pattern = ["*"];
+      command = "tabdo wincmd =";
+      desc = "Balance windows after resizing";
+    }
+    {
+      event = ["FileType"];
+      pattern = ["gitcommit" "markdown" "tex"];
+      callback = {
+        _type = "lua-inline";
+        expr = ''
+          function()
+            vim.opt_local.spell = true
+            vim.opt_local.wrap = true
+          end
+        '';
+      };
+      desc = "Enable prose editing options";
     }
     {
       event = ["User"];

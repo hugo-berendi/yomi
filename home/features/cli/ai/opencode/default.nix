@@ -94,12 +94,13 @@ in {
 
     settings = {
       model = "openai/gpt-5.3-codex";
-      theme = opencodeTheme;
 
       # {{{ MCP Servers
       mcp = mcpServers;
       # }}}
     };
+
+    tui.theme = opencodeTheme;
   };
 
   yomi.persistence.at.state.apps.opencode.directories = [

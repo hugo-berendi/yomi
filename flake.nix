@@ -12,8 +12,6 @@
     # {{{ Additional package repositories
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
 
-    firefox-addons.url = "git+https://gitlab.com/rycee/nur-expressions?dir=pkgs/firefox-addons";
-    firefox-addons.inputs.nixpkgs.follows = "nixpkgs";
     # }}}
 
     llm-agents.url = "github:numtide/llm-agents.nix";
@@ -38,10 +36,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # {{{ Yazi flakes
-    yazi.url = "github:sxyazi/yazi";
-    # }}}
-
     # {{{ Nix-related tooling
     nixarr.url = "github:rasmus-kirk/nixarr";
 
@@ -63,9 +57,6 @@
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
 
     korora.url = "github:adisbladis/korora";
-
-    zen-browser.url = "github:0xc000022070/zen-browser-flake";
-    zen-browser.inputs.nixpkgs.follows = "nixpkgs";
 
     # }}}
     # {{{ Standalone software
@@ -190,9 +181,6 @@
       };
 
       perSystem = {
-        config,
-        self',
-        inputs',
         pkgs,
         system,
         ...

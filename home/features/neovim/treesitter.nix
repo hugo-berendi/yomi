@@ -1,4 +1,4 @@
-{...}: {
+_: {
   programs.nvf.settings.vim = {
     languages = {
       enableTreesitter = true;
@@ -13,6 +13,7 @@
       html.enable = true;
       css.enable = true;
       markdown.enable = true;
+      tex.enable = true;
       yaml.enable = true;
       terraform.enable = true;
       bash.enable = true;

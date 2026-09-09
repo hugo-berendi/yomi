@@ -36,9 +36,9 @@ nixos-rebuild action="switch" host=hostname ng="1" install_bootloader="0":
   if install_bootloader:
     args.append("--install-bootloader")
 
-  if host == "{{hostname}}":
+  if host == "{{hostname}}" or "{{action}}" in {"build", "dry-build"}:
     print("🧬 Switching nixos configuration (locally) for '{{BLUE + host + NORMAL}}'")
-    if "{{action}}" in {"switch", "boot", "test", "dry-activate"}:
+    if host == "{{hostname}}" and "{{action}}" in {"switch", "boot", "test", "dry-activate"}:
       sudo_bin = "/run/wrappers/bin/sudo" if os.path.exists("/run/wrappers/bin/sudo") else "sudo"
       args = [sudo_bin, *args]
   else:
@@ -57,8 +57,10 @@ nixos-rebuild action="switch" host=hostname ng="1" install_bootloader="0":
     print("🚀 All done!")
   except KeyboardInterrupt:
     print("🪓 Command cancelled")
-  except:
+    sys.exit(130)
+  except subprocess.CalledProcessError as error:
     print("💢 Something went wrong")
+    sys.exit(error.returncode)
 # }}}
 # {{{ Miscellaneous nix commands
 [doc("Build the custom ISO provided by the flake")]
@@ -73,7 +75,6 @@ bump-common:
     nixpkgs \
     nixpkgs-unstable \
     nix-index-database \
-    firefox-addons \
     base16-schemes \
     rose-pine-hyprcursor \
     home-manager \
@@ -100,7 +101,7 @@ format-check:
 [doc("Format Nix code")]
 [group("ci")]
 format:
-  nix fmt
+  nix fmt -- .
 
 [doc("Check Lua code formatting")]
 [group("ci")]
@@ -115,12 +116,12 @@ format-lua:
 [doc("Check for Nix anti-patterns using statix")]
 [group("ci")]
 statix-check:
-  statix check .
+  nix develop -c statix check .
 
 [doc("Check for unused Nix bindings using deadnix")]
 [group("ci")]
 deadnix-check:
-  deadnix --fail .
+  nix develop -c deadnix --fail .
 
 [doc("Run all formatting checks (Nix + Lua + linters)")]
 [group("ci")]
