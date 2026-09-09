@@ -16,20 +16,22 @@
       })
       engines.${name}.aliases
   ) (builtins.attrNames engines);
-  extensionUpdateUrl = "https://clients2.google.com/service/update2/crx";
+  extensionUpdateUrl = "https://services.helium.imput.net/ext/";
   extensions = import ../../../../home/features/desktop/browser/extensions.nix;
   policies = {
     AlwaysOpenPdfExternally = true;
     AutofillAddressEnabled = false;
     AutofillCreditCardEnabled = false;
     BackgroundModeEnabled = false;
+    BrowserThemeColor = "#${config.lib.stylix.colors.base00}";
     BrowserSignin = 0;
     BlockThirdPartyCookies = true;
     BookmarkBarEnabled = false;
     DefaultBrowserSettingEnabled = false;
     DefaultSearchProviderEnabled = true;
-    DefaultSearchProviderName = "searxng";
-    DefaultSearchProviderSearchURL = "https://search.hugo-berendi.de/search?q={searchTerms}";
+    DefaultSearchProviderKeyword = "startpage.com";
+    DefaultSearchProviderName = "Startpage";
+    DefaultSearchProviderSearchURL = "https://www.startpage.com/sp/search?query={searchTerms}&cat=web&pl=chrome";
     Disable3DAPIs = false;
     ExtensionInstallForcelist = map (id: "${id};${extensionUpdateUrl}") extensions;
     HomepageIsNewTabPage = false;

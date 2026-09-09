@@ -4,7 +4,7 @@
   ...
 }: let
   extensions = import ./extensions.nix;
-  extensionUpdateUrl = "https://clients2.google.com/service/update2/crx";
+  extensionUpdateUrl = "https://services.helium.imput.net/ext/";
 in {
   home.packages = [pkgs.helium];
 
