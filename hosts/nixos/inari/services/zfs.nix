@@ -38,7 +38,7 @@
       ssh = {
         enable = true;
         port = 2222;
-        authorizedKeys = lib.map (path: toString path) config.users.users.${config.yomi.pilot.name}.openssh.authorizedKeys.keyFiles;
+        authorizedKeys = lib.map toString config.users.users.${config.yomi.pilot.name}.openssh.authorizedKeys.keyFiles;
         hostKeys = ["/etc/secrets/initrd/ssh_host_rsa_key"];
       };
     };

@@ -1,4 +1,4 @@
-{...}: {
+_: {
   accounts.calendar = {
     basePath = ".calendar";
     accounts = {

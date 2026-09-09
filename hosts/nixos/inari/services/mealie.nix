@@ -1,8 +1,4 @@
-{
-  config,
-  lib,
-  ...
-}: {
+{config, ...}: {
   # {{{ Reverse proxy
   yomi.nginx.at.mealie.port = config.yomi.ports.mealie;
   # }}}

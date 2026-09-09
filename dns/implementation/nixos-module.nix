@@ -49,7 +49,7 @@ in {
               };
 
               value = lib.mkOption {
-                type = format.type;
+                inherit (format) type;
                 description = "The value assigned to the record, in octodns format";
               };
 

@@ -54,7 +54,7 @@
     ${name} = {
       type = "remote";
       enabled = true;
-      url = value.url;
+      inherit (value) url;
     };
   };
 

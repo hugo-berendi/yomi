@@ -1,4 +1,4 @@
-{...}: {
+_: {
   services.home-assistant.config.automation = [
     {
       id = "morning_weather_briefing";

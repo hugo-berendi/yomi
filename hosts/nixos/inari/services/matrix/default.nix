@@ -1,4 +1,4 @@
-{...}: {
+_: {
   imports = [
     ./tuwunel.nix
     ./bridges.nix

@@ -33,7 +33,7 @@
       filters =
         map (url: {
           enabled = true;
-          url = url;
+          inherit url;
         }) [
           "https://adguardteam.github.io/HostlistsRegistry/assets/filter_9.txt"
           "https://adguardteam.github.io/HostlistsRegistry/assets/filter_11.txt"

@@ -169,11 +169,11 @@ in {
   # {{{ Config
   config = {
     users.users = lib.mkMerge (lib.mapAttrsToList (
-        name: serverCfg:
+        _name: serverCfg:
           lib.mkIf serverCfg.enable {
             "${serverCfg.user}" = {
               isSystemUser = true;
-              group = serverCfg.group;
+              inherit (serverCfg) group;
               home = serverCfg.installDir;
             };
           }
@@ -181,7 +181,7 @@ in {
       cfg);
 
     users.groups = lib.mkMerge (lib.mapAttrsToList (
-        name: serverCfg:
+        _name: serverCfg:
           lib.mkIf serverCfg.enable {
             "${serverCfg.group}" = {};
           }
@@ -189,7 +189,7 @@ in {
       cfg);
 
     systemd.tmpfiles.rules = lib.flatten (lib.mapAttrsToList (
-        name: serverCfg:
+        _name: serverCfg:
           lib.optionals serverCfg.enable (
             [
               "d ${builtins.dirOf serverCfg.installDir} 0755 ${serverCfg.user} ${serverCfg.group} -"
@@ -202,7 +202,7 @@ in {
       cfg);
 
     systemd.services = lib.mkMerge (lib.mapAttrsToList (
-        name: serverCfg:
+        _name: serverCfg:
           lib.mkIf serverCfg.enable {
             "${serverCfg.serviceName}" = let
               serviceEnvironment =
@@ -238,11 +238,11 @@ in {
                   exit "$status"
                 '';
             in {
-              description = serverCfg.description;
-              wantedBy = serverCfg.wantedBy;
-              after = serverCfg.after;
-              wants = serverCfg.wants;
-              restartTriggers = serverCfg.restartTriggers;
+              inherit (serverCfg) description;
+              inherit (serverCfg) wantedBy;
+              inherit (serverCfg) after;
+              inherit (serverCfg) wants;
+              inherit (serverCfg) restartTriggers;
 
               environment = serviceEnvironment;
 
@@ -268,13 +268,13 @@ in {
       cfg);
 
     networking.firewall.allowedTCPPorts = lib.flatten (lib.mapAttrsToList (
-        name: serverCfg:
+        _name: serverCfg:
           lib.optionals (serverCfg.enable && serverCfg.openFirewall) serverCfg.allowedTCPPorts
       )
       cfg);
 
     networking.firewall.allowedUDPPorts = lib.flatten (lib.mapAttrsToList (
-        name: serverCfg:
+        _name: serverCfg:
           lib.optionals (serverCfg.enable && serverCfg.openFirewall) serverCfg.allowedUDPPorts
       )
       cfg);

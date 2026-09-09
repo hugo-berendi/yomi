@@ -95,7 +95,7 @@ in {
       appId = steamAppId;
       steamPlatform = "windows";
       installDir = serverDir;
-      dataDir = dataDir;
+      inherit dataDir;
       restartTriggers = [
         configHash
       ];
@@ -151,7 +151,7 @@ in {
       '';
       allowedTCPPorts = lib.optionals cfg.useDirectConnection [cfg.directConnectionServerPort];
       allowedUDPPorts = lib.optionals cfg.useDirectConnection [cfg.directConnectionServerPort];
-      serviceConfig = cfg.serviceConfig;
+      inherit (cfg) serviceConfig;
     };
   };
 }

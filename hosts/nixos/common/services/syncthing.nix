@@ -49,8 +49,8 @@ in {
     environment.persistence."/persist/state".directories = [
       {
         directory = dataDir;
-        user = user;
-        group = group;
+        inherit user;
+        inherit group;
       }
     ];
     # }}}

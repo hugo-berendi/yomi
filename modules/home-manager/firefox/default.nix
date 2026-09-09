@@ -72,7 +72,7 @@ in {
       userChrome = builtins.readFile ./theme.css;
       extensions = cfg.extensions ++ app.extensions;
       isDefault = false;
-      id = app.id;
+      inherit (app) id;
     };
 
     mkDesktopEntry = app: {
@@ -80,7 +80,7 @@ in {
       name = app.displayName;
       type = "Application";
       exec = "firefox --name=${app.displayName} --no-remote --kiosk -P \"${app.name}\" \"${app.url}\"";
-      icon = app.icon;
+      inherit (app) icon;
     };
   in {
     programs.firefox.profiles = lib.mapAttrs (_: mkProfile) cfg.app;

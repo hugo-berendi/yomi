@@ -1,4 +1,4 @@
-{...}: {
+_: {
   # {{{ Skills
   xdg.configFile."opencode/skills/frontend-design/SKILL.md".text = ''
     ---

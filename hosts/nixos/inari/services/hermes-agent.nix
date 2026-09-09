@@ -4,7 +4,6 @@
   pkgs,
   ...
 }: let
-  port = config.yomi.ports.hermes-agent;
   llamaPort = config.yomi.ports.llama-cpp;
   changedetectionPort = config.yomi.ports.changedetection;
   radicalePort = config.yomi.ports.radicale;

@@ -1,7 +1,6 @@
 {
   config,
   pkgs,
-  lib,
   ...
 }: let
   nn99 = pkgs.vimUtils.buildVimPlugin {

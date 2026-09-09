@@ -85,9 +85,8 @@ in {
   config = lib.mkIf (cfg.at != {}) {
     services.cloudflared.tunnels.${cfg.tunnel}.ingress =
       lib.attrsets.mapAttrs' (
-        name: {
+        _name: {
           host,
-          subdomain,
           port,
           protocol,
           enableAnubis,
@@ -112,11 +111,10 @@ in {
       cfg.at;
 
     services.anubis.instances = let
-      mkAnubisInstance = name: {
+      mkAnubisInstance = _name: {
         subdomain,
         port,
         protocol,
-        enableAnubis,
         ...
       }: let
         anubisPort = port + anubisOffset;
@@ -139,11 +137,7 @@ in {
 
     services.nginx.virtualHosts = let
       iocaineServices = lib.attrsets.filterAttrs (_: svc: svc.enableIocaine) cfg.at;
-      mkIocaineVhost = _: {
-        host,
-        port,
-        ...
-      }: {
+      mkIocaineVhost = _: {host, ...}: {
         name = host;
         value = {
           extraConfig = iocaineCfg.nginxExtraConfig;

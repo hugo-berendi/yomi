@@ -1,4 +1,4 @@
-{...}: {
+_: {
   # {{{ Aerc
   programs.aerc = {
     enable = true;

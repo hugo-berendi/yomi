@@ -29,7 +29,7 @@ in {
 
               wifi = {
                 mode = "infrastructure";
-                ssid = ssid;
+                inherit ssid;
               };
 
               wifi-security = {
@@ -53,7 +53,7 @@ in {
       };
     };
 
-    networking.wireless.enable = lib.mkForce false;
+    # networking.wireless.enable = lib.mkForce false;
 
     users.users.${config.yomi.pilot.name}.extraGroups = ["networkmanager"];
   };

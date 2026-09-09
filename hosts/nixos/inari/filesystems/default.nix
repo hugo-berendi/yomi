@@ -1,4 +1,4 @@
-{lib, ...}: {
+_: {
   imports = [
     ./zfs.nix
     (import ./partitions.nix {})

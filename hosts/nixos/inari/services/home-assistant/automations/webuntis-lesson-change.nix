@@ -1,4 +1,4 @@
-{...}: {
+_: {
   services.home-assistant.config.automation = [
     {
       id = "webuntis_lesson_change_notification";

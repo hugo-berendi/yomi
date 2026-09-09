@@ -1,8 +1,4 @@
-{
-  config,
-  pkgs,
-  ...
-}: {
+{config, ...}: {
   # {{{ Reverse proxy
   yomi.nginx.at.paperless-ai.port = config.yomi.ports.paperless-ai;
   # }}}

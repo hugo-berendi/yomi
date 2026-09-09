@@ -1,4 +1,4 @@
-{...}: {
+_: {
   services.home-assistant.config.automation = [
     {
       id = "smart_car_climate_school_days";

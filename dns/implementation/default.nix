@@ -5,7 +5,7 @@
   extraModules ? [],
 }: let
   #  {{{ Prepare packages
-  fullOctodns = pkgs.octodns.withProviders (ps: [pkgs.octodns-providers.cloudflare pkgs.octodns-providers.ddns]);
+  fullOctodns = pkgs.octodns.withProviders (_ps: [pkgs.octodns-providers.cloudflare pkgs.octodns-providers.ddns]);
 in
   #  }}}
   rec {

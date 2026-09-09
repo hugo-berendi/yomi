@@ -1,7 +1,6 @@
 {
   config,
   pkgs,
-  lib,
   ...
 }: let
   nodejs-slim = pkgs.nodejs-slim_22;
@@ -14,7 +13,7 @@
     hash = "sha256-EJz1W7ewEczizNRs/X3esjQUwJiTHruo7nkAzyKZbjc=";
   };
 
-  jellyseerr-oidc = pkgs.seerr.overrideAttrs (oldAttrs: {
+  jellyseerr-oidc = pkgs.seerr.overrideAttrs (_oldAttrs: {
     version = "preview-OIDC";
     src = jellyseerr-oidc-src;
     pnpmDeps = pkgs.fetchPnpmDeps {

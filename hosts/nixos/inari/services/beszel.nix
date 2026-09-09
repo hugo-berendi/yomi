@@ -5,7 +5,7 @@ in {
   services.beszel.hub = {
     enable = true;
     host = "127.0.0.1";
-    port = port;
+    inherit port;
     dataDir = "/var/lib/beszel-hub";
     environment = {
       BESZEL_HUB_APP_URL = "https://monitoring.hugo-berendi.de";

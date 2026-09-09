@@ -1,7 +1,6 @@
 {
   config,
   lib,
-  inputs,
   ...
 }: let
   cfg = config.yomi.playit;
@@ -18,7 +17,7 @@ in {
   config = lib.mkIf cfg.enable {
     services.playit = {
       enable = true;
-      secretPath = cfg.secretPath;
+      inherit (cfg) secretPath;
     };
   };
 }

@@ -183,7 +183,7 @@ in {
     ]
     ++ lib.optionals (options ? home-manager) [
       {
-        home-manager.users = lib.mkIf cfg.enable (lib.genAttrs cfg.users (user: {
+        home-manager.users = lib.mkIf cfg.enable (lib.genAttrs cfg.users (_user: {
           services.gpg-agent = lib.mkIf cfg.ssh.enableAgent {
             enable = true;
             sshKeys = cfg.ssh.publicKeys;

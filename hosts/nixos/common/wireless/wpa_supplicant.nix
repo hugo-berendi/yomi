@@ -20,7 +20,7 @@ in {
       networks =
         lib.mapAttrs (_: network: {
           pskRaw = "ext:${network.pskEnv}";
-          priority = network.priority;
+          inherit (network) priority;
           authProtocols = [
             "WPA-PSK"
             "SAE"

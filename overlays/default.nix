@@ -8,8 +8,8 @@
 
   modifications = _final: prev: {
     python313 = prev.python313.override {
-      packageOverrides = pyfinal: pyprev: {
-        pyrate-limiter = pyprev.pyrate-limiter.overridePythonAttrs (old: {
+      packageOverrides = _pyfinal: pyprev: {
+        pyrate-limiter = pyprev.pyrate-limiter.overridePythonAttrs (_old: {
           doCheck = false;
         });
       };

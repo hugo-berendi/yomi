@@ -10,7 +10,6 @@
     port,
     proxyAddress,
     files,
-    subdomain,
     clientMaxBodySize,
     ...
   }: {

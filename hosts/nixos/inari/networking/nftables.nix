@@ -3,12 +3,6 @@
   lib,
   ...
 }: let
-  publicPorts = lib.attrsets.mapAttrsToList (name: value: toString value.port) config.yomi.cloudflared.at;
-  privatePorts = lib.attrsets.mapAttrsToList (name: value: toString value.port) config.yomi.nginx.at;
-
-  publicPortsString = lib.strings.concatStringsSep ", " publicPorts;
-  privatePortsString = lib.strings.concatStringsSep ", " privatePorts;
-
   exitNodeForwardRule = lib.optionalString config.yomi.tailscale.exitNode ''
     # Allow Tailscale exit node traffic
     iifname "tailscale0" oifname "br0" accept

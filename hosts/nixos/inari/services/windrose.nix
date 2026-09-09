@@ -1,9 +1,4 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}: let
+{config, ...}: let
   serverPort = config.yomi.ports.windrose-direct;
   rconPort = config.yomi.ports.windrose-rcon;
   dataDir = "/persist/data/windrose";

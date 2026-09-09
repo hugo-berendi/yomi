@@ -8,13 +8,13 @@
   cfg = config.yomi.ai.mcp;
   toGeminiMcp = name: value: {
     ${name} = {
-      command = value.command;
-      args = value.args;
+      inherit (value) command;
+      inherit (value) args;
     };
   };
   mcpServers = lib.foldl' (acc: name: acc // toGeminiMcp name cfg.${name}) {} (builtins.attrNames cfg);
   geminiConfig = {
-    mcpServers = mcpServers;
+    inherit mcpServers;
   };
 in {
   home.packages = [

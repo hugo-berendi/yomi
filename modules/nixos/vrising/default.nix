@@ -208,7 +208,7 @@ in {
       appId = steamAppId;
       steamPlatform = "windows";
       installDir = serverDir;
-      dataDir = dataDir;
+      inherit dataDir;
       restartTriggers = [configHash];
       useXvfb = true;
       environment = {

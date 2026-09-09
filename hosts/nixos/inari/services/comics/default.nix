@@ -1,4 +1,4 @@
-{...}: {
+_: {
   imports = [
     ./suwayomi.nix
     ./komga.nix

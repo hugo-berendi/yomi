@@ -1,4 +1,4 @@
-{...}: {
+_: {
   # {{{ hugob
   accounts.email.accounts.hugob.neomutt = {
     enable = true;

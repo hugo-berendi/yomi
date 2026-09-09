@@ -1,4 +1,4 @@
-{lib, ...}: {
+_: {
   imports = [
     ../../common/filesystems
     (import ./partitions.nix {})

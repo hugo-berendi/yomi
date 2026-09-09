@@ -1,8 +1,4 @@
-{
-  config,
-  lib,
-  ...
-}: let
+{config, ...}: let
   shell = config.yomi.shellTheme;
   radius = toString config.yomi.theming.rounding.radius;
 in {

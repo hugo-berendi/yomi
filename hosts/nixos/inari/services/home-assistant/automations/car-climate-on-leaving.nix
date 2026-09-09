@@ -1,4 +1,4 @@
-{...}: {
+_: {
   # {{{ Auto-start climate when leaving home if cold
   services.home-assistant.config.automation = [
     {

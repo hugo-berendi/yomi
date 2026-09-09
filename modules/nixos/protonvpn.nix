@@ -87,7 +87,7 @@ in {
 
   config = mkIf cfg.enable {
     networking.wg-quick.interfaces."${cfg.interface.name}" = {
-      autostart = cfg.autostart;
+      inherit (cfg) autostart;
       dns =
         if cfg.interface.dns.enable
         then [cfg.interface.dns.ip]

@@ -1,4 +1,4 @@
-{...}: {
+_: {
   programs.opencode.settings = {
     # {{{ Permissions - Allow skills, safe bash commands
     permission = {

@@ -1,4 +1,4 @@
-{...}: {
+_: {
   programs.opencode.settings = {
     # {{{ Custom Commands
     command = {

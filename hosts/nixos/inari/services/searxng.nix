@@ -1,9 +1,4 @@
-{
-  pkgs,
-  lib,
-  config,
-  ...
-}: {
+{config, ...}: {
   yomi.cloudflared.at.search.port = config.yomi.ports.searxng;
   # {{{ Secrets
   sops.secrets.searxng_env = {

@@ -116,13 +116,15 @@ in {
       scheme = config.lib.stylix.colors.scheme;
       polarity = config.stylix.polarity or "dark";
     in
-      if themeMap ? ${scheme}
-      then themeMap.${scheme}
-      else if themeMap ? "default" && themeMap.default ? ${polarity}
-      then themeMap.default.${polarity}
-      else if themeMap ? "default"
-      then themeMap.default
-      else throw "Theme ${scheme} not found in theme map!";
+      themeMap.${
+        scheme
+      } or (
+        if themeMap ? "default" && themeMap.default ? ${polarity}
+        then themeMap.default.${polarity}
+        else if themeMap ? "default"
+        then themeMap.default
+        else throw "Theme ${scheme} not found in theme map!"
+      );
 
     colors.rgb = color:
       builtins.concatStringsSep "," [

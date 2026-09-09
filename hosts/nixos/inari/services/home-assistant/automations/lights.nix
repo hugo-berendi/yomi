@@ -1,4 +1,4 @@
-{...}: {
+_: {
   services.home-assistant.config.automation = [
     {
       id = "lights_on_at_sunset";

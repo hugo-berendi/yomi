@@ -1,4 +1,4 @@
-{...}: {
+_: {
   services.home-assistant.config.automation = [
     {
       id = "alarm_wake_up_fallback";

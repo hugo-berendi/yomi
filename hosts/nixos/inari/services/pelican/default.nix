@@ -1,4 +1,4 @@
-{...}: {
+_: {
   imports = [
     ./pelican.nix
     ./wings.nix

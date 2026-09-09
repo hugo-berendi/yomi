@@ -1,4 +1,4 @@
-{...}: {
+_: {
   programs.nvf.settings.vim.keymaps = [
     # {{{ Better j/k for wrapped lines
     {

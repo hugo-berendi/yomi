@@ -1,4 +1,4 @@
-{...}: {
+_: {
   programs.opencode.settings = {
     # {{{ Agent Configuration
     agent = {

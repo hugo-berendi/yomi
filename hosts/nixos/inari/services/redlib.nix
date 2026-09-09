@@ -7,7 +7,7 @@
 in {
   services.redlib = {
     enable = true;
-    port = port;
+    inherit port;
   };
   yomi.nginx.at.redlib.port = port;
 

@@ -1,4 +1,4 @@
-{...}: {
+_: {
   programs.msmtp.enable = true;
 
   # {{{ hugob

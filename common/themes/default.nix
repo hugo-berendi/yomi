@@ -286,7 +286,7 @@ in {
   # The rest is handled by the respective modules!
   imports = [
     {
-      stylix = currentTheme.stylix;
+      inherit (currentTheme) stylix;
       yomi.theming = currentTheme.yomi;
     }
   ];
