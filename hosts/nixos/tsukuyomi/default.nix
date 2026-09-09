@@ -68,9 +68,4 @@
   in
     blacklist;
   # }}}
-  # {{{ Environment overrides
-  environment.systemPackages = with pkgs; [
-    dunst
-  ];
-  # }}}
 }
