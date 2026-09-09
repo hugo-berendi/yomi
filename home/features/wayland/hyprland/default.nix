@@ -10,6 +10,7 @@
     if config.programs.spicetify.enable
     then lib.getExe config.programs.spicetify.spicedSpotify
     else "spotify";
+  vicinae = lib.getExe config.programs.vicinae.package;
 in {
   # {{{ Imports
   imports = [
@@ -118,9 +119,8 @@ in {
       "$mod" = "SUPER";
       bind =
         [
-          "$mod, C, exec, caelestia shell drawers toggle launcher"
           # {{{ pyprland plugins
-          "$mod, V, exec, pypr toggle volume"
+          "$mod, A, exec, pypr toggle volume"
           "$mod Shift, Return, exec, pypr toggle term"
           "$mod, Y, exec, pypr attach"
           # }}}
@@ -133,7 +133,8 @@ in {
           ", XF86AudioPlay, exec, volume --play-pause"
           # }}}
           # {{{ Execute external things
-          "$mod, Space, exec, caelestia shell drawers toggle launcher"
+          "$mod, Space, exec, ${vicinae} toggle"
+          "$mod, V, exec, ${vicinae} deeplink vicinae://launch/clipboard/history"
           "$mod, T, exec, wl-ocr"
           "$mod SHIFT, T, exec, wl-qr"
           "$mod CONTROL, T, exec, hyprpicker | wl-copy && notify-send 'Copied color $(wp-paste)'"
@@ -201,14 +202,6 @@ in {
         "idleinhibit focus, title:^(.*Helium.*)$, title:^(.*YouTube.*)$"
       ];
     };
-  };
-  # }}}
-  # {{{ Cliphist
-  services.cliphist = {
-    enable = true;
-    package = pkgs.cliphist;
-    allowImages = true;
-    systemdTargets = ["graphical-session.target"];
   };
   # }}}
   # {{{ Pyprland config
