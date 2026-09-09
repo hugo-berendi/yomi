@@ -8,6 +8,8 @@
 in {
   imports = [./style.nix];
 
+  home.packages = [pkgs.nerd-fonts.symbols-only];
+
   programs.waybar = {
     enable = true;
     package = pkgs.waybar;

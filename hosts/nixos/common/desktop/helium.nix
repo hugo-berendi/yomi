@@ -17,31 +17,7 @@
       engines.${name}.aliases
   ) (builtins.attrNames engines);
   extensionUpdateUrl = "https://clients2.google.com/service/update2/crx";
-  extensions = [
-    "iadbdpnoknmbdeolbapdackdcogdmjpe"
-    "nngceckbapebfimnlniiiahkandclblb"
-    "dnhpnfgdlenaccegplpojghhmaamnnfp"
-    "bbeaicapbccfllodepmimpkgecanonai"
-    "eimadpbcbfnmbkopoojfekhnkhdbieeh"
-    "enamippconapkdmgfgjchkhakpfinmaj"
-    "efaagigdgamehbpimpiagfpoihlkgamh"
-    "ekhagklcjbdpajgpjgmbionohlpdbjgc"
-    "fkagelmloambgokoeokbpihmgpkbgbfm"
-    "blaaajhemilngeeffpbfkdjjoefldkok"
-    "njdfdhgcmkocbgbhcioffdbicglldapd"
-    "jhgnbkkipaallpehbohjmkbjofjdmeid"
-    "ajhmfdgkijocedmfjonnpjfojldioehi"
-    "hlepfoohegkhhmjieoechaddaejaokhf"
-    "gebbhagfogifgggkldgodflihgfeippi"
-    "mnjggcdmjocbbbhaepdhchncahnbgone"
-    "kdbmhfkmnlmbkgbabkdealhhbfhlmmon"
-    "iplffkdpngmdjhlpjmppncnlhomiipha"
-    "bhchdcejhohfmigjafbampogmaanbfkg"
-    "hfjbmagddngcpeloejdejnfgbamkjaeg"
-    "hjdoplcnndgiblooccencgcggcoihigg"
-    "kgcjekpmcjjogibpjebkhaanilehneje"
-    "noimedcjdohhokijigpfcbjcfcaaahej"
-  ];
+  extensions = import ../../../../home/features/desktop/browser/extensions.nix;
   policies = {
     AlwaysOpenPdfExternally = true;
     AutofillAddressEnabled = false;
