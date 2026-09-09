@@ -1,4 +1,8 @@
-{pkgs, ...}: {
+{
+  lib,
+  pkgs,
+  ...
+}: {
   # {{{ Imports
   imports = [
     ./foot.nix
@@ -22,6 +26,11 @@
   # }}}
   # {{{ Theming
   stylix.targets.gtk.enable = true;
+
+  gtk.theme = {
+    package = lib.mkForce pkgs.rose-pine-gtk-theme;
+    name = lib.mkForce "rose-pine-moon";
+  };
 
   gtk.iconTheme = {
     package = pkgs.papirus-icon-theme;
