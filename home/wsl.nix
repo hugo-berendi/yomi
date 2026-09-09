@@ -63,7 +63,7 @@
 
   programs.ssh = {
     enable = true;
-    matchBlocks."*".addKeysToAgent = "yes";
+    settings."*".AddKeysToAgent = "yes";
   };
 
   services.ssh-agent.enable = true;

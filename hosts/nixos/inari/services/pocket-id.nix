@@ -1,8 +1,4 @@
-{
-  config,
-  lib,
-  ...
-}: {
+{config, ...}: {
   # {{{ Reverse proxy
   yomi.cloudflared.at.pocket-id = {
     port = config.yomi.ports.pocket-id;
@@ -43,8 +39,6 @@
 
       APP_URL = config.yomi.cloudflared.at.pocket-id.url;
       APP_NAME = "Yomi SSO";
-
-      DB_PROVIDER = "sqlite";
 
       UI_CONFIG_DISABLED = true;
 

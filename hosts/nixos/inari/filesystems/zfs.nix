@@ -1,6 +1,7 @@
 {pkgs, ...}: {
   # Configure ZFS
   boot.supportedFilesystems = ["zfs"];
+  boot.zfs.forceImportRoot = false;
   boot.zfs.extraPools = ["zroot" "raid5pool"];
   boot.kernelParams = ["nohibernate"];
 

@@ -1,9 +1,4 @@
-{
-  pkgs,
-  config,
-  lib,
-  ...
-}: let
+{config, ...}: let
   port = config.yomi.ports.homepage;
 in {
   sops.secrets.homepage_env = {
@@ -15,7 +10,7 @@ in {
   services.homepage-dashboard = {
     enable = true;
     listenPort = port;
-    environmentFile = config.sops.secrets.homepage_env.path;
+    environmentFiles = [config.sops.secrets.homepage_env.path];
 
     settings = {
       title = "✨ The celestial citadel ✨";

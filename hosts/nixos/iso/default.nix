@@ -28,6 +28,7 @@
 
   # {{{ ZFS support (for diagnosing/fixing inari's trim kernel panic)
   boot.supportedFilesystems = ["zfs"];
+  boot.zfs.forceImportRoot = false;
   networking.hostId = "8425e349"; # required by ZFS, arbitrary for a live ISO
   # }}}
 

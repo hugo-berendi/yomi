@@ -155,7 +155,7 @@
         longitude = "11.8304463";
       };
       lovelace = {
-        mode = "storage";
+        resource_mode = "storage";
         dashboards = {
           lovelace-yomi = {
             mode = "yaml";
