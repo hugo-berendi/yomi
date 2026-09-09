@@ -1,5 +1,4 @@
 [
-  "ohjebgkppidheiajbgnnmmieaapjppje"
   "iadbdpnoknmbdeolbapdackdcogdmjpe"
   "nngceckbapebfimnlniiiahkandclblb"
   "dnhpnfgdlenaccegplpojghhmaamnnfp"

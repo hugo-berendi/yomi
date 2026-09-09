@@ -18,12 +18,12 @@
   ) (builtins.attrNames engines);
   extensionUpdateUrl = "https://services.helium.imput.net/ext/";
   extensions = import ../../../../home/features/desktop/browser/extensions.nix;
+  initialPreferences.extensions.theme.system_theme = 1;
   policies = {
     AlwaysOpenPdfExternally = true;
     AutofillAddressEnabled = false;
     AutofillCreditCardEnabled = false;
     BackgroundModeEnabled = false;
-    BrowserThemeColor = "#${config.lib.stylix.colors.base00}";
     BrowserSignin = 0;
     BlockThirdPartyCookies = true;
     BookmarkBarEnabled = false;
@@ -51,6 +51,8 @@
   };
 in
   lib.mkIf config.yomi.machine.graphical {
+    environment.etc."chromium/initial_preferences".text = builtins.toJSON initialPreferences;
+    environment.etc."helium/initial_preferences".text = builtins.toJSON initialPreferences;
     environment.etc."chromium/policies/managed/helium-yomi.json".text = builtins.toJSON policies;
     environment.etc."helium/policies/managed/helium-yomi.json".text = builtins.toJSON policies;
   }
