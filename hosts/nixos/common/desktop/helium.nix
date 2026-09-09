@@ -18,7 +18,7 @@
   ) (builtins.attrNames engines);
   extensionUpdateUrl = "https://services.helium.imput.net/ext/";
   extensions = import ../../../../home/features/desktop/browser/extensions.nix;
-  initialPreferences.extensions.theme.system_theme = 1;
+  initialPreferences.extensions.theme.system_theme = 0;
   policies = {
     AlwaysOpenPdfExternally = true;
     AutofillAddressEnabled = false;
