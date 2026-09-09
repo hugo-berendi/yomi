@@ -19,21 +19,21 @@ in {
 
       listener = [
         {
-          timeout = 150;
+          timeout = 300;
           on-timeout = "${brightnessctl} -s set 10%";
           on-resume = "${brightnessctl} -r";
         }
         {
-          timeout = 300;
+          timeout = 600;
           on-timeout = "loginctl lock-session";
         }
         {
-          timeout = 330;
+          timeout = 660;
           on-timeout = "${hyprctl} dispatch dpms off";
           on-resume = "${hyprctl} dispatch dpms on";
         }
         {
-          timeout = 1800;
+          timeout = 3600;
           on-timeout = "systemctl suspend";
         }
       ];

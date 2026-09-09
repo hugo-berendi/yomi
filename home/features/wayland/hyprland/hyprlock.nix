@@ -5,6 +5,7 @@
 }: let
   gravatar = pkgs.callPackage (import ../../../../common/avatar.nix) {};
   shell = config.yomi.shellTheme;
+  hyprColor = config.yomi.theming.colors.hexToRgb;
 in {
   programs.hyprlock = {
     enable = true;
@@ -22,42 +23,50 @@ in {
         blur_size = config.yomi.theming.blur.size;
         noise = 0.008;
         contrast = config.yomi.theming.blur.contrast;
-        brightness = 0.72;
-        vibrancy = 0.12;
+        brightness = 0.64;
+        vibrancy = 0.18;
       };
 
       image = {
         path = "${gravatar}/avatar.png";
-        size = 128;
+        size = 112;
         rounding = -1;
-        border_size = config.yomi.theming.rounding.size;
-        border_color = shell.palette.accent;
+        border_size = 4;
+        border_color = hyprColor shell.palette.accent;
+        shadow_passes = 2;
+        shadow_size = 4;
+        shadow_color = shell.rgba "background" 0.6;
 
-        position = "0, 150";
+        position = "0, 110";
         halign = "center";
         valign = "center";
       };
 
       input-field = {
-        size = "300, 54";
+        size = "340, 58";
         outline_thickness = config.yomi.theming.rounding.size;
-        dots_size = 0.22;
-        dots_spacing = 0.22;
+        dots_size = 0.2;
+        dots_spacing = 0.28;
         dots_center = true;
         dots_rounding = -1;
-        outer_color = shell.palette.accent;
+        dots_text_format = "●";
+        outer_color = hyprColor shell.palette.accent;
         inner_color = shell.rgba "background" shell.opacity.elevated;
-        font_color = shell.palette.textStrong;
+        font_color = hyprColor shell.palette.textStrong;
+        font_family = config.stylix.fonts.sansSerif.name;
         fade_on_empty = false;
         fade_timeout = 1000;
-        placeholder_text = "<span foreground='${shell.palette.muted}'>Password</span>";
+        placeholder_text = "<span foreground='${shell.palette.muted}'>Password eingeben</span>";
         rounding = config.yomi.theming.rounding.radius;
-        check_color = shell.palette.success;
-        fail_color = shell.palette.critical;
+        check_color = hyprColor shell.palette.success;
+        fail_color = hyprColor shell.palette.critical;
         fail_text = "<i>$FAIL <b>($ATTEMPTS)</b></i>";
         fail_timeout = 2000;
+        shadow_passes = 2;
+        shadow_size = 4;
+        shadow_color = shell.rgba "background" 0.6;
 
-        position = "0, 25";
+        position = "0, -5";
         halign = "center";
         valign = "center";
       };
@@ -65,7 +74,7 @@ in {
       label = [
         {
           text = "cmd[update:1000] date +'%H:%M'";
-          color = shell.palette.textStrong;
+          color = hyprColor shell.palette.textStrong;
           font_family = config.stylix.fonts.serif.name;
           font_size = 72;
           position = "0, -180";
@@ -74,7 +83,7 @@ in {
         }
         {
           text = "cmd[update:60000] date +'%A, %d %B'";
-          color = shell.palette.muted;
+          color = hyprColor shell.palette.muted;
           font_family = config.stylix.fonts.sansSerif.name;
           font_size = 18;
           position = "0, -270";
