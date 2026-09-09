@@ -8,6 +8,7 @@
   imports = [
     ./caelestia
     ./vicinae.nix
+    ./waybar
     ./wlsunset.nix
 
     ../desktop

@@ -1,229 +1,194 @@
-{pkgs, ...}: {
-  # {{{ Imports
-  imports = [
-    ./style.nix
-  ];
-  # }}}
-  # {{{ Waybar
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
+  vicinae = lib.getExe config.programs.vicinae.package;
+in {
+  imports = [./style.nix];
+
   programs.waybar = {
     enable = true;
     package = pkgs.waybar;
-    systemd.enable = true;
-    settings = {
-      mainBar = {
-        "position" = "top";
-        "layer" = "top";
-        "margin-top" = 20;
-        "margin-left" = 20;
-        "margin-right" = 20;
-        "margin-bottom" = 0;
-        "spacing" = 0;
+    systemd = {
+      enable = true;
+      targets = ["graphical-session.target"];
+    };
 
-        modules-left = [
-          "hyprland/workspaces"
-          "tray"
-          "custom/music"
+    settings.mainBar = {
+      position = "top";
+      layer = "top";
+      height = 42;
+      margin-top = config.yomi.theming.gaps.inner;
+      margin-left = config.yomi.theming.gaps.outer;
+      margin-right = config.yomi.theming.gaps.outer;
+      spacing = 6;
+      fixed-center = true;
+
+      modules-left = [
+        "custom/launcher"
+        "hyprland/workspaces"
+        "hyprland/window"
+      ];
+
+      modules-center = ["clock"];
+
+      modules-right = [
+        "mpris"
+        "tray"
+        "network"
+        "bluetooth"
+        "pulseaudio"
+        "cpu"
+        "memory"
+        "battery"
+        "custom/power"
+      ];
+
+      "custom/launcher" = {
+        format = "󰀻";
+        tooltip = false;
+        on-click = "${vicinae} toggle";
+      };
+
+      "hyprland/workspaces" = {
+        format = "{icon}";
+        format-icons = {
+          active = "";
+          default = "";
+          urgent = "";
+        };
+        persistent-workspaces."*" = 10;
+        disable-scroll = true;
+        sort-by-number = true;
+      };
+
+      "hyprland/window" = {
+        format = "{title}";
+        icon = true;
+        icon-size = 16;
+        max-length = 48;
+        separate-outputs = true;
+        rewrite = {
+          "(.*) — Mozilla Firefox" = "$1";
+          "(.*) - Visual Studio Code" = "$1";
+        };
+      };
+
+      clock = {
+        format = "{:%H:%M}";
+        format-alt = "{:%A, %d %B  •  %H:%M}";
+        tooltip-format = "<big>{:%B %Y}</big>\n<tt>{calendar}</tt>";
+        calendar = {
+          mode = "month";
+          weeks-pos = "right";
+          on-scroll = 1;
+          format = {
+            months = "<b>{}</b>";
+            days = "{}";
+            weeks = "<span color='#${config.lib.stylix.colors.base0D}'>W{}</span>";
+            weekdays = "<b>{}</b>";
+            today = "<b><u>{}</u></b>";
+          };
+        };
+      };
+
+      mpris = {
+        format = "{player_icon}  {dynamic}";
+        format-paused = "{status_icon}  {dynamic}";
+        player-icons.default = "󰎈";
+        status-icons.paused = "";
+        dynamic-order = [
+          "title"
+          "artist"
         ];
+        dynamic-len = 32;
+        tooltip-format = "{player}: {artist} — {title}";
+        on-click = "${lib.getExe pkgs.playerctl} play-pause";
+        on-click-right = "${lib.getExe pkgs.playerctl} next";
+      };
 
-        modules-right = [
-          "custom/dexcom"
-          "custom/updates"
-          "group/general"
-          "group/hardware"
-          "custom/power"
+      tray = {
+        icon-size = 16;
+        spacing = 8;
+      };
+
+      network = {
+        interval = 3;
+        format-wifi = "  {signalStrength}%";
+        format-ethernet = "󰈀";
+        format-linked = "󰈀  no IP";
+        format-disconnected = "󰤮";
+        tooltip-format-wifi = "{essid}\n{ipaddr}\n{bandwidthDownBytes} ↓  {bandwidthUpBytes} ↑";
+        tooltip-format-ethernet = "{ifname}\n{ipaddr}";
+        on-click = "${lib.getExe' pkgs.networkmanagerapplet "nm-connection-editor"}";
+      };
+
+      bluetooth = {
+        format = "";
+        format-disabled = "󰂲";
+        format-connected = "󰂱 {num_connections}";
+        tooltip-format = "{controller_alias}";
+        tooltip-format-connected = "{device_enumerate}";
+        tooltip-format-enumerate-connected = "{device_alias}";
+        on-click = "${lib.getExe pkgs.overskride}";
+      };
+
+      pulseaudio = {
+        format = "{icon}  {volume}%";
+        format-bluetooth = " {volume}%";
+        format-muted = "󰖁";
+        format-icons.default = [
+          ""
+          ""
+          ""
         ];
+        on-click = "${lib.getExe pkgs.pwvucontrol}";
+        on-click-right = "${lib.getExe' pkgs.pulseaudio "pactl"} set-sink-mute @DEFAULT_SINK@ toggle";
+      };
 
-        "group/hardware" = {
-          "orientation" = "horizontal";
-          "modules" = [
-            "disk"
-            "cpu"
-            "memory"
-          ];
-        };
+      cpu = {
+        interval = 5;
+        format = "  {usage}%";
+        tooltip = false;
+      };
 
-        "group/general" = {
-          "orientation" = "horizontal";
-          "modules" = [
-            "network"
-            "bluetooth"
-            "pulseaudio"
-            "battery"
-            "clock"
-            "custom/weather"
-          ];
-        };
+      memory = {
+        interval = 5;
+        format = "  {percentage}%";
+        tooltip-format = "{used:0.1f} GiB of {total:0.1f} GiB";
+      };
 
-        "hyprland/workspaces" = {
-          "active-only" = false;
-          "disable-click" = false;
-          "disable-scroll" = true;
-          "all-outputs" = true;
-          "format" = "{icon}";
-          "format-icons" = {
-            "default" = "";
-            "urgent" = "";
-            "active" = "";
-          };
-          "persistent-workspaces" = {
-            "*" = 10;
-          };
+      battery = {
+        interval = 10;
+        states = {
+          warning = 30;
+          critical = 15;
         };
+        format = "{icon}  {capacity}%";
+        format-charging = "󰂄  {capacity}%";
+        format-plugged = "  {capacity}%";
+        format-icons = [
+          "󰁺"
+          "󰁻"
+          "󰁼"
+          "󰁽"
+          "󰁾"
+          "󰁿"
+          "󰂀"
+          "󰂁"
+          "󰂂"
+          "󰁹"
+        ];
+        tooltip-format = "{timeTo}";
+      };
 
-        "tray" = {
-          "icon-size" = 16;
-          "spacing" = 4;
-        };
-
-        "custom/updates" = {
-          "format" = "󰏗 {}";
-          "tooltip-format" = "{}";
-          "escape" = true;
-          "return-type" = "json";
-          "exec" = "${pkgs.writeShellScript "waybar-updates" ''
-            if [ -e /run/current-system ]; then
-              nix-store --query --requisites /run/current-system | wc -l | xargs -I {} echo '{"text": "{}" }'
-            else
-              echo '{"text": "N/A" }'
-            fi
-          ''}";
-          "restart-interval" = 30;
-          "tooltip" = false;
-        };
-
-        "custom/spotify" = {
-          "format" = "<span foreground='#cba6f7'>󰎈 </span><span font='HackNerdFont weight=325 Italic'>{}</span>";
-          "interval" = 1;
-          "exec-if" = "pgrep spotify";
-          "on-click" = "playerctl -p spotify play-pause";
-          "on-scroll-up" = "playerctl -p spotify previous";
-          "on-scroll-down" = "playerctl -p spotify next";
-          "tooltip" = false;
-          "escape" = true;
-          "max-length" = 60;
-          "exec" = "$HOME/.config/scripts/spotify.sh";
-          "return-type" = "json";
-        };
-
-        "custom/music" = {
-          "format" = "{icon}{}";
-          "format-icons" = {
-            "Paused" = " ";
-            "Stopped" = " ";
-          };
-          "escape" = true;
-          "tooltip" = true;
-          "exec" = "~/.config/scripts/caway -b 15 -f 60";
-          "return-type" = "json";
-          "on-click" = "playerctl play-pause";
-          "on-scroll-up" = "playerctl previous";
-          "on-scroll-down" = "playerctl next";
-          "on-click-right" = "g4music";
-          "max-length" = 35;
-        };
-
-        "clock" = {
-          "format" = "<span foreground='#C6AAE8'> </span>{:%a %d %H:%M}";
-          "tooltip-format" = "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>";
-        };
-
-        "custom/weather" = {
-          "exec" = "nix-shell ~/.config/scripts/shell.nix --run \"python ~/.config/scripts/weather.py\"";
-          "restart-interval" = 300;
-          "return-type" = "json";
-          "on-click" = "xdg-open https://weather.com/en-IN/weather/today/l/$(location_id)";
-        };
-
-        "custom/dexcom" = {
-          "exec" = "nix-shell ~/.config/scripts/shell.nix --run \"python ~/.config/scripts/dexcom.py\"";
-          "restart-interval" = 300;
-          "return-type" = "json";
-          "format" = "{}";
-        };
-
-        "battery" = {
-          "states" = {
-            "warning" = 30;
-            "critical" = 15;
-          };
-          "format" = "<span foreground='#B1E3AD'>{icon} </span>{capacity}% ";
-          "format-warning" = "<span foreground='#B1E3AD'>{icon} </span>{capacity}% ";
-          "format-critical" = "<span foreground='#E38C8F'>{icon} </span>{capacity}% ";
-          "format-charging" = "<span foreground='#B1E3AD'>  </span>{capacity}% ";
-          "format-plugged" = "<span foreground='#B1E3AD'>  </span>{capacity}% ";
-          "format-alt" = "<span foreground='#B1E3AD'>{icon} </span>{time} ";
-          "format-full" = "<span foreground='#B1E3AD'> </span> {capacity}% ";
-          "format-icons" = [
-            " "
-            " "
-            " "
-            " "
-            " "
-          ];
-          "tooltip-format" = "{time}";
-        };
-
-        "network" = {
-          "format-wifi" = "<span foreground='#F2CECF'> </span> ";
-          "format-ethernet" = "<span foreground='#F2CECF'>󰈀 </span> ";
-          "format-linked" = "{ifname} (No IP)  ";
-          "format-disconnected" = "<span foreground='#F2CECF'> </span> ";
-          "tooltip-format-wifi" = "Signal Strength: {signalStrength}% ";
-          "on-click" = "~/.config/scripts/toggle.sh wlan";
-        };
-
-        "bluetooth" = {
-          "format" = "";
-          "format-disabled" = "󰂲";
-          "format-connected" = "󰂱";
-          "tooltip-format" = "{controller_alias}\t{controller_address}";
-          "tooltip-format-connected" = "{controller_alias}\t{controller_address}\n\n{device_enumerate}";
-          "tooltip-format-enumerate-connected" = "{device_alias}\t{device_address}";
-          "on-click" = "~/.config/scripts/toggle.sh bluetooth";
-        };
-
-        "pipewire" = {
-          "on-click" = "pactl set-sink-mute @DEFAULT_SINK@ toggle";
-          "format" = "<span foreground='#EBDDAA'>{icon}</span> {volume}% ";
-          "format-muted" = "<span foreground='#EBDDAA'></span> Muted ";
-          "format-icons" = {
-            "headphone" = "";
-            "hands-free" = "";
-            "headset" = "";
-            "phone" = "";
-            "portable" = "";
-            "car" = "";
-            "default" = [
-              ""
-              ""
-            ];
-          };
-        };
-
-        "custom/power" = {
-          "format" = "";
-          "on-click" = "wlogout";
-          "tooltip" = false;
-        };
-
-        "cpu" = {
-          "format" = " {usage}% ";
-          "on-click" = "kitty -e htop";
-        };
-
-        "memory" = {
-          "format" = " {}% ";
-          "on-click" = "kitty -e htop";
-        };
-
-        "disk" = {
-          "interval" = 30;
-          "format" = " {percentage_used}% ";
-          "path" = "/";
-          "on-click" = "kitty -e htop";
-        };
+      "custom/power" = {
+        format = "󰐥";
+        tooltip = false;
+        on-click = "caelestia shell drawers toggle session";
       };
     };
   };
-  # }}}
 }
