@@ -38,6 +38,7 @@ in {
     #cpu,
     #memory,
     #battery,
+    #custom-notifications,
     #custom-power {
       margin: 0 2px;
       padding: 0 10px;
@@ -46,6 +47,7 @@ in {
     }
 
     #custom-launcher,
+    #custom-notifications,
     #custom-power {
       color: ${shell.palette.accent};
       font-size: 15px;
@@ -107,6 +109,7 @@ in {
     #network:hover,
     #bluetooth:hover,
     #pulseaudio:hover,
+    #custom-notifications:hover,
     #custom-power:hover {
       color: ${shell.palette.bright};
       background: ${shell.rgba "surfaceRaised" 0.72};

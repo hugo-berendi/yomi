@@ -135,6 +135,7 @@ in {
           # {{{ Execute external things
           "$mod, Space, exec, ${vicinae} toggle"
           "$mod, V, exec, ${vicinae} deeplink vicinae://launch/clipboard/history"
+          "$mod, N, exec, ${lib.getExe' config.services.swaync.package "swaync-client"} -t -sw"
           "$mod, T, exec, wl-ocr"
           "$mod SHIFT, T, exec, wl-qr"
           "$mod CONTROL, T, exec, hyprpicker | wl-copy && notify-send 'Copied color $(wp-paste)'"

@@ -43,6 +43,7 @@ in {
         "cpu"
         "memory"
         "battery"
+        "custom/notifications"
         "custom/power"
       ];
 
@@ -182,6 +183,25 @@ in {
           "󰁹"
         ];
         tooltip-format = "{timeTo}";
+      };
+
+      "custom/notifications" = {
+        exec = "${lib.getExe' config.services.swaync.package "swaync-client"} -swb";
+        return-type = "json";
+        format = "{icon}";
+        format-icons = {
+          notification = "󱅫";
+          none = "󰂚";
+          dnd-notification = "󰂛";
+          dnd-none = "󰂛";
+          inhibited-notification = "󰂛";
+          inhibited-none = "󰂛";
+          dnd-inhibited-notification = "󰂛";
+          dnd-inhibited-none = "󰂛";
+        };
+        tooltip = false;
+        on-click = "${lib.getExe' config.services.swaync.package "swaync-client"} -t -sw";
+        on-click-right = "${lib.getExe' config.services.swaync.package "swaync-client"} -d -sw";
       };
 
       "custom/power" = {

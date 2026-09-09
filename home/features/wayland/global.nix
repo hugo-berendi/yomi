@@ -7,6 +7,7 @@
   # {{{ Imports
   imports = [
     ./caelestia
+    ./swaync.nix
     ./vicinae.nix
     ./waybar
     ./wlsunset.nix
