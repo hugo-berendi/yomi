@@ -125,6 +125,7 @@ in
       makeWrapper "$out/opt/helium/helium" "$out/bin/helium" \
         --prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath [libGL mesa pipewire alsa-lib libpulseaudio]} \
         --add-flags "--ozone-platform-hint=auto" \
+        --add-flags "--gtk-version=3" \
         --add-flags "--enable-features=WaylandWindowDecorations" \
         --add-flags "--disable-component-update" \
         --add-flags "--check-for-update-interval=0"
