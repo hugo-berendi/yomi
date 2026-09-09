@@ -1,6 +1,5 @@
 {
   pkgs,
-  config,
   lib,
   ...
 }: {
@@ -9,7 +8,7 @@
     ./mcp.nix
     ./opencode
     ./claude-code.nix
-    # ./codex.nix
+    ./codex.nix
     # TODO: Re-enable when llm-agents updates gemini-cli hash
     # ./gemini-cli.nix
   ];

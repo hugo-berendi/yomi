@@ -6,7 +6,6 @@
   home.packages = [pkgs.chatgpt];
 
   yomi.persistence.at.state.apps.chatgpt.directories = [
-    "${config.home.homeDirectory}/.codex"
     "${config.xdg.configHome}/ChatGPT"
   ];
 
