@@ -6,7 +6,6 @@
 }: {
   # {{{ Imports
   imports = [
-    ./caelestia
     ./swaync.nix
     ./swayosd.nix
     ./vicinae.nix

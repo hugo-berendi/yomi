@@ -31,11 +31,6 @@
       url = "github:ghostty-org/ghostty";
     };
 
-    caelestia-shell = {
-      url = "github:caelestia-dots/shell";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     # {{{ Nix-related tooling
     nixarr.url = "github:rasmus-kirk/nixarr";
 
