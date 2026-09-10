@@ -244,6 +244,14 @@ in {
 
       window_rule = [
         {
+          match.class = "^(com.mitchellh.ghostty)$";
+          workspace = "1 silent";
+        }
+        {
+          match.title = "^(.*Ghostty.*)$";
+          workspace = "1 silent";
+        }
+        {
           match.class = "^(helium|helium-browser)$";
           workspace = "2 silent";
         }

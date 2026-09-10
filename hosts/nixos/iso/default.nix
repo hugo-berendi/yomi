@@ -1,6 +1,7 @@
 {
   modulesPath,
   pkgs,
+  config,
   lib,
   ...
 }: {
@@ -24,7 +25,15 @@
   };
   # }}}
 
-  users.users.root.hashedPasswordFile = lib.mkForce null;
+  users.users.root = {
+    hashedPasswordFile = lib.mkForce null;
+    openssh.authorizedKeys.keyFiles = config.users.users.${config.yomi.pilot.name}.openssh.authorizedKeys.keyFiles;
+  };
+
+  services.openssh.settings = {
+    PermitRootLogin = lib.mkOverride 0 "prohibit-password";
+    PasswordAuthentication = lib.mkForce false;
+  };
 
   # {{{ ZFS support (for diagnosing/fixing inari's trim kernel panic)
   boot.supportedFilesystems = ["zfs"];
@@ -33,7 +42,14 @@
   # }}}
 
   # {{{ Testing AMD SRSO mitigation workaround (srso_alias_safe_ret panic on AZW EQ/EQ)
-  boot.kernelParams = ["spec_rstack_overflow=ibpb"];
+  hardware.cpu.amd.updateMicrocode = true;
+  boot.kernelParams = [
+    "spec_rstack_overflow=ibpb"
+    "maxcpus=1"
+    "processor.max_cstate=1"
+    "idle=nomwait"
+    "amd_pstate=disable"
+  ];
   # }}}
 
   environment.systemPackages = let
