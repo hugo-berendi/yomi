@@ -35,6 +35,14 @@
 
   environment.persistence."/persist/state".directories = ["/var/lib/rasdaemon"];
 
+  # A permanent rescue entry. Generation pruning eventually removes every
+  # older boot entry, so the one configuration that survived hours of load
+  # needs to live in the menu on its own terms.
+  specialisation.rescue.configuration = {
+    system.nixos.tags = ["rescue"];
+    boot.kernelParams = ["maxcpus=1"];
+  };
+
   # Offer memtest86+ straight from the boot menu, so a multi-hour memory test
   # needs no rescue USB stick.
   boot.loader.systemd-boot.memtest86.enable = true;
