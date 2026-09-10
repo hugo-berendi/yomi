@@ -44,14 +44,22 @@
     ./services/comics/default.nix
     ./services/media
     ./services/home-assistant.nix
-    ./services/uptime.nix
+    ./services/ntfy.nix
+    ./services/audiobookshelf.nix
+    ./services/gatus.nix
+    ./services/scrutiny.nix
+    ./services/miniflux.nix
+    ./services/vikunja.nix
+    ./services/headscale.nix
+    ./services/healthchecks.nix
+    ./services/bookstack.nix
     ./services/pocket-id.nix
     ./services/prometheus.nix
     ./services/grafana.nix
     ./services/loki.nix
     ./services/playit.nix
     ./services/windrose.nix
-    ./services/pelican
+    # ./services/pelican
     ./services/owncloud.nix
     ./services/stirling-pdf.nix
     ./services/vrising.nix

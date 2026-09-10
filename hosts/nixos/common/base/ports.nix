@@ -94,5 +94,13 @@
     uptime-kuma = lib.mkDefault 8483;
     vaultwarden = lib.mkDefault 8484;
     whoogle = lib.mkDefault 8485;
+    audiobookshelf = lib.mkDefault 8493;
+    gatus = lib.mkDefault 8494;
+    scrutiny = lib.mkDefault 8495;
+    headscale = lib.mkDefault 8496;
+    healthchecks = lib.mkDefault 8497;
+    bookstack = lib.mkDefault 8498;
+    vikunja = lib.mkDefault 8499;
+    miniflux = lib.mkDefault 8500;
   };
 }

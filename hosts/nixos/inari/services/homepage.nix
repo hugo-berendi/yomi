@@ -109,15 +109,38 @@ in {
             };
           }
           {
-            "Uptime Kuma" = {
-              icon = "uptime-kuma.svg";
-              href = "https://uptime.hugo-berendi.de";
+            Gatus = {
+              icon = "gatus.svg";
+              href = "https://status.hugo-berendi.de";
               description = "Service status monitoring";
-              widget = {
-                type = "uptimekuma";
-                url = "https://uptime.hugo-berendi.de";
-                slug = "{{HOMEPAGE_VAR_UPTIMEKUMA_SLUG}}";
-              };
+            };
+          }
+          {
+            Ntfy = {
+              icon = "ntfy.svg";
+              href = "https://ntfy.hugo-berendi.de";
+              description = "Push notifications hub";
+            };
+          }
+          {
+            Scrutiny = {
+              icon = "scrutiny.svg";
+              href = "https://scrutiny.hugo-berendi.de";
+              description = "SMART / disk health dashboard";
+            };
+          }
+          {
+            Healthchecks = {
+              icon = "healthchecks.svg";
+              href = "https://ping.hugo-berendi.de";
+              description = "Cron heartbeat monitor";
+            };
+          }
+          {
+            Headscale = {
+              icon = "tailscale.svg";
+              href = "https://vpn.hugo-berendi.de";
+              description = "Self-hosted Tailscale control plane";
             };
           }
           {
@@ -272,6 +295,27 @@ in {
               description = "Bookmark manager";
             };
           }
+          {
+            Miniflux = {
+              icon = "miniflux.svg";
+              href = "https://rss.hugo-berendi.de";
+              description = "Minimal RSS reader";
+            };
+          }
+          {
+            Vikunja = {
+              icon = "vikunja.svg";
+              href = "https://tasks.hugo-berendi.de";
+              description = "Task and project management";
+            };
+          }
+          {
+            BookStack = {
+              icon = "bookstack.png";
+              href = "https://wiki.hugo-berendi.de";
+              description = "Wiki for the homelab";
+            };
+          }
         ];
       }
       {
@@ -309,6 +353,13 @@ in {
               icon = "mdi-book-open-page-variant";
               href = "https://suwayomi.hugo-berendi.de";
               description = "Comic server";
+            };
+          }
+          {
+            Audiobookshelf = {
+              icon = "audiobookshelf.svg";
+              href = "https://audiobookshelf.hugo-berendi.de";
+              description = "Audiobook and podcast server";
             };
           }
           {
