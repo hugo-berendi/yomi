@@ -27,12 +27,15 @@ in {
       Type = "oneshot";
       User = "root";
       Group = "root";
+      TimeoutStartSec = "300";
     };
     script = ''
       user="$(tr -d '\n' < ${config.sops.secrets.komga_user.path})"
       password="$(tr -d '\n' < ${config.sops.secrets.komga_password.path})"
 
-      libraries="$(curl --silent --show-error --fail --user "$user:$password" "http://127.0.0.1:${toString komgaPort}/api/v1/libraries")"
+      # Ordering after komga.service only waits for the process, not for the
+      # port. Retry until the API actually answers.
+      libraries="$(curl --silent --show-error --fail --retry 30 --retry-delay 5 --retry-connrefused --user "$user:$password" "http://127.0.0.1:${toString komgaPort}/api/v1/libraries")"
 
       if jq --exit-status --arg name "${komgaLibraryName}" --arg root "${comicDir}" 'any(.[]; .name == $name or .root == $root)' >/dev/null <<<"$libraries"; then
         exit 0

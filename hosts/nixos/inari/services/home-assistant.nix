@@ -38,6 +38,14 @@
     enable = true;
     environmentFile = config.sops.templates."govee2mqtt.env".path;
   };
+
+  # The Govee platform API is queried during startup, but this host resolves
+  # DNS through a container of its own, so early boot has no working resolver
+  # yet. The default start limit turned that into a permanently dead unit.
+  systemd.services.govee2mqtt = {
+    startLimitIntervalSec = 0;
+    serviceConfig.RestartSec = "30s";
+  };
   # }}}
   # {{{ Home assistant
   services.home-assistant = {
