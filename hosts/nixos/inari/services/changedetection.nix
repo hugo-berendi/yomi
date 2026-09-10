@@ -18,22 +18,30 @@
     set -euo pipefail
     url=$(${notificationUrl})
     api="http://127.0.0.1:${toString port}/api/v1/notifications"
+    curl="${lib.getExe pkgs.curl} -sf --max-time 15 --retry 3 --retry-delay 2"
 
-    for i in $(seq 1 60); do
-      if ${lib.getExe pkgs.curl} -sf "http://127.0.0.1:${toString port}/" >/dev/null 2>&1; then
+    for i in $(seq 1 90); do
+      if $curl "http://127.0.0.1:${toString port}/" >/dev/null 2>&1; then
         break
       fi
       sleep 2
     done
 
-    current=$(${lib.getExe pkgs.curl} -sf "$api" | ${lib.getExe pkgs.jq} -r --arg url "$url" '.notification_urls // [] | index($url)')
-    if [ "$current" = "null" ]; then
-      new_urls=$(${lib.getExe pkgs.curl} -sf "$api" | ${lib.getExe pkgs.jq} --arg url "$url" '{notification_urls: ((.notification_urls // []) + [$url])}')
-      ${lib.getExe pkgs.curl} -sf -X POST \
-        -H "Content-Type: application/json" \
-        -d "$new_urls" \
-        "$api"
-    fi
+    sleep 3
+
+    for i in $(seq 1 30); do
+      if current=$($curl "$api" | ${lib.getExe pkgs.jq} -r --arg url "$url" '.notification_urls // [] | index($url)'); then
+        if [ "$current" = "null" ]; then
+          new_urls=$($curl "$api" | ${lib.getExe pkgs.jq} --arg url "$url" '{notification_urls: ((.notification_urls // []) + [$url])}')
+          $curl -X POST \
+            -H "Content-Type: application/json" \
+            -d "$new_urls" \
+            "$api"
+        fi
+        break
+      fi
+      sleep 2
+    done
   '';
 in {
   # {{{ Reverse proxy

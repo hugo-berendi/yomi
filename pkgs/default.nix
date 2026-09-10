@@ -7,6 +7,7 @@
   komf = pkgs.callPackage ./komf.nix {};
   chatgpt = pkgs.callPackage ./chatgpt.nix {};
   helium = pkgs.callPackage ./helium.nix {};
+  suwayomi-server = pkgs.callPackage ./suwayomi-server.nix {};
   hermes-mcp-changedetection = pkgs.callPackage ./hermes-mcp-changedetection {};
   hermes-mcp-radicale = pkgs.callPackage ./hermes-mcp-radicale {};
 }

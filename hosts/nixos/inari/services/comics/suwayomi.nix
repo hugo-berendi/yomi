@@ -1,18 +1,34 @@
-{config, ...}: let
+{
+  config,
+  pkgs,
+  ...
+}: let
   comicDir = "/raid5pool/media/comics";
+  port = config.yomi.nginx.at.suwayomi.port;
 in {
-  yomi.nginx.at.suwayomi.port = 4567;
+  yomi.nginx.at.suwayomi.port = config.yomi.ports.suwayomi;
 
   services.suwayomi-server = {
     enable = true;
+    package = pkgs.suwayomi-server;
     dataDir = comicDir;
     settings = {
       server = {
+        ip = "127.0.0.1";
+        inherit port;
+
+        systemTrayEnabled = false;
+        initialOpenInBrowserEnabled = false;
+
+        webUIEnabled = true;
+        webUIFlavor = "WebUI";
+        webUIChannel = "STABLE";
+        webUIInterface = "browser";
+
         downloadAsCbz = true;
         downloadsPath = comicDir;
         autoDownloadNewChapters = true;
-
-        port = config.yomi.nginx.at.suwayomi.port;
+        excludeEntryWithUnreadChapters = true;
 
         extensionRepos = [
           "https://raw.githubusercontent.com/keiyoushi/extensions/repo/index.min.json"

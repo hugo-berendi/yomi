@@ -99,7 +99,7 @@ in {
       ExecStop = "docker network rm -f ${networkName}";
     };
     script = ''
-      docker network inspect ${networkName} || docker network create ${networkName}
+      docker network inspect ${networkName} || docker network create --opt com.docker.network.bridge.name=br-affine ${networkName}
     '';
     wantedBy = ["multi-user.target"];
   };
@@ -151,7 +151,7 @@ in {
   systemd.services.docker-affine-postgres = {
     path = [pkgs.docker];
     preStart = ''
-      docker network inspect ${networkName} >/dev/null 2>&1 || docker network create ${networkName}
+      docker network inspect ${networkName} >/dev/null 2>&1 || docker network create --opt com.docker.network.bridge.name=br-affine ${networkName}
     '';
     after = ["docker-network-affine_default.service"];
     requires = ["docker-network-affine_default.service"];
@@ -160,7 +160,7 @@ in {
   systemd.services.docker-affine-valkey = {
     path = [pkgs.docker];
     preStart = ''
-      docker network inspect ${networkName} >/dev/null 2>&1 || docker network create ${networkName}
+      docker network inspect ${networkName} >/dev/null 2>&1 || docker network create --opt com.docker.network.bridge.name=br-affine ${networkName}
     '';
     after = ["docker-network-affine_default.service"];
     requires = ["docker-network-affine_default.service"];

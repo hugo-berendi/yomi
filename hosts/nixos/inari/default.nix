@@ -1,6 +1,7 @@
 {
   config,
   inputs,
+  lib,
   ...
 }: {
   # {{{ Imports
@@ -44,14 +45,22 @@
     ./services/comics/default.nix
     ./services/media
     ./services/home-assistant.nix
-    ./services/uptime.nix
+    ./services/ntfy.nix
+    ./services/audiobookshelf.nix
+    ./services/gatus.nix
+    ./services/scrutiny.nix
+    ./services/miniflux.nix
+    ./services/vikunja.nix
+    ./services/headscale.nix
+    ./services/healthchecks.nix
+    # ./services/bookstack.nix
     ./services/pocket-id.nix
     ./services/prometheus.nix
     ./services/grafana.nix
     ./services/loki.nix
     ./services/playit.nix
     ./services/windrose.nix
-    ./services/pelican
+    # ./services/pelican
     ./services/owncloud.nix
     ./services/stirling-pdf.nix
     ./services/vrising.nix
@@ -75,12 +84,27 @@
   yomi.meilisearch.sopsFile = ./secrets.yaml;
   yomi.meilisearch.environment = "production";
 
+  # systemd-oomd repeatedly panicked the kernel inside cgroup v2 memcg
+  # accounting (memory_stat_show/mod_memcg_lruvec_state) due to ZFS ARC's
+  # reclaim path not participating cleanly in cgroup memory accounting.
+  # Reproduced across kernel 6.12.90 and 6.18.36 alike.
+  systemd.oomd.enable = lib.mkForce false;
+
+  # The root dataset is rolled back to zroot@blank on every boot. Ensure the
+  # home mountpoint itself follows the pilot user's current dynamically
+  # allocated UID before Home Manager starts; persisted contents are separate
+  # mounts below this directory.
+  systemd.tmpfiles.rules = let
+    pilot = config.users.users.${config.yomi.pilot.name};
+  in ["d ${pilot.home} ${pilot.homeMode} ${pilot.name} ${pilot.group} -"];
+
   # {{{ Machine ids
   networking.hostName = "inari";
   networking.hostId = "14725dd3";
   # }}}
   # {{{ Bootloader
   boot.loader.systemd-boot.enable = true;
+  boot.loader.systemd-boot.configurationLimit = 4;
   # }}}
   # {{{ DNS records
   yomi.dns.records = [

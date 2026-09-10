@@ -7,7 +7,9 @@
   # {{{ ZFS config
   services.zfs = {
     trim = {
-      enable = true;
+      # Temporarily disabled while investigating kernel panics observed during
+      # ZFS I/O. Re-enable after the system is stable without rescue settings.
+      enable = false;
     };
     autoScrub = {
       enable = true;
@@ -33,6 +35,12 @@
   boot.kernelParams = ["ip=dhcp"];
   boot.initrd = {
     availableKernelModules = ["r8169"];
+    # Unlock the encrypted root pool using a random key sealed to Inari's TPM.
+    # The JWE contains no plaintext key and is only usable with this TPM.
+    clevis = {
+      enable = true;
+      devices.zroot.secretFile = ../filesystems/zroot-key.jwe;
+    };
     network = {
       enable = true;
       ssh = {
@@ -43,6 +51,10 @@
       };
     };
   };
+  # Keep the normal credential request enabled as a recovery fallback if TPM
+  # unlocking fails. The active ZFS key is backed up, Age-encrypted, next to
+  # the TPM JWE as zroot-recovery-key.age.
+  boot.zfs.requestEncryptionCredentials = true;
   environment.persistence."/persist/state".directories = ["/etc/secrets/initrd"];
   # }}}
   # {{{ Sanoid

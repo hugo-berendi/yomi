@@ -36,7 +36,7 @@
     installPhase = ''
       runHook preInstall
       mkdir -p $out/share
-      cp -r -t $out/share .next node_modules dist public package.json
+      cp -r -t $out/share .next node_modules dist public package.json jellyseerr-api.yml
       runHook postInstall
     '';
 
