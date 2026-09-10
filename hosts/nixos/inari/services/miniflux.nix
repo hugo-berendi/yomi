@@ -7,7 +7,7 @@
 in {
   # {{{ Reverse proxy
   yomi.cloudflared.at.miniflux = {
-    port = port;
+    inherit port;
     enableAnubis = false;
   };
   # }}}

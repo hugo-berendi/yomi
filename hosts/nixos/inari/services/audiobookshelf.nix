@@ -14,7 +14,7 @@ in {
   # {{{ Service
   services.audiobookshelf = {
     enable = true;
-    port = port;
+    inherit port;
     host = "127.0.0.1";
   };
   # }}}

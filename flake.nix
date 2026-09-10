@@ -11,6 +11,7 @@
     # }}}
     # {{{ Additional package repositories
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
+    nixos-hardware.inputs.nixpkgs.follows = "nixpkgs";
 
     # }}}
 
@@ -40,6 +41,7 @@
 
     # {{{ Storage
     impermanence.url = "github:nix-community/impermanence";
+    impermanence.inputs.nixpkgs.follows = "nixpkgs";
 
     disko.url = "github:nix-community/disko";
     disko.inputs.nixpkgs.follows = "nixpkgs";
@@ -52,6 +54,7 @@
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
 
     korora.url = "github:adisbladis/korora";
+    korora.inputs.nixpkgs.follows = "nixpkgs";
 
     # }}}
     # {{{ Standalone software

@@ -5,7 +5,7 @@
 }: let
   port = config.yomi.ports.gatus;
   mkHttp = name: {
-    name = name;
+    inherit name;
     group = "Services";
     url = "https://${name}.hugo-berendi.de";
     interval = "1m";
@@ -21,9 +21,9 @@
     ];
   };
   mkHttpAt = url: name: {
-    name = name;
+    inherit name;
     group = "Services";
-    url = url;
+    inherit url;
     interval = "1m";
     conditions = ["[STATUS] == 200" "[RESPONSE_TIME] < 2000"];
     alerts = [
@@ -37,7 +37,7 @@
     ];
   };
   mkInternalHttp = name: realPort: {
-    name = name;
+    inherit name;
     group = "Infrastructure";
     url = "http://127.0.0.1:${toString realPort}";
     interval = "30s";

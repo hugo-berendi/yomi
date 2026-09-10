@@ -4,7 +4,6 @@
   ...
 }: let
   cfg = config.yomi.restic;
-  backupUrl = lib.removeSuffix "\n" (builtins.readFile ./url.txt);
 
   # {{{ Backup helper
   createBackup = {
@@ -16,9 +15,9 @@
     inherit pruneOpts paths;
 
     initialize = true;
-    repository = "sftp:${backupUrl}:backups/${name}";
+    repository = "${cfg.repository}/${name}";
     passwordFile = config.sops.secrets.backup_password.path;
-    extraOptions = ["sftp.args='-i ${config.users.users.${config.yomi.pilot.name}.home}/.ssh/id_ed25519'"];
+    inherit (cfg) extraOptions;
 
     exclude =
       [
@@ -34,10 +33,28 @@
 in {
   options.yomi.restic = {
     enable = lib.mkEnableOption "yomi's restic backup integration";
+
+    # This used to be read out of a url.txt that was never committed, so the
+    # module could not be enabled at all without an eval failure.
+    repository = lib.mkOption {
+      type = lib.types.str;
+      example = "sftp:user@host:backups";
+      description = ''
+        Base restic repository. Each backup set appends its own name, so a
+        local path and an sftp target both work.
+      '';
+    };
+
+    extraOptions = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [];
+      example = ["sftp.args='-i /home/user/.ssh/id_ed25519'"];
+      description = "Extra restic options, e.g. the ssh key for an sftp repository.";
+    };
   };
 
   config = lib.mkIf cfg.enable {
-    sops.secrets.backup_password.sopsFile = ../../../secrets.yaml;
+    sops.secrets.backup_password.sopsFile = ../../secrets.yaml;
 
     services.restic.backups = {
       # {{{ Data

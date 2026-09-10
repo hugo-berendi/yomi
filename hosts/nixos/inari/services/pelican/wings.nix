@@ -77,7 +77,8 @@
     port = config.yomi.ports.pelican-node1;
   };
 
-  networking.firewall.allowedTCPPorts = [config.yomi.ports.pelican-node1 2022];
+  # networking.firewall is disabled on this host; see ../../networking/nftables.nix
+  # for what is actually reachable.
 
   environment.persistence."/persist/state".directories = [
     "/etc/pelican"

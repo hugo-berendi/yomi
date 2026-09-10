@@ -35,9 +35,13 @@ in {
             iifname "wg-br" accept comment "Allow VPN namespace to router"
             iifname "tailscale0" accept comment "Allow Tailscale to router"
 
-            iifname "eno1" ct state { established, related } accept comment "Allow established from WAN"
-            iifname "eno1" icmp type { echo-request, destination-unreachable, time-exceeded } counter accept comment "Allow select ICMP from WAN"
-            iifname "eno1" counter drop comment "Drop other unsolicited WAN traffic"
+            # There is no eno1 on this machine any more -- the wired port is
+            # enp4s0 and it is down. Inari sits behind the home router on br0,
+            # so the three WAN rules that used to live here matched nothing.
+            # Everything not accepted above is dropped by the chain policy.
+            #
+            # Note that br0 is accepted unconditionally, which trusts the whole
+            # home LAN with every service port on this host.
           }
 
           chain forward {

@@ -15,7 +15,7 @@ in {
   services.vikunja = {
     enable = true;
     address = "127.0.0.1";
-    port = port;
+    inherit port;
     frontendHostname = config.yomi.cloudflared.at.vikunja.host;
     frontendScheme = "https";
 

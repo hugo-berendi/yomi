@@ -77,6 +77,20 @@
       hourly = 24;
     };
 
+    # Irreplaceable user data: calendars, contacts and game server worlds.
+    # This dataset was silently unsnapshotted between 2025-11 and 2026-09
+    # because only state was listed here.
+    datasets."zroot/root/persist/data" = {
+      autosnap = true;
+      autoprune = true;
+      recursive = true;
+      yearly = 0;
+      monthly = 12;
+      weekly = 4;
+      daily = 7;
+      hourly = 24;
+    };
+
     # Snapshots for system state on zroot (includes databases like Immich)
     datasets."zroot/root/persist/state" = {
       autosnap = true;

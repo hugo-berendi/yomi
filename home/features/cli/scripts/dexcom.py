@@ -22,7 +22,12 @@ def send(message: str):
     os.system(f"notify-send 'Dexcom' '{message}' --urgency=critical")
 
 
-dexcom = Dexcom(username="HugoBerendi", password="destiny2", ous=True)
+# Credentials come from the environment; never commit them. Export
+# DEXCOM_USERNAME and DEXCOM_PASSWORD before running this.
+username = os.environ["DEXCOM_USERNAME"]
+password = os.environ["DEXCOM_PASSWORD"]
+
+dexcom = Dexcom(username=username, password=password, ous=True)
 
 glucose_reading: pydexcom.GlucoseReading | None = dexcom.get_current_glucose_reading()
 

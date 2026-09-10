@@ -16,7 +16,7 @@ in {
   services.healthchecks = {
     enable = true;
     listenAddress = "127.0.0.1";
-    port = port;
+    inherit port;
 
     settings = {
       SITE_ROOT = config.yomi.cloudflared.at.ping.url;

@@ -11,7 +11,6 @@
   boot.kernelPackages = pkgs.linuxPackages_6_12;
   boot.zfs.package = pkgs.zfs_2_3;
   boot.zfs.extraPools = ["zroot" "raid5pool"];
-  boot.kernelParams = ["nohibernate"];
 
   # Cap ARC so ZFS memory pressure doesn't churn against cgroup v2 memory
   # accounting (root cause of the recurring memcg-path kernel panics)

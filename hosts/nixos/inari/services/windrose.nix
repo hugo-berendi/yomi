@@ -24,8 +24,8 @@ in {
       autoStart = true;
     };
 
-    networking.firewall.allowedTCPPorts = [serverPort];
-    networking.firewall.allowedUDPPorts = [serverPort];
+    # Inari runs nftables with networking.firewall disabled, so allowedTCPPorts
+    # here would do nothing. Reachability is governed by ../networking/nftables.nix.
 
     yomi.nginx.at.windrose.port = rconPort;
   };
