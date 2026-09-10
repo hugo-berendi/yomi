@@ -12,6 +12,11 @@
   # accounting (root cause of the recurring memcg-path kernel panics)
   boot.extraModprobeConfig = "options zfs zfs_arc_max=8589934592";
 
+  # The rollback below wipes /etc on every boot, so systemd would generate a
+  # fresh machine ID each time. That silently orphaned the journal into a new
+  # per-boot directory, which is why crash logs never survived a reboot.
+  environment.persistence."/persist/state".files = ["/etc/machine-id"];
+
   # {{{ Rollback
   boot.initrd.systemd.services.rollback = {
     path = [pkgs.zfs];
