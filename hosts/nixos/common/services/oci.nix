@@ -15,6 +15,10 @@ in {
     virtualisation.docker = {
       enable = true;
       autoPrune.enable = true;
+
+      # Per-container stop timeouts are useless if the daemon stops waiting
+      # first. Game servers need this long to write their world out.
+      daemon.settings.shutdown-timeout = 120;
     };
 
     environment.persistence = {

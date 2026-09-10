@@ -8,6 +8,11 @@
     iifname "tailscale0" oifname "br0" accept
   '';
 in {
+  # Reloading nftables flushes the rules docker installs for itself, and docker
+  # only re-adds them at startup -- so this restart is required for container
+  # networking to keep working. It does mean every ruleset change, down to a
+  # comment, bounces every container on this host. Containers that need time to
+  # shut down cleanly must set --stop-timeout; see services/valheim.nix.
   systemd.services.nftables = {
     postStart = ''
       ${lib.getExe' config.systemd.package "systemctl"} try-restart --no-block docker.service || true

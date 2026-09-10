@@ -49,6 +49,11 @@ in {
 
     environmentFiles = [config.sops.templates."valheim.env".path];
 
+    # Valheim writes the world on SIGTERM. Docker's ten second default killed
+    # it mid-save whenever the daemon was restarted, which cost a session on
+    # 2026-09-10.
+    extraOptions = ["--stop-timeout=120"];
+
     environment = {
       SERVER_NAME = "SuckDuck";
 
@@ -65,7 +70,9 @@ in {
       # World modifiers, spelled out rather than hidden behind a preset so the
       # active rules are readable here. resources=muchmore is the 2x tier;
       # portals=casual lets metals through.
-      SERVER_ARGS = "-modifier combat hard -modifier resources muchmore -modifier portals casual";
+      # -saveinterval bounds how much progress a crash can cost. The default
+      # is long enough that a restart between saves loses a whole session.
+      SERVER_ARGS = "-saveinterval 300 -modifier combat hard -modifier resources muchmore -modifier portals casual";
 
       BACKUPS = "true";
       BACKUPS_CRON = "0 */6 * * *";
