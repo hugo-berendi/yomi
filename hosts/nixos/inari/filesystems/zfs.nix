@@ -6,13 +6,7 @@
   # of 6.18 while diagnosing the Rembrandt secondary-CPU startup panics.
   boot.kernelPackages = pkgs.linuxPackages_6_12;
   boot.zfs.extraPools = ["zroot" "raid5pool"];
-  boot.kernelParams = [
-    "nohibernate"
-    "spec_rstack_overflow=ibpb"
-    "processor.max_cstate=1"
-    "idle=nomwait"
-    "amd_pstate=disable"
-  ];
+  boot.kernelParams = ["nohibernate"];
 
   # Cap ARC so ZFS memory pressure doesn't churn against cgroup v2 memory
   # accounting (root cause of the recurring memcg-path kernel panics)
