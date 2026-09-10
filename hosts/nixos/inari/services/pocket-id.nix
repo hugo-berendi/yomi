@@ -18,8 +18,9 @@
   };
   sops.secrets.no_reply_smtp_password = {
     sopsFile = ../secrets.yaml;
-    owner = config.services.pocket-id.user;
-    group = config.services.pocket-id.group;
+    owner = "root";
+    group = "smtp";
+    mode = "0440";
   };
   sops.secrets.pocket_id_encription_key = {
     sopsFile = ../secrets.yaml;
@@ -31,6 +32,8 @@
     owner = config.services.pocket-id.user;
     group = config.services.pocket-id.group;
   };
+  users.groups.smtp = {};
+  users.users.${config.services.pocket-id.user}.extraGroups = ["smtp"];
   # }}}
   # {{{ Service
   services.pocket-id = {

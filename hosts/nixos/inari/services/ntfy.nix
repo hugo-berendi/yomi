@@ -59,7 +59,13 @@ in {
   # {{{ Hardening
   systemd.services.ntfy-sh.serviceConfig = lib.mkMerge [
     (lib.mapAttrs (_: lib.mkForce) config.yomi.hardening.presets.standard)
-    {ReadWritePaths = ["/var/lib/ntfy-sh"];}
+    {
+      DynamicUser = lib.mkForce false;
+      User = config.users.users.ntfy-sh.name;
+      Group = config.users.users.ntfy-sh.group;
+      StateDirectory = lib.mkForce "ntfy-sh";
+      ReadWritePaths = ["/var/lib/ntfy-sh"];
+    }
   ];
   # }}}
 }

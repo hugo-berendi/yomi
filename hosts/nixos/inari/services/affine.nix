@@ -2,7 +2,8 @@
   config,
   pkgs,
   ...
-}: let
+}:
+let
   host = config.yomi.cloudflared.at.notes.host;
   url = config.yomi.cloudflared.at.notes.url;
   port = config.yomi.cloudflared.at.notes.port;
@@ -33,7 +34,8 @@
       "${appImage}" \
       sh -c 'node ./scripts/self-host-predeploy.js'
   '';
-in {
+in
+{
   # {{{ Reverse proxy
   yomi.cloudflared.at.notes = {
     port = config.yomi.ports.affine;
@@ -92,22 +94,22 @@ in {
   # }}}
   # {{{ Network
   systemd.services."docker-network-affine_default" = {
-    path = [pkgs.docker];
+    path = [ pkgs.docker ];
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
       ExecStop = "docker network rm -f ${networkName}";
     };
     script = ''
-      docker network inspect ${networkName} || docker network create ${networkName}
+      docker network inspect ${networkName} || docker network create --opt com.docker.network.bridge.name=br-affine ${networkName}
     '';
-    wantedBy = ["multi-user.target"];
+    wantedBy = [ "multi-user.target" ];
   };
   # }}}
   # {{{ Containers
   virtualisation.oci-containers.containers.affine-postgres = {
     image = "pgvector/pgvector:pg16";
-    environmentFiles = [envFile];
+    environmentFiles = [ envFile ];
     volumes = [
       "${postgresDir}:/var/lib/postgresql/data"
     ];
@@ -133,8 +135,8 @@ in {
       "affine-postgres"
       "affine-valkey"
     ];
-    environmentFiles = [envFile];
-    ports = ["127.0.0.1:${toString port}:3010"];
+    environmentFiles = [ envFile ];
+    ports = [ "127.0.0.1:${toString port}:3010" ];
     volumes = [
       "${storageDir}:/root/.affine/storage"
       "${configDir}:/root/.affine/config"
@@ -149,25 +151,25 @@ in {
   # }}}
   # {{{ Service ordering
   systemd.services.docker-affine-postgres = {
-    path = [pkgs.docker];
+    path = [ pkgs.docker ];
     preStart = ''
-      docker network inspect ${networkName} >/dev/null 2>&1 || docker network create ${networkName}
+      docker network inspect ${networkName} >/dev/null 2>&1 || docker network create --opt com.docker.network.bridge.name=br-affine ${networkName}
     '';
-    after = ["docker-network-affine_default.service"];
-    requires = ["docker-network-affine_default.service"];
+    after = [ "docker-network-affine_default.service" ];
+    requires = [ "docker-network-affine_default.service" ];
   };
 
   systemd.services.docker-affine-valkey = {
-    path = [pkgs.docker];
+    path = [ pkgs.docker ];
     preStart = ''
-      docker network inspect ${networkName} >/dev/null 2>&1 || docker network create ${networkName}
+      docker network inspect ${networkName} >/dev/null 2>&1 || docker network create --opt com.docker.network.bridge.name=br-affine ${networkName}
     '';
-    after = ["docker-network-affine_default.service"];
-    requires = ["docker-network-affine_default.service"];
+    after = [ "docker-network-affine_default.service" ];
+    requires = [ "docker-network-affine_default.service" ];
   };
 
   systemd.services.docker-affine = {
-    path = [pkgs.docker];
+    path = [ pkgs.docker ];
     preStart = ''
       ${migrationScript}
     '';

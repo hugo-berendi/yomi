@@ -83,7 +83,10 @@ in {
     isSystemUser = true;
     group = "vikunja";
     home = "/var/lib/vikunja";
+    extraGroups = ["smtp"];
   };
+  users.groups.smtp = {};
+
   # {{{ Hardening
   systemd.services.vikunja.serviceConfig = lib.mkMerge [
     (lib.mapAttrs (_: lib.mkForce) config.yomi.hardening.presets.standard)
@@ -92,6 +95,7 @@ in {
       DynamicUser = lib.mkForce false;
       User = "vikunja";
       Group = "vikunja";
+      SupplementaryGroups = ["smtp"];
     }
   ];
   # }}}

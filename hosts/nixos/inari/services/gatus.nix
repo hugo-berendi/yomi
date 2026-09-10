@@ -75,10 +75,7 @@ in {
     enable = true;
     environmentFile = config.sops.secrets.gatus_env.path;
     settings = {
-      web = {
-        address = "127.0.0.1:${toString port}";
-        port = port;
-      };
+      web.port = port;
 
       storage = {
         type = "sqlite";

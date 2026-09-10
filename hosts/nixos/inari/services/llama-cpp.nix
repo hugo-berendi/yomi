@@ -3,13 +3,19 @@
   lib,
   pkgs,
   ...
-}: let
+}:
+let
   modelDir = "/var/lib/llama-cpp/models";
-  modelName = "qwen2.5-14b-instruct-q4_k_m.gguf";
-  modelUrl = "https://huggingface.co/Qwen/Qwen2.5-14B-Instruct-GGUF/resolve/main/qwen2.5-14b-instruct-q4_k_m.gguf";
-  modelPath = "${modelDir}/${modelName}";
+  modelFiles = [
+    "qwen2.5-14b-instruct-q4_k_m-00001-of-00003.gguf"
+    "qwen2.5-14b-instruct-q4_k_m-00002-of-00003.gguf"
+    "qwen2.5-14b-instruct-q4_k_m-00003-of-00003.gguf"
+  ];
+  modelBaseUrl = "https://huggingface.co/Qwen/Qwen2.5-14B-Instruct-GGUF/resolve/main";
+  modelPath = "${modelDir}/${builtins.head modelFiles}";
   port = config.yomi.ports.llama-cpp;
-in {
+in
+{
   # {{{ Service
   users.users.llama-cpp = {
     isSystemUser = true;
@@ -17,12 +23,12 @@ in {
     home = "/var/lib/llama-cpp";
     createHome = true;
   };
-  users.groups.llama-cpp = {};
+  users.groups.llama-cpp = { };
 
   systemd.services.llama-cpp = {
     description = "llama.cpp inference server";
-    wantedBy = ["multi-user.target"];
-    after = ["network-online.target"];
+    wantedBy = [ "multi-user.target" ];
+    after = [ "network-online.target" ];
 
     serviceConfig = {
       Type = "simple";
@@ -31,16 +37,19 @@ in {
       WorkingDirectory = "/var/lib/llama-cpp";
       Restart = "always";
       RestartSec = 5;
+      TimeoutStartSec = "infinity";
 
       ExecStartPre = pkgs.writeShellScript "llama-cpp-fetch-model" ''
         set -euo pipefail
         mkdir -p "${modelDir}"
-        if [ ! -f "${modelPath}" ]; then
-          echo "Downloading ${modelName}..."
-          ${lib.getExe pkgs.curl} -fsSL -o "${modelPath}.tmp" "${modelUrl}"
-          mv "${modelPath}.tmp" "${modelPath}"
-          chmod 644 "${modelPath}"
-        fi
+        for model in ${lib.escapeShellArgs modelFiles}; do
+          if [ ! -f "${modelDir}/$model" ]; then
+            echo "Downloading $model..."
+            ${lib.getExe pkgs.curl} -fSL --retry 5 --retry-all-errors -C - -o "${modelDir}/$model.tmp" "${modelBaseUrl}/$model"
+            mv "${modelDir}/$model.tmp" "${modelDir}/$model"
+            chmod 644 "${modelDir}/$model"
+          fi
+        done
       '';
 
       ExecStart = lib.escapeShellArgs [

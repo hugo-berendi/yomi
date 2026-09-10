@@ -69,10 +69,16 @@ in {
     }
   ];
 
+  users.groups.smtp = {};
+  users.users.healthchecks.extraGroups = ["smtp"];
+
   systemd.services.healthchecks.serviceConfig = lib.mkMerge [
     (lib.mapAttrs (_: lib.mkForce) config.yomi.hardening.presets.standard)
     config.yomi.hardening.overrides.network
-    {ReadWritePaths = [config.services.healthchecks.dataDir];}
+    {
+      ReadWritePaths = [config.services.healthchecks.dataDir];
+      SupplementaryGroups = ["smtp"];
+    }
   ];
   # }}}
 }

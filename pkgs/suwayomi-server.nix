@@ -13,7 +13,7 @@ in
 
     src = fetchurl {
       url = "https://github.com/Suwayomi/Suwayomi-Server/releases/download/v${finalAttrs.version}/Suwayomi-Server-v${finalAttrs.version}.jar";
-      hash = "sha256-wDecRxon4qk1UeZfm7/3eU0EkDiGGKQzNKnHiTvlksE=";
+      hash = "sha256-ghFBsy4XDUoC08vf7Vd+2PB70iOD/19BMuu1rkDpjdU=";
     };
 
     nativeBuildInputs = [makeWrapper];

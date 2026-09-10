@@ -16,13 +16,22 @@ in {
     enable = true;
     port = port;
     host = "127.0.0.1";
-    dataDir = "/raid5pool/data/audiobookshelf";
   };
+  # }}}
+  # {{{ Storage
+  environment.persistence."/persist/state".directories = [
+    {
+      directory = "/var/lib/audiobookshelf";
+      mode = "u=rwx,g=,o=";
+      user = config.users.users.audiobookshelf.name;
+      group = config.users.users.audiobookshelf.group;
+    }
+  ];
   # }}}
   # {{{ Hardening
   systemd.services.audiobookshelf.serviceConfig = lib.mkMerge [
     (lib.mapAttrs (_: lib.mkForce) config.yomi.hardening.presets.standard)
-    {ReadWritePaths = [config.services.audiobookshelf.dataDir];}
+    {ReadWritePaths = ["/var/lib/audiobookshelf"];}
   ];
   # }}}
 }

@@ -57,6 +57,9 @@ in {
     group = "miniflux";
     home = "/var/lib/miniflux";
   };
+
+  users.groups.smtp = {};
+  users.users.miniflux.extraGroups = ["smtp"];
   # {{{ Hardening
   systemd.services.miniflux.serviceConfig = lib.mkMerge [
     (lib.mapAttrs (_: lib.mkForce) config.yomi.hardening.presets.strict)
@@ -65,6 +68,7 @@ in {
       DynamicUser = lib.mkForce false;
       User = "miniflux";
       Group = "miniflux";
+      SupplementaryGroups = ["smtp"];
     }
   ];
   # }}}

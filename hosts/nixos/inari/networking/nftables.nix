@@ -2,8 +2,11 @@
   config,
   lib,
   ...
-}: let
-  publicPorts = lib.attrsets.mapAttrsToList (name: value: toString value.port) config.yomi.cloudflared.at;
+}:
+let
+  publicPorts = lib.attrsets.mapAttrsToList (
+    name: value: toString value.port
+  ) config.yomi.cloudflared.at;
   privatePorts = lib.attrsets.mapAttrsToList (name: value: toString value.port) config.yomi.nginx.at;
 
   publicPortsString = lib.strings.concatStringsSep ", " publicPorts;
@@ -13,7 +16,8 @@
     # Allow Tailscale exit node traffic
     iifname "tailscale0" oifname "br0" accept
   '';
-in {
+in
+{
   systemd.services.nftables = {
     postStart = ''
       ${lib.getExe' config.systemd.package "systemctl"} try-restart --no-block docker.service || true
@@ -37,7 +41,7 @@ in {
 
             iifname "lo" accept comment "Accept loopback"
             iifname "br0" accept comment "Allow LAN to router"
-            iifname {"docker0", "veth*"} accept comment "Allow Docker to router"
+            iifname {"docker0", "br-affine", "veth*"} accept comment "Allow Docker to router"
             iifname "wg-br" accept comment "Allow VPN namespace to router"
             iifname "tailscale0" accept comment "Allow Tailscale to router"
 
@@ -50,8 +54,11 @@ in {
             type filter hook forward priority filter; policy drop;
 
             # Internal networks (VLANs, WiFi, Docker, Tailscale) to upstream bridge (WAN toward home router)
-            iifname { "vlan20", "vlan30", "br1", "docker0", "tailscale0" } oifname "br0" accept comment "internal to WAN"
-            iifname "br0" oifname { "vlan20", "vlan30", "br1", "docker0", "tailscale0" } ct state { established, related } accept comment "WAN back to internal"
+            iifname { "vlan20", "vlan30", "br1", "docker0", "br-affine", "tailscale0" } oifname "br0" accept comment "internal to WAN"
+            iifname "br0" oifname { "vlan20", "vlan30", "br1", "docker0", "br-affine", "tailscale0" } ct state { established, related } accept comment "WAN back to internal"
+
+            # Affine's containers need database and cache access on their dedicated bridge.
+            iifname "br-affine" oifname "br-affine" accept comment "Affine bridge traffic"
 
             # WiFi hotspot access to main LAN address space
             iifname "br1" oifname "br0" accept comment "WiFi to LAN"
@@ -74,7 +81,7 @@ in {
             type nat hook postrouting priority 100; policy accept;
 
             # Masquerade traffic from internal networks towards upstream bridge (WAN toward home router)
-            iifname {"vlan20", "vlan30", "br1", "docker0", "tailscale0"} oifname "br0" masquerade comment "NAT towards WAN"
+            iifname {"vlan20", "vlan30", "br1", "docker0", "br-affine", "tailscale0"} oifname "br0" masquerade comment "NAT towards WAN"
           }
         }
       '';
