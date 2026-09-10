@@ -39,6 +39,9 @@
     meilisearch = lib.mkDefault 8434;
     microbin = lib.mkDefault 8435;
     minecraft = lib.mkDefault 8436;
+    # Fixed by the game: clients default to 2456 and Valheim claims 2457 for
+    # its query port.
+    valheim = 2456;
     mqtt = lib.mkDefault 8437;
     n8n = lib.mkDefault 8438;
     navidrome = lib.mkDefault 8439;

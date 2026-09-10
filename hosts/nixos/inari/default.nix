@@ -36,6 +36,7 @@
     ./services/mealie.nix
     ./services/radicale.nix
     ./services/redlib.nix
+    ./services/valheim.nix
     ./services/vaultwarden.nix
     ./services/immich.nix
     ./services/music
