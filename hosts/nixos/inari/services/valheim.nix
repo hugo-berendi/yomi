@@ -62,6 +62,11 @@ in {
       CROSSPLAY = "true";
       SERVER_PUBLIC = "false";
 
+      # World modifiers, spelled out rather than hidden behind a preset so the
+      # active rules are readable here. resources=muchmore is the 2x tier;
+      # portals=casual lets metals through.
+      SERVER_ARGS = "-modifier combat hard -modifier resources muchmore -modifier portals casual";
+
       BACKUPS = "true";
       BACKUPS_CRON = "0 */6 * * *";
       BACKUPS_MAX_AGE = "30";
