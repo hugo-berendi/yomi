@@ -38,6 +38,7 @@ in {
           shadow_size = 14;
           shadow_color = shell.rgba "background" 0.72;
           shadow_boost = 1.15;
+          zindex = 0;
           position = "72, 0";
           halign = "left";
           valign = "center";
@@ -46,6 +47,7 @@ in {
           size = "5, 72";
           color = hyprColor shell.palette.accent;
           rounding = -1;
+          zindex = 0;
           position = "72, 150";
           halign = "left";
           valign = "center";
@@ -61,6 +63,7 @@ in {
         shadow_passes = 2;
         shadow_size = 6;
         shadow_color = shell.rgba "background" 0.6;
+        zindex = 1;
         position = "120, -20";
         halign = "left";
         valign = "center";
@@ -90,6 +93,7 @@ in {
         shadow_passes = 3;
         shadow_size = 8;
         shadow_color = shell.rgba "background" 0.5;
+        zindex = 1;
         position = "120, -130";
         halign = "left";
         valign = "center";
@@ -101,6 +105,7 @@ in {
           color = hyprColor shell.palette.textStrong;
           font_family = config.stylix.fonts.sansSerif.name;
           font_size = 82;
+          zindex = 1;
           position = "116, 150";
           halign = "left";
           valign = "center";
@@ -110,6 +115,7 @@ in {
           color = hyprColor shell.palette.muted;
           font_family = config.stylix.fonts.sansSerif.name;
           font_size = 16;
+          zindex = 1;
           position = "124, 82";
           halign = "left";
           valign = "center";
@@ -119,6 +125,7 @@ in {
           color = hyprColor shell.palette.muted;
           font_family = config.stylix.fonts.sansSerif.name;
           font_size = 13;
+          zindex = 1;
           position = "230, -4";
           halign = "left";
           valign = "center";
@@ -128,6 +135,7 @@ in {
           color = hyprColor shell.palette.textStrong;
           font_family = config.stylix.fonts.sansSerif.name;
           font_size = 24;
+          zindex = 1;
           position = "228, -32";
           halign = "left";
           valign = "center";
@@ -137,6 +145,7 @@ in {
           color = hyprColor shell.palette.muted;
           font_family = config.stylix.fonts.sansSerif.name;
           font_size = 12;
+          zindex = 1;
           position = "124, -184";
           halign = "left";
           valign = "center";
