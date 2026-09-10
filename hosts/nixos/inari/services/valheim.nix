@@ -1,4 +1,8 @@
-{config, ...}: let
+{
+  config,
+  pkgs,
+  ...
+}: let
   gamePort = config.yomi.ports.valheim;
   dataDir = "/persist/data/valheim";
 in {
@@ -12,6 +16,17 @@ in {
     "d ${dataDir}        0755 1000 1000 -"
     "d ${dataDir}/config 0755 1000 1000 -"
     "d ${dataDir}/server 0755 1000 1000 -"
+  ];
+
+  # The crossplay join code is regenerated on every server restart and is only
+  # ever printed to the container log, so make looking it up a one-liner.
+  environment.systemPackages = [
+    (pkgs.writeShellScriptBin "valheim-join-code" ''
+      ${config.virtualisation.docker.package}/bin/docker logs valheim 2>&1 \
+        | grep -oE 'join code [0-9]+' \
+        | tail -1 \
+        | grep -oE '[0-9]+'
+    '')
   ];
 
   virtualisation.oci-containers.containers.valheim = {
