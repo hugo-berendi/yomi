@@ -9,8 +9,8 @@
   rgb = config.yomi.theming.colors.rgb;
   greeterConfig = pkgs.writeText "nwg-hello.json" (builtins.toJSON {
     session_dirs = [
-      "/run/current-system/sw/share/wayland-sessions"
-      "/run/current-system/sw/share/xsessions"
+      "${config.services.displayManager.sessionData.desktops}/share/wayland-sessions"
+      "${config.services.displayManager.sessionData.desktops}/share/xsessions"
     ];
     custom_sessions = [];
     monitor_nums = [];
@@ -123,13 +123,19 @@
     }
     exec-once = ${greeterCommand}; hyprctl dispatch exit
   '';
+  greeterSession = lib.escapeShellArgs [
+    (lib.getExe' pkgs.hyprland "start-hyprland")
+    "--"
+    "--config"
+    greeterHyprlandConfig
+  ];
 in {
   config = lib.mkIf cfg {
     services.greetd = {
       enable = true;
       useTextGreeter = false;
       settings.default_session = {
-        command = "${lib.getExe pkgs.hyprland} --config ${greeterHyprlandConfig}";
+        command = greeterSession;
         user = "greeter";
       };
     };
