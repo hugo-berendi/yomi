@@ -50,8 +50,10 @@ in {
     environmentFiles = [config.sops.templates."valheim.env".path];
 
     environment = {
-      SERVER_NAME = "Yomi";
-      WORLD_NAME = "Yomi";
+      SERVER_NAME = "SuckDuck";
+
+      # Must match the directory name under config/worlds_local.
+      WORLD_NAME = "suckduck";
       SERVER_PORT = toString gamePort;
 
       # Joining happens through the crossplay join code the server prints on
