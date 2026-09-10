@@ -36,10 +36,13 @@
   boot.initrd = {
     availableKernelModules = ["r8169"];
     # Unlock the encrypted root pool using a random key sealed to Inari's TPM.
-    # The JWE contains no plaintext key and is only usable with this TPM.
+    # The blob lives on the ESP rather than in this repository: it is key
+    # material, and the repository is mirrored to a public forge. It is read
+    # at install time and baked into the initrd. An Age-encrypted copy of the
+    # same key sits next to it as /boot/zroot-recovery-key.age.
     clevis = {
       enable = true;
-      devices.zroot.secretFile = ../filesystems/zroot-key.jwe;
+      devices.zroot.secretFile = "/boot/zroot-key.jwe";
     };
     network = {
       enable = true;
@@ -52,8 +55,9 @@
     };
   };
   # Keep the normal credential request enabled as a recovery fallback if TPM
-  # unlocking fails. The active ZFS key is backed up, Age-encrypted, next to
-  # the TPM JWE as zroot-recovery-key.age.
+  # unlocking fails. Recovery then means booting rescue media, decrypting
+  # /boot/zroot-recovery-key.age with an Age key from .sops.yaml and running
+  # zfs load-key -L file://<decrypted> zroot.
   boot.zfs.requestEncryptionCredentials = true;
   environment.persistence."/persist/state".directories = ["/etc/secrets/initrd"];
   # }}}
