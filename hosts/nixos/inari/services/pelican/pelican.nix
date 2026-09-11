@@ -9,6 +9,8 @@
 in {
   yomi.cloudflared.at.pelican.port = config.yomi.ports.pelican-panel;
 
+  # TODO: narrow these once the panel image's runtime uid is known; 0777 is a
+  # stand-in for not knowing which user inside the container writes here.
   systemd.tmpfiles.rules = [
     "d ${dataDir} 0777 root root"
     "d ${logsDir} 0777 root root"
@@ -16,7 +18,9 @@ in {
   ];
 
   virtualisation.oci-containers.containers."pelican-panel" = {
-    image = "ghcr.io/pelican-dev/panel:v1.0.0-beta25";
+    # Panel and wings use separate version numbers but ship in pairs on the
+    # same day; beta38 is the counterpart to wings v1.0.0-beta29.
+    image = "ghcr.io/pelican-dev/panel:v1.0.0-beta38";
     environment = {
       "ADMIN_EMAIL" = "pelican@hugo-berendi.de";
       "APP_URL" = config.yomi.cloudflared.at.pelican.url;
