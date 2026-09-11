@@ -61,7 +61,10 @@ in {
       ExecStop = "docker network rm -f ${networkName}";
     };
     script = ''
-      docker network inspect ${networkName} || docker network create ${networkName}
+      # A fixed bridge name so nftables can name it; an unnamed br-<hash> is not
+      # in the input chain, so replies from the container were dropped and the
+      # published port on 127.0.0.1 simply hung.
+      docker network inspect ${networkName} || docker network create --opt com.docker.network.bridge.name=br-changedet ${networkName}
     '';
     wantedBy = ["multi-user.target"];
   };
