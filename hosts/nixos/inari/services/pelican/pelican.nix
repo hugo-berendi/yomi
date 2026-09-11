@@ -19,8 +19,11 @@ in {
 
   virtualisation.oci-containers.containers."pelican-panel" = {
     # Panel and wings use separate version numbers but ship in pairs on the
-    # same day; beta38 is the counterpart to wings v1.0.0-beta29.
-    image = "ghcr.io/pelican-dev/panel:v1.0.0-beta38";
+    # same day; beta38 is the counterpart to wings v1.0.0-beta29. The images
+    # moved to ghcr.io/pelican -- the old pelican-dev path no longer serves
+    # even a pull token, so the previously pinned beta25 had become
+    # unfetchable too.
+    image = "ghcr.io/pelican/panel:v1.0.0-beta38";
     environment = {
       "ADMIN_EMAIL" = "pelican@hugo-berendi.de";
       "APP_URL" = config.yomi.cloudflared.at.pelican.url;
