@@ -89,11 +89,19 @@ in {
   # networking.firewall is disabled on this host; see ../../networking/nftables.nix
   # for what is actually reachable.
 
-  # Only the server volumes need to survive a rollback. /etc/pelican used to be
-  # listed here as well, which bind-mounted an empty directory over the config
-  # NixOS had just written -- that is why wings never found a config file.
-  systemd.tmpfiles.rules = ["d /var/lib/pelican/volumes 0700 root root -"];
-  environment.persistence."/persist/state".directories = ["/var/lib/pelican"];
+  # /etc/pelican is back, but this time nothing writes a NixOS-managed file
+  # into it: wings keeps its machine-id and passwd file there and needs them to
+  # survive the rollback. The config itself lives in /run/secrets/rendered.
+  # Bind-mounting this path while environment.etc also targeted it was what
+  # broke wings before.
+  systemd.tmpfiles.rules = [
+    "d /etc/pelican 0700 root root -"
+    "d /var/lib/pelican/volumes 0700 root root -"
+  ];
+  environment.persistence."/persist/state".directories = [
+    "/etc/pelican"
+    "/var/lib/pelican"
+  ];
 
   environment.systemPackages = [pkgs.pelican-wings];
 }
