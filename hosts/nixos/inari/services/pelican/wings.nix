@@ -35,7 +35,10 @@ in {
         name: pelican_nw
         network_mode: pelican_nw
     allowed_mounts: []
-    remote: 'https://pelican.hugo-berendi.de'
+    # The panel runs on this machine. Going out through the public hostname
+    # meant resolving it against the local AdGuard, which has no record for it
+    # -- wings died with "no such host" on every start.
+    remote: 'http://127.0.0.1:${toString config.yomi.ports.pelican-panel}'
   '';
 
   systemd.services.wings-network = {
