@@ -70,7 +70,10 @@ in {
       ExecStop = "docker network rm -f pelican_default";
     };
     script = ''
-      docker network inspect pelican_default || docker network create pelican_default --subnet=172.19.0.0/16
+      # Subnets in use on this host: 172.17 docker0, 172.18 changedetection,
+      # 172.19 affine, 172.21 pelican_nw. Creating this network on 172.19
+      # failed with "Pool overlaps with other one on this address space".
+      docker network inspect pelican_default || docker network create pelican_default --subnet=172.20.0.0/16
     '';
     partOf = ["docker-compose-pelican-root.target"];
     wantedBy = ["docker-compose-pelican-root.target"];

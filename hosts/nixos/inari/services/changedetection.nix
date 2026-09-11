@@ -137,6 +137,13 @@ in {
       Type = "oneshot";
       RemainAfterExit = true;
       ExecStart = setupNotifications;
+
+      # The retry loops look bounded, but each curl carries --max-time 15
+      # --retry 3, so a single failing call takes over a minute and the whole
+      # script can run for an hour and a half. Because this unit is part of
+      # multi-user.target, that blocked every nixos-rebuild switch on the host
+      # until it was killed by hand.
+      TimeoutStartSec = "300";
     };
     wantedBy = ["multi-user.target"];
   };
