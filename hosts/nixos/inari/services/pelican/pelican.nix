@@ -29,10 +29,12 @@ in {
       "APP_URL" = config.yomi.cloudflared.at.pelican.url;
       "XDG_DATA_HOME" = "/pelican-data";
 
-      # TLS is terminated by the cloudflare tunnel. Without this the entrypoint
-      # refuses to start an https APP_URL, asking for a Let's Encrypt address
-      # it must not need. The address is this network's gateway, matching the
-      # trusted_proxies entry in ./Caddyfile.
+      # TLS is terminated by the cloudflare tunnel. Without BEHIND_PROXY the
+      # entrypoint refuses an https APP_URL, demanding a Let's Encrypt address
+      # it must not need; with it, caddy serves plain http on :80 and turns
+      # auto_https off. TRUSTED_PROXIES is this network's gateway and matches
+      # the trusted_proxies entry in ./Caddyfile.
+      "BEHIND_PROXY" = "true";
       "TRUSTED_PROXIES" = "172.20.0.1";
     };
     volumes = [
