@@ -28,6 +28,12 @@ in {
       "ADMIN_EMAIL" = "pelican@hugo-berendi.de";
       "APP_URL" = config.yomi.cloudflared.at.pelican.url;
       "XDG_DATA_HOME" = "/pelican-data";
+
+      # TLS is terminated by the cloudflare tunnel. Without this the entrypoint
+      # refuses to start an https APP_URL, asking for a Let's Encrypt address
+      # it must not need. The address is this network's gateway, matching the
+      # trusted_proxies entry in ./Caddyfile.
+      "TRUSTED_PROXIES" = "172.20.0.1";
     };
     volumes = [
       "${dataDir}:/pelican-data:rw"
