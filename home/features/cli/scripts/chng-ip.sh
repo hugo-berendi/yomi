@@ -1,18 +1,10 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-if [ `id -u` != 0 ] ; then
-    echo "Please run this as root"
-    exit 1
+if [[ $EUID -ne 0 ]]; then
+	echo "Please run this as root" >&2
+	exit 1
 fi
 
-if [ `sudo systemctl is-enabled tor` != "enabled" ] ; then
-    sudo systemctl enable tor
-fi
-
-if [ `sudo systemctl status tor | grep -q "active (running)"` ] ; then
-    sudo systemctl reload tor
-else
-    sudo systemctl start tor
-fi
-
-
+systemctl enable --now tor.service
+systemctl reload tor.service
