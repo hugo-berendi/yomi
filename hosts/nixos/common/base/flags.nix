@@ -29,7 +29,6 @@
       '';
     };
 
-    # TODO: add assert forcing this to imply graphical
     gaming = lib.mkOption {
       default = false;
       type = lib.types.bool;
@@ -38,4 +37,11 @@
       ";
     };
   };
+
+  config.assertions = [
+    {
+      assertion = !config.yomi.machine.gaming || config.yomi.machine.graphical;
+      message = "yomi.machine.gaming requires yomi.machine.graphical.";
+    }
+  ];
 }
