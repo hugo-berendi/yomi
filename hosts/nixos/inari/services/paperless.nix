@@ -17,7 +17,7 @@
   services.paperless = {
     enable = true;
     port = config.yomi.ports.paperless;
-    address = "0.0.0.0";
+    address = "127.0.0.1";
     dataDir = "/raid5pool/data/paperless";
     mediaDir = "/raid5pool/media/documents";
     environmentFile = config.sops.secrets.paperless_env.path;

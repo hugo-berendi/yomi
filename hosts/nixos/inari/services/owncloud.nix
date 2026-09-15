@@ -60,7 +60,7 @@ in {
   # {{{ general config
   services.ocis = {
     enable = true;
-    address = "0.0.0.0";
+    address = "127.0.0.1";
     port = config.yomi.ports.owncloud;
     url = ocisUrl;
     stateDir = "/raid5pool/cloud";

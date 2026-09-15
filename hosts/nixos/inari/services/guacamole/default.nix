@@ -3,9 +3,9 @@
   yomi.nginx.at.guacamole.port = config.yomi.ports.guacamole;
 
   virtualisation.oci-containers.containers.guacamole = {
-    image = "flcontainers/guacamole";
+    image = "flcontainers/guacamole:latest@sha256:81a420f386ef8cbb4697208e13ea90f6a10a54619981241bed672e4a41b5f77f";
     autoStart = false;
-    ports = ["${toString config.yomi.nginx.at.guacamole.port}:8080"];
+    ports = ["127.0.0.1:${toString config.yomi.nginx.at.guacamole.port}:8080"];
     volumes = [
       "/etc/localtime:/etc/localtime"
       "${config.sops.secrets.guacamole_users.path}:/etc/guacamole/user-mapping.xml"

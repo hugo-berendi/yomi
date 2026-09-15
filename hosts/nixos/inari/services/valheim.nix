@@ -4,6 +4,7 @@
   ...
 }: let
   gamePort = config.yomi.ports.valheim;
+  queryPort = config.yomi.ports.valheim-query;
   dataDir = "/persist/data/valheim";
 in {
   sops.secrets.valheim_server_password.sopsFile = ../secrets.yaml;
@@ -30,14 +31,14 @@ in {
   ];
 
   virtualisation.oci-containers.containers.valheim = {
-    image = "ghcr.io/lloesche/valheim-server:latest";
+    image = "ghcr.io/lloesche/valheim-server:latest@sha256:dc1323b0e6a27cd9b25506551e4b85123472056c5978958d0b32c341d860d207";
     autoStart = true;
 
     # Valheim speaks UDP only, and claims the query port right above the game
     # port. There is no reverse proxy in front of this.
     ports = [
       "${toString gamePort}:${toString gamePort}/udp"
-      "${toString (gamePort + 1)}:${toString (gamePort + 1)}/udp"
+      "${toString queryPort}:${toString queryPort}/udp"
     ];
 
     volumes = [

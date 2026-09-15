@@ -54,7 +54,7 @@
       };
 
       cron.ENABLED = true;
-      service.DISABLE_REGISTRATION = false;
+      service.DISABLE_REGISTRATION = true;
       session.COOKIE_SECURE = true;
 
       mailer = {
@@ -148,14 +148,6 @@
     }
   ];
 
-  nix.settings.trusted-users = [
-    "root"
-    "hugob"
-    "gitea-runner"
-  ];
-
-  nix.extraOptions = ''
-    accept-flake-config = true
-  '';
+  nix.settings.trusted-users = ["root" "hugob"];
   # }}}
 }

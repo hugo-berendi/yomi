@@ -18,7 +18,7 @@
       };
       server = {
         port = config.yomi.ports.searxng;
-        bind_address = "0.0.0.0";
+        bind_address = "127.0.0.1";
         secret_key = "$SEARXNG_SECRET_KEY";
       };
       search = {

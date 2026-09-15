@@ -9,7 +9,7 @@
   # }}}
   # {{{ Service
   virtualisation.oci-containers.containers."paperless-ai" = {
-    image = "clusterzx/paperless-ai:latest";
+    image = "clusterzx/paperless-ai:latest@sha256:2b65888163fd59716f1c8285b31c5bd0b30c9c3c192c42b516688e3887d4ba60";
     environment = {
       PUID = "1000";
       PGID = "1000";
@@ -33,7 +33,7 @@
   };
 
   virtualisation.oci-containers.containers."paperless-ai-rag" = {
-    image = "clusterzx/paperless-ai:latest";
+    image = "clusterzx/paperless-ai:latest@sha256:2b65888163fd59716f1c8285b31c5bd0b30c9c3c192c42b516688e3887d4ba60";
     environment = {
       PUID = "1000";
       PGID = "1000";
@@ -43,7 +43,7 @@
       "paperless-ai_rag:/app/data:rw"
     ];
     ports = [
-      "${toString config.yomi.ports.paperless-ai-rag}:${toString config.yomi.ports.paperless-ai-rag}/tcp"
+      "127.0.0.1:${toString config.yomi.ports.paperless-ai-rag}:${toString config.yomi.ports.paperless-ai-rag}/tcp"
     ];
     log-driver = "journald";
     extraOptions = [

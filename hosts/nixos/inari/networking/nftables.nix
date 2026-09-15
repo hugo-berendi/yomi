@@ -3,6 +3,25 @@
   lib,
   ...
 }: let
+  lanTcpServicePorts = map (name: config.yomi.ports.${name}) [
+    "beszel"
+    "home-assistant"
+    "mqtt"
+    "pelican-node1"
+    "windrose-direct"
+    "windrose-rcon"
+  ];
+  lanUdpServicePorts = map (name: config.yomi.ports.${name}) [
+    "valheim"
+    "valheim-query"
+    "windrose-direct"
+  ];
+  lanTcpPorts = lib.concatMapStringsSep ", " toString (
+    lib.unique ([22 53 80 443 445 2049 22000] ++ lanTcpServicePorts)
+  );
+  lanUdpPorts = lib.concatMapStringsSep ", " toString (
+    lib.unique ([53 67 68 443 1900 5353 21027 22000] ++ lanUdpServicePorts)
+  );
   exitNodeForwardRule = lib.optionalString config.yomi.tailscale.exitNode ''
     # Allow Tailscale exit node traffic
     iifname "tailscale0" oifname "br0" accept
@@ -35,7 +54,11 @@ in {
             type filter hook input priority 0; policy drop;
 
             iifname "lo" accept comment "Accept loopback"
-            iifname "br0" accept comment "Allow LAN to router"
+            iifname "br0" ct state { established, related } accept comment "Allow established LAN traffic"
+            iifname "br0" meta l4proto tcp th dport { ${lanTcpPorts} } accept comment "Allow registered LAN TCP services"
+            iifname "br0" meta l4proto udp th dport { ${lanUdpPorts} } accept comment "Allow registered LAN UDP services"
+            iifname "br0" ip protocol icmp accept comment "Allow LAN IPv4 diagnostics"
+            iifname "br0" ip6 nexthdr ipv6-icmp accept comment "Allow LAN IPv6 diagnostics"
             iifname {"docker0", "br-pelican", "br-changedet", "veth*"} accept comment "Allow Docker to router"
             iifname "wg-br" accept comment "Allow VPN namespace to router"
             iifname "tailscale0" accept comment "Allow Tailscale to router"
@@ -45,8 +68,6 @@ in {
             # so the three WAN rules that used to live here matched nothing.
             # Everything not accepted above is dropped by the chain policy.
             #
-            # Note that br0 is accepted unconditionally, which trusts the whole
-            # home LAN with every service port on this host.
           }
 
           chain forward {

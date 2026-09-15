@@ -9,12 +9,11 @@
 in {
   yomi.cloudflared.at.pelican.port = config.yomi.ports.pelican-panel;
 
-  # TODO: narrow these once the panel image's runtime uid is known; 0777 is a
-  # stand-in for not knowing which user inside the container writes here.
+  # The Alpine-based image runs as www-data (UID/GID 82).
   systemd.tmpfiles.rules = [
-    "d ${dataDir} 0777 root root"
-    "d ${logsDir} 0777 root root"
-    "d ${logsDir}/supervisord 0777 root root"
+    "d ${dataDir} 0770 82 82"
+    "d ${logsDir} 0770 82 82"
+    "d ${logsDir}/supervisord 0770 82 82"
   ];
 
   virtualisation.oci-containers.containers."pelican-panel" = {
@@ -23,7 +22,7 @@ in {
     # moved to ghcr.io/pelican -- the old pelican-dev path no longer serves
     # even a pull token, so the previously pinned beta25 had become
     # unfetchable too.
-    image = "ghcr.io/pelican/panel:v1.0.0-beta38";
+    image = "ghcr.io/pelican/panel:v1.0.0-beta38@sha256:46f356f3fda423b1d43f0dc3c71efc056cd8b9bec365d1d7817306a17ee5694a";
     environment = {
       "ADMIN_EMAIL" = "pelican@hugo-berendi.de";
       "APP_URL" = config.yomi.cloudflared.at.pelican.url;
@@ -43,7 +42,7 @@ in {
       "${toString ./Caddyfile}:/etc/caddy/Caddyfile"
     ];
     ports = [
-      "${toString config.yomi.cloudflared.at.pelican.port}:80"
+      "127.0.0.1:${toString config.yomi.cloudflared.at.pelican.port}:80"
     ];
     log-driver = "journald";
     extraOptions = [
