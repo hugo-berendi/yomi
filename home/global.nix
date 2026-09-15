@@ -28,7 +28,7 @@
   ];
 in {
   # Import all modules defined in modules/home-manager
-  imports = builtins.attrValues outputs.homeManagerModules ++ imports;
+  imports = builtins.attrValues outputs.homeModules ++ imports;
 
   # {{{ Enable the home-manager and git clis
   programs = {

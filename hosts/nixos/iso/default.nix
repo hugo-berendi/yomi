@@ -81,8 +81,6 @@
 
   environment.defaultPackages = [];
 
-  boot.initrd.systemd.enable = lib.mkForce false;
-
   yomi.wireless.enable = false;
 
   # Fast but bad compression

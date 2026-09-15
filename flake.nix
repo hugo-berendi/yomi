@@ -1,5 +1,5 @@
 {
-  description = "Your new nix config";
+  description = "Yomi: declarative NixOS and Home Manager configurations";
 
   # {{{ Caching and whatnot
   # Two constraints force the shape of this block. It has to be a top-level
@@ -52,6 +52,10 @@
     # }}}
 
     llm-agents.url = "github:numtide/llm-agents.nix";
+    mcp-nixos = {
+      url = "github:utensils/mcp-nixos";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     home-manager.url = "github:nix-community/home-manager/release-26.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -64,17 +68,27 @@
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
-    pyprland.url = "github:hyprland-community/pyprland";
+    pyprland = {
+      url = "github:hyprland-community/pyprland";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     # }}}
 
     ghostty-pkg = {
       url = "github:ghostty-org/ghostty";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     # {{{ Nix-related tooling
-    nixarr.url = "github:rasmus-kirk/nixarr";
+    nixarr = {
+      url = "github:rasmus-kirk/nixarr";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
-    jellarr.url = "github:venkyr77/jellarr";
+    jellarr = {
+      url = "github:venkyr77/jellarr";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     # {{{ Storage
     impermanence.url = "github:nix-community/impermanence";
@@ -117,10 +131,16 @@
     rose-pine-hyprcursor.url = "github:ndom91/rose-pine-hyprcursor";
     rose-pine-hyprcursor.inputs.nixpkgs.follows = "nixpkgs";
 
-    nixcord.url = "github:kaylorben/nixcord";
+    nixcord = {
+      url = "github:kaylorben/nixcord";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     # }}}
 
-    playit-nixos-module.url = "github:pedorich-n/playit-nixos-module";
+    playit-nixos-module = {
+      url = "github:pedorich-n/playit-nixos-module";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     nixos-wsl.url = "github:nix-community/NixOS-WSL/main";
     nixos-wsl.inputs.nixpkgs.follows = "nixpkgs";
@@ -148,17 +168,14 @@
     # }}}
   in
     flake-parts.lib.mkFlake {inherit inputs;} {
-      systems = [
-        "x86_64-linux"
-        "aarch64-linux"
-      ];
+      systems = ["x86_64-linux"];
 
       imports = [];
 
       flake = {
         overlays = import ./overlays;
         nixosModules = import ./modules/nixos // import ./modules/common;
-        homeManagerModules = import ./modules/home-manager // import ./modules/common;
+        homeModules = import ./modules/home-manager // import ./modules/common;
 
         nixosConfigurations = let
           inherit (inputs.nixpkgs) lib;
@@ -270,7 +287,7 @@
           # tsukuyomi is deliberately absent: that machine runs Windows now, so
           # its configuration is kept dormant rather than built on every push.
           # It is still under nixosConfigurations and can be built by hand.
-          hosts = ["amaterasu" "inari"];
+          hosts = ["amaterasu" "inari" "iso" "wsl"];
         in
           (builtins.listToAttrs (
             map (
