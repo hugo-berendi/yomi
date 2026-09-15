@@ -19,7 +19,6 @@ in {
 
     settings = {
       PermitRootLogin = lib.mkForce "no"; # Forbid root login through SSH.
-
       # Keys only. This said "Use keys only" next to a value of `true` for as
       # long as it has existed.
       #

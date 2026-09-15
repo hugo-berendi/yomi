@@ -37,7 +37,6 @@ in {
       };
 
       guiAddress = "127.0.0.1:${toString config.yomi.ports.syncthing}";
-      settings.gui.insecureSkipHostcheck = true;
     };
     # }}}
     # {{{ Systemd

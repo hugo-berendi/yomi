@@ -93,7 +93,7 @@ in {
   # }}}
   # {{{ Sudo configuration
   security.sudo = {
-    wheelNeedsPassword = false;
+    wheelNeedsPassword = true;
     extraConfig = ''
       Defaults lecture = never
     '';
