@@ -21,7 +21,7 @@
       version = "preview-OIDC";
       src = jellyseerr-oidc-src;
       inherit pnpm;
-      fetcherVersion = 2;
+      fetcherVersion = 3;
       hash = "sha256-0CwHkxG3SOSd+xozONnAi7Mr0y+lXdxwJk8mRZf8Bhs=";
     };
     nativeBuildInputs = [
