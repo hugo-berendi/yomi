@@ -82,10 +82,9 @@
   yomi.meilisearch.sopsFile = ./secrets.yaml;
   yomi.meilisearch.environment = "production";
 
-  # systemd-oomd repeatedly panicked the kernel inside cgroup v2 memcg
-  # accounting (memory_stat_show/mod_memcg_lruvec_state) due to ZFS ARC's
-  # reclaim path not participating cleanly in cgroup memory accounting.
-  # Reproduced across kernel 6.12.90 and 6.18.36 alike.
+  # Keep systemd-oomd out of the memory-reclaim path while diagnosing the
+  # recurring corruption. EFI-pstore later showed that oomd was merely the
+  # current task in some crashes, not their common cause.
   systemd.oomd.enable = lib.mkForce false;
 
   # The root dataset is rolled back to zroot@blank on every boot. Ensure the

@@ -2,18 +2,16 @@
   # Configure ZFS
   boot.supportedFilesystems = ["zfs"];
   boot.zfs.forceImportRoot = false;
-  # This host ran without a single kernel BUG from 2024-10 to 2026-08-05 on the
-  # 6.12 line with ZFS 2.3.x. The crashes started on the day it moved to ZFS
-  # 2.4.2, beginning with a page fault inside zfs_lz4_compress and a "Bad page
-  # state in process z_rd_int_1" -- ZFS corrupting page state, after which the
-  # kernel died wherever it next touched the damage. Both are pinned back to
-  # that known-good pairing; every pool feature in use is supported by 2.3.
+  # The first crashes coincided with the ZFS 2.4.2 upgrade and included faults
+  # in ZFS code. Later EFI-pstore evidence showed the same corruption with ZFS
+  # 2.3 across unrelated kernel paths, always on one physical CPU core. Keep
+  # this conservative pairing while the hardware/firmware fault is isolated;
+  # every pool feature in use is supported by 2.3.
   boot.kernelPackages = pkgs.linuxPackages_6_12;
   boot.zfs.package = pkgs.zfs_2_3;
   boot.zfs.extraPools = ["zroot" "raid5pool"];
 
-  # Cap ARC so ZFS memory pressure doesn't churn against cgroup v2 memory
-  # accounting (root cause of the recurring memcg-path kernel panics)
+  # Cap ARC to reduce memory pressure while the kernel crashes are investigated.
   boot.extraModprobeConfig = "options zfs zfs_arc_max=8589934592";
 
   # The rollback below wipes /etc on every boot, so systemd would generate a
