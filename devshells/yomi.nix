@@ -16,5 +16,8 @@ pkgs.mkShell {
     pkgs.nixos-rebuild-ng
     pkgs.statix
     pkgs.stylua
+    pkgs.ruff
+    pkgs.shellcheck
+    pkgs.shfmt
   ];
 }

@@ -7,14 +7,13 @@ hostname := `hostname`
 # {{{ Nixos rebuilds
 [doc("Wrapper around `nixos-rebuild`, taking care of the generic arguments")]
 [group("nix")]
-nixos-rebuild action="switch" host=hostname ng="1" install_bootloader="0":
+nixos-rebuild action="switch" host=hostname install_bootloader="0":
   #!/usr/bin/env python3
   import os
   import subprocess
   import sys
 
   install_bootloader = "{{install_bootloader}}" != "0"
-  ng = "{{ng}}" != "0"
   host = "{{host}}"
   users = {
     'amaterasu': 'hugob',
@@ -30,7 +29,7 @@ nixos-rebuild action="switch" host=hostname ng="1" install_bootloader="0":
     "--accept-flake-config",
     "--flake",
     ".#{{host}}",
-    "--no-reexec" if ng else "--fast"
+    "--no-reexec",
   ]
 
   if install_bootloader:
@@ -43,11 +42,7 @@ nixos-rebuild action="switch" host=hostname ng="1" install_bootloader="0":
       args = [sudo_bin, *args]
   else:
     print("🧬 Switching nixos configuration (remotely) for '{{BLUE + host + NORMAL}}'")
-    args += [ "--target-host", f"{users[host]}@{host}" ]
-    if ng:
-      args += [ "--sudo", "--ask-sudo-password" ]
-    else:
-      args += [ "--use-remote-sudo" ]
+    args += ["--target-host", f"{users[host]}@{host}", "--sudo"]
 
   if not sys.stdout.isatty():
     args += ["--log-format", "raw"]
@@ -92,7 +87,7 @@ rebuild:
 [doc("Run all flake checks (builds hosts, DNS, formatter)")]
 [group("ci")]
 check:
-  nix flake check --show-trace
+  nix flake check --show-trace --keep-going
 
 [doc("Check Nix code formatting")]
 [group("ci")]
@@ -124,9 +119,21 @@ statix-check:
 deadnix-check:
   nix develop -c deadnix --fail .
 
+[doc("Check Python source with Ruff")]
+[group("ci")]
+python-check:
+  ruff check .
+  ruff format --check .
+
+[doc("Check shell scripts with ShellCheck and shfmt")]
+[group("ci")]
+shell-check:
+  git ls-files -z '*.sh' | xargs -0 shellcheck --shell=bash
+  git ls-files -z '*.sh' | xargs -0 shfmt -d
+
 [doc("Run all formatting checks (Nix + Lua + linters)")]
 [group("ci")]
-lint: format-check format-lua-check statix-check deadnix-check
+lint: format-check format-lua-check statix-check deadnix-check python-check shell-check
 
 [doc("Format all code (Nix + Lua)")]
 [group("ci")]
