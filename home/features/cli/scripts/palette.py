@@ -24,6 +24,7 @@ def palette(img, n=10, r=1, o=False):
 
     return color.lab2rgb(cc)
 
+
 def p2h(p):
     r, g, b = np.round(p).astype(int)
     return f"#{r:02X}{g:02X}{b:02X}"
@@ -33,9 +34,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("img")
     parser.add_argument("out")
-    parser.add_argument("-n", default=10, type=int, help="The number of colors for the palette")
+    parser.add_argument(
+        "-n", default=10, type=int, help="The number of colors for the palette"
+    )
     parser.add_argument("-r", default=1, type=float, help="Rescale factor")
-    parser.add_argument("-o", default=False, action='store_true')
+    parser.add_argument("-o", default=False, action="store_true")
     args = parser.parse_args()
     img = io.imread(args.img)
     p = palette(img, n=args.n, r=args.r, o=args.o)

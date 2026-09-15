@@ -10,7 +10,7 @@ fi
 
 host=$1
 mode=$2
-action=$3
+action=${3:-}
 
 # Ensure correct first argument type
 if [ "$mode" != "disko" ] && [ "$mode" != "mount" ]; then
@@ -38,12 +38,12 @@ if [ "$mode" = "mount" ] && [ "$host" = "inari" ]; then
 fi
 
 echo "💣 Running disko"
-nix run disko -- --mode $mode ./hosts/nixos/$host/filesystems/partitions.nix
+nix run disko -- --mode "$mode" "./hosts/nixos/$host/filesystems/partitions.nix"
 
 if [ "$action" = "install" ]; then
 	echo "🛠️ Generating hardware config"
 	nixos-generate-config --no-filesystems --show-hardware-config \
-		>./hosts/nixos/$host/hardware/generated.nix
+		>"./hosts/nixos/$host/hardware/generated.nix"
 	git add .
 
 	echo "Installing nixos"
@@ -53,12 +53,12 @@ if [ "$action" = "install" ]; then
 	mkdir -p /mnt/persist/state/home/hugob
 	for dir in /mnt/persist/state/home/*; do
 		mkdir -p "$dir/ssh/.ssh"
-		cp /kagutsuchi/secrets/$host/id* "$dir/ssh/.ssh"
+		cp "/kagutsuchi/secrets/$host"/id* "$dir/ssh/.ssh"
 	done
 
 	echo "🔑 Copying host ssh keys"
 	mkdir -p /mnt/persist/state/etc/ssh/
-	cp /kagutsuchi/secrets/$host/ssh* /mnt/persist/state/etc/ssh/
+	cp "/kagutsuchi/secrets/$host"/ssh* /mnt/persist/state/etc/ssh/
 fi
 
 if [ "$action" = "enter" ]; then

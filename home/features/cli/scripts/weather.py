@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import subprocess
 from pyquery import PyQuery  # install using `pip install pyquery`
 import json
 
@@ -22,7 +21,6 @@ weather_icons = {
 # to get your own location_id, go to https://weather.com & search your location.
 # once you choose your location, you can see the location_id in the URL(64 chars long hex string)
 # like this: https://weather.com/en-IN/weather/today/l/c3e96d6cc4965fc54f88296b54449571c4107c73b9638c16aafc83575b4ddf2e
-# location_id = "c3e96d6cc4965fc54f88296b54449571c4107c73b9638c16aafc83575b4ddf2e"  # TODO
 # location_id = "8139363e05edb302e2d8be35101e400084eadcecdfce5507e77d832ac0fa57ae"
 location_id = "94d3e3807099aaf7a4e2fc026415d7756c777e42ef00c48298e65c50b760df43"  # for Feldkirchen-Westerham
 # priv_env_cmd = 'cat $PRIV_ENV_FILE | grep weather_location | cut -d "=" -f 2'
