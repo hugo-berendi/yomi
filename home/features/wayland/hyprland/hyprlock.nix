@@ -83,12 +83,12 @@ in {
         font_family = config.stylix.fonts.sansSerif.name;
         fade_on_empty = false;
         fade_timeout = 1000;
-        placeholder_text = "<span foreground='${shell.palette.muted}'>󰌾  Passwort</span>";
+        placeholder_text = "󰌾  Passwort";
         rounding = 18;
         check_color = hyprColor shell.palette.success;
         fail_color = hyprColor shell.palette.critical;
         capslock_color = hyprColor shell.palette.attention;
-        fail_text = "<i>$FAIL · Versuch $ATTEMPTS</i>";
+        fail_text = "$FAIL · Versuch $ATTEMPTS";
         fail_timeout = 2000;
         shadow_passes = 3;
         shadow_size = 8;

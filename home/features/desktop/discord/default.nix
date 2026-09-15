@@ -1,6 +1,7 @@
 {config, ...}: {
   programs.nixcord = {
     enable = true; # enable Nixcord. Also installs discord package
+    discord.silenceNoModClientWarning = true;
     vesktop.enable = true;
     config = {
       enabledThemes = ["stylix.theme.css"];
