@@ -1,169 +1,65 @@
-# _Yomi (黄泉)_
+# Yomi (黄泉)
 
-based on [everything-nix](https://github.com/prescientmoon/everything-nix). 
-
-In case you are not familiar with nix/nixos, this is a collection of configuration files which build all my systems in a declarative manner. The tool used to configure the global system is called [nixos](https://nixos.org/), and the one used to configure the individual users is called [home-manager](https://github.com/nix-community/home-manager).
-
-> A [visual history](./docs/history.md) of my setup is in the works!
-
-## Features this repository includes:
-
-- Sets up all the apps I use — including git, neovim, fish, tmux, starship, hyprland, anyrun, discord, zathura, foot & much more.
-- Sets up my entire homelab — including zfs-based [impermanence](https://grahamc.com/blog/erase-your-darlings), automatic let's-encrypt certificates, tailscale, syncthing, vaultwarden, whoogle, pounce, calico, smos, intray, actual & more.
-- Consistent base16 theming using [stylix](https://github.com/danth/stylix)
-- Declarative secret management using [sops-nix](https://github.com/Mic92/sops-nix)
+Yomi is the declarative NixOS and Home Manager configuration for five machines and a self-hosted homelab. It is based on [everything-nix](https://github.com/prescientmoon/everything-nix).
 
 ## Hosts
 
-This repo's structure is based on the concept of hosts - individual machines configured by me. I'm naming each host based on things in space/mythology (_they are the same picture_). The hosts I have right now are:
+| Host | Role |
+| --- | --- |
+| [amaterasu](./hosts/nixos/amaterasu/) | Framework 13 laptop |
+| [tsukuyomi](./hosts/nixos/tsukuyomi/) | Dormant desktop configuration (currently runs Windows) |
+| [inari](./hosts/nixos/inari/) | ZFS home server and container host |
+| [iso](./hosts/nixos/iso/) | Installation and recovery ISO |
+| [wsl](./hosts/nixos/wsl/) | WSL environment |
 
-- [amaterasu](./hosts/nixos/amaterasu/) — Framework 13 laptop
-- [tsukuyomi](./hosts/nixos/tsukuyomi/) — tower pc (dormant: runs Windows, config kept for a future reinstall)
-- [inari](./hosts/nixos/inari/) — home server
-- [iso](./hosts/nixos/iso/) — installation ISO
-- [wsl](./hosts/nixos/wsl/) — WSL environment
-- susanoo — my android phone. Although not configured using nix, this name gets referenced in some places
+## Highlights
 
-## File structure
+- NixOS and Home Manager configurations assembled through flake-parts
+- Hyprland desktop with consistent Stylix theming
+- Neovim configured through nvf
+- ZFS and Btrfs systems with impermanence
+- Secrets encrypted with sops-nix and age
+- Central service-port registry and declarative DNS
+- Self-hosted services behind nginx, Cloudflare Tunnel, or Tailscale
+- Automated system snapshots and Restic backups
 
-| Location                     | Description                                         |
-| ---------------------------- | --------------------------------------------------- |
-| [common](./common)           | Configuration loaded on both nixos and home-manager |
-| [devshells](./devshells)     | Nix shells                                          |
-| [docs](./docs)               | Additional documentation regarding my setup         |
-| [home](./home)               | Home manager configurations                         |
-| [hosts/nixos](./hosts/nixos) | Nixos configurations                                |
-| [modules](./modules)         | Custom generic/nixos/home-manager modules           |
-| [overlays](./overlays)       | Nix overlays                                        |
-| [pkgs](./pkgs)               | Nix packages                                        |
-| [flake.nix](./flake.nix)     | Nix flake entrypoint!                               |
-| [scripts](./scripts)         | Bash scripts that come in handy when on a live cd   |
-| [.sops.yaml](./.sops.yaml)   | Sops entrypoint                                     |
-| [stylua.toml](./stylua.toml) | Lua formatter config for the repo                   |
+## Repository layout
 
-## Adding a new host
+| Location | Purpose |
+| --- | --- |
+| [`common`](./common) | Shared NixOS and Home Manager configuration |
+| [`dns`](./dns) | Declarative DNS records and OctoDNS integration |
+| [`home`](./home) | Home Manager configurations and features |
+| [`hosts/nixos`](./hosts/nixos) | Host-specific NixOS configurations |
+| [`modules`](./modules) | Reusable Yomi modules and options |
+| [`overlays`](./overlays) | Nixpkgs overlays |
+| [`pkgs`](./pkgs) | Custom packages |
+| [`scripts`](./scripts) | Installation and recovery helpers |
 
-1. Create `hosts/nixos/<hostname>/` with a `default.nix` that imports `../common` and sets host-specific options (hostname, hostId, hardware, services).
-2. Add `hardware-configuration.nix` (or `hardware/generated.nix` + `hardware/default.nix` with nixos-hardware imports).
-3. Add `filesystems/` with a `partitions.nix` (disko config) and `default.nix` that imports `../../common/filesystems` and sets `yomi.filesystems.btrfs.enable = true` if using BTRFS rollback.
-4. Create `home/<hostname>.nix` for home-manager config (imports `./global.nix` + desired feature modules).
-5. Register the host in `flake.nix` under `nixosConfigurations` using `mkHost`.
-6. Add DNS records in the host's `default.nix` via `yomi.dns.records`.
-7. Back the host's private keys up to the USB device with `just export-keys`, then,
-   once the host is reachable over SSH, pin its public host key in the repo with
-   `just import-host-key <hostname>`. These are two different keys: `keys/id_ed25519.pub`
-   is the pilot's user key (it grants login), while `keys/ssh_host_ed25519_key.pub` is the
-   machine's own sshd key (it is what `programs.ssh.knownHosts` pins). Putting the
-   user key in both is what silently broke host verification for two years.
+## Common commands
 
-## Bootstrap
+Enter the development shell with `direnv allow` or `nix develop`, then use:
 
-1. Boot the NixOS installation ISO (or use `just build-iso`).
-2. Partition disks using `scripts/live.sh` (mounts USB key at `/kagutsuchi`, runs disko, nixos-install).
-3. Or manually: `nix run github:nix-community/disko -- --mode destroy,format,mount ./hosts/nixos/<hostname>/filesystems/partitions.nix`
-4. `nixos-install --flake .#<hostname>`
-5. Reboot.
+```console
+just lint
+just check
+just nixos-rebuild dry-build amaterasu
+just nixos-rebuild switch amaterasu
+just build-iso
+just dns-diff
+```
 
-## Option conventions
+`just check` validates the active host configurations as well as the DNS outputs. Run a dry build before applying or committing system changes.
 
-- Custom options go under the `yomi.*` namespace (see `AGENTS.md` for full style guide).
-- `yomi.pilot.*` — user settings (name, email, keys, etc.)
-- `yomi.machine.*` — host capabilities (graphical, interactible, gaming)
-- `yomi.ports.*` — port allocation registry (see `hosts/nixos/common/base/ports.nix`)
-- `yomi.cloudflared.*` — Cloudflare tunnel ingress
-- `yomi.nginx.*` — nginx virtual hosts
-- `yomi.persistence.*` — impermanence paths
-- `yomi.theming.*` — stylix-derived theming primitives
-- `yomi.location.*` — geographic coordinates
-- Exception: service-wrapper modules that wrap upstream NixOS services (vrising, steam-game-server, pounce) use `services.*` to match upstream conventions.
+## Adding a host
 
-## Points of interest
+1. Create `hosts/nixos/<hostname>/default.nix` and import `../common`.
+2. Add the hardware and filesystem configuration.
+3. Create `home/<hostname>.nix` when the host uses Home Manager.
+4. Register the host in `flake.nix` with `mkHost`.
+5. Add DNS records, back up the host's private keys with `just export-keys`, and pin its verified public host key with `just import-host-key <hostname>`. The pilot's `keys/id_ed25519.pub` grants login; `keys/ssh_host_ed25519_key.pub` identifies the machine.
+6. Run `just nixos-rebuild dry-build <hostname>` and `just lint`.
 
-Here's some things you might want to check out:
+## Conventions
 
-- My [neovim config](./home/features/neovim/default.nix)
-  - written using [nixvim](https://nix-community.github.io/nixvim)
-- The [flake](./flake.nix) entrypoint for this repository
-
-## Things I use
-
-> This does not include links to every plugin I use for every program here. You can see more details in the respective configurations.
-
-### Fundamentals
-
-- [Nixos](http://nixos.org/) — nix based operating system
-- [Home-manager](https://github.com/nix-community/home-manager) — manage user configuration using nix
-- [Impernanence](https://github.com/nix-community/impermanence) — see the article about [erasing your darlings](https://grahamc.com/blog/erase-your-darlings)
-- [Sops-nix](https://github.com/Mic92/sops-nix) — secret management
-- [disko](https://github.com/nix-community/disko) — format disks using nix
-  - [zfs](https://openzfs.org/wiki/Main_Page) — filesystem
-
-### Graphical
-
-- [Stylix](https://github.com/danth/stylix) — base16 module for nix
-  - [Base16 templates](https://github.com/chriskempson/base16-templates-source) — list of base16 theme templates
-  - [Catpuccin](https://github.com/catppuccin/catppuccin) — base16 theme I use
-  - [Rosepine](https://rosepinetheme.com/) — another theme I use
-- [Hyprland](https://hyprland.org/) — wayland compositor
-  - [Wlogout](https://github.com/ArtsyMacaw/wlogout) — wayland logout menu
-  - [Hyprpicker](https://github.com/hyprwm/hyprpicker) — hyprland color picker
-  - [Grimblast](https://github.com/hyprwm/contrib/tree/main/grimblast) — screenshot tool
-  - [Dunst](https://dunst-project.org/) — notification daemon
-  - [Wlsunset](https://sr.ht/~kennylevinsen/wlsunset/) — day/night screen gamma adjustments
-  - [Anyrun](https://github.com/Kirottu/anyrun) — program launcher
-- [Foot](https://codeberg.org/dnkl/foot) — terminal emulator
-- [Zathura](https://pwmt.org/projects/zathura/) — pdf viewer
-- [Firefox](https://www.mozilla.org/en-US/firefox/) — web browser
-- [Tesseract](https://github.com/tesseract-ocr/tesseract) — OCR engine
-- [Obsidian](https://obsidian.md/) — note taking software
-- [Bitwarden](https://bitwarden.com/) — client for self-hosted password manager
-
-### Terminal
-
-> There are many clis I use which I did not include here, for the sake of brevity.
-
-- [Neovim](https://neovim.io/) — my editor
-  - [Neovide](https://neovide.dev/index.html) — neovim gui client
-  - [Vimclip](https://github.com/hrantzsch/vimclip) — vim anywhere!
-- [Tmux](https://github.com/tmux/tmux/wiki) — terminal multiplexer
-- [Fish](https://fishshell.com/) — user friendly shell
-  - [Starship](https://starship.rs/) — shell prompt
-- [yazi](https://github.com/sxyazi/yazi) — file manager
-- [lazygit](https://github.com/jesseduffield/lazygit) — git tui
-
-### Services
-
-> In the future when I have my synology nas
-
-Most services are served over [tailscale](https://tailscale.com/), using certificates generated by [let's encrypt](https://letsencrypt.org/).
-
-- [Actual](https://actualbudget.org/) — budgeting tool.
-- [Commafeed](https://github.com/Athou/commafeed) — rss reader
-- [Forgejo](https://forgejo.org/) — git forge
-- [Grafana](https://github.com/grafana/grafana) — pretty dashboards
-- [Guacamole](https://guacamole.apache.org/) — remote desktop access
-- [Homer](https://github.com/bastienwirtz/homer) — server homepage
-- [Intray](https://github.com/NorfairKing/intray) — GTD capture tool.
-- [Invidious](https://invidious.io/) — alternate youtube client
-- [Jellyfin](https://jellyfin.org/) — media server
-- [Jupyterhub](https://jupyter.org/hub) — notebook collaboration suite
-- [Microbin](https://microbin.eu/) - code & file sharing service
-- [Pounce](https://git.causal.agency/pounce/about/) & [calico](https://git.causal.agency/pounce/about/calico.1) — irc bouncer
-- [Prometheus](https://github.com/prometheus/prometheus) — metric collector
-- [Qbittorrent](https://www.qbittorrent.org) — torrent client
-- [Radicale](https://radicale.org/v3.html) — calendar server
-- [Redlib](https://github.com/redlib-org/redlib) — alternate reddit client
-- [Smos](https://github.com/NorfairKing/smos) — a comprehensive self-management system.
-- [Syncthing](https://syncthing.net/) — file synchronization
-- [Vaultwarden](https://github.com/dani-garcia/vaultwarden/) — password manager
-- [Whoogle](https://github.com/benbusby/whoogle-search#manual-docker) — search engine
-  OR SearXNG
-- [Calibre Web]() - A online libary for my books
-- [Plex]() - A hosting service for music, movies, etc. similar to [Jellyfin]()
-
-## Hall of fame
-
-Includes links to stuff which used to be in the previous section but is not used anymore.
-
-- [Kitty]() — I switched to [Foot](https://codeberg.org/dnkl/foot)
-- [Eww](https://github.com/elkowar/eww) - experimented with eww for a bit, but setup was painful and bars are a bit useless
+Custom options live under `yomi.*`. Service ports are allocated in [`hosts/nixos/common/base/ports.nix`](./hosts/nixos/common/base/ports.nix), secrets remain encrypted in `secrets.yaml` files, and host-specific state is persisted explicitly. See [`AGENTS.md`](./AGENTS.md) for architecture details and contributor rules.
