@@ -14,6 +14,7 @@
   }: {
     inherit pruneOpts paths;
 
+    checkOpts = ["--with-cache" "--read-data-subset=5%"];
     initialize = true;
     repository = "${cfg.repository}/${name}";
     passwordFile = config.sops.secrets.backup_password.path;

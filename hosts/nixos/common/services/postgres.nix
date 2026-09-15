@@ -14,6 +14,14 @@ in {
       enable = true;
     };
 
+    services.postgresqlBackup = {
+      enable = true;
+      backupAll = true;
+      compression = "zstd";
+      location = "/persist/state/var/backup/postgresql";
+      startAt = "*-*-* 02:30:00";
+    };
+
     environment.persistence."/persist/state".directories = [
       {
         directory = "/var/lib/postgresql";
