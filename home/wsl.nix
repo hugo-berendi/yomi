@@ -28,7 +28,6 @@
       # }}}
 
       # {{{ Development languages & runtimes
-      nodejs_22
       python3
       go
       cargo
