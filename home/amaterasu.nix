@@ -1,8 +1,17 @@
 {
+  config,
   pkgs,
   upkgs,
+  inputs,
   ...
-}: {
+}: let
+  agents = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
+  t3code-desktop = agents.t3code-desktop.override {
+    t3code = agents.t3code.override {
+      providerPackages = [agents.codex agents.claude-code agents.opencode agents.antigravity-cli];
+    };
+  };
+in {
   imports = [
     ./global.nix
 
@@ -37,6 +46,7 @@
       thunderbird
       pay-respects
       sxiv
+      t3code-desktop
       # {{{ messaging
       signal-desktop
       upkgs.fluffychat
@@ -72,6 +82,10 @@
   };
 
   home.sessionVariables.QT_SCREEN_SCALE_FACTORS = 1.4; # Bigger text in qt apps
+
+  yomi.persistence.at.state.apps.t3code.directories = [
+    "${config.home.homeDirectory}/.t3"
+  ];
 
   yomi.toggles.isServer.enable = false;
   yomi = {
