@@ -8,7 +8,7 @@
   agents = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
   t3code-desktop = agents.t3code-desktop.override {
     t3code = agents.t3code.override {
-      providerPackages = [agents.codex agents.claude-code agents.opencode agents.antigravity-cli];
+      providerPackages = [agents.codex agents.claude-code agents.opencode];
     };
   };
 in {
