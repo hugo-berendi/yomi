@@ -105,5 +105,6 @@
     bookstack = lib.mkDefault 8498;
     vikunja = lib.mkDefault 8499;
     miniflux = lib.mkDefault 8500;
+    t3code = lib.mkDefault 8501;
   };
 }
