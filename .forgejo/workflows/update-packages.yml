@@ -7,6 +7,9 @@ jobs:
   update:
     runs-on: native
     timeout-minutes: 180
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - name: Checkout repository
         uses: https://data.forgejo.org/actions/checkout@v4
@@ -86,7 +89,7 @@ jobs:
       - name: Open pull request with package updates
         if: steps.check-changes.outputs.changed == 'true'
         env:
-          FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GIT_AUTHOR_NAME: forgejo-actions
           GIT_AUTHOR_EMAIL: forgejo-actions@localhost
           GIT_COMMITTER_NAME: forgejo-actions
@@ -96,13 +99,13 @@ jobs:
           git checkout -b "$branch"
           git add pkgs/
           git commit -m "chore: update packages"
-          git push origin "$branch"
+          git push "https://forgejo-actions:${GITHUB_TOKEN}@${GITHUB_SERVER_URL#https://}/${GITHUB_REPOSITORY}.git" "$branch"
 
           diffSummary=$(git diff main -- pkgs/ | head -c 60000)
           body=$(printf 'Automated package version bumps.\n\n```diff\n%s\n```\n' "$diffSummary")
 
           curl -fsSL -X POST \
-            -H "Authorization: token ${FORGEJO_TOKEN}" \
+            -H "Authorization: token ${GITHUB_TOKEN}" \
             -H "Content-Type: application/json" \
             "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/pulls" \
             -d "$(jq -n --arg title "chore: update packages" --arg body "$body" --arg head "$branch" --arg base "main" \

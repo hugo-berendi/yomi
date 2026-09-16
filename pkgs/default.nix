@@ -5,7 +5,7 @@
   upkgs ? pkgs,
   ...
 }: {
-  vimclip = pkgs.callPackage (import ./vimclip.nix) {};
+  vimclip = pkgs.callPackage ./vimclip.nix {};
   pelican-wings = pkgs.callPackage ./pelican-wings.nix {};
   chatgpt = pkgs.callPackage ./chatgpt.nix {};
   helium = pkgs.callPackage ./helium.nix {};
