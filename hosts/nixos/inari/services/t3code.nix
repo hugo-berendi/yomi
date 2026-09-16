@@ -2,11 +2,15 @@
   config,
   lib,
   pkgs,
+  inputs,
   ...
 }: let
   pilot = config.yomi.pilot.name;
   port = config.yomi.ports.t3code;
-  package = pkgs.t3code.override {electron_40 = pkgs.electron;};
+  agents = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
+  package = agents.t3code.override {
+    providerPackages = [pkgs.codex agents.claude-code agents.opencode];
+  };
 in {
   yomi.nginx.at.t3code.port = port;
 
@@ -28,7 +32,7 @@ in {
         Environment = [
           "PATH=${lib.makeBinPath [pkgs.git pkgs.ripgrep pkgs.nodejs]}:${config.home.profileDirectory}/bin:/run/current-system/sw/bin:/run/wrappers/bin"
         ];
-        ExecStart = "${package}/bin/t3code serve --host 127.0.0.1 --port ${toString port} --base-dir ${config.home.homeDirectory}/.t3";
+        ExecStart = "${lib.getExe package} serve --host 127.0.0.1 --port ${toString port} --base-dir ${config.home.homeDirectory}/.t3";
         WorkingDirectory = config.home.homeDirectory;
         Restart = "always";
         RestartSec = 2;
