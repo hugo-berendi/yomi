@@ -132,13 +132,6 @@ in {
             };
           }
           {
-            Headscale = {
-              icon = "tailscale.svg";
-              href = "https://vpn.hugo-berendi.de";
-              description = "Self-hosted Tailscale control plane";
-            };
-          }
-          {
             "Adguard Home" = {
               icon = "adguard-home.svg";
               href = "https://adguard.hugo-berendi.de";

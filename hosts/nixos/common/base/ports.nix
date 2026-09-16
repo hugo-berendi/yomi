@@ -98,7 +98,6 @@
     audiobookshelf = lib.mkDefault 8493;
     gatus = lib.mkDefault 8494;
     scrutiny = lib.mkDefault 8495;
-    headscale = lib.mkDefault 8496;
     healthchecks = lib.mkDefault 8497;
     bookstack = lib.mkDefault 8498;
     vikunja = lib.mkDefault 8499;
