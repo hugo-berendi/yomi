@@ -55,6 +55,7 @@
     ./services/prometheus.nix
     ./services/grafana.nix
     ./services/loki.nix
+    ./services/alloy.nix
     ./services/playit.nix
     ./services/windrose.nix
     ./services/pelican

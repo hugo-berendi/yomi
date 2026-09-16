@@ -10,6 +10,20 @@
     sopsFile = ../secrets.yaml;
     owner = "grafana";
   };
+
+  # {{{ Dashboards provisioned as code
+  nodeExporterFullDashboard = pkgs.fetchurl {
+    url = "https://grafana.com/api/dashboards/1860/revisions/45/download";
+    sha256 = "11hrll7fm626ikbva5md4gm0rca537vp4xsxa9sxl1pk15s6nk0q";
+  };
+
+  dashboardsDir = pkgs.linkFarm "inari-grafana-dashboards" [
+    {
+      name = "node-exporter-full.json";
+      path = nodeExporterFullDashboard;
+    }
+  ];
+  # }}}
 in {
   # {{{ Secrets
   sops.secrets.grafana_smtp_pass = sopsSettings;
@@ -78,20 +92,216 @@ in {
         ];
       };
 
+      dashboards.settings = {
+        apiVersion = 1;
+        providers = [
+          {
+            name = "inari";
+            type = "file";
+            updateIntervalSeconds = 30;
+            options.path = dashboardsDir;
+          }
+        ];
+      };
+
       datasources.settings = {
         apiVersion = 1;
         datasources = [
           {
+            uid = "prometheus";
             name = "Prometheus";
             type = "prometheus";
             access = "proxy";
             url = "https://prometheus.hugo-berendi.de";
           }
           {
+            uid = "loki";
             name = "Loki";
             type = "loki";
             access = "proxy";
             url = "http://127.0.0.1:${toString config.yomi.ports.loki}";
+          }
+        ];
+      };
+
+      alerting.rules.settings = {
+        apiVersion = 1;
+        groups = [
+          {
+            orgId = 1;
+            name = "inari-infrastructure";
+            folder = "Alerts";
+            interval = "5m";
+            rules = [
+              {
+                uid = "inari-target-down";
+                title = "Prometheus target down";
+                condition = "C";
+                data = [
+                  {
+                    refId = "A";
+                    relativeTimeRange = {
+                      from = 600;
+                      to = 0;
+                    };
+                    datasourceUid = "prometheus";
+                    model = {
+                      expr = "up == 0";
+                      instant = true;
+                      refId = "A";
+                    };
+                  }
+                  {
+                    refId = "C";
+                    datasourceUid = "__expr__";
+                    model = {
+                      type = "threshold";
+                      expression = "A";
+                      conditions = [
+                        {
+                          evaluator = {
+                            type = "gt";
+                            params = [0];
+                          };
+                        }
+                      ];
+                      refId = "C";
+                    };
+                  }
+                ];
+                noDataState = "OK";
+                execErrState = "Alerting";
+                for = "5m";
+                labels.severity = "warning";
+                annotations.summary = "{{ $labels.job }}/{{ $labels.instance }} has been down for 5 minutes.";
+              }
+              {
+                uid = "inari-disk-space-low";
+                title = "Disk space low";
+                condition = "C";
+                data = [
+                  {
+                    refId = "A";
+                    relativeTimeRange = {
+                      from = 600;
+                      to = 0;
+                    };
+                    datasourceUid = "prometheus";
+                    model = {
+                      expr = ''min by (instance, mountpoint) (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"})'';
+                      instant = true;
+                      refId = "A";
+                    };
+                  }
+                  {
+                    refId = "C";
+                    datasourceUid = "__expr__";
+                    model = {
+                      type = "threshold";
+                      expression = "A";
+                      conditions = [
+                        {
+                          evaluator = {
+                            type = "lt";
+                            params = [0.1];
+                          };
+                        }
+                      ];
+                      refId = "C";
+                    };
+                  }
+                ];
+                noDataState = "OK";
+                execErrState = "Alerting";
+                for = "10m";
+                labels.severity = "warning";
+                annotations.summary = "{{ $labels.mountpoint }} on {{ $labels.instance }} has less than 10% free space.";
+              }
+              {
+                uid = "inari-zfs-pool-degraded";
+                title = "ZFS pool degraded";
+                condition = "C";
+                data = [
+                  {
+                    refId = "A";
+                    relativeTimeRange = {
+                      from = 600;
+                      to = 0;
+                    };
+                    datasourceUid = "prometheus";
+                    model = {
+                      expr = "max by (pool) (zfs_pool_health)";
+                      instant = true;
+                      refId = "A";
+                    };
+                  }
+                  {
+                    refId = "C";
+                    datasourceUid = "__expr__";
+                    model = {
+                      type = "threshold";
+                      expression = "A";
+                      conditions = [
+                        {
+                          evaluator = {
+                            type = "gt";
+                            params = [0];
+                          };
+                        }
+                      ];
+                      refId = "C";
+                    };
+                  }
+                ];
+                noDataState = "OK";
+                execErrState = "Alerting";
+                for = "1m";
+                labels.severity = "critical";
+                annotations.summary = "ZFS pool {{ $labels.pool }} is not ONLINE.";
+              }
+              {
+                uid = "inari-smart-failure";
+                title = "Disk SMART health check failing";
+                condition = "C";
+                data = [
+                  {
+                    refId = "A";
+                    relativeTimeRange = {
+                      from = 600;
+                      to = 0;
+                    };
+                    datasourceUid = "prometheus";
+                    model = {
+                      expr = "min by (device) (smartctl_device_smart_status)";
+                      instant = true;
+                      refId = "A";
+                    };
+                  }
+                  {
+                    refId = "C";
+                    datasourceUid = "__expr__";
+                    model = {
+                      type = "threshold";
+                      expression = "A";
+                      conditions = [
+                        {
+                          evaluator = {
+                            type = "lt";
+                            params = [1];
+                          };
+                        }
+                      ];
+                      refId = "C";
+                    };
+                  }
+                ];
+                noDataState = "OK";
+                execErrState = "Alerting";
+                for = "1m";
+                labels.severity = "critical";
+                annotations.summary = "SMART health check is failing for {{ $labels.device }}.";
+              }
+            ];
           }
         ];
       };
