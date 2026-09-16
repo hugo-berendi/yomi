@@ -67,6 +67,7 @@
     ./services/matrix
     ./services/opencode.nix
     ./services/t3code.nix
+    ./services/cliproxyapi.nix
     ./services/changedetection.nix
   ];
   # }}}
