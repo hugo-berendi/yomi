@@ -1,0 +1,109 @@
+name: Update Packages
+on:
+  schedule:
+    - cron: "0 5 * * 1"
+  workflow_dispatch:
+jobs:
+  update:
+    runs-on: native
+    timeout-minutes: 180
+    steps:
+      - name: Checkout repository
+        uses: https://data.forgejo.org/actions/checkout@v4
+
+      - name: Update GitHub-release packages with nix-update
+        run: |
+          for pkg in cliproxyapi-copilot-plugin helium pelican-wings suwayomi-server; do
+            echo "::group::nix-update $pkg"
+            if nix run nixpkgs#nix-update -- --flake ".#$pkg"; then
+              if nix build ".#$pkg" --no-link; then
+                echo "$pkg updated and builds"
+              else
+                echo "$pkg failed to build after update, reverting" >&2
+                git checkout -- "pkgs/$pkg.nix"
+              fi
+            else
+              echo "nix-update failed for $pkg, skipping" >&2
+              git checkout -- "pkgs/$pkg.nix"
+            fi
+            echo "::endgroup::"
+          done
+
+      - name: Update vimclip to latest master commit
+        run: |
+          echo "::group::nix-update vimclip"
+          if nix run nixpkgs#nix-update -- --flake .#vimclip --version=branch:master; then
+            if nix build .#vimclip --no-link; then
+              echo "vimclip updated and builds"
+            else
+              echo "vimclip failed to build after update, reverting" >&2
+              git checkout -- pkgs/vimclip.nix
+            fi
+          else
+            echo "nix-update failed for vimclip, skipping" >&2
+            git checkout -- pkgs/vimclip.nix
+          fi
+          echo "::endgroup::"
+
+      - name: Update chatgpt from vendor apt index
+        run: |
+          echo "::group::update chatgpt"
+          set +e
+          packagesUrl="https://persistent.oaistatic.com/codex-app-prod/linux/deb/dists/stable/main/binary-amd64/Packages"
+          newVersion=$(curl -fsSL "$packagesUrl" | awk -F': ' '/^Version:/ {print $2; exit}')
+          if [[ -z "$newVersion" ]]; then
+            echo "could not determine latest chatgpt version, skipping" >&2
+          else
+            debUrl="https://persistent.oaistatic.com/codex-app-prod/linux/deb/pool/main/c/chatgpt/chatgpt_${newVersion}_amd64.deb"
+            newHash=$(nix store prefetch-file --hash-type sha256 --json "$debUrl" | jq -r '.hash')
+            if [[ -z "$newHash" || "$newHash" == "null" ]]; then
+              echo "could not prefetch hash for chatgpt $newVersion, skipping" >&2
+            else
+              sed -i \
+                -e "s|version = \".*\";|version = \"${newVersion}\";|" \
+                -e "s|hash = \"sha256-[^\"]*\";|hash = \"${newHash}\";|" \
+                pkgs/chatgpt.nix
+              if nix build .#chatgpt --no-link; then
+                echo "chatgpt updated to $newVersion and builds"
+              else
+                echo "chatgpt $newVersion failed to build, reverting" >&2
+                git checkout -- pkgs/chatgpt.nix
+              fi
+            fi
+          fi
+          set -e
+          echo "::endgroup::"
+
+      - name: Check for changes
+        id: check-changes
+        run: |
+          if git diff --quiet -- pkgs/; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open pull request with package updates
+        if: steps.check-changes.outputs.changed == 'true'
+        env:
+          FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+          GIT_AUTHOR_NAME: forgejo-actions
+          GIT_AUTHOR_EMAIL: forgejo-actions@localhost
+          GIT_COMMITTER_NAME: forgejo-actions
+          GIT_COMMITTER_EMAIL: forgejo-actions@localhost
+        run: |
+          branch="update-packages/$(date +%Y-%m-%d)"
+          git checkout -b "$branch"
+          git add pkgs/
+          git commit -m "chore: update packages"
+          git push origin "$branch"
+
+          diffSummary=$(git diff main -- pkgs/ | head -c 60000)
+          body=$(printf 'Automated package version bumps.\n\n```diff\n%s\n```\n' "$diffSummary")
+
+          curl -fsSL -X POST \
+            -H "Authorization: token ${FORGEJO_TOKEN}" \
+            -H "Content-Type: application/json" \
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/pulls" \
+            -d "$(jq -n --arg title "chore: update packages" --arg body "$body" --arg head "$branch" --arg base "main" \
+              '{title: $title, body: $body, head: $head, base: $base}')"

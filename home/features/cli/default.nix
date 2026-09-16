@@ -21,6 +21,7 @@
     ./rbw.nix
     ./ai
     ./yubikey-scripts.nix
+    ./yomi-repo-sync.nix
   ];
   # }}}
   # {{{ Basic programs
