@@ -3,7 +3,6 @@
 {pkgs ? (import ../nixpkgs.nix) {}, ...}: {
   vimclip = pkgs.callPackage (import ./vimclip.nix) {};
   pelican-wings = pkgs.callPackage ./pelican-wings.nix {};
-  komf = pkgs.callPackage ./komf.nix {};
   chatgpt = pkgs.callPackage ./chatgpt.nix {};
   helium = pkgs.callPackage ./helium.nix {};
   suwayomi-server = pkgs.callPackage ./suwayomi-server.nix {};
