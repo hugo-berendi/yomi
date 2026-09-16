@@ -284,13 +284,6 @@ in {
             };
           }
           {
-            Vikunja = {
-              icon = "vikunja.svg";
-              href = "https://tasks.hugo-berendi.de";
-              description = "Task and project management";
-            };
-          }
-          {
             BookStack = {
               icon = "bookstack.png";
               href = "https://wiki.hugo-berendi.de";

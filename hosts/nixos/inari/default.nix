@@ -51,7 +51,6 @@
     ./services/gatus.nix
     ./services/scrutiny.nix
     ./services/miniflux.nix
-    ./services/vikunja.nix
     ./services/healthchecks.nix
     # ./services/bookstack.nix
     ./services/pocket-id.nix
