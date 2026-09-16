@@ -6,13 +6,14 @@
   skillsSource = "${inputs.skills}/skills";
   skillNames = builtins.attrNames (lib.filterAttrs (_: type: type == "directory") (builtins.readDir skillsSource));
 
-  skillFile = destDir: name: {
-    name = "${destDir}/${name}/SKILL.md";
-    value.source = "${skillsSource}/${name}/SKILL.md";
+  skillDir = destDir: name: {
+    name = "${destDir}/${name}";
+    value.source = "${skillsSource}/${name}";
   };
 in {
   # Skills always come from https://git.hugo-berendi.de/hugo-berendi/skills,
-  # never authored here. Bump with `just bump-common`.
-  xdg.configFile = lib.listToAttrs (map (skillFile "opencode/skills") skillNames);
-  home.file = lib.listToAttrs (map (skillFile ".claude/skills") skillNames);
+  # never authored here. Bump with `just bump-common`. Symlinking whole
+  # directories, not just SKILL.md, so bundled scripts/templates travel too.
+  xdg.configFile = lib.listToAttrs (map (skillDir "opencode/skills") skillNames);
+  home.file = lib.listToAttrs (map (skillDir ".claude/skills") skillNames);
 }
