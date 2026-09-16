@@ -2,7 +2,6 @@
 # You can build them using 'nix build .#example' or (legacy) 'nix-build -A example'
 {pkgs ? (import ../nixpkgs.nix) {}, ...}: {
   vimclip = pkgs.callPackage (import ./vimclip.nix) {};
-  codex = pkgs.callPackage ./codex.nix {};
   pelican-wings = pkgs.callPackage ./pelican-wings.nix {};
   komf = pkgs.callPackage ./komf.nix {};
   chatgpt = pkgs.callPackage ./chatgpt.nix {};
