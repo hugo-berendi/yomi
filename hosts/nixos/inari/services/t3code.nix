@@ -9,7 +9,7 @@
   port = config.yomi.ports.t3code;
   agents = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
   package = agents.t3code.override {
-    providerPackages = [agents.codex agents.claude-code agents.opencode];
+    providerPackages = [agents.codex agents.claude-code agents.opencode agents.antigravity-cli];
   };
 in {
   yomi.nginx.at.t3code.port = port;
