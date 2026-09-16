@@ -224,13 +224,6 @@ in {
             };
           }
           {
-            Actual = {
-              icon = "actual.svg";
-              href = "https://actual.hugo-berendi.de";
-              description = "Budget management";
-            };
-          }
-          {
             AFFiNE = {
               icon = "mdi-notebook-outline";
               href = "https://notes.hugo-berendi.de";

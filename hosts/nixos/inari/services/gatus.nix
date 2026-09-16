@@ -121,7 +121,6 @@ in {
         (mkHttp "paperless")
         (mkHttp "immich")
         (mkHttp "lab")
-        (mkHttp "actual")
         (mkHttp "n8n")
         (mkHttp "karakeep")
         (mkHttp "warden")

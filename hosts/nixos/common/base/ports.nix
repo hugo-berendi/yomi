@@ -1,6 +1,5 @@
 {lib, ...}: {
   yomi.ports = {
-    actual = lib.mkDefault 8400;
     adguard = lib.mkDefault 8401;
     affine = lib.mkDefault 8402;
     adguard-dns = lib.mkDefault 8403;
