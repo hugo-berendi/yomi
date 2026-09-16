@@ -18,7 +18,7 @@ jobs:
         run: |
           for pkg in cliproxyapi-copilot-plugin helium pelican-wings suwayomi-server; do
             echo "::group::nix-update $pkg"
-            if nix run nixpkgs#nix-update -- --flake ".#$pkg"; then
+            if nix run nixpkgs#nix-update -- --flake "$pkg"; then
               if nix build ".#$pkg" --no-link; then
                 echo "$pkg updated and builds"
               else
@@ -35,7 +35,7 @@ jobs:
       - name: Update vimclip to latest master commit
         run: |
           echo "::group::nix-update vimclip"
-          if nix run nixpkgs#nix-update -- --flake .#vimclip --version=branch:master; then
+          if nix run nixpkgs#nix-update -- --flake vimclip --version=branch=master; then
             if nix build .#vimclip --no-link; then
               echo "vimclip updated and builds"
             else
@@ -58,7 +58,7 @@ jobs:
             echo "could not determine latest chatgpt version, skipping" >&2
           else
             debUrl="https://persistent.oaistatic.com/codex-app-prod/linux/deb/pool/main/c/chatgpt/chatgpt_${newVersion}_amd64.deb"
-            newHash=$(nix store prefetch-file --hash-type sha256 --json "$debUrl" | jq -r '.hash')
+            newHash=$(nix store prefetch-file --hash-type sha256 --json "$debUrl" | nix run nixpkgs#jq -- -r '.hash')
             if [[ -z "$newHash" || "$newHash" == "null" ]]; then
               echo "could not prefetch hash for chatgpt $newVersion, skipping" >&2
             else
@@ -108,5 +108,5 @@ jobs:
             -H "Authorization: token ${GITHUB_TOKEN}" \
             -H "Content-Type: application/json" \
             "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/pulls" \
-            -d "$(jq -n --arg title "chore: update packages" --arg body "$body" --arg head "$branch" --arg base "main" \
+            -d "$(nix run nixpkgs#jq -- -n --arg title "chore: update packages" --arg body "$body" --arg head "$branch" --arg base "main" \
               '{title: $title, body: $body, head: $head, base: $base}')"
