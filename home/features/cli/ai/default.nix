@@ -10,6 +10,7 @@
     ./claude-code.nix
     ./codex.nix
     ./antigravity-cli.nix
+    ./skills.nix
   ];
   # }}}
   # {{{ Packages

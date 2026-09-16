@@ -19,6 +19,9 @@
     home-manager.url = "github:nix-community/home-manager/release-26.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
+    skills.url = "git+ssh://forgejo@ssh.git.hugo-berendi.de/hugo-berendi/skills.git";
+    skills.flake = false;
+
     # {{{ Hyprland
     hyprland = {
       url = "github:hyprwm/Hyprland";

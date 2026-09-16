@@ -80,6 +80,7 @@ bump-common:
     home-manager \
     stylix \
     nixcord \
+    skills \
     --accept-flake-config
 # }}}
 

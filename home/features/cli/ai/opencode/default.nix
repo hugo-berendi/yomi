@@ -84,7 +84,6 @@ in {
     ./commands.nix
     ./agents.nix
     ./watcher.nix
-    ./skills.nix
   ];
 
   home.packages = formatterPackages;

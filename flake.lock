@@ -1566,6 +1566,7 @@
         "playit-nixos-module": "playit-nixos-module",
         "pyprland": "pyprland",
         "rose-pine-hyprcursor": "rose-pine-hyprcursor",
+        "skills": "skills",
         "sops-nix": "sops-nix",
         "spicetify-nix": "spicetify-nix",
         "stylix": "stylix"
@@ -1591,6 +1592,22 @@
         "owner": "ndom91",
         "repo": "rose-pine-hyprcursor",
         "type": "github"
+      }
+    },
+    "skills": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1789562343,
+        "narHash": "sha256-HED5Jp6EqiubnttTSBw/sdwMUhzZpTRStnEigdhBLNs=",
+        "ref": "refs/heads/main",
+        "rev": "613b9b9a35795d36386c3c0cb501eca7371de4a0",
+        "revCount": 3,
+        "type": "git",
+        "url": "ssh://forgejo@ssh.git.hugo-berendi.de/hugo-berendi/skills.git"
+      },
+      "original": {
+        "type": "git",
+        "url": "ssh://forgejo@ssh.git.hugo-berendi.de/hugo-berendi/skills.git"
       }
     },
     "sops-nix": {
