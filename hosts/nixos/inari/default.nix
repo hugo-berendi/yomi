@@ -7,7 +7,6 @@
   # {{{ Imports
   imports = [
     ../common
-    inputs.hermes-agent.nixosModules.default
 
     ./networking
     ./filesystems
@@ -67,7 +66,6 @@
     ./services/matrix
     ./services/opencode.nix
     ./services/t3code.nix
-    ./services/hermes-agent.nix
     ./services/changedetection.nix
   ];
   # }}}

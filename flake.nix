@@ -40,8 +40,6 @@
 
     jellarr.url = "github:venkyr77/jellarr";
 
-    hermes-agent.url = "github:NousResearch/hermes-agent";
-
     # {{{ Storage
     impermanence.url = "github:nix-community/impermanence";
     impermanence.inputs.nixpkgs.follows = "nixpkgs";

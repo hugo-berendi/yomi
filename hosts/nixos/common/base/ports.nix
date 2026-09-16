@@ -51,7 +51,6 @@
     windrose-rcon = lib.mkDefault 8490;
     llama-cpp = lib.mkDefault 8491;
     changedetection = lib.mkDefault 8492;
-    hermes-agent = lib.mkDefault 8493;
     paperless = lib.mkDefault 8445;
     paperless-ai = lib.mkDefault 8446;
     paperless-ai-rag = lib.mkDefault 8447;
