@@ -21,7 +21,6 @@
     ./services/llama-cpp.nix
     ./services/karakeep.nix
     ./services/n8n.nix
-    ./services/affine.nix
     ./services/cloudflared.nix
     ./services/forgejo
     ./services/guacamole

@@ -224,13 +224,6 @@ in {
             };
           }
           {
-            AFFiNE = {
-              icon = "mdi-notebook-outline";
-              href = "https://notes.hugo-berendi.de";
-              description = "Knowledge base, docs, whiteboards";
-            };
-          }
-          {
             SimpleLogin = {
               icon = "mdi-email-fast-outline";
               href = "https://app.simplelogin.io";
