@@ -15,5 +15,11 @@ in {
   # never authored here. Bump with `just bump-common`. Symlinking whole
   # directories, not just SKILL.md, so bundled scripts/templates travel too.
   xdg.configFile = lib.listToAttrs (map (skillDir "opencode/skills") skillNames);
-  home.file = lib.listToAttrs (map (skillDir ".claude/skills") skillNames);
+  home.file = lib.listToAttrs (
+    lib.concatMap (destDir: map (skillDir destDir) skillNames) [
+      ".claude/skills"
+      ".codex/skills"
+      ".gemini/config/skills"
+    ]
+  );
 }
