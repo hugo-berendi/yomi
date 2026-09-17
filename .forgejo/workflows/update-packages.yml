@@ -66,7 +66,7 @@ jobs:
                 -e "s|version = \".*\";|version = \"${newVersion}\";|" \
                 -e "s|hash = \"sha256-[^\"]*\";|hash = \"${newHash}\";|" \
                 pkgs/chatgpt.nix
-              if nix build .#chatgpt --no-link; then
+              if NIXPKGS_ALLOW_UNFREE=1 nix build .#chatgpt --no-link --impure; then
                 echo "chatgpt updated to $newVersion and builds"
               else
                 echo "chatgpt $newVersion failed to build, reverting" >&2
@@ -99,7 +99,7 @@ jobs:
           git checkout -b "$branch"
           git add pkgs/
           git commit -m "chore: update packages"
-          git push "https://forgejo-actions:${GITHUB_TOKEN}@${GITHUB_SERVER_URL#https://}/${GITHUB_REPOSITORY}.git" "$branch"
+          git push origin "$branch"
 
           diffSummary=$(git diff main -- pkgs/ | head -c 60000)
           body=$(printf 'Automated package version bumps.\n\n```diff\n%s\n```\n' "$diffSummary")
