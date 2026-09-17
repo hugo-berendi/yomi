@@ -66,7 +66,7 @@ jobs:
                 -e "s|version = \".*\";|version = \"${newVersion}\";|" \
                 -e "s|hash = \"sha256-[^\"]*\";|hash = \"${newHash}\";|" \
                 pkgs/chatgpt.nix
-              if NIXPKGS_ALLOW_UNFREE=1 nix build .#chatgpt --no-link --impure; then
+              if nix build .#chatgpt --no-link; then
                 echo "chatgpt updated to $newVersion and builds"
               else
                 echo "chatgpt $newVersion failed to build, reverting" >&2
