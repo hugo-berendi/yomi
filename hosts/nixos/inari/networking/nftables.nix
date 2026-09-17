@@ -22,6 +22,20 @@
   lanUdpPorts = lib.concatMapStringsSep ", " toString (
     lib.unique ([53 67 68 443 1900 5353 21027 22000] ++ lanUdpServicePorts)
   );
+
+  # networking.firewall is disabled below, so allowedTCPPorts and
+  # allowedUDPPorts reach nothing: every `openFirewall = true` in modules/nixos
+  # (pounce, windrose, steam-game-server, vrising) opens exactly nothing here.
+  # Enabling a game server looks like it opened a port and did not.
+  #
+  # These are deliberately not folded into the lists above. The allowlist is
+  # meant to be decided here rather than accumulated from whatever a module
+  # asked for -- transmission's peer port, for one, is requested but reaches
+  # the internet through the VPN namespace, not br0. So say so instead, and
+  # let whoever adds a service put the port in lanTcpServicePorts on purpose.
+  inertFirewallPorts =
+    lib.filter (p: !lib.elem p ([22 53 80 443 445 2049 22000] ++ lanTcpServicePorts)) config.networking.firewall.allowedTCPPorts
+    ++ lib.filter (p: !lib.elem p ([53 67 68 443 1900 5353 21027 22000] ++ lanUdpServicePorts)) config.networking.firewall.allowedUDPPorts;
   exitNodeForwardRule = lib.optionalString config.yomi.tailscale.exitNode ''
     # Allow Tailscale exit node traffic
     iifname "tailscale0" oifname "br0" accept
@@ -40,6 +54,14 @@ in {
       "-${lib.getExe' config.systemd.package "systemctl"} try-restart --no-block docker.service"
     ];
   };
+
+  warnings = lib.optional (inertFirewallPorts != []) ''
+    networking.firewall is disabled on this host, so these ports opened via
+    allowedTCPPorts/allowedUDPPorts reach nothing: ${lib.concatMapStringsSep ", " toString (lib.unique inertFirewallPorts)}.
+    A service setting openFirewall = true here has no effect. Add the port to
+    lanTcpServicePorts/lanUdpServicePorts in hosts/nixos/inari/networking/nftables.nix
+    if it really should be reachable from the LAN.
+  '';
 
   networking = {
     nat.enable = false;

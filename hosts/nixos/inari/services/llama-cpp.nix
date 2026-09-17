@@ -82,4 +82,8 @@ in {
     }
   ];
   # }}}
+
+  # ExecStartPre downloads models into /var/lib/llama-cpp/models, which
+  # ProtectSystem=strict would otherwise make read-only.
+  yomi.hardening.services.llama-cpp.readWritePaths = ["/var/lib/llama-cpp"];
 }

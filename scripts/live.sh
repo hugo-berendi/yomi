@@ -47,7 +47,9 @@ if [ "$action" = "install" ]; then
 	git add .
 
 	echo "Installing nixos"
-	nixos-install --flake ".#$host"
+	# --accept-flake-config: the installer environment has no yomi nix.conf yet, so
+	# the flake's own nixConfig is the only source of the binary caches here.
+	nixos-install --flake ".#$host" --accept-flake-config
 
 	echo "🔑 Copying user ssh keys"
 	mkdir -p /mnt/persist/state/home/hugob

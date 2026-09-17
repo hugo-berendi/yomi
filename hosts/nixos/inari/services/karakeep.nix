@@ -76,15 +76,10 @@
   # of the settings alone, which systemd then refused for having no ExecStart
   # ("karakeep.service: Service has no ExecStart=, ExecStop=, or
   # SuccessAction=. Refusing."), while the services that do exist ran unhardened.
-  systemd.services = let
-    hardened = lib.mkMerge [
-      (lib.mapAttrs (_: lib.mkForce) config.yomi.hardening.presets.standard)
-      {ReadWritePaths = ["/var/lib/karakeep"];}
-    ];
-  in {
-    karakeep-init.serviceConfig = hardened;
-    karakeep-web.serviceConfig = hardened;
-    karakeep-workers.serviceConfig = hardened;
-  };
+  # Browser is left out: it drives a headless chromium and wants a wider
+  # sandbox than the rest.
+  yomi.hardening.services =
+    lib.genAttrs ["karakeep-init" "karakeep-web" "karakeep-workers"]
+    (_: {readWritePaths = ["/var/lib/karakeep"];});
   # }}}
 }

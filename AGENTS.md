@@ -114,7 +114,7 @@ Modules wrapping upstream NixOS services use `services.*` instead of `yomi.*`: `
 - **nix.package = pkgs.lix** — Lix is the default Nix implementation (`hosts/nixos/common/nix.nix`)
 - **hyprland follows nixpkgs-unstable** — not nixpkgs. Breakages can happen on unstable bumps.
 - **stylix release-26.05** — pinned to release branch, not master
-- **permittedInsecurePackages** — only 3 entries needed: `electron-39.8.10` (bitwarden), `olm-3.2.16` (matrix), `pnpm-10.29.2` (vesktop build tool). Remove stale entries when packages update.
+- **permittedInsecurePackages** — 4 entries: `electron-39.8.10` (bitwarden), `olm-3.2.16` (matrix), `pnpm-10.29.2` and `pnpm-9.15.9` (build tools). Remove stale entries when packages update, and keep this count in step with `common/nixpkgs.nix`.
 - **Build failures from insecure packages** — nixpkgs marks packages insecure; add to `common/nixpkgs.nix` `permittedInsecurePackages` only if the package is actually needed
 - **ghostty** — no home-manager module exists in the ghostty flake. Install via `home.packages` + `xdg.configFile` (see `home/features/desktop/ghostty.nix`)
 - **wsl and iso don't use impermanence** — `yomi.filesystems.btrfs.enable` defaults to false

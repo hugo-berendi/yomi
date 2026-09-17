@@ -49,7 +49,6 @@
     ./services/scrutiny.nix
     ./services/miniflux.nix
     ./services/healthchecks.nix
-    # ./services/bookstack.nix
     ./services/pocket-id.nix
     ./services/prometheus.nix
     ./services/grafana.nix

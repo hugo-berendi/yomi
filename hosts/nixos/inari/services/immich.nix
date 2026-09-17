@@ -103,4 +103,26 @@ in {
   };
 
   # }}}
+  # {{{ Hardening
+  # The upstream module already sets PrivateDevices and an empty DeviceAllow
+  # but leaves ProtectSystem unset, so the filesystem stays writable for the
+  # one service here that takes uploads from the internet.
+  #
+  # Unit names checked against the evaluated config rather than guessed: there
+  # is no immich.service, and hardening that name would have produced a unit
+  # with no ExecStart instead of hardening anything.
+  yomi.hardening.services = {
+    # Writes the library itself; StateDirectory=immich covers /var/lib/immich,
+    # and the redis and postgres sockets keep working under ProtectSystem=strict
+    # -- miniflux already runs that way against the same postgres.
+    immich-server.readWritePaths = [config.services.immich.mediaLocation];
+
+    # Model cache, matplotlib config and XDG_CACHE_HOME all point at
+    # /var/cache/immich, which CacheDirectory=immich already makes writable.
+    immich-machine-learning = {};
+
+    # Runs as its own `ipp` user and needs nothing writable.
+    immich-public-proxy = {};
+  };
+  # }}}
 }
