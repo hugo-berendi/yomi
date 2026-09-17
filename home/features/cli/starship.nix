@@ -55,7 +55,11 @@ _: {
         format = "[](fg:overlay)([$all_status$ahead_behind]($style))[](fg:overlay) ";
         up_to_date = "[ ✓ ](bg:overlay fg:iris)";
         untracked = "[?\($count\)](bg:overlay fg:gold)";
-        stashed = "[$\($count\)](bg:overlay fg:iris)";
+        # The dollar has to reach starship escaped. It is the sigil for a
+        # variable, so a bare one followed by `(` makes the whole format string
+        # fail to parse. Every neighbour here starts with an ordinary character
+        # and so needs no escape.
+        stashed = "[\\$\($count\)](bg:overlay fg:iris)";
         modified = "[!\($count\)](bg:overlay fg:gold)";
         renamed = "[»\($count\)](bg:overlay fg:iris)";
         deleted = "[✘\($count\)](style)";
