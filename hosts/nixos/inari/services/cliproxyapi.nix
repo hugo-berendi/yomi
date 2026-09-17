@@ -10,9 +10,24 @@
   package = upkgs.cliproxyapi;
   plugin = pkgs.cliproxyapi-copilot-plugin;
   managementKeyPath = config.sops.secrets.cliproxyapi_management_key.path;
-  # Only gates a loopback-only endpoint against stray local processes, same
-  # trust level as t3code's own inlined per-session bearer tokens. Not a
-  # secret worth sops: rotate by editing this string and switching.
+  # Gates a loopback-only endpoint against stray local processes, same trust
+  # level as t3code's own inlined per-session bearer tokens. Rotate by editing
+  # this string and switching.
+  #
+  # It is deliberately not in sops, and the reasoning is worth writing down
+  # because the repository is mirrored to a public forge. Both consumers need
+  # the literal value at build time: this server's config, and opencode's
+  # provider block below -- which is also how t3code reaches cliproxy, since
+  # t3code has no provider of its own for it and only sees cliproxy/gpt-4.1
+  # and friends as models under the opencode provider. Moving it to sops means
+  # rendering opencode's config at runtime, and the value would still sit
+  # world-readable in the nix store afterwards. The only thing that buys is
+  # keeping it out of the mirror, which is not worth restructuring how the
+  # agents are configured.
+  #
+  # If that trade stops being acceptable, the cheaper answer is to drop
+  # api-keys entirely and let filesystem and loopback be the boundary, rather
+  # than to hide a key that every local process can read anyway.
   apiKey = "ac44eaaf0d9eab6ff1eb768ec279911712f1291014cdabf68f69bb89fdc04f74";
 
   configTemplate = (pkgs.formats.yaml {}).generate "cliproxyapi-config.yaml" {
