@@ -125,9 +125,6 @@
     stylix.url = "github:nix-community/stylix/release-26.05";
     stylix.inputs.nixpkgs.follows = "nixpkgs";
 
-    base16-schemes.url = "github:tinted-theming/schemes";
-    base16-schemes.flake = false;
-
     rose-pine-hyprcursor.url = "github:ndom91/rose-pine-hyprcursor";
     rose-pine-hyprcursor.inputs.nixpkgs.follows = "nixpkgs";
 

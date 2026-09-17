@@ -70,7 +70,6 @@ bump-common:
     nixpkgs \
     nixpkgs-unstable \
     nix-index-database \
-    base16-schemes \
     rose-pine-hyprcursor \
     home-manager \
     stylix \
@@ -122,14 +121,14 @@ deadnix-check:
 [doc("Check Python source with Ruff")]
 [group("ci")]
 python-check:
-  ruff check .
-  ruff format --check .
+  nix develop -c ruff check .
+  nix develop -c ruff format --check .
 
 [doc("Check shell scripts with ShellCheck and shfmt")]
 [group("ci")]
 shell-check:
-  git ls-files -z '*.sh' | xargs -0 shellcheck --shell=bash
-  git ls-files -z '*.sh' | xargs -0 shfmt -d
+  git ls-files -z '*.sh' | xargs -0 nix develop -c shellcheck --shell=bash
+  git ls-files -z '*.sh' | xargs -0 nix develop -c shfmt -d
 
 [doc("Run all formatting checks (Nix + Lua + linters)")]
 [group("ci")]

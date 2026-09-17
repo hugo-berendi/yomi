@@ -84,22 +84,6 @@
         "type": "github"
       }
     },
-    "base16-schemes": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1789252319,
-        "narHash": "sha256-J0ZdiDExP+wdSgR+Fz5/GEEtqQrJ0O49l/GtwZKrfRU=",
-        "owner": "tinted-theming",
-        "repo": "schemes",
-        "rev": "7cda828e3ed8bca190857bdcfe6bac84db690780",
-        "type": "github"
-      },
-      "original": {
-        "owner": "tinted-theming",
-        "repo": "schemes",
-        "type": "github"
-      }
-    },
     "base16-vim": {
       "flake": false,
       "locked": {
@@ -1419,7 +1403,6 @@
     },
     "root": {
       "inputs": {
-        "base16-schemes": "base16-schemes",
         "disko": "disko",
         "flake-parts": "flake-parts",
         "ghostty-pkg": "ghostty-pkg",

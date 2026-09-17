@@ -17,8 +17,15 @@
     };
     signingKey = lib.mkOption {
       type = lib.types.str;
-      default = "~/.ssh/yubikey.pub";
-      description = "Path to SSH signing key for git commits";
+      default = "~/.ssh/id_ed25519.pub";
+      description = ''
+        Path to the SSH public key git signs with.
+
+        Was ~/.ssh/yubikey.pub, which no longer exists on any host, so every
+        `git tag` failed with "Couldn't load public key" -- tag.gpgsign is on
+        even though commit.gpgsign is not. The pilot's own key signs fine; it
+        is passphrase-protected, so it needs to be in the agent.
+      '';
     };
     gpgKeygrip = lib.mkOption {
       type = lib.types.str;
