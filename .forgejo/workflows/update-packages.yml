@@ -99,7 +99,7 @@ jobs:
           git checkout -b "$branch"
           git add pkgs/
           git commit -m "chore: update packages"
-          git push origin "$branch"
+          git push --force origin "$branch"
 
           diffSummary=$(git diff main -- pkgs/ | head -c 60000)
           body=$(printf 'Automated package version bumps.\n\n```diff\n%s\n```\n' "$diffSummary")
