@@ -55,9 +55,21 @@
     }
   ];
 
-  systemd.services.karakeep.serviceConfig = lib.mkMerge [
-    (lib.mapAttrs (_: lib.mkForce) config.yomi.hardening.presets.standard)
-    {ReadWritePaths = ["/var/lib/karakeep"];}
-  ];
+  # There is no karakeep.service. The upstream module ships karakeep-init,
+  # karakeep-web, karakeep-workers and karakeep-browser, so hardening
+  # systemd.services.karakeep did not harden anything -- it conjured a unit out
+  # of the settings alone, which systemd then refused for having no ExecStart
+  # ("karakeep.service: Service has no ExecStart=, ExecStop=, or
+  # SuccessAction=. Refusing."), while the services that do exist ran unhardened.
+  systemd.services = let
+    hardened = lib.mkMerge [
+      (lib.mapAttrs (_: lib.mkForce) config.yomi.hardening.presets.standard)
+      {ReadWritePaths = ["/var/lib/karakeep"];}
+    ];
+  in {
+    karakeep-init.serviceConfig = hardened;
+    karakeep-web.serviceConfig = hardened;
+    karakeep-workers.serviceConfig = hardened;
+  };
   # }}}
 }
