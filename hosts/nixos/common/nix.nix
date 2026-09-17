@@ -24,7 +24,14 @@
     nixPath = lib.mapAttrsToList (key: value: "${key}=${value.to.path}") config.nix.registry;
     # }}}
     # {{{ Settings
-    settings = {
+    settings = let
+      caches = import ../../../common/caches.nix;
+    in {
+      # `extra-` rather than plain `substituters`, so cache.nixos.org and its
+      # key survive instead of being replaced by this list.
+      extra-substituters = caches.substituters;
+      extra-trusted-public-keys = caches.trustedPublicKeys;
+
       experimental-features = [
         "nix-command"
         "flakes"

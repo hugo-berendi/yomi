@@ -1,6 +1,42 @@
 {
   description = "Your new nix config";
 
+  # {{{ Caching and whatnot
+  # Two constraints force the shape of this block. It has to be a top-level
+  # attribute, because nix reads `nixConfig` off the flake file rather than off
+  # the `outputs` attrset -- declaring it through flake-parts'
+  # `flake.nixConfig` was silently ignored, and every `--accept-flake-config`
+  # in the justfile had nothing to accept. And the values have to be literal
+  # lists, because nix refuses to force a thunk here ("setting
+  # 'extra-substituters' is a thunk"), so this cannot `import`
+  # common/caches.nix the way hosts/nixos/common/nix.nix does.
+  #
+  # Keep in sync with common/caches.nix. That file is what configured hosts
+  # actually use; this copy only matters where yomi's own nix.conf is not in
+  # play yet, which in practice means `nixos-install` from the ISO.
+  nixConfig = {
+    extra-substituters = [
+      "https://nix-community.cachix.org"
+      "https://smos.cachix.org"
+      "https://intray.cachix.org"
+      "https://playit-nixos-module.cachix.org"
+      "https://cache.numtide.com"
+      "https://nvf.cachix.org"
+      "https://hugo-berendi.cachix.org"
+    ];
+
+    extra-trusted-public-keys = [
+      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      "smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM="
+      "intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ="
+      "playit-nixos-module.cachix.org-1:22hBXWXBbd/7o1cOnh+p0hpFUVk9lPdRLX3p5YSfRz4="
+      "niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g="
+      "nvf.cachix.org-1:GMQzlEPrdqVlEzWsdk/6NH9TIoRmFVMZLUfBMvNxzlo="
+      "hugo-berendi.cachix.org-1:bUxGkcUJGjKZUDcSu6WvzecShvqbpxM4YvkfcbnAm2Q="
+    ];
+  };
+  # }}}
+
   inputs = {
     # {{{ Nixpkgs instances
     nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
@@ -228,29 +264,5 @@
 
         formatter = pkgs.alejandra;
       };
-
-      # {{{ Caching and whatnot
-      flake.nixConfig = {
-        extra-substituters = [
-          "https://nix-community.cachix.org"
-          "https://smos.cachix.org"
-          "https://intray.cachix.org"
-          "https://playit-nixos-module.cachix.org"
-          "https://cache.numtide.com"
-          "https://nvf.cachix.org"
-          "https://hugo-berendi.cachix.org"
-        ];
-
-        extra-trusted-public-keys = [
-          "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-          "smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM="
-          "intray.cachix.org-1:qD7I/NQLia2iy6cbzZvFuvn09iuL4AkTmHvjxrQlccQ="
-          "playit-nixos-module.cachix.org-1:22hBXWXBbd/7o1cOnh+p0hpFUVk9lPdRLX3p5YSfRz4="
-          "niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g="
-          "nvf.cachix.org-1:GMQzlEPrdqVlEzWsdk/6NH9TIoRmFVMZLUfBMvNxzlo="
-          "hugo-berendi.cachix.org-1:bUxGkcUJGjKZUDcSu6WvzecShvqbpxM4YvkfcbnAm2Q="
-        ];
-      };
-      # }}}
     };
 }
