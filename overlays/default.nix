@@ -14,5 +14,14 @@
         });
       };
     };
+
+    # nixpkgs' committed pnpmDeps hash for n8n 2.37.10 doesn't match what
+    # actually gets fetched; pin the observed-correct hash until upstream
+    # regenerates it.
+    n8n = prev.n8n.overrideAttrs (old: {
+      pnpmDeps = old.pnpmDeps.override {
+        hash = "sha256-MXRUSvyYymI5uDB33W4Dwt5FcCW+3uCLmNrWuXY0zDM=";
+      };
+    });
   };
 }

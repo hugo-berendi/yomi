@@ -1,4 +1,8 @@
-{config, ...}: {
+{
+  config,
+  upkgs,
+  ...
+}: {
   # {{{ Secrets
   sops.secrets.immich_secrets = {
     sopsFile = ../secrets.yaml;
@@ -27,6 +31,9 @@
   # {{{ Service
   services.immich = {
     enable = true;
+    # 26.05's immich (2.7.5) is EOL and marked insecure (CVE-2026-59258,
+    # CVE-2026-82272); 3.x only ships from nixpkgs-unstable until 26.11.
+    package = upkgs.immich;
     port = config.yomi.ports.immich;
     host = "127.0.0.1";
     mediaLocation = "/raid5pool/media/photos";
