@@ -19,7 +19,15 @@ in {
 
     settings = {
       PermitRootLogin = lib.mkForce "no"; # Forbid root login through SSH.
-      PasswordAuthentication = lib.mkDefault true; # Use keys only.
+
+      # Keys only. This said "Use keys only" next to a value of `true` for as
+      # long as it has existed.
+      #
+      # Turning off PasswordAuthentication on its own does not achieve that:
+      # sshd still offers keyboard-interactive, UsePAM backs it with pam_unix,
+      # and a password prompt comes straight back. Both have to go.
+      PasswordAuthentication = lib.mkDefault false;
+      KbdInteractiveAuthentication = lib.mkDefault false;
     };
 
     # Automatically remove stale sockets
