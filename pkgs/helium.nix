@@ -48,7 +48,7 @@
   vulkan-loader,
   wayland,
 }: let
-  version = "0.16.3.1";
+  version = "0.17.1.1";
 in
   stdenv.mkDerivation {
     pname = "helium";
@@ -56,7 +56,7 @@ in
 
     src = fetchurl {
       url = "https://github.com/imputnet/helium-linux/releases/download/${version}/helium-${version}-x86_64_linux.tar.xz";
-      hash = "sha256-Y07fuk0C6rUEjz6PHGRMJDfBL7TM2xlggXKtG4lWy+s=";
+      hash = "sha256-aG072DMwZp19qANmSMWiUVYrOWO2JNoZ1en1aN3WWTA=";
     };
 
     nativeBuildInputs = [
