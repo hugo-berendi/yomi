@@ -26,6 +26,11 @@
       to = config.networking.hostName;
     }
   ];
+
+  # Forgejo does not run its own sshd (START_SSH_SERVER is unset), so git
+  # traffic to this name is served by the host's sshd and presents the host
+  # key. Pin it under that name too, or every clone is trust-on-first-use.
+  yomi.ssh.extraHostNames = ["ssh.${config.yomi.cloudflared.at.git.host}"];
   # }}}
   # {{{ Service
   services.forgejo = {
