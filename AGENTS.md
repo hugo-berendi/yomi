@@ -207,14 +207,37 @@ Tabs, width 4, max column 120 (`stylua.toml`). Config uses nvf; plugin specs go 
 - **The pilot is in `systemd-journal`**, so `journalctl -u <unit>` works without sudo. Read the journal before theorising.
 - **Supplementary groups are fixed at session start.** After adding a group, restarting a user service is not enough — `systemctl restart user@$(id -u)` restarts the user manager, and t3code/opencode come back with it (state lives in `~/.t3`, so sessions survive).
 
+## Use the skills you were given
+
+Your harness lists its available skills at session start. **Read that list before starting work, and invoke a skill instead of hand-rolling its job.** Skipping them is the most common way a session here does competent work by a worse method than the one already sitting there.
+
+Route by situation, not by whether you feel you need help:
+
+| When | Invoke |
+|------|--------|
+| Anything is broken, failing, crashing, hanging or slow | `diagnosing-bugs` — **before** forming a theory |
+| Reviewing a diff, or commits that arrived from another machine | `code-review` |
+| Before pushing changes to sops, ssh, firewall, hardening or backups | `security-review` |
+| Tidying up after a change lands | `simplify` |
+| Hooks, permissions, env vars, settings.json | `update-config` |
+| Repeated permission prompts are slowing things down | `fewer-permission-prompts` |
+| Anything about Claude/Anthropic model ids, pricing, limits or the API | `claude-api` — never answer from memory |
+| Recurring or scheduled work | `loop` / `schedule` |
+| Writing prose the human will read | `unslop` (its own description says it always applies) |
+
+Not applicable here, so do not reach for them: `gh-fix-ci` and `gh-address-comments` are GitHub Actions, this repo is Forgejo; `security-best-practices` covers python/js/go, not Nix; `init` generates a fresh CLAUDE.md and would discard this file.
+
+Names vary between harnesses and some sessions offer none of these. Match against the list you were actually given rather than this table, and carry on without them if they are absent — but do not silently reimplement one that is present.
+
 ## Agent Workflow
 
 1. `hostname`, then `git status -sb` and `git log --oneline -10` — know where you are and what changed
-2. Search nixos MCP for packages/options; check neighbouring modules for the local pattern
-3. `git add` new files immediately (flakes need tracked files)
-4. Edit following fold markers and `yomi.*` conventions
-5. **Verify with `nix eval`/`nix build` on the produced artifact**, not by re-reading the source
-6. `just lint`, then `just nixos-rebuild dry-build <host>` or `nix flake check`
-7. Commit each logical change separately; say what was verified and how
-8. Switching is the human's call on a machine you are running inside — say what units will restart first
-9. Do not create branches or worktrees unless asked
+2. Read your harness's skill list and route the task (see above) before choosing a method by hand
+3. Search nixos MCP for packages/options; check neighbouring modules for the local pattern
+4. `git add` new files immediately (flakes need tracked files)
+5. Edit following fold markers and `yomi.*` conventions
+6. **Verify with `nix eval`/`nix build` on the produced artifact**, not by re-reading the source
+7. `just lint`, then `just nixos-rebuild dry-build <host>` or `nix flake check`
+8. Commit each logical change separately; say what was verified and how
+9. Switching is the human's call on a machine you are running inside — say what units will restart first
+10. Do not create branches or worktrees unless asked
