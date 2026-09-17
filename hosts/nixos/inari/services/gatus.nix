@@ -108,7 +108,7 @@ in {
       endpoints = [
         # {{{ External-facing services (subdomain name == attr name)
         (mkHttpAt "https://auth.hugo-berendi.de" "pocket-id")
-        (mkHttpAt "https://share.immich.hugo-berendi.de" "immich-share")
+        (mkHttpAt "https://immich-share.hugo-berendi.de" "immich-share")
         (mkHttpAt "https://cloud.hugo-berendi.de" "owncloud")
         (mkHttpAt "https://media.hugo-berendi.de" "jellyfin")
         (mkHttpAt "https://request-media.hugo-berendi.de" "jellyseerr")
