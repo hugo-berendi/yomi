@@ -37,6 +37,20 @@ in {
     ];
   };
 
+  # A host with no committed public key is dropped from knownHosts below rather
+  # than breaking the build, so the pin can go missing without anything saying
+  # so. Both desktops spent two years pinned to a copy of the pilot's *user*
+  # key, which no sshd will ever present, and the resulting mismatch is only
+  # visible at connect time.
+  warnings = let
+    unpinned = lib.filter (name: !builtins.pathExists (pubKey name)) (builtins.attrNames hosts);
+  in
+    lib.optional (unpinned != []) ''
+      No ssh host key is pinned for: ${lib.concatStringsSep ", " unpinned}.
+      Connections to these hosts fall back to trust-on-first-use.
+      Capture the real key once the host is reachable: `just import-host-key <host>`.
+    '';
+
   # Add each host in this repo to the knownHosts list
   programs.ssh = {
     knownHosts = lib.pipe hosts [

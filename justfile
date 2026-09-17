@@ -191,6 +191,45 @@ sops-rekey:
 
   print(f"🚀 Successfully rekeyed {len(paths)} files!")
 
+[doc("Copy a running host's real ssh host public key into the repo, so knownHosts can pin it")]
+[group("secrets")]
+import-host-key host:
+  #!/usr/bin/env bash
+  set -euo pipefail
+
+  host="{{host}}"
+  dest="hosts/nixos/$host/keys/ssh_host_ed25519_key.pub"
+  idkey="hosts/nixos/$host/keys/id_ed25519.pub"
+
+  if [[ ! -d "hosts/nixos/$host" ]]; then
+    echo "❌ No such host in this repo: $host" >&2
+    exit 1
+  fi
+
+  echo "🔑 Fetching the host key from $host"
+  mkdir -p "$(dirname "$dest")"
+  tmp=$(mktemp)
+  trap 'rm -f "$tmp"' EXIT
+  ssh "$host" 'cat /persist/state/etc/ssh/ssh_host_ed25519_key.pub 2>/dev/null || cat /etc/ssh/ssh_host_ed25519_key.pub' > "$tmp"
+
+  if ! grep -q '^ssh-ed25519 ' "$tmp"; then
+    echo "❌ That does not look like an ed25519 public key, refusing to write it" >&2
+    exit 1
+  fi
+
+  # This is the mistake that left both desktops pinned to an unusable key for
+  # two years: the pilot's user key was copied in here instead of the host key.
+  if [[ -f "$idkey" ]] && [[ "$(cut -d' ' -f2 "$tmp")" == "$(cut -d' ' -f2 "$idkey")" ]]; then
+    echo "❌ $host is presenting the pilot's user key as its host key." >&2
+    echo "   Pinning it would be meaningless. Regenerate the host key instead." >&2
+    exit 1
+  fi
+
+  mv "$tmp" "$dest"
+  trap - EXIT
+  git add "$dest"
+  echo "🚀 Pinned $(cut -d' ' -f3 "$dest" 2>/dev/null || echo "$host") in $dest"
+
 [doc("Export keys to the kagutsuchi USB device")]
 [group("secrets")]
 export-keys:

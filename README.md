@@ -49,7 +49,12 @@ This repo's structure is based on the concept of hosts - individual machines con
 4. Create `home/<hostname>.nix` for home-manager config (imports `./global.nix` + desired feature modules).
 5. Register the host in `flake.nix` under `nixosConfigurations` using `mkHost`.
 6. Add DNS records in the host's `default.nix` via `yomi.dns.records`.
-7. Generate SSH host keys and add public keys to `keys/` (use `just export-keys`).
+7. Back the host's private keys up to the USB device with `just export-keys`, then,
+   once the host is reachable over SSH, pin its public host key in the repo with
+   `just import-host-key <hostname>`. These are two different keys: `keys/id_ed25519.pub`
+   is the pilot's user key (it grants login), while `keys/ssh_host_ed25519_key.pub` is the
+   machine's own sshd key (it is what `programs.ssh.knownHosts` pins). Putting the
+   user key in both is what silently broke host verification for two years.
 
 ## Bootstrap
 
