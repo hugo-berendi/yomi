@@ -101,12 +101,32 @@ jobs:
           git commit -m "chore: update packages"
           git push --force origin "$branch"
 
-          diffSummary=$(git diff main -- pkgs/ | head -c 60000)
-          body=$(printf 'Automated package version bumps.\n\n```diff\n%s\n```\n' "$diffSummary")
+          summary=""
+          for f in $(git diff --name-only main -- pkgs/); do
+            pkg=$(basename "$f" .nix)
+            old=$(git show "main:$f" 2>/dev/null | sed -n 's/.*version = "\([^"]*\)".*/\1/p' | head -1)
+            new=$(sed -n 's/.*version = "\([^"]*\)".*/\1/p' "$f" | head -1)
+            if [[ -n "$old" && -n "$new" ]]; then
+              summary="${summary}- **${pkg}**: \`${old}\` -> \`${new}\`"$'\n'
+            else
+              summary="${summary}- **${pkg}**: updated"$'\n'
+            fi
+          done
 
-          curl -fsSL -X POST \
+          diffSummary=$(git diff main -- pkgs/ | head -c 60000)
+          body=$(printf '%s\n<details>\n<summary>Show diff</summary>\n\n```diff\n%s\n```\n\n</details>\n' "$summary" "$diffSummary")
+
+          prResponse=$(curl -fsSL -X POST \
             -H "Authorization: token ${GITHUB_TOKEN}" \
             -H "Content-Type: application/json" \
             "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/pulls" \
             -d "$(nix run nixpkgs#jq -- -n --arg title "chore: update packages" --arg body "$body" --arg head "$branch" --arg base "main" \
-              '{title: $title, body: $body, head: $head, base: $base}')"
+              '{title: $title, body: $body, head: $head, base: $base}')")
+
+          prNumber=$(printf '%s' "$prResponse" | nix run nixpkgs#jq -- -r '.number')
+
+          curl -fsSL -X POST \
+            -H "Authorization: token ${GITHUB_TOKEN}" \
+            -H "Content-Type: application/json" \
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/pulls/${prNumber}/requested_reviewers" \
+            -d '{"reviewers": ["hugo-berendi"]}'
