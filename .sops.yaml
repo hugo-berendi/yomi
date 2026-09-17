@@ -1,34 +1,53 @@
+# Recipients allowed to decrypt this repository's secrets.
+#
+# shared_host_key is one key doing two machines' jobs. It was generated on
+# amaterasu (its ssh comment still reads root@amaterasu) and the same private
+# key is installed as inari's /persist/state/etc/ssh/ssh_host_ed25519_key,
+# which is how inari decrypts despite having no entry of its own here. Both
+# hosts should get distinct keys and separate entries; until they do, this
+# name is the honest one, and compromising either machine exposes every secret
+# below.
+#
+# pilot_user_key is the pilot's ssh login key (hosts/nixos/*/keys/id_ed25519.pub),
+# converted with ssh-to-age. It is the break-glass path for editing secrets by
+# hand. Note that it is passphrase-protected, so `just ssh-to-age` cannot
+# convert it unattended -- set SSH_TO_AGE_PASSPHRASE when running that recipe.
+#
+# A tsukuyomi key used to be listed here. That machine runs Windows now and its
+# private key is no longer under control, so it was removed and every file
+# rekeyed. Revisions before that point are still encrypted to it in git history.
 keys:
-  - &hugob age1aew0wld84lhcdte90ra0a4xhkwd2tlaanyr94xeffufpl3rls55qclcsfv
-  - &amaterasu age1x9dhumaa3qg77z9swunz3zl5r6ez6gqyhwd66ytp20ndzjefdvcsq6yfu8
+  - &pilot_user_key age1aew0wld84lhcdte90ra0a4xhkwd2tlaanyr94xeffufpl3rls55qclcsfv
+  - &shared_host_key age1x9dhumaa3qg77z9swunz3zl5r6ez6gqyhwd66ytp20ndzjefdvcsq6yfu8
 creation_rules:
   - path_regex: hosts/nixos/common/secrets.*\.yaml
     key_groups:
       - age:
-          - *hugob
-          - *amaterasu
+          - *pilot_user_key
+          - *shared_host_key
   - path_regex: hosts/nixos/inari/secrets.yaml
     key_groups:
       - age:
-          - *hugob
-          - *amaterasu
+          - *pilot_user_key
+          - *shared_host_key
   - path_regex: home/features/desktop/wakatime/secrets.yaml
     key_groups:
       - age:
-          - *hugob
-          - *amaterasu
+          - *pilot_user_key
+          - *shared_host_key
   - path_regex: home/features/productivity/secrets.yaml
     key_groups:
       - age:
-          - *hugob
-          - *amaterasu
+          - *pilot_user_key
+          - *shared_host_key
+  # No such file exists today; kept so that creating it encrypts correctly.
   - path_regex: home/features/cli/secrets.yaml
     key_groups:
       - age:
-          - *hugob
-          - *amaterasu
+          - *pilot_user_key
+          - *shared_host_key
   - path_regex: home/features/cli/ai/secrets.yaml
     key_groups:
       - age:
-          - *hugob
-          - *amaterasu
+          - *pilot_user_key
+          - *shared_host_key

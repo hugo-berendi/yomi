@@ -165,11 +165,32 @@ gc:
 [doc("Save the user's SSH key as a key usable by sops")]
 [group("secrets")]
 ssh-to-age:
-  @echo "📁 Creating sops directory" >&2
+  #!/usr/bin/env bash
+  set -euo pipefail
+
+  dest=~/.config/sops/age/keys.txt
+
+  echo "📁 Creating sops directory" >&2
   mkdir -p ~/.config/sops/age
 
-  @echo "🔑 Converting ssh key to age" >&2
-  ssh-to-age -private-key -i ~/.ssh/id_ed25519 > ~/.config/sops/age/keys.txt
+  # The pilot's ssh key is passphrase-protected, and ssh-to-age has no flag for
+  # that -- it reads SSH_TO_AGE_PASSPHRASE from the environment. Writing
+  # straight to $dest with `>` truncated it before the conversion could fail,
+  # which destroyed a working key file on every unattended run.
+  echo "🔑 Converting ssh key to age" >&2
+  tmp=$(mktemp)
+  chmod 600 "$tmp"
+  trap 'rm -f "$tmp"' EXIT
+
+  if ! ssh-to-age -private-key -i ~/.ssh/id_ed25519 -o "$tmp" || [[ ! -s "$tmp" ]]; then
+    echo "❌ Conversion failed and $dest was left untouched." >&2
+    echo "   The key is passphrase-protected; retry with:" >&2
+    echo "     SSH_TO_AGE_PASSPHRASE=... just ssh-to-age" >&2
+    exit 1
+  fi
+
+  install -m 600 "$tmp" "$dest"
+  echo "🚀 Wrote $dest" >&2
 
 [doc("Print the public age key used by sops on this machine")]
 [group("secrets")]
