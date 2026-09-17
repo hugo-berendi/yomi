@@ -40,6 +40,14 @@
         "network" # wpa_supplicant
         "syncthing" # syncthing!
         "vboxusers"
+
+        # Read the system journal without sudo. wheelNeedsPassword is on, so
+        # every `journalctl -u <service>` otherwise needs a password, which
+        # makes reading logs the slowest part of diagnosing anything. Grants no
+        # privilege this user does not already have through wheel -- but note
+        # it also gives log access to everything running as this user, and logs
+        # carry tokens and request data.
+        "systemd-journal"
       ];
 
       hashedPasswordFile = config.sops.secrets.pilot_password.path;
