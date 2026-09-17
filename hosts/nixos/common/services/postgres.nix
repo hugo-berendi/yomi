@@ -19,7 +19,13 @@ in {
       backupAll = true;
       compression = "zstd";
       location = "/persist/state/var/backup/postgresql";
-      startAt = "*-*-* 02:30:00";
+
+      # Ahead of the restic timers at 00:00, not after them. Dumping at 02:30
+      # meant the nightly backup always captured the previous day's dump, so
+      # the database lagged the file data it describes by about 22 hours --
+      # long enough for a photo to be in the immich backup while the row
+      # describing it is not.
+      startAt = "*-*-* 23:30:00";
     };
 
     environment.persistence."/persist/state".directories = [

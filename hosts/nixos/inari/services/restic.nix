@@ -26,6 +26,12 @@
         "/raid5pool/media/documents" # paperless documents
         "/raid5pool/data" # paperless index, navidrome
         "/persist/data" # calendars, contacts, game server worlds
+
+        # Without the dumps, an off-site restore returns immich's photos and
+        # paperless' documents as loose files with nothing describing them --
+        # no albums, no users, no tags. Compressed dumps of every database,
+        # written by services.postgresqlBackup half an hour before this runs.
+        "/persist/state/var/backup/postgresql"
       ];
 
       exclude = [
