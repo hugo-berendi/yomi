@@ -97,11 +97,16 @@ in {
 
   config = lib.mkIf cfg.enable (lib.mkMerge [
     (lib.mkIf cfg.offsite.enable {
-      # The repository string carries the bucket name, so it is read from a
-      # secret too rather than committed here.
-      sops.secrets.b2_repository.sopsFile = ../../secrets.yaml;
+      sops.secrets.b2_bucket.sopsFile = ../../secrets.yaml;
       sops.secrets.b2_account_id.sopsFile = ../../secrets.yaml;
       sops.secrets.b2_account_key.sopsFile = ../../secrets.yaml;
+
+      # Bucket names are globally unique across all of B2 and so are worth
+      # keeping out of a repository that is mirrored to a public forge. That
+      # means the repository string cannot be built in nix, since the bucket
+      # is only known at activation -- hence a rendered template rather than a
+      # plain string. No trailing newline: restic reads this file verbatim.
+      sops.templates."restic-b2-repository".content = "b2:${config.sops.placeholder.b2_bucket}:${config.networking.hostName}";
 
       sops.templates."restic-b2.env".content = ''
         B2_ACCOUNT_ID=${config.sops.placeholder.b2_account_id}
@@ -112,7 +117,7 @@ in {
         initialize = true;
         inherit (cfg.offsite) paths exclude pruneOpts;
 
-        repositoryFile = config.sops.secrets.b2_repository.path;
+        repositoryFile = config.sops.templates."restic-b2-repository".path;
         passwordFile = config.sops.secrets.backup_password.path;
         environmentFile = config.sops.templates."restic-b2.env".path;
 

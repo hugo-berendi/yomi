@@ -11,11 +11,10 @@
     repository = "/raid5pool/backups/restic";
 
     # {{{ Off-site
-    # Flip this on only once b2_repository, b2_account_id and b2_account_key
-    # exist in hosts/nixos/inari/secrets.yaml, or activation will fail looking
-    # for them.
+    # Requires b2_bucket, b2_account_id and b2_account_key in
+    # hosts/nixos/inari/secrets.yaml; activation fails without them.
     offsite = {
-      enable = false;
+      enable = true;
 
       # Roughly 96 GiB as of 2026-09. Everything else on raid5pool is
       # reacquirable: media/movies, media/tv and the 222 GiB of media/comics
