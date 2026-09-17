@@ -246,7 +246,10 @@
         );
 
         checks = let
-          hosts = ["amaterasu" "tsukuyomi" "inari"];
+          # tsukuyomi is deliberately absent: that machine runs Windows now, so
+          # its configuration is kept dormant rather than built on every push.
+          # It is still under nixosConfigurations and can be built by hand.
+          hosts = ["amaterasu" "inari"];
         in
           (builtins.listToAttrs (
             map (

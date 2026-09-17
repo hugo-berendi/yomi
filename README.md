@@ -18,7 +18,7 @@ In case you are not familiar with nix/nixos, this is a collection of configurati
 This repo's structure is based on the concept of hosts - individual machines configured by me. I'm naming each host based on things in space/mythology (_they are the same picture_). The hosts I have right now are:
 
 - [amaterasu](./hosts/nixos/amaterasu/) — Framework 13 laptop
-- [tsukuyomi](./hosts/nixos/tsukuyomi/) — tower pc
+- [tsukuyomi](./hosts/nixos/tsukuyomi/) — tower pc (dormant: runs Windows, config kept for a future reinstall)
 - [inari](./hosts/nixos/inari/) — home server
 - [iso](./hosts/nixos/iso/) — installation ISO
 - [wsl](./hosts/nixos/wsl/) — WSL environment

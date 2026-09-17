@@ -1,7 +1,6 @@
 {
   lib,
   pkgs,
-  config,
   ...
 }: {
   # {{{ Imports
@@ -30,18 +29,16 @@
   networking.hostName = "tsukuyomi";
   # }}}
   # {{{ DNS records
-  yomi.dns.records = [
-    {
-      at = config.networking.hostName;
-      type = "A";
-      value = "100.127.234.95";
-    }
-    {
-      at = config.networking.hostName;
-      type = "AAAA";
-      value = "fd7a:115c:a1e0::501:ea5e";
-    }
-  ];
+  # Intentionally empty. This machine runs Windows now, so nothing here claims
+  # an address for it.
+  #
+  # The records that used to live here were 100.127.234.95 and
+  # fd7a:115c:a1e0::501:ea5e, which are amaterasu's addresses with the last
+  # character changed -- they never matched a tailscale node. The two real
+  # tsukuyomi nodes are 100.108.206.114 and 100.124.169.22, both last seen in
+  # 2026-04 and 2026-05. Repopulate this from `tailscale status` if the host
+  # is ever reinstalled.
+  yomi.dns.records = [];
   # }}}
   # {{{ Hardware
   hardware.enableAllFirmware = true;

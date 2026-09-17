@@ -7,7 +7,7 @@ Flake-based NixOS configuration managing 5 hosts with shared modules, home-manag
 | Host | Role | Notes |
 |------|------|-------|
 | `amaterasu` | Framework 13 laptop | BTRFS + impermanence, hyprland, desktop |
-| `tsukuyomi` | Tower PC | BTRFS + impermanence, hyprland, desktop |
+| `tsukuyomi` | Tower PC (dormant) | Runs Windows now; config kept but excluded from CI and `nix flake check` |
 | `inari` | Home server | ZFS, ~40 services, Docker containers |
 | `iso` | Installation ISO | Bootable installer |
 | `wsl` | WSL environment | No impermanence |
@@ -31,7 +31,7 @@ just push-wsl-cache                 # Push wsl build to hugo-berendi cachix
 ## CI
 
 Forgejo Actions (`.forgejo/workflows/`):
-- `check-nixos-flake.yml`: push/PR — runs `just lint`, `just check`, builds amaterasu + tsukuyomi + inari + wsl
+- `check-nixos-flake.yml`: push/PR — runs `just lint`, `just check`, builds amaterasu + inari + wsl
 - `update-flake-inputs.yml`: daily cron — `nix flake update`, builds all hosts, auto-commits to main if checks pass
 
 ## Architecture
