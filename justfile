@@ -246,8 +246,8 @@ import-host-key host:
     exit 1
   fi
 
-  mv "$tmp" "$dest"
-  trap - EXIT
+  # install rather than mv: mktemp makes the file 0600, and this is a public key.
+  install -m 644 "$tmp" "$dest"
   git add "$dest"
   echo "🚀 Pinned $(cut -d' ' -f3 "$dest" 2>/dev/null || echo "$host") in $dest"
 
