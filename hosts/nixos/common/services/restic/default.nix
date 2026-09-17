@@ -62,6 +62,19 @@ in {
         covers losing a disk but not losing the box
       '';
 
+      sopsFile = lib.mkOption {
+        type = lib.types.path;
+        example = lib.literalExpression "./secrets.yaml";
+        description = ''
+          Secrets file providing b2_bucket, b2_account_id and b2_account_key.
+
+          This module lives in common/, so a relative path here would resolve
+          against common/ and miss the per-host file the credentials actually
+          belong in. backup_password stays in common/secrets.yaml because it is
+          genuinely shared.
+        '';
+      };
+
       paths = lib.mkOption {
         type = lib.types.listOf lib.types.str;
         default = [];
@@ -97,9 +110,9 @@ in {
 
   config = lib.mkIf cfg.enable (lib.mkMerge [
     (lib.mkIf cfg.offsite.enable {
-      sops.secrets.b2_bucket.sopsFile = ../../secrets.yaml;
-      sops.secrets.b2_account_id.sopsFile = ../../secrets.yaml;
-      sops.secrets.b2_account_key.sopsFile = ../../secrets.yaml;
+      sops.secrets.b2_bucket.sopsFile = cfg.offsite.sopsFile;
+      sops.secrets.b2_account_id.sopsFile = cfg.offsite.sopsFile;
+      sops.secrets.b2_account_key.sopsFile = cfg.offsite.sopsFile;
 
       # Bucket names are globally unique across all of B2 and so are worth
       # keeping out of a repository that is mirrored to a public forge. That

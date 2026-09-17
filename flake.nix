@@ -130,7 +130,23 @@
     self,
     flake-parts,
     ...
-  }:
+  }: let
+    # {{{ Nixpkgs instances
+    # Hosts get allowUnfree from common/nixpkgs.nix, but that is a nixos module
+    # and so reaches neither the flake's own package outputs nor the unstable
+    # instance passed around as `upkgs`. flake-parts hands out
+    # nixpkgs.legacyPackages, which carries no config at all, so `nix flake
+    # check` refused to evaluate packages.chatgpt for being unfree and took CI
+    # down with it.
+    nixpkgsConfig = {allowUnfree = true;};
+
+    mkPkgs = input: system:
+      import input {
+        inherit system;
+        config = nixpkgsConfig;
+      };
+    # }}}
+  in
     flake-parts.lib.mkFlake {inherit inputs;} {
       systems = [
         "x86_64-linux"
@@ -150,7 +166,7 @@
           specialArgs = system: {
             inherit inputs;
             outputs = self;
-            upkgs = inputs.nixpkgs-unstable.legacyPackages.${system};
+            upkgs = mkPkgs inputs.nixpkgs-unstable system;
           };
 
           mkHost = {
@@ -220,7 +236,7 @@
         system,
         ...
       }: let
-        upkgs = inputs.nixpkgs-unstable.legacyPackages.${system};
+        upkgs = mkPkgs inputs.nixpkgs-unstable system;
         myPkgs = import ./pkgs {inherit pkgs upkgs;};
 
         specialArgs = {
@@ -236,6 +252,11 @@
           nixosConfigurations = builtins.removeAttrs self.nixosConfigurations ["iso"];
         };
       in {
+        # Replaces flake-parts' default of nixpkgs.legacyPackages, which is
+        # instantiated without any config, so packages.chatgpt could not be
+        # evaluated at all.
+        _module.args.pkgs = mkPkgs inputs.nixpkgs system;
+
         packages = myPkgs // dnsPackages;
 
         devShells = import ./devshells (

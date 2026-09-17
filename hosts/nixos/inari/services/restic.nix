@@ -15,6 +15,7 @@
     # hosts/nixos/inari/secrets.yaml; activation fails without them.
     offsite = {
       enable = true;
+      sopsFile = ../secrets.yaml;
 
       # Roughly 96 GiB as of 2026-09. Everything else on raid5pool is
       # reacquirable: media/movies, media/tv and the 222 GiB of media/comics
