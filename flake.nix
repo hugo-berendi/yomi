@@ -15,15 +15,15 @@
   # actually use; this copy only matters where yomi's own nix.conf is not in
   # play yet, which in practice means `nixos-install` from the ISO.
   nixConfig = {
-    # extra-substituters = [
-    #   "https://nix-community.cachix.org"
-    #   "https://smos.cachix.org"
-    #   "https://intray.cachix.org"
-    #   "https://playit-nixos-module.cachix.org"
-    #   "https://cache.numtide.com"
-    #   "https://nvf.cachix.org"
-    #   "https://hugo-berendi.cachix.org"
-    # ];
+    extra-substituters = [
+      "https://nix-community.cachix.org"
+      "https://smos.cachix.org"
+      "https://intray.cachix.org"
+      "https://playit-nixos-module.cachix.org"
+      "https://cache.numtide.com"
+      "https://nvf.cachix.org"
+      "https://hugo-berendi.cachix.org"
+    ];
 
     extra-trusted-public-keys = [
       "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
