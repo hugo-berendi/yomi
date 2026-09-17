@@ -61,10 +61,6 @@
 
   xdg.portal.xdgOpenUsePortal = lib.mkForce false;
 
-  programs.ssh = {
-    enable = true;
-    settings."*".AddKeysToAgent = "yes";
-  };
-
-  services.ssh-agent.enable = true;
+  # programs.ssh, AddKeysToAgent and services.ssh-agent now come from
+  # features/cli/ssh.nix, which every host imports.
 }
