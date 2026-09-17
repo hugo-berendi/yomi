@@ -6,6 +6,16 @@
 }: let
   dataDir = "/persist/data/pelican";
   logsDir = "/persist/state/pelican/logs";
+
+  # `./Caddyfile` resolves to a path *inside* the flake source, so the mount
+  # string carried the source hash -- which changes on every commit. The unit
+  # therefore differed on every switch after any change anywhere in the repo,
+  # and the panel restarted each time even though this file never moved.
+  # builtins.path copies just this file, so the store path follows its contents.
+  caddyfile = builtins.path {
+    path = ./Caddyfile;
+    name = "pelican-caddyfile";
+  };
 in {
   yomi.cloudflared.at.pelican.port = config.yomi.ports.pelican-panel;
 
@@ -39,7 +49,7 @@ in {
     volumes = [
       "${dataDir}:/pelican-data:rw"
       "${logsDir}:/var/www/html/storage/logs:rw"
-      "${toString ./Caddyfile}:/etc/caddy/Caddyfile"
+      "${caddyfile}:/etc/caddy/Caddyfile"
     ];
     ports = [
       "127.0.0.1:${toString config.yomi.cloudflared.at.pelican.port}:80"
