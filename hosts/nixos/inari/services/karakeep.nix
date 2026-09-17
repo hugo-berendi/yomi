@@ -1,9 +1,24 @@
 {
   config,
   lib,
+  upkgs,
   ...
 }: {
   yomi.nginx.at.karakeep.port = config.yomi.ports.karakeep;
+
+  # 26.05 ships karakeep 0.32.0 built against nodejs 24, and its bundled
+  # better-sqlite3 cannot survive that pairing: every start aborts a few
+  # seconds in with
+  #
+  #   node::RemoveEnvironmentCleanupHook ... Assertion failed: (env) != nullptr
+  #   Statement::~Statement() [better_sqlite3.node]
+  #
+  # Workers had been core-dumping on every start since 2026-09-17 morning;
+  # web only stayed up because nothing restarted it. Unstable's 0.33.1 is
+  # built against nodejs 22, which is the pairing that works.
+  #
+  # Drop this once 26.05 carries a karakeep that starts.
+  services.karakeep.package = upkgs.karakeep;
   # {{{ Secrets
   sops.secrets.karakeep_env = {
     sopsFile = ../secrets.yaml;
