@@ -112,7 +112,9 @@ in {
 
         # Code nodes run in n8n's JS task runner, which evaluates them in a
         # bare `vm` context holding only the helpers it injects -- no
-        # `process`, no `require`, no `global`. `process.env.FOO` therefore
+        # `process`. It does inject Buffer, the timers, TextEncoder and an
+        # allowlisted `require`, so the absence is specific rather than
+        # general -- `process.env.FOO` therefore
         # throws ReferenceError at runtime, and because these workflows catch
         # their own errors it surfaces as a digest cheerfully reporting every
         # service unreachable rather than as a failure anyone notices.

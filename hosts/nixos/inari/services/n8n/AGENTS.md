@@ -216,9 +216,22 @@ had to become `[+]`/`[X]`.
 
 ## Code nodes have no `process`
 
-n8n runs Code nodes in its JS task runner, which evaluates them in a bare
-`vm` context holding only the helpers it injects. There is no `process`, no
-`require`, no `global`. Read environment variables with **`$env.VARIABLE`**.
+n8n runs Code nodes in its JS task runner, which evaluates them in a `vm`
+context built from an explicit list. **There is no `process`** -- read
+environment variables with **`$env.VARIABLE`**.
+
+The absence is specific, not general. `getNativeVariables()` in the runner
+injects `Buffer`, `setTimeout`/`setInterval`/`setImmediate` and their
+clears, `btoa`/`atob`, `TextEncoder`/`TextDecoder` and the stream variants;
+`require` exists behind an allowlisting resolver, and the code wrapper
+defines `global` as `globalThis`. So `Buffer.byteLength` in
+`webuntis-radicale.json` is fine. Check the list before assuming something
+is unavailable:
+
+```bash
+sed -n "/getNativeVariables()/,/}/p" \
+  /nix/store/*-n8n-*/lib/n8n/packages/@n8n/task-runner/dist/js-task-runner/js-task-runner.js
+```
 
 This deserves its own section because of how it fails. `$env` is fine, but
 `process.env.FOO` throws `ReferenceError: process is not defined` -- and
