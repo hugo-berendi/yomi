@@ -120,15 +120,66 @@ n8n hasn't already seen is fine, since import upserts by id.
 
 ## Email design language
 
-Notification emails sent from workflows here (`health-monitor.json`,
-`webuntis-radicale.json`) share one look: a dark "terminal" card (`#0b0f14`)
-on a light neutral wrapper (`#eef1f5`), monospace throughout
-(`ui-monospace,'JetBrains Mono','SFMono-Regular',Menlo,Consolas,'Liberation
-Mono',monospace`), a thin colored status bar at the top, a `$ <command>`
-prompt line under the header, bracket status tags (`[ OK ]`, `[WARN]`,
-`[CRIT]`, `[ UP ]`, `[DOWN]`, `[ PUT ]`, `[ DEL ]`) rather than color alone,
-and `# comment`-styled section headers. Reuse this rather than inventing a
-new look per workflow — copy the palette object out of either Code node's
-`jsCode` as a starting point. Everything is inline-styled table markup (no
-`<style>` block, no external fonts) because that's what actually survives
-Gmail/Apple Mail/Outlook clipping and dark-mode reprocessing.
+**One look per kind of mail, not one look for everything.** An earlier version
+of this guide said to reuse the terminal card everywhere; that was reversed
+deliberately. An alarm and a weekly run of what arrived should not read the
+same, because the whole point of an alarm is that it looks different from the
+mail you skim.
+
+So: pick the visual language from what the mail *is*, and commit to it.
+
+| Kind | Workflow | Language |
+|------|----------|----------|
+| Ops / alarm | `health-monitor.json`, `backup-storage.json` | Dark terminal card |
+| Arrivals / leisure | `media-arrivals.json` | Repertory-cinema ticket |
+
+The **terminal card** is for anything where something might be wrong: a dark
+`#0b0f14` card on a light `#eef1f5` wrapper, monospace throughout, a thin
+coloured status bar, a `$ <command>` prompt line under the header, bracket
+status tags (`[ OK ]`, `[WARN]`, `[CRIT]`, `[ UP ]`, `[DOWN]`) rather than
+colour alone, and `# comment`-styled section headers. Copy the palette object
+out of either Code node's `jsCode`.
+
+The **cinema ticket** is for the media digest: oxblood `#5a1418` marquee with
+gold `#b8863b` bulbs, aged card stock `#f4ead6`, Georgia display with wide
+tracking, Courier New for the numeric/stub text, dashed perforation rules, and
+poster art pulled from the *arr APIs' `remoteUrl` fields.
+
+Whatever the language, these constraints are not stylistic:
+
+- **Inline styles on table markup only.** No `<style>` block, no external
+  fonts, no flexbox or grid. That is what survives Gmail/Apple Mail/Outlook
+  clipping and dark-mode reprocessing.
+- **Only fonts that are installed everywhere.** Georgia, Courier New, Times,
+  and the `ui-monospace` stack. A webfont `<link>` is stripped by Gmail and
+  most of Outlook, and the fallback is what your reader actually sees.
+- **600px, and check it.** Long free-form detail text beside a
+  `white-space:nowrap` value silently pushes the card past the width every
+  client crops at. `backup-storage.json` gives the detail its own full-width
+  row for exactly this reason.
+- **Never colour alone.** Bracket tags, stamps or wording must carry the
+  status too -- for colour-blind readers and for clients that rewrite
+  backgrounds in dark mode.
+- **Images must be absolute public URLs.** A nix store path or a
+  `127.0.0.1` URL renders as a broken image in every mail client. Always
+  design the no-image fallback as well; `media-arrivals.json` draws a
+  placeholder card of the same dimensions.
+
+### Render it before you commit it
+
+Screenshot the HTML rather than trusting the markup. Both existing digests had
+a layout bug that was invisible in the source and obvious in a render:
+
+```bash
+node harness.js                      # writes preview.html, see the section above
+nix run nixpkgs#chromium -- --headless --disable-gpu --hide-scrollbars \
+  --window-size=680,900 --screenshot=preview.png file://$PWD/preview.html
+```
+
+A bare nix chromium has no fontconfig, so every serif silently falls back to
+mono and you are not seeing your own typography. Point it at a font set first:
+
+```bash
+# fonts.conf aliasing Georgia -> Liberation Serif, Courier New -> Liberation Mono
+FONTCONFIG_FILE=$PWD/fonts.conf nix shell nixpkgs#chromium -c chromium --headless ...
+```
