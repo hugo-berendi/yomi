@@ -18,7 +18,14 @@
   # processes get the right uid and the same N8N_USER_FOLDER. A sibling unit
   # would land on a different dynamic uid and fight over the state directory.
   # Running before the server starts also keeps the cli off a live database.
-  importScript = name: workflow:
+  importScript = name: workflow: let
+    # n8n now separates import from activation: `import:workflow
+    # --activeState=fromJson` errors out ("can only be used ... in queue or
+    # multi-main mode") on this single-instance deployment, even though it is
+    # still documented in --help. Read the JSON's own `active` field at eval
+    # time and drive the replacement `publish:workflow` command instead.
+    parsed = builtins.fromJSON (builtins.readFile workflow.source);
+  in
     pkgs.writeShellScript "n8n-import-${name}" ''
       set -euo pipefail
       stamp="$STATE_DIRECTORY/.yomi-workflow-${name}"
@@ -33,7 +40,12 @@
         then "(enforced -- overwrites edits made in the web ui)"
         else "(seed -- first time only)"
       }"
-      ${n8n} import:workflow --input=${workflow.source} --activeState=fromJson
+      ${n8n} import:workflow --input=${workflow.source}
+      ${
+        if parsed.active or false
+        then "${n8n} publish:workflow --id=${lib.escapeShellArg parsed.id}"
+        else "${n8n} unpublish:workflow --id=${lib.escapeShellArg parsed.id}"
+      }
       touch "$stamp"
     '';
   # }}}
