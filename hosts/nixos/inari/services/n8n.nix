@@ -146,19 +146,8 @@ in {
     };
 
     # {{{ Managed workflows
-    # Both seed only: each references an SMTP credential ("Migadu (no-reply)")
-    # by a placeholder id. The credential itself is already set up once in the
-    # web ui (see hosts/nixos/inari/services/n8n/AGENTS.md); until `just
-    # n8n-export` pulls its real id back into these files, enforce = true
-    # would overwrite that live attachment on every restart.
-    yomi.n8n.workflows.webuntis-radicale = {
-      source = ./n8n/workflows/webuntis-radicale.json;
-      enforce = false;
-    };
-    yomi.n8n.workflows.health-monitor = {
-      source = ./n8n/workflows/health-monitor.json;
-      enforce = false;
-    };
+    yomi.n8n.workflows.webuntis-radicale.source = ./n8n/workflows/webuntis-radicale.json;
+    yomi.n8n.workflows.health-monitor.source = ./n8n/workflows/health-monitor.json;
     # }}}
   };
 }
