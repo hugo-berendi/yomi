@@ -213,6 +213,12 @@ n8n-export:
   dir="hosts/nixos/inari/services/n8n/workflows"
   sudo_bin="/run/wrappers/bin/sudo"
 
+  # n8n's package is only ever wired to the systemd unit
+  # (services.n8n.package), never to environment.systemPackages, so there is
+  # no `n8n` on any PATH to shell out to -- read the exact binary the unit
+  # itself runs instead of guessing at one.
+  n8n_bin=$(systemctl show n8n -p ExecStart --value | grep -oP '(?<=path=)\S+')
+
   # n8n runs DynamicUser, so its uid does not exist outside the unit and
   # `sudo -u` cannot reach the database. Root can, via the real state path
   # behind StateDirectory.
@@ -223,7 +229,7 @@ n8n-export:
   "$sudo_bin" env \
     N8N_USER_FOLDER=/var/lib/private/n8n \
     HOME=/var/lib/private/n8n \
-    n8n export:workflow --all --separate --output="$tmp"
+    "$n8n_bin" export:workflow --all --separate --output="$tmp"
 
   # jq -S so re-exports produce stable diffs, and drop meta.instanceId: it
   # fingerprints this n8n install and does not belong in a mirrored repo.
