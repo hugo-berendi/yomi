@@ -87,15 +87,60 @@ MACHINE = re.compile(r"@tengu\.hugo-berendi\.de$", re.I)
 WORK = re.compile(r"@datagroup\.de$", re.I)
 
 
+# A first run over 115 real messages showed the model cannot separate
+# "newsletters" from "unsolicited", and that is not really its fault: one
+# message does not say whether its recipient subscribed. It filed 23 Substack
+# posts as unsolicited bulk, then split the rest of Substack between personal
+# and newsletters depending on the sender's display name.
+#
+# Sender shape settles what judgement cannot, costs nothing, and cannot drift.
+NEWSLETTER_DOMAIN = re.compile(
+    r"(^|[@.])(substack\.com|beehiiv\.com|ghost\.io|mailchimp\.com)$", re.I
+)
+NEWSLETTER_LOCAL = re.compile(
+    r"^(newsletter|newsletters|news|digest|marketing|angebote|offers?|promo)[.+-]?",
+    re.I,
+)
+MACHINE_DOMAIN = re.compile(r"(^|[@.])(github\.com|gitlab\.com|forgejo\.org)$", re.I)
+
+# This inbox has already passed the provider's spam filter, so a sender who has
+# written repeatedly is somebody the recipient has a relationship with, whatever
+# the tone of any single message. Below this count, trust the model.
+FREQUENT_SENDER = 3
+
+
 def rule_for(address: str) -> tuple[str, int] | None:
     """Deterministic verdicts, which beat the model and cost nothing."""
+    local, _, domain = address.partition("@")
     if MACHINE.search(address):
         return ("notifications", 2)
     if WORK.search(address):
         return ("work", 4)
     if CARRIER.search(address):
         return ("shopping", 2)
+    if MACHINE_DOMAIN.search(domain):
+        return ("notifications", 2)
+    if NEWSLETTER_DOMAIN.search(domain) or NEWSLETTER_LOCAL.match(local):
+        return ("newsletters", 2)
     return None
+
+
+def demote_frequent_senders(verdicts: dict) -> int:
+    """Nobody who has written to you this often is sending unsolicited bulk."""
+    counts = Counter(r["address"] for r in verdicts.values())
+    changed = 0
+    for record in verdicts.values():
+        if (
+            record["bucket"] == "unsolicited"
+            and counts[record["address"]] >= FREQUENT_SENDER
+        ):
+            record["bucket"] = "newsletters"
+            record["importance"] = min(record.get("importance", 3), 3)
+            record["why"] = (
+                f"{counts[record['address']]} messages from this sender, so not unsolicited"
+            )
+            changed += 1
+    return changed
 
 
 # }}}
@@ -515,6 +560,12 @@ def main() -> int:  # noqa: PLR0912, PLR0915
             break
 
     client.logout()
+    demoted = demote_frequent_senders(state["verdicts"])
+    if demoted:
+        print(
+            f"  re-bucketed {demoted} message(s) from frequent senders out of unsolicited",
+            file=sys.stderr,
+        )
     args.state.write_text(json.dumps(state))
     print(render(state))
     return 0
