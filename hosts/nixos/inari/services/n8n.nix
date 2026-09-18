@@ -107,19 +107,44 @@ in {
     # {{{ Assertions
     # Read the JSON at eval time: an import without an id creates a new
     # workflow on every single start rather than updating the existing one.
-    assertions =
-      lib.mapAttrsToList (name: workflow: let
+    assertions = lib.concatLists (lib.mapAttrsToList (name: workflow: let
         parsed = builtins.fromJSON (builtins.readFile workflow.source);
-      in {
-        assertion = parsed ? id && parsed.id != "";
-        message = ''
-          yomi.n8n.workflows.${name} has no `id`, so `n8n import:workflow`
-          would create a duplicate every time the service starts instead of
-          updating the existing workflow. Export it from n8n rather than
-          hand-writing it.
-        '';
-      })
-      cfg.workflows;
+
+        # Code nodes run in n8n's JS task runner, which evaluates them in a
+        # bare `vm` context holding only the helpers it injects -- no
+        # `process`, no `require`, no `global`. `process.env.FOO` therefore
+        # throws ReferenceError at runtime, and because these workflows catch
+        # their own errors it surfaces as a digest cheerfully reporting every
+        # service unreachable rather than as a failure anyone notices.
+        #
+        # It is invisible to `nix flake check`, invisible to a Code node test
+        # harness built on `new Function` (which inherits the host globals),
+        # and it silently broke the webuntis sync for however long. So it is
+        # an eval-time assertion: $env is the supported accessor.
+        usesProcessEnv =
+          lib.any (node: builtins.match ".*process\\.env.*" (node.parameters.jsCode or "") != null)
+          (parsed.nodes or []);
+      in [
+        {
+          assertion = parsed ? id && parsed.id != "";
+          message = ''
+            yomi.n8n.workflows.${name} has no `id`, so `n8n import:workflow`
+            would create a duplicate every time the service starts instead of
+            updating the existing workflow. Export it from n8n rather than
+            hand-writing it.
+          '';
+        }
+        {
+          assertion = !usesProcessEnv;
+          message = ''
+            yomi.n8n.workflows.${name} has a Code node reading `process.env`.
+            n8n runs Code nodes in a task runner whose sandbox has no
+            `process`, so that throws "process is not defined" at runtime.
+            Use `$env.VARIABLE` instead.
+          '';
+        }
+      ])
+      cfg.workflows);
     # }}}
 
     services.n8n = {

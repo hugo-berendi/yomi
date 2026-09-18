@@ -185,7 +185,23 @@ def decode_header(value: str | None) -> str:
 
 def connect(host: str, user: str, password: str, mailbox: str) -> imaplib.IMAP4_SSL:
     client = imaplib.IMAP4_SSL(host)
-    client.login(user, password)
+    try:
+        client.login(user, password)
+    except imaplib.IMAP4.error as error:
+        # Migadu answers a bad password and a non-mailbox address with the
+        # same opaque "Authentication failed", so spell out the fork rather
+        # than leaving a traceback. An alias is the easy one to miss: mail
+        # sent *to* an address does not mean that address can log in.
+        raise SystemExit(
+            f"IMAP login failed for {user} at {host}: {error}\n"
+            "\n"
+            "Two things produce this, and the server will not tell you which:\n"
+            f"  1. {user} is an alias or identity rather than a real mailbox.\n"
+            "     Migadu aliases cannot authenticate -- log in as the mailbox\n"
+            "     that receives the mail, and pass --user for it.\n"
+            "  2. The password is wrong, or the mailbox needs its own\n"
+            "     app password rather than the account password.\n"
+        ) from error
     # readonly: the server itself refuses any flag change on this session.
     status, _ = client.select(mailbox, readonly=True)
     if status != "OK":
@@ -343,6 +359,9 @@ def main() -> int:  # noqa: PLR0912, PLR0915
     parser.add_argument(
         "--estimate-only", action="store_true", help="count the work and exit"
     )
+    parser.add_argument(
+        "--check-login", action="store_true", help="verify credentials and exit"
+    )
     args = parser.parse_args()
 
     user = args.user or input("IMAP user: ").strip()
@@ -365,6 +384,14 @@ def main() -> int:  # noqa: PLR0912, PLR0915
         print(f"resuming: {len(state['verdicts'])} already classified", file=sys.stderr)
 
     client = connect(args.host, user, password, args.mailbox)
+    if args.check_login:
+        status, data = client.status(args.mailbox, "(MESSAGES)")
+        print(
+            f"login OK: {user} at {args.host}, {args.mailbox} -> {data[0].decode() if status == 'OK' else status}"
+        )
+        client.logout()
+        return 0
+
     status, data = client.uid("SEARCH", None, "ALL")
     if status != "OK":
         raise SystemExit("SEARCH failed")

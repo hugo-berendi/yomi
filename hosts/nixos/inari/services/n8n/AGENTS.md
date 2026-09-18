@@ -214,6 +214,40 @@ FONTCONFIG_FILE=$PWD/fonts.conf nix shell nixpkgs#chromium -c chromium --headles
 Glyph coverage is part of this: `U+2713`/`U+2715` rendered as tofu boxes and
 had to become `[+]`/`[X]`.
 
+## Code nodes have no `process`
+
+n8n runs Code nodes in its JS task runner, which evaluates them in a bare
+`vm` context holding only the helpers it injects. There is no `process`, no
+`require`, no `global`. Read environment variables with **`$env.VARIABLE`**.
+
+This deserves its own section because of how it fails. `$env` is fine, but
+`process.env.FOO` throws `ReferenceError: process is not defined` -- and
+these workflows catch their own errors, so the digest arrives looking
+perfectly healthy while reporting every service unreachable. It broke the
+webuntis sync silently for however long, and an earlier version of this
+guide told you to use the broken form.
+
+Two guards exist now, because neither alone was enough:
+
+- An eval-time assertion in `n8n.nix` rejects any workflow whose Code node
+  mentions the old accessor, so `nix flake check` catches it.
+- **Test Code nodes in a real `vm` context, not `new Function`.** A
+  `new Function` harness inherits the host process globals, so the broken
+  form works there and the bug is invisible until production. Mirror the
+  runner instead:
+
+  ```js
+  const vm = require("node:vm");
+  const sandbox = vm.createContext({
+    __isExecutionContext: true,
+    $env: new Proxy({}, { get: (_, k) => process.env[k] }),
+  });
+  ```
+
+  The runner's own construction is in the store and worth re-reading after
+  an upgrade:
+  `packages/@n8n/task-runner/dist/js-task-runner/js-task-runner.js`.
+
 ## Workflows that call a model
 
 `inbox-organizer.json` classifies mail against the small llama.cpp defined in

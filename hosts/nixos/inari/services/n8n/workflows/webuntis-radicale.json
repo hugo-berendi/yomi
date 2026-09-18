@@ -173,7 +173,7 @@
       "id": "c3beb75c-893c-4f1f-91c6-33e644691e6b",
       "name": "Konfiguration",
       "parameters": {
-        "jsCode": "const now = DateTime.now().setZone('Europe/Berlin');\nreturn [{\n  json: {\n    webUntisUrl: process.env.WEBUNTIS_URL,\n    webUntisSchool: process.env.WEBUNTIS_SCHOOL,\n    classId: Number(process.env.WEBUNTIS_CLASS_ID),\n    start: now.startOf('week').minus({ weeks: 1 }).toISODate(),\n    end: now.plus({ weeks: 8 }).endOf('week').toISODate(),\n    radicaleCalendarUrl: process.env.RADICALE_CALENDAR_URL,\n    courses: JSON.parse(process.env.WEBUNTIS_COURSES_JSON),\n    dryRun: false,\n  },\n}];"
+        "jsCode": "const now = DateTime.now().setZone('Europe/Berlin');\nreturn [{\n  json: {\n    webUntisUrl: $env.WEBUNTIS_URL,\n    webUntisSchool: $env.WEBUNTIS_SCHOOL,\n    classId: Number($env.WEBUNTIS_CLASS_ID),\n    start: now.startOf('week').minus({ weeks: 1 }).toISODate(),\n    end: now.plus({ weeks: 8 }).endOf('week').toISODate(),\n    radicaleCalendarUrl: $env.RADICALE_CALENDAR_URL,\n    courses: JSON.parse($env.WEBUNTIS_COURSES_JSON),\n    dryRun: false,\n  },\n}];"
       },
       "position": [
         224,
