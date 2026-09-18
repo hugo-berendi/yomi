@@ -17,6 +17,7 @@
 
     ./services/ollama.nix
     ./services/llama-cpp.nix
+    ./services/llama-cpp-classifier.nix
     ./services/karakeep.nix
     ./services/n8n.nix
     ./services/cloudflared.nix

@@ -84,7 +84,25 @@ in {
   config = {
     yomi.nginx.at.n8n.port = config.yomi.ports.n8n;
 
-    sops.secrets.n8n_webuntis_env.sopsFile = ../secrets.yaml;
+    # {{{ Service API keys for the digest workflows
+    # A template rather than a fourth copy of each key: these same secrets are
+    # already consumed by the *arr services themselves, and duplicating the
+    # values into an n8n-specific blob would mean rotating each one twice.
+    sops.secrets = lib.genAttrs [
+      "n8n_webuntis_env"
+      "sonarr_api_key"
+      "radarr_api_key"
+      "lidarr_api_key"
+      "readarr_api_key"
+    ] (_: {sopsFile = ../secrets.yaml;});
+
+    sops.templates."n8n-services.env".content = ''
+      SONARR_API_KEY=${config.sops.placeholder.sonarr_api_key}
+      RADARR_API_KEY=${config.sops.placeholder.radarr_api_key}
+      LIDARR_API_KEY=${config.sops.placeholder.lidarr_api_key}
+      READARR_API_KEY=${config.sops.placeholder.readarr_api_key}
+    '';
+    # }}}
 
     # {{{ Assertions
     # Read the JSON at eval time: an import without an id creates a new
@@ -118,6 +136,13 @@ in {
         # the unreachable v6 address first and fail with ENETUNREACH. Force
         # IPv4-first resolution for the whole process instead of per-request.
         NODE_OPTIONS = "--dns-result-order=ipv4first";
+
+        # The inbox organizer classifies mail against the small dedicated
+        # llama.cpp, not the 14B on ${toString config.yomi.ports.llama-cpp}:
+        # the 14B answers correctly and takes some forty seconds per mail on
+        # this CPU-only box. Not a secret, so it belongs here rather than in
+        # the EnvironmentFile.
+        CLASSIFIER_URL = "http://127.0.0.1:${toString config.yomi.ports.llama-cpp-classifier}/v1/chat/completions";
       };
     };
 
@@ -136,7 +161,10 @@ in {
       # which is a plain nix string. The webuntis-radicale workflow reads
       # these back out of process.env instead of hardcoding them, since this
       # repository is mirrored to a public forge.
-      serviceConfig.EnvironmentFile = [config.sops.secrets.n8n_webuntis_env.path];
+      serviceConfig.EnvironmentFile = [
+        config.sops.secrets.n8n_webuntis_env.path
+        config.sops.templates."n8n-services.env".path
+      ];
 
       # Leading `-` on purpose: a workflow that fails to import should leave a
       # complaint in the journal, not stop n8n from starting at all. The
@@ -148,6 +176,18 @@ in {
     # {{{ Managed workflows
     yomi.n8n.workflows.webuntis-radicale.source = ./n8n/workflows/webuntis-radicale.json;
     yomi.n8n.workflows.health-monitor.source = ./n8n/workflows/health-monitor.json;
+    yomi.n8n.workflows.backup-storage.source = ./n8n/workflows/backup-storage.json;
+    yomi.n8n.workflows.media-arrivals.source = ./n8n/workflows/media-arrivals.json;
+    yomi.n8n.workflows.forgejo-ci.source = ./n8n/workflows/forgejo-ci.json;
+
+    # The IMAP credential id in this JSON is a placeholder, so the repository
+    # must not win over the live copy yet: enforce = false seeds it once and
+    # leaves the web ui in control. Flip to true after a human attaches the
+    # real credential and `just n8n-export` brings its id back here.
+    yomi.n8n.workflows.inbox-organizer = {
+      source = ./n8n/workflows/inbox-organizer.json;
+      enforce = false;
+    };
     # }}}
   };
 }

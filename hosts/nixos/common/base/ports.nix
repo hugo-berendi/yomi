@@ -41,6 +41,7 @@
     windrose-direct = lib.mkDefault 8489;
     windrose-rcon = lib.mkDefault 8490;
     llama-cpp = lib.mkDefault 8491;
+    llama-cpp-classifier = lib.mkDefault 8496;
     changedetection = lib.mkDefault 8492;
     paperless = lib.mkDefault 8445;
     paperless-ai = lib.mkDefault 8446;

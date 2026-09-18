@@ -1,0 +1,146 @@
+{
+  "active": false,
+  "connections": {
+    "Daily round": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Draft the sorting report",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Draft the sorting report": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Send the post by email",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "New mail (IMAP)": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Classify the message",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "id": "KlYv3Z0S07PfaSC1",
+  "name": "Inari Inbox Organizer · The Post",
+  "nodeGroups": [],
+  "nodes": [
+    {
+      "credentials": {
+        "imap": {
+          "id": "REPLACE_WITH_REAL_IMAP_CREDENTIAL_ID",
+          "name": "Mailbox (IMAP)"
+        }
+      },
+      "id": "5faa5061-ac59-465a-8b27-70e4d9912a90",
+      "name": "New mail (IMAP)",
+      "parameters": {
+        "downloadAttachments": false,
+        "format": "simple",
+        "mailbox": "INBOX",
+        "options": {
+          "trackLastMessageId": true
+        },
+        "postProcessAction": "nothing"
+      },
+      "position": [
+        -16,
+        320
+      ],
+      "type": "n8n-nodes-base.emailReadImap",
+      "typeVersion": 2.2
+    },
+    {
+      "id": "eab7d31a-0c0c-4456-bdb8-ee227b9283f5",
+      "name": "Classify the message",
+      "parameters": {
+        "jsCode": "// {{{ Intent\n// Runs once per arriving message, from the IMAP trigger. It does not move,\n// delete, flag or mark anything -- the trigger is configured with\n// postProcessAction=nothing precisely so that reading the inbox leaves no\n// trace in it. All this node does is form an opinion and remember it; the\n// schedule path of this same workflow mails the opinions out once a day.\n//\n// That is deliberate for the first iteration: no folders exist yet to sort\n// into, and n8n's IMAP node is a trigger with no move or create-folder\n// operation at all. Sorting has to be a separate, explicit decision once the\n// taxonomy below has survived a week of real mail.\n// }}}\n\n// {{{ Taxonomy\n// Proposed, not settled. The digest reports these as pigeonholes so the shape\n// can be argued with before anything is built on it.\nconst BUCKETS = {\n  personal: 'a person wrote to you',\n  work: 'employer, colleagues, work systems',\n  finance: 'banks, invoices, tax, payments',\n  subscriptions: 'recurring paid services: renewals, price changes, receipts',\n  newsletters: 'editorial bulk mail you opted into',\n  notifications: 'automated output of a machine you own',\n  shopping: 'orders, dispatch, delivery, returns',\n  travel: 'bookings, tickets, check-in',\n  unsolicited: 'bulk mail you did not ask for',\n};\n\n// Cheap deterministic rules run first, and win. Anything matched here never\n// reaches the model: it is faster, it cannot drift between runs, and it keeps\n// the machine's own mail out of the sample the model is judged on.\nconst RULES = [\n  {bucket: 'notifications', importance: 2, test: (m) => /@tengu\\.hugo-berendi\\.de$/i.test(m.fromAddress)},\n  {\n    bucket: 'notifications',\n    importance: 2,\n    test: (m) => /^(no-reply|noreply|donotreply)@/i.test(m.fromAddress) && /inari|gatus|forgejo|changedetection/i.test(m.subject),\n  },\n  {bucket: 'work', importance: 4, test: (m) => /@datagroup\\.de$/i.test(m.fromAddress)},\n\n  // Measured, not guessed: both candidate models filed \"Ihre Sendung wurde\n  // zugestellt\" from DHL under travel, because a parcel and a journey share a\n  // noun in German. Carriers are a closed, knowable list, so this belongs in a\n  // rule rather than in a longer prompt.\n  {\n    bucket: 'shopping',\n    importance: 2,\n    test: (m) => /(^|[@.])(dhl|hermes|dpd|ups|gls|deutschepost|amazon)\\.[a-z.]+$/i.test(m.fromAddress),\n  },\n];\n\n// The models are decent at the bucket and erratic at the number. Both rated an\n// obvious crypto scam importance 5 -- \"urgent\" is the register such mail is\n// written in, and it fools a small model. Where the bucket already settles how\n// much attention is warranted, the bucket wins.\nconst IMPORTANCE_CLAMP = {\n  unsolicited: 1,\n  newsletters: 3,\n  notifications: 3,\n};\n// }}}\n\n// {{{ Input\nconst item = $input.first().json;\n\nconst headerFrom = String(item.from ?? item.From ?? '');\nconst fromAddress = (/<([^>]+)>/.exec(headerFrom)?.[1] ?? headerFrom).trim().toLowerCase();\nconst fromName = headerFrom.replace(/<[^>]*>/, '').replace(/\"/g, '').trim() || fromAddress;\nconst subject = String(item.subject ?? item.Subject ?? '(no subject)').trim();\n\n// The model gets a short excerpt, not the whole body: a marketing mail can be\n// tens of kilobytes of table markup, and on a CPU-only server every token of\n// prompt is paid for in seconds. 400 characters is also what the service's\n// --ctx-size 4096 was sized around.\nconst body = String(item.textPlain ?? item.text ?? '')\n  .replace(/https?:\\/\\/\\S+/g, '[link]')\n  .replace(/\\s+/g, ' ')\n  .trim();\nconst snippet = body.slice(0, 400);\n\nconst message = {fromAddress, fromName, subject, snippet, date: item.date ?? new Date().toISOString()};\n// }}}\n\n// {{{ Classification\n// Defaults point at the dedicated 3B classifier, not the 14B next door: the\n// 14B answers correctly and takes ~40 s per mail on this CPU-only box.\nconst CLASSIFIER_URL = process.env.CLASSIFIER_URL ?? 'http://127.0.0.1:8496/v1/chat/completions';\nconst CLASSIFIER_MODEL = process.env.CLASSIFIER_MODEL ?? 'local';\nconst CLASSIFIER_TIMEOUT_MS = Number(process.env.CLASSIFIER_TIMEOUT_MS ?? 120000);\n\nconst prompt = `You sort one email into exactly one bucket and rate how much it needs a human.\n\nBuckets:\n${Object.entries(BUCKETS)\n  .map(([name, meaning]) => `- ${name}: ${meaning}`)\n  .join('\\n')}\n\nimportance: 5 = needs an answer or a decision soon, 4 = should be read today,\n3 = worth reading, 2 = routine, glance at it, 1 = no action ever.\n\nAnswer with one JSON object and nothing else:\n{\"bucket\":\"<one bucket name>\",\"importance\":<1-5>,\"why\":\"<at most 12 words>\"}\n\nFrom: ${fromName} <${fromAddress}>\nSubject: ${subject}\nBody: ${snippet || '(empty)'}`;\n\nconst rule = RULES.find((r) => r.test(message));\n\nconst askModel = async () => {\n  const response = await this.helpers.httpRequest({\n    method: 'POST',\n    url: CLASSIFIER_URL,\n    body: {model: CLASSIFIER_MODEL, messages: [{role: 'user', content: prompt}], temperature: 0, max_tokens: 90},\n    json: true,\n    timeout: CLASSIFIER_TIMEOUT_MS,\n  });\n\n  const raw = response?.choices?.[0]?.message?.content ?? '';\n  // Small instruct models wrap JSON in prose or a code fence often enough that\n  // JSON.parse on the whole reply is not worth attempting first.\n  const match = /\\{[\\s\\S]*\\}/.exec(raw);\n  if (!match) throw new Error(`no JSON in reply: ${raw.slice(0, 120)}`);\n\n  const parsed = JSON.parse(match[0]);\n  const bucket = String(parsed.bucket ?? '').toLowerCase();\n  // A hallucinated bucket is worse than an honest unknown, because it would\n  // quietly create a pigeonhole nobody designed. The 1.7B answered \"news\".\n  if (!Object.hasOwn(BUCKETS, bucket)) throw new Error(`unknown bucket: ${bucket}`);\n\n  const rounded = Math.round(Number(parsed.importance));\n  const bounded = Number.isFinite(rounded) ? Math.min(5, Math.max(1, rounded)) : 3;\n  const ceiling = IMPORTANCE_CLAMP[bucket];\n\n  return {\n    bucket,\n    importance: ceiling ? Math.min(bounded, ceiling) : bounded,\n    why: String(parsed.why ?? '').slice(0, 90),\n    by: 'model',\n  };\n};\n\nlet verdict;\nif (rule) {\n  verdict = {bucket: rule.bucket, importance: rule.importance, why: 'matched a deterministic rule', by: 'rule'};\n} else {\n  try {\n    verdict = await askModel();\n  } catch (error) {\n    // The classifier being down must never cost the record of the mail, or the\n    // digest would silently under-report the inbox.\n    verdict = {bucket: 'unsorted', importance: 3, why: String(error?.message ?? error).slice(0, 90), by: 'failed'};\n  }\n}\n// }}}\n\n// {{{ Remember\nconst state = $getWorkflowStaticData('global');\nstate.pending ??= [];\nstate.pending.push({...message, ...verdict, seenAt: new Date().toISOString()});\n\n// Static data is persisted with the workflow, so it cannot be allowed to grow\n// without bound. A digest covers a day; a few hundred is generous headroom.\nconst CAP = 400;\nif (state.pending.length > CAP) state.pending = state.pending.slice(-CAP);\n\nreturn [{json: {bucket: verdict.bucket, importance: verdict.importance, by: verdict.by, subject}}];\n// }}}"
+      },
+      "position": [
+        240,
+        320
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "c9606781-72f4-4a43-b657-583f83e3b428",
+      "name": "Daily round",
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "expression": "0 20 * * *",
+              "field": "cronExpression"
+            }
+          ]
+        }
+      },
+      "position": [
+        -16,
+        600
+      ],
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2
+    },
+    {
+      "id": "07b65a36-3ce0-4cfe-9b1b-d1756a2e8932",
+      "name": "Draft the sorting report",
+      "parameters": {
+        "jsCode": "// {{{ Intent\n// The schedule half of the organizer. Reads the opinions the classifier left\n// in static data, mails them, and clears what it reported. Nothing about this\n// workflow touches the mailbox: it is a proposal about how mail could be\n// sorted, sent so the taxonomy can be argued with before any rule acts on it.\n// }}}\n\nconst state = $getWorkflowStaticData('global');\nconst pending = Array.isArray(state.pending) ? state.pending : [];\n\nconst BUCKET_ORDER = [\n  'personal',\n  'work',\n  'finance',\n  'subscriptions',\n  'shopping',\n  'travel',\n  'newsletters',\n  'notifications',\n  'unsolicited',\n  'unsorted',\n];\n\n// Folder names are proposed here rather than in the classifier because this is\n// the half a human reads: the mapping from a model's label to a real IMAP\n// folder is the decision still to be made.\nconst FOLDER = {\n  personal: 'Personal',\n  work: 'Work',\n  finance: 'Finance',\n  subscriptions: 'Abos',\n  shopping: 'Shopping',\n  travel: 'Travel',\n  newsletters: 'Newsletters',\n  notifications: 'Automated',\n  unsolicited: 'Junk',\n  unsorted: '(left in place)',\n};\n\n// {{{ Roll up\nconst byBucket = new Map(BUCKET_ORDER.map((b) => [b, []]));\nfor (const mail of pending) {\n  if (!byBucket.has(mail.bucket)) byBucket.set(mail.bucket, []);\n  byBucket.get(mail.bucket).push(mail);\n}\n\nconst populated = [...byBucket.entries()].filter(([, mails]) => mails.length > 0);\nconst priority = pending.filter((m) => m.importance >= 4).sort((a, b) => b.importance - a.importance);\nconst routine = pending.filter((m) => m.importance < 4);\nconst modelFailures = pending.filter((m) => m.by === 'failed');\nconst byModel = pending.filter((m) => m.by === 'model').length;\nconst byRule = pending.filter((m) => m.by === 'rule').length;\n// }}}\n\n// {{{ Mail-room tokens\n// Fourth visual language here: kraft paper and rubber stamps, because this\n// mail is a sorting office's proposal about your post. Courier throughout --\n// a franking machine has one typeface -- with Verdana only where a subject\n// line has to stay readable at small sizes.\nconst post = {\n  outside: '#3b3228',\n  kraft: '#d9c7a7',\n  kraftDeep: '#c9b48e',\n  band: '#8f7a55',\n  ink: '#2a2119',\n  inkFaint: '#6f6252',\n  stampRed: '#a8322c',\n  stampBlue: '#33556e',\n  stampGreen: '#4a6b3f',\n};\nconst frank = \"'Courier New',Courier,monospace\";\nconst legible = \"Verdana,Geneva,'DejaVu Sans',sans-serif\";\n\nconst priorityStamp = (n) =>\n  n >= 5\n    ? { label: 'URGENT', colour: post.stampRed }\n    : n === 4\n      ? { label: 'FIRST CLASS', colour: post.stampRed }\n      : n === 3\n        ? { label: 'SECOND', colour: post.stampBlue }\n        : { label: 'BULK', colour: post.inkFaint };\n\nconst short = (s, n) => (String(s).length > n ? `${String(s).slice(0, n - 1)}…` : String(s));\nconst today = new Date().toLocaleDateString('en-GB', { timeZone: 'Europe/Berlin', weekday: 'long', day: 'numeric', month: 'long' });\nconst postmark = new Date().toLocaleDateString('en-GB', { timeZone: 'Europe/Berlin', day: '2-digit', month: '2-digit', year: '2-digit' });\n// }}}\n\n// {{{ Render\nconst band = (text, right) => `\n<tr>\n  <td colspan=\"2\" style=\"padding:0;\">\n    <table role=\"presentation\" width=\"100%\" style=\"border-collapse:collapse;background:${post.band};\">\n      <tr>\n        <td style=\"padding:7px 30px;font-family:${frank};font-size:10px;letter-spacing:0.24em;color:${post.kraft};text-transform:uppercase;white-space:nowrap;\">${text}</td>\n        <td style=\"padding:7px 30px;font-family:${frank};font-size:9px;letter-spacing:0.12em;color:${post.kraft};text-align:right;white-space:nowrap;opacity:0.85;\">${right ?? ''}</td>\n      </tr>\n    </table>\n  </td>\n</tr>`;\n\nconst letterRow = (mail, withStamp) => {\n  const s = priorityStamp(mail.importance);\n  return `\n<tr>\n  <td style=\"padding:10px 12px 10px 30px;vertical-align:top;\">\n    <div style=\"font-family:${legible};font-size:13px;color:${post.ink};line-height:1.35;\">${short(mail.subject, 62)}</div>\n    <div style=\"font-family:${frank};font-size:10px;color:${post.inkFaint};margin-top:4px;\">\n      ${short(mail.fromName, 30)} &nbsp;&middot;&nbsp; ${short(mail.fromAddress, 34)}\n    </div>\n    ${mail.why ? `<div style=\"font-family:${frank};font-size:10px;color:${post.inkFaint};margin-top:3px;font-style:italic;\">&ldquo;${mail.why}&rdquo;</div>` : ''}\n  </td>\n  <td style=\"padding:10px 30px 10px 0;text-align:right;vertical-align:top;white-space:nowrap;\">\n    ${\n      withStamp\n        ? `<div style=\"display:inline-block;border:2px solid ${s.colour};padding:3px 7px;\">\n             <span style=\"font-family:${frank};font-size:9px;font-weight:bold;letter-spacing:0.14em;color:${s.colour};\">${s.label}</span>\n           </div>`\n        : ''\n    }\n    <div style=\"font-family:${frank};font-size:9px;letter-spacing:0.12em;color:${post.inkFaint};margin-top:5px;\">&rarr; ${FOLDER[mail.bucket] ?? mail.bucket}</div>\n  </td>\n</tr>\n<tr><td colspan=\"2\" style=\"padding:0 30px;\"><div style=\"border-top:1px dotted ${post.kraftDeep};\"></div></td></tr>`;\n};\n\nconst pigeonhole = ([bucket, mails]) => `\n<tr>\n  <td style=\"padding:7px 12px 7px 30px;font-family:${frank};font-size:11px;color:${post.ink};letter-spacing:0.08em;\">\n    ${FOLDER[bucket] ?? bucket}\n    <span style=\"color:${post.inkFaint};\"> / ${bucket}</span>\n  </td>\n  <td style=\"padding:7px 30px 7px 0;text-align:right;font-family:${frank};font-size:11px;color:${post.ink};white-space:nowrap;\">\n    ${'■'.repeat(Math.min(12, mails.length))}<span style=\"color:${post.inkFaint};\"> ${mails.length}</span>\n  </td>\n</tr>`;\n\nconst none = (text) => `\n<tr><td colspan=\"2\" style=\"padding:12px 30px;font-family:${legible};font-size:13px;font-style:italic;color:${post.inkFaint};\">${text}</td></tr>`;\n\n// Perforation drawn as a row of glyphs rather than a border, so the stub reads\n// as a torn edge in clients that drop background images.\nconst perforation = `\n<tr><td colspan=\"2\" style=\"padding:0;font-family:${frank};font-size:11px;line-height:11px;color:${post.kraftDeep};letter-spacing:3px;background:${post.kraft};\">\n  ${'●'.repeat(58)}\n</td></tr>`;\n\nconst html = `<!DOCTYPE html>\n<html>\n  <body style=\"margin:0;padding:32px 14px;background:${post.outside};\">\n    <table role=\"presentation\" width=\"100%\" style=\"max-width:600px;margin:0 auto;border-collapse:collapse;\">\n      <tr>\n        <td style=\"background:${post.kraft};\">\n          <table role=\"presentation\" width=\"100%\" style=\"border-collapse:collapse;\">\n\n            <!-- franking head -->\n            <tr>\n              <td colspan=\"2\" style=\"padding:26px 30px 18px 30px;\">\n                <table role=\"presentation\" width=\"100%\" style=\"border-collapse:collapse;\">\n                  <tr>\n                    <td style=\"vertical-align:top;\">\n                      <div style=\"font-family:${frank};font-size:9px;letter-spacing:0.3em;color:${post.inkFaint};text-transform:uppercase;\">inari sorting office</div>\n                      <div style=\"font-family:${frank};font-size:25px;font-weight:bold;letter-spacing:0.04em;color:${post.ink};margin-top:9px;\">THE POST</div>\n                      <div style=\"font-family:${legible};font-size:12px;color:${post.inkFaint};margin-top:7px;\">${today} &middot; ${pending.length} item${pending.length === 1 ? '' : 's'} examined</div>\n                    </td>\n                    <td style=\"vertical-align:top;text-align:right;\">\n                      <div style=\"display:inline-block;border:2px solid ${post.stampGreen};padding:8px 10px;\">\n                        <div style=\"font-family:${frank};font-size:10px;font-weight:bold;letter-spacing:0.12em;color:${post.stampGreen};\">NOTHING MOVED</div>\n                        <div style=\"font-family:${frank};font-size:8px;letter-spacing:0.16em;color:${post.stampGreen};margin-top:3px;\">${postmark}</div>\n                      </div>\n                    </td>\n                  </tr>\n                </table>\n              </td>\n            </tr>\n\n            ${band('proposed pigeonholes', 'folders that do not exist yet')}\n            ${populated.length ? populated.map(pigeonhole).join('\\n') : none('No mail arrived since the last round.')}\n\n            ${band('first class', `${priority.length} need${priority.length === 1 ? 's' : ''} a human`)}\n            ${priority.length ? priority.map((m) => letterRow(m, true)).join('\\n') : none('Nothing rated above routine.')}\n\n            ${band('second class and bulk', `${routine.length} item${routine.length === 1 ? '' : 's'}`)}\n            ${routine.length ? routine.slice(0, 18).map((m) => letterRow(m, false)).join('\\n') : none('Nothing routine either.')}\n            ${routine.length > 18 ? none(`… and ${routine.length - 18} further items not listed.`) : ''}\n\n            ${modelFailures.length ? band('could not be read', `${modelFailures.length} classifier failure${modelFailures.length === 1 ? '' : 's'}`) : ''}\n            ${modelFailures.length ? modelFailures.map((m) => letterRow(m, false)).join('\\n') : ''}\n\n            ${perforation}\n\n            <!-- stub -->\n            <tr>\n              <td colspan=\"2\" style=\"padding:16px 30px 24px 30px;background:${post.kraftDeep};\">\n                <table role=\"presentation\" width=\"100%\" style=\"border-collapse:collapse;\">\n                  <tr>\n                    <td style=\"font-family:${frank};font-size:9px;letter-spacing:0.14em;color:${post.ink};\">\n                      sorted by rule: ${byRule} &nbsp;&middot;&nbsp; by model: ${byModel} &nbsp;&middot;&nbsp; failed: ${modelFailures.length}\n                    </td>\n                    <td style=\"font-family:${frank};font-size:9px;letter-spacing:0.14em;color:${post.ink};text-align:right;\">no. ${postmark.replace(/\\//g, '')}</td>\n                  </tr>\n                  <tr>\n                    <td colspan=\"2\" style=\"padding-top:10px;font-family:${legible};font-size:11px;color:${post.ink};line-height:1.5;\">\n                      Nothing in your mailbox was moved, flagged or marked read. Reply with the\n                      pigeonholes you actually want and sorting can be built on this.\n                    </td>\n                  </tr>\n                </table>\n              </td>\n            </tr>\n\n          </table>\n        </td>\n      </tr>\n    </table>\n  </body>\n</html>`;\n// }}}\n\n// Only clear what this digest reported: anything the classifier appends while\n// this node runs has to survive to the next round.\nconst reported = pending.length;\nstate.pending = (Array.isArray(state.pending) ? state.pending : []).slice(reported);\n\nconst subject = pending.length\n  ? `The post · ${pending.length} examined, ${priority.length} first class`\n  : 'The post · nothing arrived';\n\nreturn [{ json: { subject, html, reported } }];"
+      },
+      "position": [
+        240,
+        600
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "credentials": {
+        "smtp": {
+          "id": "njtrBIl1Zg5hBBqU",
+          "name": "Migadu (no-reply)"
+        }
+      },
+      "id": "67fa1fc6-fa46-4390-b902-daa4aa5da7da",
+      "name": "Send the post by email",
+      "parameters": {
+        "emailFormat": "html",
+        "fromEmail": "no-reply@tengu.hugo-berendi.de",
+        "html": "={{ $json.html }}",
+        "options": {},
+        "subject": "={{ $json.subject }}",
+        "toEmail": "status@hugo-berendi.de"
+      },
+      "position": [
+        500,
+        600
+      ],
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1
+    }
+  ],
+  "pinData": {},
+  "settings": {
+    "availableInMCP": false,
+    "binaryMode": "separate",
+    "executionOrder": "v1"
+  },
+  "tags": [],
+  "versionId": "1d1ec248-11c0-496c-9052-475405311a1b"
+}
