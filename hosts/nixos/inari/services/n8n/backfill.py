@@ -35,6 +35,7 @@ import email.utils
 import getpass
 import imaplib
 import json
+import smtplib
 import os
 import re
 import sys
@@ -335,6 +336,9 @@ def main() -> int:  # noqa: PLR0912, PLR0915
     parser.add_argument("--user", default=os.environ.get("IMAP_USER"))
     parser.add_argument("--mailbox", default="INBOX")
     parser.add_argument(
+        "--smtp-host", default=os.environ.get("SMTP_HOST", "smtp.migadu.com")
+    )
+    parser.add_argument(
         "--classifier",
         default=os.environ.get(
             "CLASSIFIER_URL", "http://127.0.0.1:8496/v1/chat/completions"
@@ -383,15 +387,51 @@ def main() -> int:  # noqa: PLR0912, PLR0915
         state.update(json.loads(args.state.read_text()))
         print(f"resuming: {len(state['verdicts'])} already classified", file=sys.stderr)
 
-    client = connect(args.host, user, password, args.mailbox)
     if args.check_login:
-        status, data = client.status(args.mailbox, "(MESSAGES)")
-        print(
-            f"login OK: {user} at {args.host}, {args.mailbox} -> {data[0].decode() if status == 'OK' else status}"
-        )
-        client.logout()
+        # IMAP and SMTP share one credential at Migadu, so testing both in one
+        # run separates "this password is wrong" from "this password is right
+        # but IMAP specifically is refused for this mailbox". The server says
+        # "Authentication failed" either way, so asking it twice is the only
+        # way to tell.
+        imap_result = "?"
+        try:
+            probe = imaplib.IMAP4_SSL(args.host)
+            probe.login(user, password)
+            status, data = probe.status(args.mailbox, "(MESSAGES)")
+            imap_result = f"OK, {args.mailbox} -> {data[0].decode() if status == 'OK' else status}"
+            probe.logout()
+        except imaplib.IMAP4.error as error:
+            imap_result = f"REFUSED ({error})"
+
+        smtp_result = "?"
+        try:
+            with smtplib.SMTP_SSL(args.smtp_host, 465, timeout=20) as smtp:
+                smtp.login(user, password)
+            smtp_result = "OK"
+        except (smtplib.SMTPException, OSError) as error:
+            smtp_result = f"REFUSED ({error})"
+
+        print(f"  IMAP  {args.host:<22} {imap_result}")
+        print(f"  SMTP  {args.smtp_host:<22} {smtp_result}")
+        print()
+        if imap_result.startswith("OK"):
+            print("Credentials are good.")
+        elif smtp_result == "OK":
+            print(
+                "The password is correct -- SMTP accepted it -- but IMAP refused this\n"
+                "mailbox. That is a per-mailbox setting at the provider, not something\n"
+                "this tool or n8n can work around: enable IMAP access for the mailbox."
+            )
+        else:
+            print(
+                "Both protocols refused the same password, so it is the password\n"
+                "itself rather than an IMAP restriction. Migadu keeps a password per\n"
+                "mailbox, separate from the admin account you sign into the web\n"
+                "console with; resetting the mailbox password is usually the fix."
+            )
         return 0
 
+    client = connect(args.host, user, password, args.mailbox)
     status, data = client.uid("SEARCH", None, "ALL")
     if status != "OK":
         raise SystemExit("SEARCH failed")
