@@ -179,15 +179,7 @@ in {
     yomi.n8n.workflows.backup-storage.source = ./n8n/workflows/backup-storage.json;
     yomi.n8n.workflows.media-arrivals.source = ./n8n/workflows/media-arrivals.json;
     yomi.n8n.workflows.forgejo-ci.source = ./n8n/workflows/forgejo-ci.json;
-
-    # The IMAP credential id in this JSON is a placeholder, so the repository
-    # must not win over the live copy yet: enforce = false seeds it once and
-    # leaves the web ui in control. Flip to true after a human attaches the
-    # real credential and `just n8n-export` brings its id back here.
-    yomi.n8n.workflows.inbox-organizer = {
-      source = ./n8n/workflows/inbox-organizer.json;
-      enforce = false;
-    };
+    yomi.n8n.workflows.inbox-organizer.source = ./n8n/workflows/inbox-organizer.json;
     # }}}
   };
 }

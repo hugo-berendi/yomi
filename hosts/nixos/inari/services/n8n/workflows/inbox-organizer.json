@@ -1,5 +1,5 @@
 {
-  "active": false,
+  "active": true,
   "connections": {
     "Daily round": {
       "main": [
@@ -42,8 +42,8 @@
     {
       "credentials": {
         "imap": {
-          "id": "REPLACE_WITH_REAL_IMAP_CREDENTIAL_ID",
-          "name": "Mailbox (IMAP)"
+          "id": "FAPaTIrwDwQf5Vy4",
+          "name": "Migadu (Personal) IMAP"
         }
       },
       "id": "5faa5061-ac59-465a-8b27-70e4d9912a90",
