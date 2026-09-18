@@ -72,6 +72,8 @@ in {
   config = {
     yomi.nginx.at.n8n.port = config.yomi.ports.n8n;
 
+    sops.secrets.n8n_webuntis_env.sopsFile = ../secrets.yaml;
+
     # {{{ Assertions
     # Read the JSON at eval time: an import without an id creates a new
     # workflow on every single start rather than updating the existing one.
@@ -99,6 +101,11 @@ in {
         N8N_EDITOR_BASE_URL = config.yomi.nginx.at.n8n.url;
         N8N_TEMPLATES_ENABLED = toString true;
         N8N_AI_ENABLED = toString true;
+        # inari has no IPv6 default route, but Node 17+ returns DNS results in
+        # raw order (AAAA before A for migadu.com), so nodemailer/undici pick
+        # the unreachable v6 address first and fail with ENETUNREACH. Force
+        # IPv4-first resolution for the whole process instead of per-request.
+        NODE_OPTIONS = "--dns-result-order=ipv4first";
       };
     };
 
@@ -110,6 +117,14 @@ in {
         gcc # for native node modules
         busybox
       ];
+
+      # EnvironmentFile is read by systemd itself before the DynamicUser/
+      # hardening sandbox applies, so the secret never touches the nix store or
+      # a world-readable unit file -- unlike services.n8n.environment above,
+      # which is a plain nix string. The webuntis-radicale workflow reads
+      # these back out of process.env instead of hardcoding them, since this
+      # repository is mirrored to a public forge.
+      serviceConfig.EnvironmentFile = [config.sops.secrets.n8n_webuntis_env.path];
 
       # Leading `-` on purpose: a workflow that fails to import should leave a
       # complaint in the journal, not stop n8n from starting at all. The
