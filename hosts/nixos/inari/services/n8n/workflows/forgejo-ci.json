@@ -1,0 +1,119 @@
+{
+  "active": true,
+  "connections": {
+    "Draft the integration sheet": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Send sheet by email",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Manual test": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Draft the integration sheet",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Schedule": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Draft the integration sheet",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "id": "JpvoCx4lnAsJygHB",
+  "name": "Inari Forgejo CI · Integration Sheet",
+  "nodeGroups": [],
+  "nodes": [
+    {
+      "id": "41a7cdf4-6e06-4902-bc91-c1e548ebc89a",
+      "name": "Manual test",
+      "parameters": {},
+      "position": [
+        -16,
+        400
+      ],
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1
+    },
+    {
+      "id": "38a6b1b1-cf29-4dd0-ac6e-11c9476963f8",
+      "name": "Schedule",
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "expression": "0 8 * * 1",
+              "field": "cronExpression"
+            }
+          ]
+        }
+      },
+      "position": [
+        -16,
+        560
+      ],
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2
+    },
+    {
+      "id": "86bae7a9-3c21-44e9-9555-4aaf0855ad12",
+      "name": "Draft the integration sheet",
+      "parameters": {
+        "jsCode": "// {{{ Source\n// Forgejo's API answers all of this unauthenticated, because the repository is\n// public -- so this workflow needs no credential at all. Do not \"improve\" it\n// by adding a token: a token in n8n's store is one more thing to rotate for\n// data that is already world-readable.\nconst FORGE = 'http://127.0.0.1:8409/api/v1';\nconst REPO = 'hugo-berendi/yomi';\nconst WEB = 'https://git.hugo-berendi.de';\n\nconst get = async (path, qs = {}) =>\n  this.helpers.httpRequest({ method: 'GET', url: `${FORGE}/${path}`, qs, json: true, timeout: 20000 });\n\n// This Forgejo (15.0.8) returns null for started_at/completed_at on both\n// /actions/runs and /actions/tasks, so runs cannot be filtered by date at all.\n// Ids are monotonic, so the report instead carries a cursor of the highest run\n// it has already reported and covers everything above it. That also makes a\n// missed week roll into the next report rather than vanishing.\n// Forgejo caps a commits page well below what this repository produces: asking\n// for 100 still returns 50, and 50 commits here can be two days rather than\n// seven. So the commit section reports a floor (\"50+\") whenever the page came\n// back full with its oldest entry still inside the window, instead of printing\n// a page size as if it were a week's total.\nconst COMMIT_PAGE = 50;\n\nconst state = $getWorkflowStaticData('global');\nconst previousCursor = Number(state.lastReportedRunId ?? 0);\n\nconst [tasks, pulls, commits] = await Promise.all([\n  get(`repos/${REPO}/actions/tasks`, { limit: 100 }),\n  get(`repos/${REPO}/pulls`, { state: 'open', limit: 30 }),\n  get(`repos/${REPO}/commits`, { limit: COMMIT_PAGE, stat: false, verification: false, files: false }),\n]);\n\nconst allRuns = (tasks.workflow_runs ?? []).map((run) => ({\n  id: run.id,\n  number: run.run_number,\n  workflow: run.workflow_id ?? run.name ?? 'unknown.yml',\n  title: run.display_title ?? run.name ?? '',\n  branch: run.head_branch ?? '',\n  sha: (run.head_sha ?? '').slice(0, 8),\n  event: run.event ?? '',\n  status: run.status ?? 'unknown',\n  url: run.url ?? `${WEB}/${REPO}/actions`,\n}));\n\n// First ever run: report the most recent handful rather than 220 rows.\nconst fresh = previousCursor === 0 ? allRuns.slice(0, 12) : allRuns.filter((r) => r.id > previousCursor);\nconst highest = allRuns.reduce((max, r) => Math.max(max, r.id), previousCursor);\n// }}}\n\n// {{{ Evaluation\nconst FAILED = new Set(['failure', 'cancelled', 'error']);\nconst RUNNING = new Set(['running', 'waiting', 'blocked', 'queued']);\n\nconst failures = fresh.filter((r) => FAILED.has(r.status));\nconst running = fresh.filter((r) => RUNNING.has(r.status));\nconst succeeded = fresh.filter((r) => !FAILED.has(r.status) && !RUNNING.has(r.status));\n\n// A workflow that failed its most recent run is still broken now; one that\n// failed and then passed has already been fixed and is only history. The\n// distinction is the entire point of the report, so compute it per workflow\n// over the full task list rather than over the reporting window.\nconst latestByWorkflow = new Map();\nfor (const run of allRuns) {\n  if (!latestByWorkflow.has(run.workflow)) latestByWorkflow.set(run.workflow, run);\n}\nconst brokenNow = [...latestByWorkflow.values()].filter((r) => FAILED.has(r.status));\n\nconst since = new Date(Date.now() - 7 * 86400e3);\nconst landed = (commits ?? [])\n  .map((c) => ({\n    sha: (c.sha ?? '').slice(0, 8),\n    message: String(c.commit?.message ?? '').split('\\n')[0],\n    author: c.commit?.author?.name ?? c.author?.login ?? 'unknown',\n    date: new Date(c.commit?.author?.date ?? c.created ?? Date.now()),\n  }))\n  .filter((c) => c.date >= since);\n\nconst commitsTruncated = (commits ?? []).length >= COMMIT_PAGE && landed.length === (commits ?? []).length;\nconst commitCount = commitsTruncated ? `${landed.length}+` : String(landed.length);\n\nconst openPulls = (pulls ?? []).map((p) => ({\n  number: p.number,\n  title: p.title,\n  author: p.user?.login ?? 'unknown',\n  age: Math.floor((Date.now() - new Date(p.created_at).getTime()) / 86400e3),\n}));\n\nconst verdict = brokenNow.length ? 'nonconforming' : failures.length ? 'reviewed' : 'approved';\n\nstate.lastReportedRunId = highest;\n// }}}\n\n// {{{ Blueprint tokens\n// Third visual language in this instance, and deliberately unlike the other\n// two: this is a drawing of the repository's state, so it is drafted like one.\n// Prussian ground, print-white linework, red pencil for corrections. Trebuchet\n// and Courier New are the characterful faces that are genuinely everywhere.\nconst sheet = {\n  outside: '#061620',\n  ground: '#0d2c40',\n  groundDeep: '#081f2e',\n  rule: '#2f6d8f',\n  ruleFaint: '#1c4a63',\n  ink: '#e2f1f8',\n  inkFaint: '#8fb8cc',\n  cyan: '#63d2ea',\n  pencil: '#f0665c',\n  amber: '#e8b552',\n};\nconst draft = \"'Trebuchet MS','Lucida Grande',Tahoma,sans-serif\";\nconst annot = \"'Courier New',Courier,monospace\";\n\nconst stamp = {\n  approved: { label: 'APPROVED', colour: sheet.cyan, note: 'all workflows passing' },\n  reviewed: { label: 'FOR REVIEW', colour: sheet.amber, note: 'failures since fixed' },\n  nonconforming: { label: 'NONCONFORMING', colour: sheet.pencil, note: 'a workflow is broken now' },\n}[verdict];\n\nconst short = (s, n) => (String(s).length > n ? `${String(s).slice(0, n - 1)}…` : String(s));\nconst dd = (d) => d.toLocaleDateString('en-GB', { timeZone: 'Europe/Berlin', day: '2-digit', month: '2-digit' });\nconst today = new Date().toLocaleDateString('en-GB', { timeZone: 'Europe/Berlin', day: '2-digit', month: '2-digit', year: 'numeric' });\n// }}}\n\n// {{{ Render\nconst heading = (text, note) => `\n<tr>\n  <td colspan=\"3\" style=\"padding:24px 34px 0 34px;\">\n    <table role=\"presentation\" width=\"100%\" style=\"border-collapse:collapse;\">\n      <tr>\n        <td style=\"font-family:${annot};font-size:10px;letter-spacing:0.26em;color:${sheet.cyan};text-transform:uppercase;white-space:nowrap;\">${text}</td>\n        <td style=\"font-family:${annot};font-size:9px;letter-spacing:0.14em;color:${sheet.inkFaint};text-align:right;white-space:nowrap;\">${note}</td>\n      </tr>\n    </table>\n    <div style=\"border-top:1px solid ${sheet.rule};margin-top:7px;\"></div>\n    <div style=\"border-top:1px solid ${sheet.ruleFaint};margin-top:2px;\"></div>\n  </td>\n</tr>`;\n\n// Status is carried by the glyph and the word, not by colour alone: dark-mode\n// reprocessing in Outlook and Apple Mail rewrites backgrounds and can flatten\n// these hues into each other.\nconst mark = (status) => {\n  if (FAILED.has(status)) return { glyph: '[X]', colour: sheet.pencil, word: status.toUpperCase() };\n  if (RUNNING.has(status)) return { glyph: '[~]', colour: sheet.amber, word: status.toUpperCase() };\n  return { glyph: '[+]', colour: sheet.cyan, word: 'PASS' };\n};\n\nconst runRow = (run) => {\n  const m = mark(run.status);\n  return `\n<tr>\n  <td width=\"34\" style=\"padding:7px 0 7px 34px;font-family:${annot};font-size:11px;color:${m.colour};vertical-align:top;white-space:nowrap;\">${m.glyph}</td>\n  <td style=\"padding:7px 10px;vertical-align:top;width:100%;\">\n    <div style=\"font-family:${draft};font-size:13px;color:${sheet.ink};\">${short(run.title, 52)}</div>\n    <div style=\"font-family:${annot};font-size:9px;letter-spacing:0.1em;color:${sheet.inkFaint};margin-top:3px;\">\n      ${run.workflow} &nbsp;|&nbsp; ${run.branch}@${run.sha} &nbsp;|&nbsp; ${run.event || 'n/a'}\n    </div>\n  </td>\n  <td style=\"padding:7px 34px 7px 0;text-align:right;vertical-align:top;font-family:${annot};font-size:9px;letter-spacing:0.1em;color:${m.colour};white-space:nowrap;\">\n    <div>REV ${run.number ?? run.id}</div>\n    <div style=\"color:${sheet.inkFaint};margin-top:3px;\">${m.word}</div>\n  </td>\n</tr>`;\n};\n\nconst plainRow = (left, right, tone) => `\n<tr>\n  <td colspan=\"2\" style=\"padding:6px 10px 6px 34px;font-family:${draft};font-size:13px;color:${sheet.ink};\">${left}</td>\n  <td style=\"padding:6px 34px 6px 0;text-align:right;font-family:${annot};font-size:9px;letter-spacing:0.1em;color:${tone ?? sheet.inkFaint};white-space:nowrap;\">${right}</td>\n</tr>`;\n\nconst none = (text) => `\n<tr><td colspan=\"3\" style=\"padding:10px 34px;font-family:${draft};font-size:13px;font-style:italic;color:${sheet.inkFaint};\">${text}</td></tr>`;\n\n// The reporting window is bounded by run ids, not dates, so say so rather than\n// implying a tidy week.\nconst windowNote = previousCursor === 0 ? 'first issue · latest 12 runs' : `runs ${previousCursor + 1}–${highest}`;\n\nconst html = `<!DOCTYPE html>\n<html>\n  <body style=\"margin:0;padding:32px 14px;background:${sheet.outside};\">\n    <table role=\"presentation\" width=\"100%\" style=\"max-width:600px;margin:0 auto;border-collapse:collapse;\">\n      <tr>\n        <td style=\"background:${sheet.ground};border:1px solid ${sheet.rule};\">\n          <table role=\"presentation\" width=\"100%\" style=\"border-collapse:collapse;\">\n\n            <!-- sheet header -->\n            <tr>\n              <td colspan=\"3\" style=\"padding:26px 34px 0 34px;\">\n                <table role=\"presentation\" width=\"100%\" style=\"border-collapse:collapse;\">\n                  <tr>\n                    <td>\n                      <div style=\"font-family:${annot};font-size:9px;letter-spacing:0.34em;color:${sheet.inkFaint};text-transform:uppercase;\">forgejo actions &middot; ${REPO}</div>\n                      <div style=\"font-family:${draft};font-size:27px;font-weight:bold;letter-spacing:0.02em;color:${sheet.ink};margin-top:10px;\">Integration Sheet</div>\n                    </td>\n                    <td style=\"text-align:right;vertical-align:top;\">\n                      <div style=\"display:inline-block;border:2px solid ${stamp.colour};padding:7px 12px;\">\n                        <div style=\"font-family:${annot};font-size:12px;font-weight:bold;letter-spacing:0.18em;color:${stamp.colour};\">${stamp.label}</div>\n                      </div>\n                    </td>\n                  </tr>\n                </table>\n                <div style=\"font-family:${annot};font-size:10px;letter-spacing:0.1em;color:${sheet.inkFaint};margin-top:12px;\">${stamp.note} &nbsp;&middot;&nbsp; ${windowNote}</div>\n                <div style=\"border-top:2px solid ${sheet.rule};margin-top:16px;\"></div>\n              </td>\n            </tr>\n\n            ${heading('workflows broken now', 'latest run of each workflow')}\n            ${brokenNow.length ? brokenNow.map(runRow).join('\\n') : none('Every workflow’s most recent run passed.')}\n\n            ${heading('revision log', `${succeeded.length} pass · ${failures.length} fail · ${running.length} in progress`)}\n            ${fresh.length ? fresh.slice(0, 14).map(runRow).join('\\n') : none('No runs since the last issue of this sheet.')}\n            ${fresh.length > 14 ? none(`… and ${fresh.length - 14} further runs not drawn.`) : ''}\n\n            ${heading('open changes', `${openPulls.length} pull request${openPulls.length === 1 ? '' : 's'}`)}\n            ${\n              openPulls.length\n                ? openPulls\n                    .map((p) => plainRow(`#${p.number} &nbsp; ${short(p.title, 54)}`, `${p.author} &middot; ${p.age}d`, p.age > 14 ? sheet.amber : sheet.inkFaint))\n                    .join('\\n')\n                : none('No open pull requests.')\n            }\n\n            ${heading('as-built', commitsTruncated ? `${commitCount} commits \\u00b7 page limit reached` : `${commitCount} commit${landed.length === 1 ? '' : 's'} in 7 days`)}\n            ${\n              landed.length\n                ? landed.slice(0, 10).map((c) => plainRow(short(c.message, 58), `${c.sha} &middot; ${dd(c.date)}`)).join('\\n')\n                : none('Nothing landed on main this week.')\n            }\n            ${landed.length > 10 ? none(commitsTruncated ? `… and at least ${landed.length - 10} further commits; Forgejo would not page past ${COMMIT_PAGE}.` : `… and ${landed.length - 10} further commits.`) : ''}\n\n            <!-- title block -->\n            <tr>\n              <td colspan=\"3\" style=\"padding:26px 34px 30px 34px;\">\n                <table role=\"presentation\" width=\"100%\" style=\"border-collapse:collapse;border:1px solid ${sheet.rule};background:${sheet.groundDeep};\">\n                  <tr>\n                    ${[\n                      ['drawn by', 'n8n @ inari'],\n                      ['sheet', 'CI-01'],\n                      ['date', today],\n                      ['rev', String(highest)],\n                    ]\n                      .map(\n                        ([k, v], i) => `<td style=\"padding:10px 12px;${i ? `border-left:1px solid ${sheet.ruleFaint};` : ''}\">\n                        <div style=\"font-family:${annot};font-size:8px;letter-spacing:0.2em;color:${sheet.inkFaint};text-transform:uppercase;\">${k}</div>\n                        <div style=\"font-family:${annot};font-size:11px;color:${sheet.ink};margin-top:4px;white-space:nowrap;\">${v}</div>\n                      </td>`,\n                      )\n                      .join('')}\n                  </tr>\n                </table>\n              </td>\n            </tr>\n\n          </table>\n        </td>\n      </tr>\n    </table>\n  </body>\n</html>`;\n// }}}\n\nconst subject = brokenNow.length\n  ? `CI nonconforming · ${brokenNow.map((r) => r.workflow).join(', ')}`\n  : failures.length\n    ? `CI sheet · ${failures.length} failure${failures.length === 1 ? '' : 's'}, all since fixed`\n    : `CI sheet · approved${fresh.length ? ` (${fresh.length} runs)` : ''}`;\n\nreturn [{ json: { subject, html } }];"
+      },
+      "position": [
+        224,
+        480
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "credentials": {
+        "smtp": {
+          "id": "njtrBIl1Zg5hBBqU",
+          "name": "Migadu (no-reply)"
+        }
+      },
+      "id": "d53b32d1-4021-4d30-b446-fb6cb666256d",
+      "name": "Send sheet by email",
+      "parameters": {
+        "emailFormat": "html",
+        "fromEmail": "no-reply@tengu.hugo-berendi.de",
+        "html": "={{ $json.html }}",
+        "options": {},
+        "subject": "={{ $json.subject }}",
+        "toEmail": "status@hugo-berendi.de"
+      },
+      "position": [
+        464,
+        480
+      ],
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1
+    }
+  ],
+  "pinData": {},
+  "settings": {
+    "availableInMCP": false,
+    "binaryMode": "separate",
+    "executionOrder": "v1"
+  },
+  "tags": [],
+  "versionId": "c900b593-21fa-44cb-b7cc-4118d7b33f23"
+}
