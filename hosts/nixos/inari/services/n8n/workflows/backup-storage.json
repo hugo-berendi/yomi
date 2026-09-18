@@ -1,0 +1,119 @@
+{
+  "active": true,
+  "connections": {
+    "Collect backup and storage state": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Send report by email",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Manual test": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Collect backup and storage state",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Schedule": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Collect backup and storage state",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "id": "57pwNJ9UHfAWn47r",
+  "name": "Inari Backup & Storage · Weekly Report",
+  "nodeGroups": [],
+  "nodes": [
+    {
+      "id": "42d565fd-4744-4962-9cf6-5e256b472837",
+      "name": "Manual test",
+      "parameters": {},
+      "position": [
+        -16,
+        400
+      ],
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1
+    },
+    {
+      "id": "9416386d-be97-4af6-a2b2-b77489447bfc",
+      "name": "Schedule",
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "expression": "30 7 * * 1",
+              "field": "cronExpression"
+            }
+          ]
+        }
+      },
+      "position": [
+        -16,
+        560
+      ],
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2
+    },
+    {
+      "id": "551c3d95-2267-44c1-ade2-ce56c4cfd509",
+      "name": "Collect backup and storage state",
+      "parameters": {
+        "jsCode": "// {{{ Data collection\n// Everything here comes out of Prometheus. The restic units themselves export\n// nothing, so \"did the backup run\" is answered by the timer's last trigger\n// rather than by asking restic -- n8n is DynamicUser-sandboxed and cannot\n// shell out to `restic snapshots` even if it wanted to.\nconst PROM = 'http://127.0.0.1:8451/api/v1/query';\n\nconst query = async (expr) => {\n  const res = await this.helpers.httpRequest({ method: 'GET', url: PROM, qs: { query: expr }, json: true });\n  return res?.data?.result ?? [];\n};\n\nconst BACKUP_SETS = [\n  { unit: 'restic-backups-data', label: 'data', detail: '/persist/data -> raid5pool' },\n  { unit: 'restic-backups-state', label: 'state', detail: '/persist/state -> raid5pool' },\n  { unit: 'restic-backups-offsite', label: 'offsite', detail: 'photos+docs+db -> backblaze b2' },\n];\n\n// All three timers are OnCalendar=daily, so anything past ~30h has skipped a\n// run and anything past ~50h has skipped two.\nconst STALE_WARN_HOURS = 30;\nconst STALE_CRIT_HOURS = 50;\nconst POOL_WARN_PCT = 80;\nconst POOL_CRIT_PCT = 90;\n\nconst [triggers, failed, poolHealth, poolSize, poolFree, poolFrag, datasetUsed, poolGrowth] = await Promise.all([\n  query('node_systemd_timer_last_trigger_seconds{name=~\"restic-backups-.*\"}'),\n  query('node_systemd_unit_state{name=~\"restic-backups-.*\\\\\\\\.service\",state=\"failed\"}'),\n  query('zfs_pool_health'),\n  query('zfs_pool_size_bytes'),\n  query('zfs_pool_free_bytes'),\n  query('zfs_pool_fragmentation_ratio'),\n  query('zfs_dataset_used_bytes{type=\"filesystem\"}'),\n  // Negative values are fine and meaningful: a pool that shrank had something\n  // pruned or destroyed, which is worth seeing rather than clamping away.\n  query('zfs_pool_allocated_bytes - (zfs_pool_allocated_bytes offset 7d)'),\n]);\n\nconst num = (s) => Number(s.value[1]);\nconst byLabel = (series, key) => Object.fromEntries(series.map((s) => [s.metric[key], num(s)]));\n\nconst lastTrigger = byLabel(triggers, 'name');\nconst failedUnits = new Set(failed.filter((s) => num(s) === 1).map((s) => s.metric.name));\nconst health = byLabel(poolHealth, 'pool');\nconst size = byLabel(poolSize, 'pool');\nconst free = byLabel(poolFree, 'pool');\nconst frag = byLabel(poolFrag, 'pool');\nconst used = byLabel(datasetUsed, 'name');\nconst growth = byLabel(poolGrowth, 'pool');\n// }}}\n\n// {{{ Evaluation\nconst now = Date.now() / 1000;\nconst gib = (b) => `${(b / 1024 ** 3).toFixed(1)} GiB`;\nconst tib = (b) => `${(b / 1024 ** 4).toFixed(2)} TiB`;\nconst human = (b) => (Math.abs(b) >= 1024 ** 4 ? tib(b) : gib(b));\n\nconst age = (hours) => {\n  if (hours < 1) return `${Math.round(hours * 60)}m ago`;\n  if (hours < 48) return `${hours.toFixed(1)}h ago`;\n  return `${Math.floor(hours / 24)}d ago`;\n};\n\nconst sets = BACKUP_SETS.map((set) => {\n  const ts = lastTrigger[`${set.unit}.timer`];\n  const isFailed = failedUnits.has(`${set.unit}.service`);\n\n  if (isFailed) return { ...set, value: 'FAILED', extra: ts ? age((now - ts) / 3600) : '', level: 'critical' };\n  // A timer with no last-trigger metric has never fired since boot. That is\n  // not the same as a failure, but it is not evidence of a backup either.\n  if (ts === undefined) return { ...set, value: 'NEVER RAN', extra: 'no trigger since boot', level: 'critical' };\n\n  const hours = (now - ts) / 3600;\n  const level = hours >= STALE_CRIT_HOURS ? 'critical' : hours >= STALE_WARN_HOURS ? 'warn' : 'ok';\n  return { ...set, value: age(hours), extra: level === 'ok' ? '' : 'skipped a run', level };\n});\n\nconst pools = Object.keys(health).sort().map((pool) => {\n  const total = size[pool];\n  const avail = free[pool];\n  const pct = total ? 100 * (1 - avail / total) : 0;\n  const weekly = growth[pool] ?? 0;\n  // Only extrapolate when the pool is actually growing; a flat or shrinking\n  // pool has no meaningful date at which it fills up.\n  const weeksToFull = weekly > 0 ? ((total * (POOL_CRIT_PCT / 100)) - (total - avail)) / weekly : null;\n\n  return {\n    pool,\n    healthy: health[pool] === 0,\n    pct,\n    used: total - avail,\n    total,\n    frag: frag[pool],\n    weekly,\n    weeksToFull,\n    level: health[pool] !== 0 ? 'critical' : pct >= POOL_CRIT_PCT ? 'critical' : pct >= POOL_WARN_PCT ? 'warn' : 'ok',\n  };\n});\n\nconst REPO_DATASET = 'raid5pool/backups';\nconst repoSize = used[REPO_DATASET];\n\nconst rows = [\n  ...sets.map((s) => ({ label: `last run · ${s.label}`, value: s.value, detail: s.extra || s.detail, level: s.level })),\n  {\n    label: 'local repo size',\n    value: repoSize === undefined ? 'unknown' : human(repoSize),\n    detail: REPO_DATASET,\n    level: repoSize === undefined ? 'warn' : 'ok',\n  },\n];\n\nconst poolRows = pools.map((p) => ({\n  label: `${p.pool}`,\n  value: `${p.pct.toFixed(1)}%`,\n  detail: `${human(p.used)} / ${human(p.total)}${p.frag === undefined ? '' : ` · ${p.frag.toFixed(0)}% frag`}`,\n  level: p.level,\n}));\n\nconst growthRows = pools.map((p) => {\n  const trend = p.weekly === 0 ? 'flat' : `${p.weekly > 0 ? '+' : '-'}${human(Math.abs(p.weekly))}/wk`;\n  const forecast =\n    p.weeksToFull === null\n      ? 'no growth'\n      : p.weeksToFull <= 0\n        ? `already past ${POOL_CRIT_PCT}%`\n        : p.weeksToFull < 104\n          ? `~${Math.round(p.weeksToFull)}wk to ${POOL_CRIT_PCT}%`\n          : '>2yr headroom';\n\n  return {\n    label: p.pool,\n    value: trend,\n    detail: forecast,\n    level: p.weeksToFull !== null && p.weeksToFull > 0 && p.weeksToFull < 8 ? 'warn' : 'ok',\n  };\n});\n\nconst all = [...rows, ...poolRows, ...growthRows];\nconst overall = all.some((r) => r.level === 'critical') ? 'critical' : all.some((r) => r.level === 'warn') ? 'warn' : 'ok';\n// }}}\n\n// {{{ Terminal-styled design tokens (shared with the health-monitor digest)\nconst palette = {\n  bg: '#eef1f5',\n  card: '#0b0f14',\n  cardBorder: '#1c2530',\n  divider: '#182029',\n  text: '#d6e0ea',\n  muted: '#5b7284',\n  comment: '#4a7a6b',\n  ok: '#3ddc84',\n  warn: '#ffb454',\n  critical: '#ff5c7a',\n};\nconst tag = { ok: '[ OK ]', warn: '[WARN]', critical: '[CRIT]' };\nconst overallCopy = {\n  ok: 'BACKUPS CURRENT',\n  warn: 'BACKUPS NEED A LOOK',\n  critical: 'BACKUPS AT RISK',\n}[overall];\nconst mono = \"ui-monospace,'JetBrains Mono','SFMono-Regular',Menlo,Consolas,'Liberation Mono',monospace\";\n// }}}\n\n// {{{ Render\n// Each item renders as up to two rows: the label/value line, then the detail\n// on its own full-width row. Putting the detail in the label cell instead made\n// it wrap after three or four characters, because the nowrap label keeps that\n// column shrink-to-fit.\nconst section = (items) =>\n  items\n    .map((r) => {\n      const c = palette[r.level];\n      const border = `border-bottom:1px solid ${palette.divider};`;\n      const main = `<tr>\n      <td style=\"padding:9px 28px ${r.detail ? '2px' : '9px'} 28px;${r.detail ? '' : border}font-family:${mono};font-size:13px;color:${palette.muted};white-space:nowrap;\">${r.label}</td>\n      <td style=\"padding:9px 4px ${r.detail ? '2px' : '9px'} 4px;${r.detail ? '' : border}font-family:${mono};font-size:13px;color:${palette.cardBorder};width:100%;\">${'·'.repeat(14)}</td>\n      <td style=\"padding:9px 28px ${r.detail ? '2px' : '9px'} 28px;${r.detail ? '' : border}font-family:${mono};font-size:13px;text-align:right;white-space:nowrap;\">\n        <span style=\"color:${palette.text};\">${r.value}</span>\n        <span style=\"color:${c};font-weight:700;margin-left:10px;\">${tag[r.level]}</span>\n      </td>\n    </tr>`;\n\n      if (!r.detail) return main;\n\n      return `${main}\n    <tr>\n      <td colspan=\"3\" style=\"padding:0 28px 9px 28px;${border}font-family:${mono};font-size:11px;color:${palette.muted};opacity:0.7;\">${r.detail}</td>\n    </tr>`;\n    })\n    .join('\\n');\n\nconst timestamp = new Date().toLocaleString('en-GB', { timeZone: 'Europe/Berlin', dateStyle: 'medium', timeStyle: 'short' });\nconst oc = palette[overall];\n\nconst html = `<!DOCTYPE html>\n<html>\n  <body style=\"margin:0;padding:32px 16px;background:${palette.bg};font-family:${mono};\">\n    <table role=\"presentation\" width=\"100%\" style=\"max-width:600px;margin:0 auto;\">\n      <tr>\n        <td style=\"background:${palette.card};border:1px solid ${palette.cardBorder};border-radius:6px;overflow:hidden;\">\n          <table role=\"presentation\" width=\"100%\" style=\"border-collapse:collapse;\">\n            <tr><td style=\"height:4px;line-height:4px;font-size:0;background:${oc};\">&nbsp;</td></tr>\n            <tr>\n              <td style=\"padding:28px 28px 20px 28px;\">\n                <div style=\"font-family:${mono};font-size:12px;color:${palette.comment};\">$ systemctl list-timers 'restic-*' &amp;&amp; zpool list</div>\n                <div style=\"font-family:${mono};font-size:21px;font-weight:700;letter-spacing:0.04em;color:${palette.text};margin-top:14px;\">BACKUP_AND_STORAGE</div>\n                <div style=\"font-family:${mono};font-size:14px;font-weight:700;color:${oc};margin-top:8px;\">${tag[overall]} ${overallCopy}</div>\n                <div style=\"font-family:${mono};font-size:12px;color:${palette.muted};margin-top:10px;\">${timestamp} · inari · weekly</div>\n              </td>\n            </tr>\n            <tr><td style=\"border-top:1px solid ${palette.cardBorder};\"></td></tr>\n            <tr><td style=\"padding:16px 28px 2px 28px;font-family:${mono};font-size:12px;color:${palette.comment};\"># backup sets</td></tr>\n            <tr><td style=\"padding:0 0 8px 0;\"><table role=\"presentation\" width=\"100%\" style=\"border-collapse:collapse;\">${section(rows)}</table></td></tr>\n            <tr><td style=\"padding:18px 28px 2px 28px;font-family:${mono};font-size:12px;color:${palette.comment};\"># pool capacity</td></tr>\n            <tr><td style=\"padding:0 0 8px 0;\"><table role=\"presentation\" width=\"100%\" style=\"border-collapse:collapse;\">${section(poolRows)}</table></td></tr>\n            <tr><td style=\"padding:18px 28px 2px 28px;font-family:${mono};font-size:12px;color:${palette.comment};\"># growth (7d) and forecast</td></tr>\n            <tr><td style=\"padding:0 0 20px 0;\"><table role=\"presentation\" width=\"100%\" style=\"border-collapse:collapse;\">${section(growthRows)}</table></td></tr>\n            <tr><td style=\"border-top:1px solid ${palette.cardBorder};\"></td></tr>\n            <tr>\n              <td style=\"padding:16px 28px;font-family:${mono};font-size:11px;color:${palette.muted};\">\n                anything under /raid5pool is outside impermanence and the local restic sets &mdash; only the explicit yomi.restic.offsite.paths are copied off-site.\n              </td>\n            </tr>\n          </table>\n        </td>\n      </tr>\n    </table>\n  </body>\n</html>`;\n// }}}\n\nreturn [{ json: { subject: `[inari] ${tag[overall]} backup & storage · ${overallCopy}`, html } }];"
+      },
+      "position": [
+        224,
+        480
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "credentials": {
+        "smtp": {
+          "id": "njtrBIl1Zg5hBBqU",
+          "name": "Migadu (no-reply)"
+        }
+      },
+      "id": "17f8cc6e-64a0-429c-931b-4088c2db7fa5",
+      "name": "Send report by email",
+      "parameters": {
+        "emailFormat": "html",
+        "fromEmail": "no-reply@tengu.hugo-berendi.de",
+        "html": "={{ $json.html }}",
+        "options": {},
+        "subject": "={{ $json.subject }}",
+        "toEmail": "status@hugo-berendi.de"
+      },
+      "position": [
+        464,
+        480
+      ],
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1
+    }
+  ],
+  "pinData": {},
+  "settings": {
+    "availableInMCP": false,
+    "binaryMode": "separate",
+    "executionOrder": "v1"
+  },
+  "tags": [],
+  "versionId": "41c72a4f-31b2-48f9-8f4e-b751ee82e1c5"
+}
