@@ -132,6 +132,7 @@ So: pick the visual language from what the mail *is*, and commit to it.
 |------|----------|----------|
 | Ops / alarm | `health-monitor.json`, `backup-storage.json` | Dark terminal card |
 | Arrivals / leisure | `media-arrivals.json` | Repertory-cinema ticket |
+| Repository / build state | `forgejo-ci.json` | Engineering blueprint |
 
 The **terminal card** is for anything where something might be wrong: a dark
 `#0b0f14` card on a light `#eef1f5` wrapper, monospace throughout, a thin
@@ -144,6 +145,12 @@ The **cinema ticket** is for the media digest: oxblood `#5a1418` marquee with
 gold `#b8863b` bulbs, aged card stock `#f4ead6`, Georgia display with wide
 tracking, Courier New for the numeric/stub text, dashed perforation rules, and
 poster art pulled from the *arr APIs' `remoteUrl` fields.
+
+The **blueprint** is for the CI sheet: prussian `#0d2c40` ground on near-black,
+print-white `#e2f1f8` linework with `#2f6d8f` rules, cyan `#63d2ea` for
+annotations, red pencil `#f0665c` for corrections, Trebuchet MS headings,
+Courier New annotations, and a drafting title block (sheet, date, revision)
+closing the sheet.
 
 Whatever the language, these constraints are not stylistic:
 
