@@ -120,6 +120,13 @@ in {
 
     # {{{ Managed workflows
     yomi.n8n.workflows.webuntis-radicale.source = ./n8n/workflows/webuntis-radicale.json;
+    # Seed only: it references an SMTP credential ("Migadu (no-reply)") that
+    # must be created once in the web ui before the send-email node will run,
+    # same as "Radicale" for webuntis-radicale above.
+    yomi.n8n.workflows.health-monitor = {
+      source = ./n8n/workflows/health-monitor.json;
+      enforce = false;
+    };
     # }}}
   };
 }

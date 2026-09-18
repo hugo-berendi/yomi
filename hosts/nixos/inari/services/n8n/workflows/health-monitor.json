@@ -1,0 +1,121 @@
+{
+  "active": true,
+  "connections": {
+    "Manuell testen": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Gesundheitsdaten sammeln",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Zeitplan": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Gesundheitsdaten sammeln",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Gesundheitsdaten sammeln": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Bericht per E-Mail senden",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "id": "lULAYqtesDiD4AzU",
+  "name": "Inari Health Monitor · Tagesbericht per E-Mail",
+  "nodeGroups": [],
+  "nodes": [
+    {
+      "id": "4b42df43-f008-4498-9b35-dc3a355b71f4",
+      "name": "Manuell testen",
+      "parameters": {},
+      "position": [
+        -16,
+        400
+      ],
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1
+    },
+    {
+      "id": "a476b9dc-6c1e-43c6-a7fe-175d7b545de4",
+      "name": "Zeitplan",
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1,
+              "triggerAtHour": 7,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      },
+      "position": [
+        -16,
+        560
+      ],
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2
+    },
+    {
+      "id": "2c74befd-570c-458a-8c67-c7838299e450",
+      "name": "Gesundheitsdaten sammeln",
+      "parameters": {
+        "jsCode": "const promQuery = `\nlabel_replace(100 * (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes), \"metric\", \"memory_pct\", \"\", \"\")\nor label_replace(node_load1, \"metric\", \"load1\", \"\", \"\")\nor label_replace(count(node_cpu_seconds_total{mode=\"idle\"}), \"metric\", \"cpu_count\", \"\", \"\")\nor label_replace(100 * (1 - node_filesystem_avail_bytes{mountpoint=~\"^(/|/raid5pool)$\"} / node_filesystem_size_bytes{mountpoint=~\"^(/|/raid5pool)$\"}), \"metric\", \"disk_pct\", \"\", \"\")\nor label_replace(sum(node_systemd_unit_state{state=\"failed\"}), \"metric\", \"failed_units\", \"\", \"\")\nor label_replace(zfs_pool_health, \"metric\", \"zfs_health\", \"\", \"\")\nor label_replace(smartctl_device_smart_status, \"metric\", \"smart_status\", \"\", \"\")\n`;\n\nconst prom = await this.helpers.httpRequest({\n  method: 'GET',\n  url: 'http://127.0.0.1:8451/api/v1/query',\n  qs: { query: promQuery },\n  json: true,\n});\n\nconst series = prom?.data?.result ?? [];\nconst byMetric = (name) => series.filter((s) => s.metric.metric === name);\nconst value = (s) => Number(s.value[1]);\n\nconst memoryPct = value(byMetric('memory_pct')[0]);\nconst load1 = value(byMetric('load1')[0]);\nconst cpuCount = value(byMetric('cpu_count')[0]);\nconst failedUnits = value(byMetric('failed_units')[0]);\n\nconst disks = byMetric('disk_pct').map((s) => ({ mountpoint: s.metric.mountpoint, pct: value(s) }));\nconst zfsPools = byMetric('zfs_health').map((s) => ({ pool: s.metric.pool, healthy: value(s) === 0 }));\nconst smartDevices = byMetric('smart_status').map((s) => ({ device: s.metric.device, healthy: value(s) === 1 }));\n\n// Gatus already alerts on failure by itself -- this section only adds a status\n// summary to the digest, so a Gatus outage degrades the email, not the run.\nlet gatus = [];\ntry {\n  gatus = await this.helpers.httpRequest({\n    method: 'GET',\n    url: 'http://127.0.0.1:8494/api/v1/endpoints/statuses',\n    json: true,\n  });\n} catch (error) {\n  gatus = [];\n}\n\nconst services = gatus.map((endpoint) => {\n  const last = endpoint.results?.[endpoint.results.length - 1];\n  return { name: endpoint.name, up: last?.success ?? false };\n});\n\nconst loadRatio = cpuCount ? load1 / cpuCount : 0;\nconst status = (v, warn, critical) => (v >= critical ? 'critical' : v >= warn ? 'warn' : 'ok');\n\nconst rows = [\n  {\n    label: 'CPU-Last',\n    value: `${load1.toFixed(2)} (${(loadRatio * 100).toFixed(0)}% von ${cpuCount} Kernen)`,\n    level: status(loadRatio, 0.7, 1.0),\n  },\n  { label: 'Arbeitsspeicher', value: `${memoryPct.toFixed(1)}%`, level: status(memoryPct, 80, 90) },\n  ...disks.map((d) => ({\n    label: `Speicherplatz ${d.mountpoint}`,\n    value: `${d.pct.toFixed(1)}%`,\n    level: status(d.pct, 80, 90),\n  })),\n  { label: 'Fehlgeschlagene Dienste', value: String(failedUnits), level: failedUnits > 0 ? 'critical' : 'ok' },\n  ...zfsPools.map((p) => ({\n    label: `ZFS-Pool ${p.pool}`,\n    value: p.healthy ? 'ONLINE' : 'NICHT ONLINE',\n    level: p.healthy ? 'ok' : 'critical',\n  })),\n  ...smartDevices.map((d) => ({\n    label: `S.M.A.R.T. ${d.device}`,\n    value: d.healthy ? 'bestanden' : 'FEHLER',\n    level: d.healthy ? 'ok' : 'critical',\n  })),\n];\n\nconst overall = rows.some((r) => r.level === 'critical') ? 'critical' : rows.some((r) => r.level === 'warn') ? 'warn' : 'ok';\n\nconst colors = {\n  ok: { bg: '#e8f7ee', fg: '#1c7c4d', dot: '#22a35f' },\n  warn: { bg: '#fdf3e0', fg: '#a5680a', dot: '#e0a324' },\n  critical: { bg: '#fbe9e9', fg: '#b3261e', dot: '#e5484d' },\n};\nconst overallLabel = { ok: 'Alles im grünen Bereich', warn: 'Beachtung erforderlich', critical: 'Handlungsbedarf' }[overall];\n\nconst rowsHtml = rows\n  .map((r) => {\n    const c = colors[r.level];\n    return `<tr>\n      <td style=\"padding:10px 16px;border-bottom:1px solid #edf0f3;font-size:14px;color:#334155;\">${r.label}</td>\n      <td style=\"padding:10px 16px;border-bottom:1px solid #edf0f3;text-align:right;font-size:14px;font-weight:600;color:${c.fg};\">\n        <span style=\"display:inline-block;width:8px;height:8px;border-radius:50%;background:${c.dot};margin-right:8px;vertical-align:middle;\"></span>${r.value}\n      </td>\n    </tr>`;\n  })\n  .join('\\n');\n\nconst servicesHtml = services.length\n  ? services\n      .map((s) => {\n        const c = s.up ? colors.ok : colors.critical;\n        return `<tr>\n          <td style=\"padding:8px 16px;border-bottom:1px solid #edf0f3;font-size:13px;color:#334155;\">${s.name}</td>\n          <td style=\"padding:8px 16px;border-bottom:1px solid #edf0f3;text-align:right;\">\n            <span style=\"display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600;background:${c.bg};color:${c.fg};\">${s.up ? 'erreichbar' : 'down'}</span>\n          </td>\n        </tr>`;\n      })\n      .join('\\n')\n  : '<tr><td style=\"padding:8px 16px;font-size:13px;color:#94a3b8;\" colspan=\"2\">Gatus lieferte keine Daten.</td></tr>';\n\nconst timestamp = new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin', dateStyle: 'full', timeStyle: 'short' });\nconst oc = colors[overall];\n\nconst html = `<!DOCTYPE html>\n<html>\n  <body style=\"margin:0;padding:24px;background:#f1f5f9;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;\">\n    <table role=\"presentation\" width=\"100%\" style=\"max-width:560px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(15,23,42,0.08);\">\n      <tr>\n        <td style=\"padding:28px 28px 20px 28px;background:${oc.bg};\">\n          <div style=\"font-size:13px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:${oc.fg};\">Inari Health Monitor</div>\n          <div style=\"font-size:22px;font-weight:700;color:#0f172a;margin-top:6px;\">${overallLabel}</div>\n          <div style=\"font-size:13px;color:#64748b;margin-top:4px;\">${timestamp}</div>\n        </td>\n      </tr>\n      <tr>\n        <td style=\"padding:8px 0;\">\n          <table role=\"presentation\" width=\"100%\" style=\"border-collapse:collapse;\">\n            ${rowsHtml}\n          </table>\n        </td>\n      </tr>\n      <tr>\n        <td style=\"padding:20px 28px 4px 28px;font-size:13px;font-weight:600;color:#0f172a;\">Dienste (Gatus)</td>\n      </tr>\n      <tr>\n        <td style=\"padding:0 0 20px 0;\">\n          <table role=\"presentation\" width=\"100%\" style=\"border-collapse:collapse;\">\n            ${servicesHtml}\n          </table>\n        </td>\n      </tr>\n      <tr>\n        <td style=\"padding:16px 28px;background:#f8fafc;font-size:12px;color:#94a3b8;\">Automatisch erstellt von n8n auf inari.</td>\n      </tr>\n    </table>\n  </body>\n</html>`;\n\nreturn [{ json: { subject: `[inari] Health Monitor: ${overallLabel}`, html } }];"
+      },
+      "position": [
+        224,
+        480
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "4c944a1f-dd14-4ddf-ac55-645d9f36e6b7",
+      "name": "Bericht per E-Mail senden",
+      "parameters": {
+        "fromEmail": "no-reply@tengu.hugo-berendi.de",
+        "toEmail": "status@hugo-berendi.de",
+        "subject": "={{ $json.subject }}",
+        "emailFormat": "html",
+        "html": "={{ $json.html }}",
+        "options": {}
+      },
+      "credentials": {
+        "smtp": {
+          "id": "WA5TySnlA2vDhGm4",
+          "name": "Migadu (no-reply)"
+        }
+      },
+      "position": [
+        464,
+        480
+      ],
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1
+    }
+  ],
+  "pinData": {},
+  "settings": {
+    "availableInMCP": false,
+    "binaryMode": "separate",
+    "executionOrder": "v1"
+  },
+  "tags": [],
+  "versionId": "07121792-c5f8-4f6c-afc0-08a8b77db172"
+}
