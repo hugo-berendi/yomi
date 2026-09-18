@@ -12,6 +12,7 @@
 
     ./hardware
     ./filesystems
+    ./services/restic.nix
   ];
   # }}}
 

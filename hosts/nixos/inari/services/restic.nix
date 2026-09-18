@@ -43,6 +43,36 @@
     # }}}
   };
 
+  # {{{ Receiving amaterasu's own backups over sftp
+  # amaterasu is a single-disk laptop, so it has no equivalent of a second
+  # pool to be "local but redundant" against. This user stands in for that:
+  # a dedicated, passphrase-less key (unlike the pilot's own, which amaterasu's
+  # unattended restic timer could never unlock) restricted to sftp and
+  # chrooted so a compromised laptop can, at worst, read or clobber its own
+  # backup set -- not walk the rest of the filesystem.
+  users.groups.restic-amaterasu = {};
+  users.users.restic-amaterasu = {
+    isSystemUser = true;
+    group = "restic-amaterasu";
+    home = "/raid5pool/backups/restic-amaterasu";
+    createHome = false;
+    openssh.authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPmbgq2wcHr/P1rGAnQh3Q6c/5WGbpRUJbTB39eDXfdF restic-amaterasu@inari"
+    ];
+  };
+
+  # sshd requires the chroot itself, and everything above it, to be
+  # root-owned and not group/other-writable -- the actual backup data lives
+  # one level down, in a directory this user does own.
+  services.openssh.extraConfig = ''
+    Match User restic-amaterasu
+      ChrootDirectory /raid5pool/backups/restic-amaterasu
+      ForceCommand internal-sftp
+      AllowTcpForwarding no
+      X11Forwarding no
+  '';
+  # }}}
+
   # The restic repository used to sit directly in the raid5pool root dataset,
   # which sanoid snapshots hourly. Every pack file restic pruned stayed pinned
   # by those snapshots, so the repository could only ever grow. It now has its
@@ -52,5 +82,9 @@
     autoprune = false;
   };
 
-  systemd.tmpfiles.rules = ["d /raid5pool/backups/restic 0700 root root -"];
+  systemd.tmpfiles.rules = [
+    "d /raid5pool/backups/restic 0700 root root -"
+    "d /raid5pool/backups/restic-amaterasu 0755 root root -"
+    "d /raid5pool/backups/restic-amaterasu/data 0700 restic-amaterasu restic-amaterasu -"
+  ];
 }

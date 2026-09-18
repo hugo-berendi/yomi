@@ -30,6 +30,11 @@ creation_rules:
       - age:
           - *pilot_user_key
           - *shared_host_key
+  - path_regex: hosts/nixos/amaterasu/secrets.yaml
+    key_groups:
+      - age:
+          - *pilot_user_key
+          - *shared_host_key
   - path_regex: home/features/desktop/wakatime/secrets.yaml
     key_groups:
       - age:
