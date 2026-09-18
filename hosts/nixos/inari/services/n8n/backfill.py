@@ -339,6 +339,156 @@ def fetch_messages(
 # }}}
 
 
+# {{{ Moving
+# Everything above only forms an opinion. This is the part that touches the
+# mailbox, so it is off unless --apply is passed, and it still refuses two
+# categories outright:
+#
+#   unsorted     the classifier failed on it, so there is no opinion to act on
+#   unsolicited  Junk is the provider's spam folder (\Junk special-use), and
+#                filing mail there teaches the filter about those senders.
+#                Opt in with --include-junk if that is what you want.
+SPAM_BUCKET = "unsolicited"
+NEVER_MOVE = {"unsorted"}
+
+
+def ensure_folder(client: imaplib.IMAP4_SSL, folder: str) -> None:
+    """CREATE is allowed to fail only because the folder is already there."""
+    status, data = client.create(folder)
+    if status != "OK":
+        detail = b" ".join(data).decode(errors="replace")
+        if (
+            "ALREADYEXISTS" not in detail.upper()
+            and "already exists" not in detail.lower()
+        ):
+            raise SystemExit(f"could not create folder {folder!r}: {detail}")
+    client.subscribe(folder)
+
+
+def message_ids_for(client: imaplib.IMAP4_SSL, uids: list[bytes]) -> dict[str, str]:
+    """Message-Id per uid, so a move can be undone after uids change.
+
+    A UID belongs to one mailbox; the moved copy gets a fresh one in the
+    destination. Message-Id survives the move and is what --undo searches on.
+    """
+    if not uids:
+        return {}
+    status, data = client.uid(
+        "FETCH", b",".join(uids), "(BODY.PEEK[HEADER.FIELDS (MESSAGE-ID)])"
+    )
+    if status != "OK":
+        return {}
+
+    out = {}
+    for part in data:
+        if not isinstance(part, tuple):
+            continue
+        uid_match = re.search(r"UID (\d+)", part[0].decode(errors="replace"))
+        if not uid_match:
+            continue
+        message_id = email.message_from_bytes(part[1]).get("Message-ID")
+        if message_id:
+            out[uid_match.group(1)] = message_id.strip()
+    return out
+
+
+def plan_moves(verdicts: dict, include_junk: bool) -> dict[str, list[bytes]]:
+    plan: dict[str, list[bytes]] = defaultdict(list)
+    for uid, record in verdicts.items():
+        bucket = record["bucket"]
+        if bucket in NEVER_MOVE:
+            continue
+        if bucket == SPAM_BUCKET and not include_junk:
+            continue
+        folder = FOLDER.get(bucket)
+        if not folder or folder.startswith("("):
+            continue
+        plan[folder].append(uid.encode())
+    return plan
+
+
+def apply_moves(
+    client: imaplib.IMAP4_SSL, state: dict, mailbox: str, include_junk: bool
+) -> int:
+    plan = plan_moves(state["verdicts"], include_junk)
+    if not plan:
+        print("nothing to move", file=sys.stderr)
+        return 0
+
+    # The mailbox was opened read-only for classification, which is the right
+    # default; moving needs it writable.
+    status, _ = client.select(mailbox, readonly=False)
+    if status != "OK":
+        raise SystemExit(f"cannot reopen {mailbox!r} for writing")
+
+    state.setdefault("moved", [])
+    total = 0
+    for folder, uids in sorted(plan.items()):
+        ensure_folder(client, folder)
+        ids = message_ids_for(client, uids)
+
+        # Batched, because a UID set of several thousand exceeds what some
+        # servers accept on one command line.
+        for offset in range(0, len(uids), 100):
+            chunk = uids[offset : offset + 100]
+            status, data = client.uid("MOVE", b",".join(chunk), folder)
+            if status != "OK":
+                detail = b" ".join(x for x in data if isinstance(x, bytes))
+                raise SystemExit(
+                    f"MOVE to {folder!r} failed: {detail.decode(errors='replace')}"
+                )
+            for uid in chunk:
+                key = uid.decode()
+                state["moved"].append(
+                    {
+                        "message_id": ids.get(key),
+                        "folder": folder,
+                        "subject": state["verdicts"].get(key, {}).get("subject", ""),
+                    }
+                )
+            total += len(chunk)
+        print(f"  moved {len(uids):>4} -> {folder}", file=sys.stderr)
+
+    return total
+
+
+def undo_moves(client: imaplib.IMAP4_SSL, state: dict, mailbox: str) -> int:
+    """Put everything this tool moved back into the inbox."""
+    moved = state.get("moved", [])
+    if not moved:
+        print("nothing recorded as moved", file=sys.stderr)
+        return 0
+
+    by_folder: dict[str, list[str]] = defaultdict(list)
+    for record in moved:
+        if record.get("message_id"):
+            by_folder[record["folder"]].append(record["message_id"])
+
+    restored = 0
+    for folder, message_ids in sorted(by_folder.items()):
+        status, _ = client.select(folder, readonly=False)
+        if status != "OK":
+            print(f"  skipping {folder}: cannot open", file=sys.stderr)
+            continue
+        for message_id in message_ids:
+            status, data = client.uid(
+                "SEARCH", None, "HEADER", "Message-ID", message_id
+            )
+            if status != "OK" or not data or not data[0]:
+                continue
+            found = data[0].split()
+            status, _ = client.uid("MOVE", b",".join(found), mailbox)
+            if status == "OK":
+                restored += len(found)
+        print(f"  restored from {folder}", file=sys.stderr)
+
+    state["moved"] = []
+    return restored
+
+
+# }}}
+
+
 # {{{ Reporting
 def render(state: dict) -> str:
     verdicts = state["verdicts"]
@@ -411,6 +561,19 @@ def main() -> int:  # noqa: PLR0912, PLR0915
     parser.add_argument(
         "--check-login", action="store_true", help="verify credentials and exit"
     )
+    parser.add_argument(
+        "--apply", action="store_true", help="actually move mail into folders"
+    )
+    parser.add_argument(
+        "--include-junk",
+        action="store_true",
+        help="also move unsolicited mail into Junk (trains the spam filter)",
+    )
+    parser.add_argument(
+        "--undo",
+        action="store_true",
+        help="move everything this tool moved back to INBOX",
+    )
     args = parser.parse_args()
 
     user = args.user or input("IMAP user: ").strip()
@@ -477,6 +640,14 @@ def main() -> int:  # noqa: PLR0912, PLR0915
         return 0
 
     client = connect(args.host, user, password, args.mailbox)
+
+    if args.undo:
+        restored = undo_moves(client, state, args.mailbox)
+        args.state.write_text(json.dumps(state))
+        client.logout()
+        print(f"restored {restored} message(s) to {args.mailbox}")
+        return 0
+
     status, data = client.uid("SEARCH", None, "ALL")
     if status != "OK":
         raise SystemExit("SEARCH failed")
@@ -559,7 +730,6 @@ def main() -> int:  # noqa: PLR0912, PLR0915
         if args.limit and done >= args.limit:
             break
 
-    client.logout()
     demoted = demote_frequent_senders(state["verdicts"])
     if demoted:
         print(
@@ -568,6 +738,25 @@ def main() -> int:  # noqa: PLR0912, PLR0915
         )
     args.state.write_text(json.dumps(state))
     print(render(state))
+
+    # Moving is the only part that writes to the mailbox, so it is opt-in and
+    # the default run shows what it would do instead of doing it.
+    plan = plan_moves(state["verdicts"], args.include_junk)
+    if args.apply:
+        moved = apply_moves(client, state, args.mailbox, args.include_junk)
+        args.state.write_text(json.dumps(state))
+        print(f"\n  moved {moved} message(s). Undo with: just n8n-backfill --undo")
+    else:
+        print("  would move (pass --apply to do it):")
+        for folder, uids in sorted(plan.items()):
+            print(f"    {len(uids):>4} -> {folder}")
+        skipped = len(state["verdicts"]) - sum(len(u) for u in plan.values())
+        if skipped:
+            print(
+                f"    {skipped:>4} left in place (unsorted, or unsolicited without --include-junk)"
+            )
+
+    client.logout()
     return 0
 
 
