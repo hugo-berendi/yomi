@@ -120,69 +120,81 @@ n8n hasn't already seen is fine, since import upserts by id.
 
 ## Email design language
 
-**One look per kind of mail, not one look for everything.** An earlier version
-of this guide said to reuse the terminal card everywhere; that was reversed
-deliberately. An alarm and a weekly run of what arrived should not read the
-same, because the whole point of an alarm is that it looks different from the
-mail you skim.
+**One palette, one look per kind of mail.** Every digest from this instance is
+Rosé Pine Moon -- the same base16 scheme the desktops use, `rose-pine-moon`
+via `common/themes/default.nix`. Structure, typography and voice still change
+per digest; colour does not. An earlier version of this guide said the
+opposite in both directions (first one look everywhere, then a palette per
+mail); this is the settled answer.
 
-So: pick the visual language from what the mail *is*, and commit to it.
+Read the values out of the scheme rather than retyping them:
 
-| Kind | Workflow | Language |
-|------|----------|----------|
-| Ops / alarm | `health-monitor.json`, `backup-storage.json` | Dark terminal card |
-| Arrivals / leisure | `media-arrivals.json` | Repertory-cinema ticket |
-| Repository / build state | `forgejo-ci.json` | Engineering blueprint |
-| Your own post, sorted | `inbox-organizer.json` | Kraft paper and rubber stamps |
+```bash
+cat "$(nix build --no-link --print-out-paths nixpkgs#base16-schemes)/share/themes/rose-pine-moon.yaml"
+```
 
-The **terminal card** is for anything where something might be wrong: a dark
-`#0b0f14` card on a light `#eef1f5` wrapper, monospace throughout, a thin
-coloured status bar, a `$ <command>` prompt line under the header, bracket
-status tags (`[ OK ]`, `[WARN]`, `[CRIT]`, `[ UP ]`, `[DOWN]`) rather than
-colour alone, and `# comment`-styled section headers. Copy the palette object
-out of either Code node's `jsCode`.
+| Role | Hex | Base16 |
+|------|-----|--------|
+| page ground | `#232136` | base00 |
+| card surface | `#2a273f` | base01 |
+| rules, inactive bar | `#393552` | base02 |
+| muted text | `#6e6a86` | base03 |
+| secondary text | `#908caa` | base04 |
+| body text | `#e0def4` | base05 |
+| **critical / failed** | `#eb6f92` love | base08 |
+| **warning** | `#f6c177` gold | base09 |
+| accent, arrivals | `#ea9a97` rose | base0A |
+| structure, drafting | `#3e8fb0` pine | base0B |
+| **ok / passing** | `#9ccfd8` foam | base0C |
+| headings | `#c4a7e7` iris | base0D |
 
-The **cinema ticket** is for the media digest: oxblood `#5a1418` marquee with
-gold `#b8863b` bulbs, aged card stock `#f4ead6`, Georgia display with wide
-tracking, Courier New for the numeric/stub text, dashed perforation rules, and
-poster art pulled from the *arr APIs' `remoteUrl` fields.
+**Status colour is fixed across every digest**: foam is fine, gold wants a
+look, love wants an action. A reader should not have to relearn the colours
+per mail.
 
-The **blueprint** is for the CI sheet: prussian `#0d2c40` ground on near-black,
-print-white `#e2f1f8` linework with `#2f6d8f` rules, cyan `#63d2ea` for
-annotations, red pencil `#f0665c` for corrections, Trebuchet MS headings,
-Courier New annotations, and a drafting title block (sheet, date, revision)
-closing the sheet.
+What still differs per digest, and should:
 
-The **sorting office** is for the inbox organizer: kraft `#d9c7a7` stock on
-dark brown, a `#8f7a55` band per section, rubber-stamp boxes in red
-`#a8322c` / blue `#33556e` / green `#4a6b3f`, Courier throughout with Verdana
-only where a subject line must stay readable small, and a torn perforation
-drawn as a row of glyphs rather than a border image.
+| Kind | Workflow | Voice |
+|------|----------|-------|
+| Ops / alarm | `health-monitor.json` | Console: monospace rows, iris headings, gauges |
+| Ops / ledger | `backup-storage.json` | Gold headings, backup sets as cards, capacity bars |
+| Arrivals | `media-arrivals.json` | Cinema ticket: Georgia, rose marquee, poster art |
+| Build state | `forgejo-ci.json` | Blueprint: foam linework, revision log, title block |
+| Timetable sync | `webuntis-radicale.json` | Change ledger: `[ PUT ]` / `[ DEL ]` rows |
+| Your own post | `inbox-organizer.json` | Sorting office: iris bands, rubber stamps, torn stub |
 
-Whatever the language, these constraints are not stylistic:
+The palette object is copied into all six Code nodes because n8n Code nodes
+cannot import anything. Change one, change the rest.
+
+Whatever the voice, these are not stylistic:
 
 - **Inline styles on table markup only.** No `<style>` block, no external
   fonts, no flexbox or grid. That is what survives Gmail/Apple Mail/Outlook
   clipping and dark-mode reprocessing.
-- **Only fonts that are installed everywhere.** Georgia, Courier New, Times,
-  and the `ui-monospace` stack. A webfont `<link>` is stripped by Gmail and
-  most of Outlook, and the fallback is what your reader actually sees.
-- **600px, and check it.** Long free-form detail text beside a
+- **Only fonts installed everywhere.** Georgia, Courier New, Trebuchet MS,
+  Verdana, and the `ui-monospace` stack. A webfont `<link>` is stripped by
+  Gmail and most of Outlook, and the fallback is what your reader sees.
+- **600px, and check it.** Long free-form text beside a
   `white-space:nowrap` value silently pushes the card past the width every
-  client crops at. `backup-storage.json` gives the detail its own full-width
-  row for exactly this reason.
+  client crops at, and a heading cell missing `colspan` will eat a whole
+  column's width. Both happened here and neither was visible in the source.
 - **Never colour alone.** Bracket tags, stamps or wording must carry the
   status too -- for colour-blind readers and for clients that rewrite
   backgrounds in dark mode.
+- **Bars out of two table cells**, never a background image or a run of block
+  glyphs: Outlook drops the first and mismeasures the second.
+- **Only draw a bar for a real proportion.** A full-width bar under "zpool
+  ONLINE" reads as a meter pinned at 100%, which is a measurement nobody
+  made. Hairline those rows instead.
 - **Images must be absolute public URLs.** A nix store path or a
-  `127.0.0.1` URL renders as a broken image in every mail client. Always
-  design the no-image fallback as well; `media-arrivals.json` draws a
-  placeholder card of the same dimensions.
+  `127.0.0.1` URL is a broken image in every mail client. Design the
+  no-image fallback too.
 
 ### Render it before you commit it
 
-Screenshot the HTML rather than trusting the markup. Both existing digests had
-a layout bug that was invisible in the source and obvious in a render:
+Screenshot the HTML rather than trusting the markup. Every digest here has had
+at least one layout bug that was invisible in the source and obvious in a
+render.
 
 ```bash
 node harness.js                      # writes preview.html, see the section above
@@ -191,12 +203,16 @@ nix run nixpkgs#chromium -- --headless --disable-gpu --hide-scrollbars \
 ```
 
 A bare nix chromium has no fontconfig, so every serif silently falls back to
-mono and you are not seeing your own typography. Point it at a font set first:
+mono and you are not reviewing your own typography. Point it at a font set
+first:
 
 ```bash
 # fonts.conf aliasing Georgia -> Liberation Serif, Courier New -> Liberation Mono
 FONTCONFIG_FILE=$PWD/fonts.conf nix shell nixpkgs#chromium -c chromium --headless ...
 ```
+
+Glyph coverage is part of this: `U+2713`/`U+2715` rendered as tofu boxes and
+had to become `[+]`/`[X]`.
 
 ## Workflows that call a model
 
