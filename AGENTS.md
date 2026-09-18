@@ -119,6 +119,7 @@ Forgejo Actions (`.forgejo/workflows/`):
 - `yomi.hardening.services.<unit>` — systemd hardening (see below)
 - `yomi.restic.{repository,offsite}` — local and off-site backup sets
 - `yomi.filesystems.*` — BTRFS rollback + persistPaths
+- `yomi.n8n.workflows.<name>` — workflow JSON imported into n8n on inari at start; see `hosts/nixos/inari/services/n8n/AGENTS.md` before touching a workflow or adding a new one
 
 ### Service-wrapper exception
 
