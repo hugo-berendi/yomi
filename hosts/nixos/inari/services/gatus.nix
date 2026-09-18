@@ -36,10 +36,10 @@
       }
     ];
   };
-  mkInternalHttp = name: realPort: {
+  mkInternalHttp = name: realPort: path: {
     inherit name;
     group = "Infrastructure";
-    url = "http://127.0.0.1:${toString realPort}";
+    url = "http://127.0.0.1:${toString realPort}${path}";
     interval = "30s";
     conditions = ["[STATUS] == 200"];
     alerts = [
@@ -136,15 +136,16 @@ in {
         (mkHttp "grafana")
         (mkHttp "prometheus")
         (mkHttp "home")
-        (mkHttp "guacamole")
+        # guacamole has autoStart = false (deliberately, see 6f0401c) - it's
+        # started on demand, so it's always "down" here. Not monitored.
         (mkHttp "adguard")
         (mkHttp "monitoring")
         # }}}
         # {{{ Local-only services (probe via 127.0.0.1 for tight SLA)
-        (mkInternalHttp "loki" config.yomi.ports.loki)
-        (mkInternalHttp "forgejo" config.yomi.ports.forgejo)
-        (mkInternalHttp "beszel" config.yomi.ports.beszel)
-        (mkInternalHttp "pocket-id" config.yomi.ports.pocket-id)
+        (mkInternalHttp "loki" config.yomi.ports.loki "/ready")
+        (mkInternalHttp "forgejo" config.yomi.ports.forgejo "")
+        (mkInternalHttp "beszel" config.yomi.ports.beszel "")
+        (mkInternalHttp "pocket-id" config.yomi.ports.pocket-id "")
         # }}}
       ];
     };
