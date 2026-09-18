@@ -133,6 +133,7 @@ So: pick the visual language from what the mail *is*, and commit to it.
 | Ops / alarm | `health-monitor.json`, `backup-storage.json` | Dark terminal card |
 | Arrivals / leisure | `media-arrivals.json` | Repertory-cinema ticket |
 | Repository / build state | `forgejo-ci.json` | Engineering blueprint |
+| Your own post, sorted | `inbox-organizer.json` | Kraft paper and rubber stamps |
 
 The **terminal card** is for anything where something might be wrong: a dark
 `#0b0f14` card on a light `#eef1f5` wrapper, monospace throughout, a thin
@@ -151,6 +152,12 @@ print-white `#e2f1f8` linework with `#2f6d8f` rules, cyan `#63d2ea` for
 annotations, red pencil `#f0665c` for corrections, Trebuchet MS headings,
 Courier New annotations, and a drafting title block (sheet, date, revision)
 closing the sheet.
+
+The **sorting office** is for the inbox organizer: kraft `#d9c7a7` stock on
+dark brown, a `#8f7a55` band per section, rubber-stamp boxes in red
+`#a8322c` / blue `#33556e` / green `#4a6b3f`, Courier throughout with Verdana
+only where a subject line must stay readable small, and a torn perforation
+drawn as a row of glyphs rather than a border image.
 
 Whatever the language, these constraints are not stylistic:
 
@@ -190,3 +197,30 @@ mono and you are not seeing your own typography. Point it at a font set first:
 # fonts.conf aliasing Georgia -> Liberation Serif, Courier New -> Liberation Mono
 FONTCONFIG_FILE=$PWD/fonts.conf nix shell nixpkgs#chromium -c chromium --headless ...
 ```
+
+## Workflows that call a model
+
+`inbox-organizer.json` classifies mail against the small llama.cpp defined in
+`hosts/nixos/inari/services/llama-cpp-classifier.nix`, reached through
+`CLASSIFIER_URL` in `services.n8n.environment`. If you add another
+model-using workflow, read that module's comment first: it records which
+models were measured and why the 3B won.
+
+- **Choose the model by measuring, not by reputation.** Write a labelled set
+  of a dozen realistic cases, run the candidates against it, and keep the
+  numbers. The 1.7B looked like the obvious pick on size and was wrong in the
+  way that costs: it filed a doctor's appointment as unsolicited bulk.
+- **Fix systematic errors with a rule, not a longer prompt.** Both candidates
+  read a DHL parcel as travel, because `Sendung` means both. Carriers are a
+  closed list. A rule is faster, cannot drift, and is reviewable in git.
+- **Never trust the model's numbers.** Small models rate scam mail as urgent,
+  because urgency is how scam mail is written. Clamp by bucket.
+- **Reject unknown labels.** A hallucinated bucket would quietly invent a
+  category nobody designed; the 1.7B answered `news` for `newsletters`.
+  Validate against the taxonomy and record the miss instead.
+- **A model being down must not lose data.** The classifier records the mail
+  with an `unsorted` verdict and the error text, so the digest cannot silently
+  under-report the inbox.
+- **This box has no GPU and ten busy cores.** Budget seconds per call, cap
+  threads, and keep the prompt short: the body excerpt is truncated to 400
+  characters precisely so `--ctx-size` can stay at 4096.
