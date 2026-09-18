@@ -204,6 +204,38 @@ age-public-key: ssh-to-age
   @echo "🔑 Printing public age key" >&2
   age-keygen -y ~/.config/sops/age/keys.txt
 
+[doc("Export n8n's live workflows back into the repository")]
+[group("nix")]
+n8n-export:
+  #!/usr/bin/env bash
+  set -euo pipefail
+
+  dir="hosts/nixos/inari/services/n8n/workflows"
+  sudo_bin="/run/wrappers/bin/sudo"
+
+  # n8n runs DynamicUser, so its uid does not exist outside the unit and
+  # `sudo -u` cannot reach the database. Root can, via the real state path
+  # behind StateDirectory.
+  tmp=$(mktemp -d)
+  trap 'rm -rf "$tmp"' EXIT
+
+  echo "📤 Exporting workflows from n8n"
+  "$sudo_bin" env \
+    N8N_USER_FOLDER=/var/lib/private/n8n \
+    HOME=/var/lib/private/n8n \
+    n8n export:workflow --all --separate --output="$tmp"
+
+  # jq -S so re-exports produce stable diffs, and drop meta.instanceId: it
+  # fingerprints this n8n install and does not belong in a mirrored repo.
+  mkdir -p "$dir"
+  for f in "$tmp"/*.json; do
+    name=$(jq -r '.name' "$f" | tr '[:upper:] ' '[:lower:]-' | tr -cd 'a-z0-9-')
+    "$sudo_bin" cat "$f" | jq -S 'del(.meta)' > "$dir/$name.json"
+    echo "  $dir/$name.json"
+  done
+
+  echo "🚀 Exported $(ls -1 "$dir"/*.json | wc -l) workflow(s). Review the diff before committing."
+
 [doc("Rekey every secrets file in the repository")]
 [group("secrets")]
 sops-rekey:

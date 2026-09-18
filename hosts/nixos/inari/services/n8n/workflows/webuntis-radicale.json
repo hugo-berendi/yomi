@@ -1,0 +1,383 @@
+{
+  "active": true,
+  "connections": {
+    "Konfiguration": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Öffentlichen Q13-Plan laden",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Manuell testen": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Konfiguration",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "PUT oder DELETE?": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Termin in Radicale schreiben",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "Termin aus Radicale löschen",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Persönliche Termine vorbereiten": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Schreibmodus?",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Schreibmodus?": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "PUT oder DELETE?",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Zeitplan": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Konfiguration",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Öffentlichen Q13-Plan laden": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Persönliche Termine vorbereiten",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "id": "IIKn4cyvIl68Qijq",
+  "name": "WebUntis → Radicale · persönlicher Stundenplan",
+  "nodeGroups": [],
+  "nodes": [
+    {
+      "id": "02577c7c-6054-4d79-a141-bc45b65da7bf",
+      "name": "Manuell testen",
+      "parameters": {},
+      "position": [
+        -16,
+        752
+      ],
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1
+    },
+    {
+      "id": "4e186696-c6bd-45d0-9a27-c996143464fc",
+      "name": "Zeitplan",
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "expression": "10 5 * * *",
+              "field": "cronExpression"
+            },
+            {
+              "expression": "0 7-19/2 * * *",
+              "field": "cronExpression"
+            }
+          ]
+        }
+      },
+      "position": [
+        -16,
+        560
+      ],
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2
+    },
+    {
+      "id": "c3beb75c-893c-4f1f-91c6-33e644691e6b",
+      "name": "Konfiguration",
+      "parameters": {
+        "jsCode": "const now = DateTime.now().setZone('Europe/Berlin');\nreturn [{\n  json: {\n    webUntisUrl: process.env.WEBUNTIS_URL,\n    webUntisSchool: process.env.WEBUNTIS_SCHOOL,\n    classId: Number(process.env.WEBUNTIS_CLASS_ID),\n    start: now.startOf('week').minus({ weeks: 1 }).toISODate(),\n    end: now.plus({ weeks: 8 }).endOf('week').toISODate(),\n    radicaleCalendarUrl: process.env.RADICALE_CALENDAR_URL,\n    courses: JSON.parse(process.env.WEBUNTIS_COURSES_JSON),\n    dryRun: false,\n  },\n}];"
+      },
+      "position": [
+        224,
+        656
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "c00e6242-3bdd-4fe8-8ddf-3c02ee81bdd5",
+      "name": "Öffentlichen Q13-Plan laden",
+      "parameters": {
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anonymous-school",
+              "value": "={{ $json.webUntisSchool }}"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {},
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "start",
+              "value": "={{ $json.start }}"
+            },
+            {
+              "name": "end",
+              "value": "={{ $json.end }}"
+            },
+            {
+              "name": "resourceType",
+              "value": "CLASS"
+            },
+            {
+              "name": "resources",
+              "value": "={{ $json.classId }}"
+            },
+            {
+              "name": "timetableType",
+              "value": "STANDARD"
+            },
+            {
+              "name": "layout",
+              "value": "START_TIME"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "sendQuery": true,
+        "url": "={{ $json.webUntisUrl }}"
+      },
+      "position": [
+        464,
+        656
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3
+    },
+    {
+      "id": "70993179-3df4-43a9-8309-63554ad61916",
+      "name": "Persönliche Termine vorbereiten",
+      "parameters": {
+        "jsCode": "const cfg = $('Konfiguration').first().json;\nconst response = $input.first().json;\n\nif (!Array.isArray(response.days) || response.errors?.length) {\n  throw new Error(`WebUntis lieferte keine gültigen Stundenplandaten: ${JSON.stringify(response.errors ?? response)}`);\n}\n\nconst COURSES = cfg.courses;\n\n// DTEND ist bei ganztägigen iCalendar-Terminen exklusiv.\nconst CALENDAR_BREAKS = [\n  { start: '2026-08-03', end: '2026-09-15', title: 'Sommerferien' },\n  { start: '2026-11-02', end: '2026-11-07', title: 'Allerheiligenferien' },\n  { start: '2026-12-24', end: '2027-01-09', title: 'Weihnachtsferien' },\n  { start: '2027-02-08', end: '2027-02-13', title: 'Frühjahrsferien' },\n  { start: '2027-03-22', end: '2027-04-03', title: 'Osterferien' },\n  { start: '2027-05-18', end: '2027-05-29', title: 'Pfingstferien' },\n  { start: '2027-08-02', end: '2027-09-14', title: 'Sommerferien' },\n  { start: '2026-10-03', end: '2026-10-04', title: 'Tag der Deutschen Einheit', type: 'Feiertag' },\n  { start: '2026-11-01', end: '2026-11-02', title: 'Allerheiligen', type: 'Feiertag' },\n  { start: '2026-11-18', end: '2026-11-19', title: 'Buß- und Bettag · schulfrei', type: 'Schulfrei' },\n  { start: '2026-12-25', end: '2026-12-26', title: '1. Weihnachtsfeiertag', type: 'Feiertag' },\n  { start: '2026-12-26', end: '2026-12-27', title: '2. Weihnachtsfeiertag', type: 'Feiertag' },\n  { start: '2027-01-01', end: '2027-01-02', title: 'Neujahr', type: 'Feiertag' },\n  { start: '2027-01-06', end: '2027-01-07', title: 'Heilige Drei Könige', type: 'Feiertag' },\n  { start: '2027-03-26', end: '2027-03-27', title: 'Karfreitag', type: 'Feiertag' },\n  { start: '2027-03-29', end: '2027-03-30', title: 'Ostermontag', type: 'Feiertag' },\n  { start: '2027-05-01', end: '2027-05-02', title: 'Tag der Arbeit', type: 'Feiertag' },\n  { start: '2027-05-06', end: '2027-05-07', title: 'Christi Himmelfahrt', type: 'Feiertag' },\n  { start: '2027-05-17', end: '2027-05-18', title: 'Pfingstmontag', type: 'Feiertag' },\n  { start: '2027-05-27', end: '2027-05-28', title: 'Fronleichnam', type: 'Feiertag' },\n];\n\nconst normalize = value => String(value ?? '').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toUpperCase();\nconst nameOf = element => normalize(element?.shortName || element?.displayName || element?.longName);\nconst displayOf = element => element?.shortName || element?.displayName || element?.longName || '';\nconst longDisplayOf = element => element?.longName || element?.displayName || element?.shortName || '';\nconst valuesAt = (entry, key) => (entry[key] ?? []).map(pair => ({ current: pair?.current ?? null, removed: pair?.removed ?? null }));\nconst allNames = pairs => pairs.flatMap(pair => [nameOf(pair.current), nameOf(pair.removed)]).filter(Boolean);\nconst subjectMatches = (pairs, course) => allNames(pairs).some(name => course.aliases.some(alias => normalize(alias) === name));\nconst teacherIndex = (pairs, teacher) => pairs.findIndex(pair => nameOf(pair.current) === normalize(teacher) || nameOf(pair.removed) === normalize(teacher));\nconst weekday = isoDate => ['SO', 'MO', 'DI', 'MI', 'DO', 'FR', 'SA'][new Date(`${isoDate}T12:00:00`).getDay()];\nconst hhmm = isoDateTime => String(isoDateTime).slice(11, 16);\nconst slotKey = entry => `${weekday(entry.duration.start.slice(0, 10))} ${hhmm(entry.duration.start)}`;\nconst resolveRoom = (roomPairs, course) => {\n  const currentRooms = roomPairs.map(pair => displayOf(pair.current)).filter(Boolean);\n  // Wird ein Raum getauscht, behaelt das Paar den Vorgaenger in `removed`.\n  // Ersetzt ein Paar genau den Stammraum dieses Kurses, ist dessen `current`\n  // der neue eigene Raum. Das ist die einzige Stelle, an der der Feed Raum und\n  // Kurs verknuepft: position1 und position3 sind getrennt sortierte Listen,\n  // eine Zuordnung ueber den Index gibt es nicht.\n  //\n  // Ohne diesen Zweig fiel eine Raumaenderung durch alle Heuristiken: der\n  // Stammraum steht dann nicht mehr in currentRooms, und nach Abzug der\n  // peerRooms bleiben zwei Kandidaten uebrig statt einem. Ergebnis war room:''\n  // und damit ein Termin voellig ohne LOCATION.\n  const replacedPair = roomPairs.find(pair => course.room && normalize(displayOf(pair.removed)) === normalize(course.room));\n  if (replacedPair && displayOf(replacedPair.current)) {\n    return { room: displayOf(replacedPair.current), changed: true, ambiguous: false };\n  }\n  if (course.room && currentRooms.some(room => normalize(room) === normalize(course.room))) {\n    return { room: course.room, changed: false, ambiguous: false };\n  }\n  if (currentRooms.length === 1) {\n    return { room: currentRooms[0], changed: Boolean(course.room && normalize(currentRooms[0]) !== normalize(course.room)), ambiguous: false };\n  }\n  if (course.room && currentRooms.length > 1) {\n    const otherBaselineRooms = course.peerRooms.filter(room => normalize(room) !== normalize(course.room));\n    const unmatched = currentRooms.filter(room => !otherBaselineRooms.some(other => normalize(other) === normalize(room)));\n    if (unmatched.length === 1) return { room: unmatched[0], changed: true, ambiguous: false };\n  }\n  return { room: '', changed: false, ambiguous: currentRooms.length > 1 };\n};\nconst escapeIcs = value => String(value ?? '').replace(/\\\\/g, '\\\\\\\\').replace(/\\r?\\n/g, '\\\\n').replace(/,/g, '\\\\,').replace(/;/g, '\\\\;');\nconst fold = line => {\n  const chunks = [];\n  let rest = line;\n  while (Buffer.byteLength(rest, 'utf8') > 73) {\n    let cut = Math.min(70, rest.length);\n    while (cut > 1 && Buffer.byteLength(rest.slice(0, cut), 'utf8') > 73) cut--;\n    chunks.push(rest.slice(0, cut));\n    rest = rest.slice(cut);\n  }\n  chunks.push(rest);\n  return chunks.join('\\r\\n ');\n};\nconst fnv1a = value => {\n  let hash = 0x811c9dc5;\n  for (let i = 0; i < value.length; i++) {\n    hash ^= value.charCodeAt(i);\n    hash = Math.imul(hash, 0x01000193);\n  }\n  return (hash >>> 0).toString(16).padStart(8, '0');\n};\nconst toIcsTime = iso => `${iso.slice(0, 4)}${iso.slice(5, 7)}${iso.slice(8, 10)}T${iso.slice(11, 13)}${iso.slice(14, 16)}00`;\nconst toIcsDate = iso => iso.replaceAll('-', '');\nconst isBlockedSchoolDate = date => CALENDAR_BREAKS.some(period => date >= period.start && date < period.end);\n\nconst state = $getWorkflowStaticData('global');\nstate.hashByHref ??= {};\nconst desired = new Map();\nconst warnings = [];\nlet ignored = 0;\n\nfor (const day of response.days) {\n  for (const entry of [...(day.gridEntries ?? []), ...(day.dayEntries ?? [])]) {\n    if (!entry.duration?.start || !entry.duration?.end) { ignored++; continue; }\n    if (isBlockedSchoolDate(entry.duration.start.slice(0, 10))) { ignored++; continue; }\n    const teachers = valuesAt(entry, 'position1');\n    const subjects = valuesAt(entry, 'position2');\n    const rooms = valuesAt(entry, 'position3');\n    const slot = slotKey(entry);\n    let course = COURSES.find(candidate => subjectMatches(subjects, candidate) && teacherIndex(teachers, candidate.teacher) >= 0);\n    let index = course ? teacherIndex(teachers, course.teacher) : -1;\n\n    if (!course && normalize(entry.status) !== 'REGULAR') {\n      const slotCandidates = COURSES.filter(candidate => candidate.slots.includes(slot) && subjectMatches(subjects, candidate));\n      if (slotCandidates.length === 1 && teachers.length === 1) {\n        course = slotCandidates[0];\n        index = 0;\n      }\n    }\n    if (!course) { ignored++; continue; }\n\n    const teacherPair = teachers[index] ?? null;\n    const actualTeacher = displayOf(teacherPair?.current);\n    const originalTeacher = displayOf(teacherPair?.removed) || (actualTeacher ? course.teacher : '');\n    const roomResult = resolveRoom(rooms, course);\n    const room = roomResult.room;\n    const currentSubjects = subjects.map(pair => displayOf(pair.current)).filter(Boolean);\n    const removedSubjects = subjects.map(pair => displayOf(pair.removed)).filter(Boolean);\n    const currentSubjectIsOwn = subjects.some(pair => pair.current && course.aliases.some(alias => normalize(alias) === nameOf(pair.current)));\n    const actualSubject = currentSubjectIsOwn ? course.subject : longDisplayOf(subjects.find(pair => pair.current)?.current) || course.subject;\n    const isCancelled = normalize(entry.status) === 'CANCELLED' || (!teacherPair?.current && teacherPair?.removed);\n    if (isCancelled) continue;\n\n    if (roomResult.ambiguous) warnings.push(`${entry.duration.start} ${course.subject}: Raum nicht eindeutig.`);\n    const teacherLabel = actualTeacher || course.teacher;\n    const teacherChanged = Boolean(teacherPair?.removed) && nameOf(teacherPair.removed) !== nameOf(teacherPair.current);\n    const roomChanged = roomResult.changed;\n    const subjectChanged = subjects.some(pair => pair.removed && nameOf(pair.removed) !== nameOf(pair.current));\n    const changed = teacherChanged || roomChanged || subjectChanged;\n    const titleSubject = actualSubject;\n    const summary = `${titleSubject} · ${teacherLabel}${changed ? ' (Änderung)' : ''}`;\n    const sourceIds = Array.isArray(entry.ids) ? entry.ids.join('-') : String(entry.id ?? '');\n    const identity = `${course.id}|${entry.duration.start}|${sourceIds}`;\n    const href = `webuntis-n8n-${fnv1a(identity)}.ics`;\n    const uid = `webuntis-${fnv1a(identity)}@n8n.local`;\n    const description = [\n      'Automatisch aus dem öffentlichen Q13-Stundenplan von WebUntis synchronisiert.',\n      `Persönlicher Kurs: ${course.subject} · ${course.teacher === 'RO' ? 'RÖ' : course.teacher}`,\n      changed ? `Aktuell: ${titleSubject} · ${teacherLabel}` : '',\n      originalTeacher && normalize(originalTeacher) !== normalize(teacherLabel) ? `Ursprüngliche Lehrkraft: ${originalTeacher}` : '',\n      roomChanged && course.room ? `Stammraum laut allgemeinem Plan: ${course.room}` : '',\n      removedSubjects.length ? `Ursprüngliches Fach: ${removedSubjects.join(', ')}` : '',\n      changed && entry.substitutionText ? `Vertretung: ${entry.substitutionText}` : '',\n      entry.lessonText ? `Hinweis: ${entry.lessonText}` : '',\n      entry.lessonInfo ? `Info: ${entry.lessonInfo}` : '',\n    ].filter(Boolean).join('\\n');\n    const lines = [\n      'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//n8n//WebUntis Radicale Sync//DE', 'CALSCALE:GREGORIAN',\n      'BEGIN:VTIMEZONE', 'TZID:Europe/Berlin',\n      'BEGIN:STANDARD', 'DTSTART:19961027T030000', 'RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU',\n      'TZNAME:CET', 'TZOFFSETFROM:+0200', 'TZOFFSETTO:+0100', 'END:STANDARD',\n      'BEGIN:DAYLIGHT', 'DTSTART:19810329T020000', 'RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU',\n      'TZNAME:CEST', 'TZOFFSETFROM:+0100', 'TZOFFSETTO:+0200', 'END:DAYLIGHT', 'END:VTIMEZONE',\n      'BEGIN:VEVENT', `UID:${uid}`,\n      `DTSTART;TZID=Europe/Berlin:${toIcsTime(entry.duration.start)}`,\n      `DTEND;TZID=Europe/Berlin:${toIcsTime(entry.duration.end)}`,\n      'DTSTAMP:20260915T000000Z', `SUMMARY:${escapeIcs(summary)}`,\n      room ? `LOCATION:${escapeIcs(room)}` : '', `DESCRIPTION:${escapeIcs(description)}`,\n      `X-N8N-WEBUNTIS-ENTRY-IDS:${escapeIcs(sourceIds)}`, 'END:VEVENT', 'END:VCALENDAR',\n    ].filter(Boolean).map(fold);\n    const body = `${lines.join('\\r\\n')}\\r\\n`;\n    desired.set(href, { href, body, hash: fnv1a(body), date: entry.duration.start.slice(0, 10), course: course.id });\n  }\n}\n\nconst matchedLessons = desired.size;\nfor (const period of CALENDAR_BREAKS) {\n  const type = period.type || 'Ferien';\n  const identity = `calendar-break|${period.start}|${period.end}|${period.title}`;\n  const href = `webuntis-n8n-break-${fnv1a(identity)}.ics`;\n  const uid = `webuntis-break-${fnv1a(identity)}@n8n.local`;\n  const lines = [\n    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//n8n//WebUntis Radicale Sync//DE', 'CALSCALE:GREGORIAN',\n    'BEGIN:VEVENT', `UID:${uid}`, `DTSTART;VALUE=DATE:${toIcsDate(period.start)}`,\n    `DTEND;VALUE=DATE:${toIcsDate(period.end)}`, 'DTSTAMP:20260915T000000Z',\n    `SUMMARY:${escapeIcs(`${type} · ${period.title}`)}`,\n    `DESCRIPTION:${escapeIcs('Schulfreier Zeitraum. Der WebUntis-Workflow trägt währenddessen keinen Unterricht ein.')}`,\n    'TRANSP:TRANSPARENT', 'END:VEVENT', 'END:VCALENDAR',\n  ].map(fold);\n  const body = `${lines.join('\\r\\n')}\\r\\n`;\n  desired.set(href, { href, body, hash: fnv1a(body), date: period.start, course: 'calendar-break' });\n}\n\nif (!desired.size) throw new Error('Kein persönlicher Kurs wurde erkannt. Abbruch ohne Löschungen.');\nconst feedDates = response.days.map(day => day.date).filter(Boolean).sort();\nconst feedMinDate = feedDates[0];\nconst feedMaxDate = feedDates[feedDates.length - 1];\nconst baseUrl = String(cfg.radicaleCalendarUrl).replace(/\\/+$/, '') + '/';\nif (!/^https?:\\/\\//i.test(baseUrl)) throw new Error('radicaleCalendarUrl fehlt oder ist ungültig.');\n\nconst operations = [];\nfor (const event of desired.values()) {\n  const previous = state.hashByHref[event.href];\n  const previousHash = typeof previous === 'string' ? previous : previous?.hash;\n  if (previousHash !== event.hash) operations.push({ method: 'PUT', url: baseUrl + event.href, body: event.body, href: event.href, course: event.course });\n}\nfor (const [href, previous] of Object.entries(state.hashByHref)) {\n  const date = typeof previous === 'object' ? previous.date : null;\n  const covered = date && feedMinDate && feedMaxDate && date >= feedMinDate && date <= feedMaxDate;\n  if (!desired.has(href) && covered) operations.push({ method: 'DELETE', url: baseUrl + href, body: '', href, course: 'entfallen' });\n}\n\nif (!cfg.dryRun) {\n  const retained = Object.entries(state.hashByHref).filter(([, previous]) => {\n    const date = typeof previous === 'object' ? previous.date : null;\n    return !date || date < feedMinDate || date > feedMaxDate;\n  });\n  state.hashByHref = {\n    ...Object.fromEntries(retained),\n    ...Object.fromEntries([...desired.values()].map(event => [event.href, { hash: event.hash, date: event.date }])),\n  };\n}\n\nconst summary = {\n  matched: matchedLessons,\n  calendarBreaks: CALENDAR_BREAKS.length,\n  managedTotal: desired.size,\n  ignored,\n  changes: operations.length,\n  range: `${feedMinDate} bis ${feedMaxDate}`,\n  warnings,\n};\nif (!operations.length) return [{ json: { dryRun: Boolean(cfg.dryRun), noop: true, summary } }];\nreturn operations.map(operation => ({ json: { ...operation, dryRun: Boolean(cfg.dryRun), summary } }));\n"
+      },
+      "position": [
+        720,
+        656
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "34d9ca03-4761-4097-9fea-ae409d6644aa",
+      "name": "Schreibmodus?",
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "1fd1ad44-02c2-40c0-8888-66490a698477",
+              "leftValue": "={{ $json.dryRun }}",
+              "operator": {
+                "operation": "false",
+                "singleValue": true,
+                "type": "boolean"
+              },
+              "rightValue": ""
+            },
+            {
+              "id": "803127c4-943c-4be9-a19f-178c62233223",
+              "leftValue": "={{ $json.method }}",
+              "operator": {
+                "operation": "exists",
+                "singleValue": true,
+                "type": "string"
+              },
+              "rightValue": ""
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          }
+        },
+        "options": {}
+      },
+      "position": [
+        992,
+        656
+      ],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2
+    },
+    {
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "tM9PYzotsyf5X1GW",
+          "name": "Radicale"
+        }
+      },
+      "id": "95ad1cb7-a83a-47e0-9b36-d59ec2736213",
+      "name": "Termin in Radicale schreiben",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "body": "={{ $json.body }}",
+        "contentType": "raw",
+        "genericAuthType": "httpBasicAuth",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "text/calendar; charset=utf-8"
+            },
+            {
+              "name": "Accept",
+              "value": "text/plain, */*"
+            }
+          ]
+        },
+        "method": "PUT",
+        "options": {},
+        "rawContentType": "text/calendar; charset=utf-8",
+        "sendBody": true,
+        "sendHeaders": true,
+        "url": "={{ $json.url }}"
+      },
+      "position": [
+        1440,
+        480
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3
+    },
+    {
+      "id": "09551cbd-6503-4825-a3c7-53bdc01773a4",
+      "name": "Hinweis",
+      "parameters": {
+        "content": "### Vorschau / keine Änderung\nDer Workflow ist im `dryRun` oder es gibt nichts zu ändern. Prüfe die Ausgabe von **Persönliche Termine vorbereiten**.",
+        "height": 120,
+        "width": 330
+      },
+      "position": [
+        1184,
+        736
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "87b85bd5-4dc0-4a7e-be8f-628156dad296",
+      "name": "PUT oder DELETE?",
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "2ba42cf0-3aa5-4ba4-914c-824780a5e49e",
+              "leftValue": "={{ $json.method }}",
+              "operator": {
+                "operation": "equals",
+                "type": "string"
+              },
+              "rightValue": "PUT"
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          }
+        },
+        "options": {}
+      },
+      "position": [
+        1184,
+        576
+      ],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2
+    },
+    {
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "tM9PYzotsyf5X1GW",
+          "name": "Radicale"
+        }
+      },
+      "id": "ac29fefd-9981-4381-9a78-57a3d924604e",
+      "name": "Termin aus Radicale löschen",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "text/plain, */*"
+            }
+          ]
+        },
+        "method": "DELETE",
+        "options": {},
+        "sendHeaders": true,
+        "url": "={{ $json.url }}"
+      },
+      "position": [
+        1440,
+        688
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3
+    }
+  ],
+  "pinData": {},
+  "settings": {
+    "availableInMCP": false,
+    "binaryMode": "separate",
+    "executionOrder": "v1"
+  },
+  "tags": [],
+  "versionId": "13600483-2371-423d-87ad-807b593db348"
+}
