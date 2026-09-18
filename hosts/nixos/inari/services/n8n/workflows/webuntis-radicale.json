@@ -63,12 +63,56 @@
         ]
       ]
     },
+    "Sync-Status festschreiben": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Änderungs-E-Mail vorbereiten",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Termin aus Radicale löschen": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Sync-Status festschreiben",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Termin in Radicale schreiben": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Sync-Status festschreiben",
+            "type": "main"
+          }
+        ]
+      ]
+    },
     "Zeitplan": {
       "main": [
         [
           {
             "index": 0,
             "node": "Konfiguration",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Änderungs-E-Mail vorbereiten": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Änderungsbenachrichtigung senden",
             "type": "main"
           }
         ]
@@ -81,28 +125,6 @@
             "index": 0,
             "node": "Persönliche Termine vorbereiten",
             "type": "main"
-          }
-        ]
-      ]
-    },
-    "Termin in Radicale schreiben": {
-      "main": [
-        [
-          {
-            "node": "Sync-Status festschreiben",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Termin aus Radicale löschen": {
-      "main": [
-        [
-          {
-            "node": "Sync-Status festschreiben",
-            "type": "main",
-            "index": 0
           }
         ]
       ]
@@ -394,17 +416,54 @@
       "typeVersion": 4.3
     },
     {
+      "id": "a7f3c1e2-5b84-4d19-9c62-8e0d1f4a7b35",
+      "name": "Sync-Status festschreiben",
       "parameters": {
-        "jsCode": "// Laeuft erst, wenn beide HTTP-Zweige durch sind. Schlaegt einer fehl, bricht\n// n8n vorher ab, dieser Knoten laeuft nicht, und hashByHref bleibt unberuehrt\n// -- der naechste Lauf sieht die Differenz erneut und versucht es wieder.\nconst items = $input.all();\nconst carrier = items.find(item => item.json?.nextState);\nif (!carrier) return items;\n\nconst state = $getWorkflowStaticData('global');\nstate.hashByHref = carrier.json.nextState;\n\nreturn [{ json: {\n  recorded: Object.keys(carrier.json.nextState).length,\n  operations: items.length,\n  summary: carrier.json.summary ?? null,\n} }];"
+        "jsCode": "// Laeuft erst, wenn beide HTTP-Zweige durch sind. Schlaegt einer fehl, bricht\n// n8n vorher ab, dieser Knoten laeuft nicht, und hashByHref bleibt unberuehrt\n// -- der naechste Lauf sieht die Differenz erneut und versucht es wieder.\nconst items = $input.all();\nconst carrier = items.find((item) => item.json?.nextState);\nif (!carrier) return items;\n\nconst state = $getWorkflowStaticData('global');\nconst previousState = state.hashByHref ?? {};\n\nconst unfoldIcs = (body) => String(body ?? '').replace(/\\r\\n[ \\t]/g, '');\nconst unescapeIcs = (value) =>\n  String(value ?? '')\n    .replace(/\\\\n/g, ' ')\n    .replace(/\\\\,/g, ',')\n    .replace(/\\\\;/g, ';')\n    .replace(/\\\\\\\\/g, '\\\\');\nconst parseSummary = (body) => {\n  const match = /^SUMMARY:(.*)$/m.exec(unfoldIcs(body));\n  return match ? unescapeIcs(match[1]) : null;\n};\nconst parseStart = (body) => {\n  const match = /DTSTART[^:]*:(\\d{8})T(\\d{4})/.exec(unfoldIcs(body));\n  if (!match) return null;\n  const [, ymd, hm] = match;\n  return `${ymd.slice(6, 8)}.${ymd.slice(4, 6)}. ${hm.slice(0, 2)}:${hm.slice(2, 4)}`;\n};\n\n// DELETE requests carry an empty body -- the summary text only survives in\n// the hash entry recorded the last time this href was written.\nconst changes = items\n  .filter((item) => item.json?.method)\n  .map((item) => {\n    const { method, href, body } = item.json;\n    if (method === 'PUT') {\n      return { method, label: parseSummary(body) || href, when: parseStart(body) };\n    }\n    const prior = previousState[href];\n    const priorDate = prior?.date ? `${prior.date.slice(8, 10)}.${prior.date.slice(5, 7)}.` : null;\n    return { method, label: 'Termin entfällt', when: priorDate };\n  })\n  .sort((a, b) => (a.when ?? '').localeCompare(b.when ?? ''));\n\nstate.hashByHref = carrier.json.nextState;\n\nreturn [\n  {\n    json: {\n      recorded: Object.keys(carrier.json.nextState).length,\n      operations: items.length,\n      summary: carrier.json.summary ?? null,\n      changes,\n    },\n  },\n];"
       },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
       "position": [
         1680,
         576
       ],
-      "id": "a7f3c1e2-5b84-4d19-9c62-8e0d1f4a7b35",
-      "name": "Sync-Status festschreiben"
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "4807b44d-f306-48ef-9300-be8e326dbf84",
+      "name": "Änderungs-E-Mail vorbereiten",
+      "parameters": {
+        "jsCode": "const { changes = [], summary } = $input.first().json;\n\n// {{{ Terminal-styled design tokens (shared with the inari health-monitor digest)\nconst palette = {\n  bg: '#eef1f5',\n  card: '#0b0f14',\n  cardBorder: '#1c2530',\n  divider: '#182029',\n  text: '#d6e0ea',\n  muted: '#5b7284',\n  comment: '#4a7a6b',\n  accent: '#5ec8f2',\n  added: '#3ddc84',\n  removed: '#ff5c7a',\n};\nconst mono = \"ui-monospace,'JetBrains Mono','SFMono-Regular',Menlo,Consolas,'Liberation Mono',monospace\";\n// }}}\n\nconst rowsHtml = changes\n  .map((c) => {\n    const isPut = c.method === 'PUT';\n    const color = isPut ? palette.added : palette.removed;\n    const tag = isPut ? '[ PUT ]' : '[ DEL ]';\n    return `<tr>\n      <td style=\"padding:8px 28px;border-bottom:1px solid ${palette.divider};font-family:${mono};font-size:12px;color:${palette.muted};white-space:nowrap;\">${c.when ?? '--.--. --:--'}</td>\n      <td style=\"padding:8px 12px;border-bottom:1px solid ${palette.divider};font-family:${mono};font-size:13px;color:${palette.text};width:100%;\">${c.label}</td>\n      <td style=\"padding:8px 28px;border-bottom:1px solid ${palette.divider};font-family:${mono};font-size:12px;text-align:right;white-space:nowrap;\">\n        <span style=\"color:${color};font-weight:700;\">${tag}</span>\n      </td>\n    </tr>`;\n  })\n  .join('\\n');\n\nconst added = changes.filter((c) => c.method === 'PUT').length;\nconst removed = changes.filter((c) => c.method === 'DELETE').length;\nconst statusLine = [added ? `${added} neu/geändert` : null, removed ? `${removed} entfallen` : null]\n  .filter(Boolean)\n  .join(' · ');\n\nconst timestamp = new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin', dateStyle: 'medium', timeStyle: 'short' });\n\nconst html = `<!DOCTYPE html>\n<html>\n  <body style=\"margin:0;padding:32px 16px;background:${palette.bg};font-family:${mono};\">\n    <table role=\"presentation\" width=\"100%\" style=\"max-width:600px;margin:0 auto;\">\n      <tr>\n        <td style=\"background:${palette.card};border:1px solid ${palette.cardBorder};border-radius:6px;overflow:hidden;\">\n          <table role=\"presentation\" width=\"100%\" style=\"border-collapse:collapse;\">\n            <tr><td style=\"height:4px;line-height:4px;font-size:0;background:${palette.accent};\">&nbsp;</td></tr>\n            <tr>\n              <td style=\"padding:28px 28px 20px 28px;\">\n                <div style=\"font-family:${mono};font-size:12px;color:${palette.comment};\">$ n8n run webuntis-radicale --sync</div>\n                <div style=\"font-family:${mono};font-size:21px;font-weight:700;letter-spacing:0.04em;color:${palette.text};margin-top:14px;\">STUNDENPLAN_SYNC</div>\n                <div style=\"font-family:${mono};font-size:14px;font-weight:700;color:${palette.accent};margin-top:8px;\">[ SYNC ] ${statusLine || `${changes.length} Änderungen`}</div>\n                <div style=\"font-family:${mono};font-size:12px;color:${palette.muted};margin-top:10px;\">${timestamp} · Zeitraum ${summary?.range ?? '–'}</div>\n              </td>\n            </tr>\n            <tr><td style=\"border-top:1px solid ${palette.cardBorder};\"></td></tr>\n            <tr>\n              <td style=\"padding:16px 28px 2px 28px;font-family:${mono};font-size:12px;color:${palette.comment};\"># changes</td>\n            </tr>\n            <tr>\n              <td style=\"padding:0 0 20px 0;\">\n                <table role=\"presentation\" width=\"100%\" style=\"border-collapse:collapse;\">${rowsHtml}</table>\n              </td>\n            </tr>\n            <tr><td style=\"border-top:1px solid ${palette.cardBorder};\"></td></tr>\n            <tr>\n              <td style=\"padding:16px 28px;font-family:${mono};font-size:11px;color:${palette.muted};\">generated by n8n @ inari · ${summary?.managedTotal ?? '?'} Termine verwaltet, ${summary?.ignored ?? 0} ignoriert</td>\n            </tr>\n          </table>\n        </td>\n      </tr>\n    </table>\n  </body>\n</html>`;\n\nreturn [{ json: { subject: `[WebUntis] ${statusLine || `${changes.length} Änderungen`}`, html } }];"
+      },
+      "position": [
+        1920,
+        576
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "credentials": {
+        "smtp": {
+          "id": "WA5TySnlA2vDhGm4",
+          "name": "Migadu (no-reply)"
+        }
+      },
+      "id": "c9e42888-870b-458f-8928-f9554d913dc5",
+      "name": "Änderungsbenachrichtigung senden",
+      "parameters": {
+        "emailFormat": "html",
+        "fromEmail": "no-reply@tengu.hugo-berendi.de",
+        "html": "={{ $json.html }}",
+        "options": {},
+        "subject": "={{ $json.subject }}",
+        "toEmail": "status@hugo-berendi.de"
+      },
+      "position": [
+        2160,
+        576
+      ],
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1
     }
   ],
   "pinData": {},
@@ -414,5 +473,5 @@
     "executionOrder": "v1"
   },
   "tags": [],
-  "versionId": "13600483-2371-423d-87ad-807b593db348"
+  "versionId": "b767c288-3a1a-4206-812a-83164da2885b"
 }
