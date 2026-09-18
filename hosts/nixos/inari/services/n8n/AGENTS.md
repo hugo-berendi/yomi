@@ -50,6 +50,25 @@ has to run it, agents can't) to pull the real id back into the repo, fold in
 any further edits on top of that export, and only then flip `enforce` back to
 `true`.
 
+Credentials are shared instance-wide, not per-workflow. If a second workflow
+needs the same credential (e.g. another node wants to send mail through the
+same SMTP account), reuse the id you already learned from the first export
+instead of seeding a second placeholder and doing the manual-attach dance
+again.
+
+`just n8n-export` overwrites this directory with **every** workflow in the
+instance, filed under a filename it derives by slugifying the workflow's
+`name` (lowercase, non-`a-z0-9-` characters dropped — so `ö`/`ü` etc. just
+vanish, e.g. "persönlicher" becomes "persnlicher"). That slug essentially
+never matches the short, hand-picked filenames these files actually use
+(`health-monitor.json`, not `inari-health-monitor--tagesbericht-per-e-mail.json`),
+and it exports unrelated workflows too (anything else that exists in the
+instance, e.g. scratch workflows nobody registered in `n8n.nix`). After
+running it: diff the freshly-slugified file against the real one for whatever
+you changed, fold in what's new (usually just a credential id), and delete
+the export's stray files rather than committing them — `git status` will
+show them as untracked, they are not automatically part of anything.
+
 ## Verify against the live instance, not against docs or memory
 
 n8n's CLI help text, node parameter shapes, and available metrics all drift
