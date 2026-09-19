@@ -30,15 +30,5 @@ sudo systemctl start restic-offsite-restore.service
 journalctl -u restic-backups-offsite-check -u restic-offsite-restore
 ```
 
-The external heartbeat timer runs every five minutes but skips sending until
-`/run/secrets/inari_heartbeat_url` exists. Create a check outside the home network,
-configure its notification recipient and allow at least ten minutes between
-successful pings. Store its HTTPS ping URL under `inari_heartbeat_url` in
-`hosts/nixos/inari/secrets.yaml` using sops, then declare it in `heartbeat.nix`:
-
-```nix
-sops.secrets.inari_heartbeat_url.sopsFile = ../secrets.yaml;
-```
-
 Run the monitoring regressions with
 `nix build .#checks.x86_64-linux.backup-monitoring`.
