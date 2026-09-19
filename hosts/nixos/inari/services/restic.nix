@@ -1,4 +1,5 @@
 {
+  imports = [./restic-restore.nix];
   # Backups of /persist/data and /persist/state. The repository lives on the
   # redundant raid5pool rather than on the NVMe the data itself sits on, so it
   # survives losing zroot.
@@ -30,7 +31,7 @@
         # Without the dumps, an off-site restore returns immich's photos and
         # paperless' documents as loose files with nothing describing them --
         # no albums, no users, no tags. Compressed dumps of every database,
-        # written by services.postgresqlBackup half an hour before this runs.
+        # written successfully by postgresqlBackup before this unit may start.
         "/persist/state/var/backup/postgresql"
       ];
 

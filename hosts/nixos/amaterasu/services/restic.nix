@@ -15,4 +15,13 @@
     repository = "sftp:restic-amaterasu@inari:/data";
     extraOptions = ["sftp.args='-i ${config.sops.secrets.amaterasu_restic_ssh_key.path}'"];
   };
+
+  # Inari retains the last observed success while the laptop is asleep or away.
+  services.prometheus.exporters.node = {
+    enable = true;
+    port = config.yomi.ports.prometheus-node-exporter;
+    extraFlags = ["--collector.disable-defaults"];
+    enabledCollectors = ["textfile"];
+  };
+  networking.firewall.interfaces.tailscale0.allowedTCPPorts = [config.yomi.ports.prometheus-node-exporter];
 }

@@ -1,9 +1,12 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }: let
   cfg = config.yomi.restic;
+  backupNames = ["data" "state"] ++ lib.optionals cfg.offsite.enable ["offsite" "offsite-check"];
+  metricsDirectory = "/var/lib/restic-metrics";
 
   # {{{ Backup helper
   createBackup = {
@@ -110,6 +113,32 @@ in {
   };
 
   config = lib.mkIf cfg.enable (lib.mkMerge [
+    {
+      # ExecStartPost runs only after backup, prune and check all succeeded.
+      # Keep the previous timestamp on failure, including across a reboot.
+      systemd.services = lib.genAttrs (map (name: "restic-backups-${name}") backupNames) (unit: let
+        name = lib.removePrefix "restic-backups-" unit;
+      in {
+        postStart = ''
+          set -eu
+          metric=${metricsDirectory}/${name}.prom
+          tmp="$metric.tmp"
+          trap 'rm -f "$tmp"' EXIT
+          printf '# HELP yomi_restic_last_success_timestamp_seconds Unix timestamp of the last successful restic job.\n# TYPE yomi_restic_last_success_timestamp_seconds gauge\n' > "$tmp"
+          printf 'yomi_restic_last_success_timestamp_seconds{host="%s",backup="%s"} %s\n' \
+            ${lib.escapeShellArg config.networking.hostName} ${lib.escapeShellArg name} \
+            "$(${pkgs.coreutils}/bin/date +%s)" >> "$tmp"
+          chmod 0644 "$tmp"
+          mv -f "$tmp" "$metric"
+        '';
+      });
+
+      systemd.tmpfiles.rules = ["d ${metricsDirectory} 0755 root root -"];
+      environment.persistence."/persist/state".directories = [metricsDirectory];
+      services.prometheus.exporters.node.extraFlags = [
+        "--collector.textfile.directory=${metricsDirectory}"
+      ];
+    }
     (lib.mkIf cfg.offsite.enable {
       sops.secrets.b2_bucket.sopsFile = cfg.offsite.sopsFile;
       sops.secrets.b2_account_id.sopsFile = cfg.offsite.sopsFile;
@@ -139,6 +168,17 @@ in {
         # long as it takes rather than being killed mid-transfer.
         timerConfig = {
           OnCalendar = "daily";
+          RandomizedDelaySec = "1h";
+          Persistent = true;
+        };
+      };
+
+      # Checking B2 separately keeps a slow download out of the nightly backup.
+      services.restic.backups.offsite-check = {
+        inherit (config.services.restic.backups.offsite) repositoryFile passwordFile environmentFile;
+        checkOpts = ["--retry-lock=30m" "--read-data-subset=5%"];
+        timerConfig = {
+          OnCalendar = "Sun *-*-* 04:00:00";
           RandomizedDelaySec = "1h";
           Persistent = true;
         };

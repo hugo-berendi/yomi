@@ -296,6 +296,10 @@
             hosts
           ))
           // {
+            backup-monitoring = import ./tests/backup-monitoring.nix {
+              inherit pkgs;
+              rules = self.nixosConfigurations.inari.config.services.grafana.provision.alerting.rules.settings;
+            };
             dns-zones = dnsPackages.octodns-zones;
             dns-sync = dnsPackages.octodns-sync;
           };

@@ -20,13 +20,17 @@ in {
       compression = "zstd";
       location = "/persist/state/var/backup/postgresql";
 
-      # Ahead of the restic timers at 00:00, not after them. Dumping at 02:30
-      # meant the nightly backup always captured the previous day's dump, so
-      # the database lagged the file data it describes by about 22 hours --
-      # long enough for a photo to be in the immich backup while the row
-      # describing it is not.
-      startAt = "*-*-* 23:30:00";
+      # Restic starts a fresh dump and waits for success. Clock offsets alone
+      # neither wait for a slow dump nor propagate its failure.
+      startAt = lib.mkIf config.yomi.restic.enable [];
     };
+
+    systemd.services = lib.mkIf config.yomi.restic.enable (lib.genAttrs
+      (["restic-backups-state"] ++ lib.optional config.yomi.restic.offsite.enable "restic-backups-offsite")
+      (_: {
+        requires = ["postgresqlBackup.service"];
+        after = ["postgresqlBackup.service"];
+      }));
 
     environment.persistence."/persist/state".directories = [
       {
