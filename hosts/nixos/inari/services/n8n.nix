@@ -164,6 +164,23 @@ in {
         # IPv4-first resolution for the whole process instead of per-request.
         NODE_OPTIONS = "--dns-result-order=ipv4first";
 
+        # Code nodes reach environment variables through `$env`, and n8n
+        # blocks that by default: createEnvProviderState() treats anything
+        # other than the exact string "false" as blocked, so the workflows see
+        # "access to env vars denied" rather than an empty value.
+        #
+        # lib.boolToString, not toString: `toString false` is "" in Nix, which
+        # would leave env access blocked while looking like it had been turned
+        # off.
+        #
+        # The cost is real and worth stating: this hands every Code node the
+        # whole process environment, which here includes the webuntis
+        # credentials and the *arr API keys. That is what the workflows need,
+        # and it is what they had when they read process.env, but it does mean
+        # a Code node added through the web ui can read every secret the unit
+        # holds.
+        N8N_BLOCK_ENV_ACCESS_IN_NODE = lib.boolToString false;
+
         # The inbox organizer classifies mail against the small dedicated
         # llama.cpp, not the 14B on ${toString config.yomi.ports.llama-cpp}:
         # the 14B answers correctly and takes some forty seconds per mail on

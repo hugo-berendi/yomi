@@ -220,6 +220,19 @@ n8n runs Code nodes in its JS task runner, which evaluates them in a `vm`
 context built from an explicit list. **There is no `process`** -- read
 environment variables with **`$env.VARIABLE`**.
 
+`$env` also has to be unblocked, which is a separate thing from using it.
+n8n refuses env access in Code nodes by default: `createEnvProviderState()`
+treats anything but the exact string `false` as blocked, and the node fails
+with **`access to env vars denied`**. `n8n.nix` sets
+`N8N_BLOCK_ENV_ACCESS_IN_NODE = lib.boolToString false` -- `lib.boolToString`
+rather than `toString`, because `toString false` is `""` in Nix, which leaves
+access blocked while looking like it was turned off.
+
+That flag hands every Code node the unit's whole environment, secrets
+included. It is what these workflows need and what they had under
+`process.env`, but a Code node added through the web ui can read every
+secret the unit holds.
+
 The absence is specific, not general. `getNativeVariables()` in the runner
 injects `Buffer`, `setTimeout`/`setInterval`/`setImmediate` and their
 clears, `btoa`/`atob`, `TextEncoder`/`TextDecoder` and the stream variants;
