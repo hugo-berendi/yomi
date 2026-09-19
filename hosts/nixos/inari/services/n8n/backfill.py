@@ -396,6 +396,12 @@ def plan_moves(verdicts: dict, include_junk: bool) -> dict[str, list[bytes]]:
     plan: dict[str, list[bytes]] = defaultdict(list)
     for uid, record in verdicts.items():
         bucket = record["bucket"]
+        # Already filed on an earlier run. The uid belonged to INBOX and died
+        # with the move, so re-planning it would send MOVE a uid the mailbox
+        # no longer has -- harmless on Migadu, but it would grow every run and
+        # eventually be the whole history.
+        if record.get("moved_to"):
+            continue
         if bucket in NEVER_MOVE:
             continue
         if bucket == SPAM_BUCKET and not include_junk:
@@ -439,6 +445,8 @@ def apply_moves(
                 )
             for uid in chunk:
                 key = uid.decode()
+                if key in state["verdicts"]:
+                    state["verdicts"][key]["moved_to"] = folder
                 state["moved"].append(
                     {
                         "message_id": ids.get(key),
@@ -482,6 +490,8 @@ def undo_moves(client: imaplib.IMAP4_SSL, state: dict, mailbox: str) -> int:
                 restored += len(found)
         print(f"  restored from {folder}", file=sys.stderr)
 
+    for record in state.get("verdicts", {}).values():
+        record.pop("moved_to", None)
     state["moved"] = []
     return restored
 
