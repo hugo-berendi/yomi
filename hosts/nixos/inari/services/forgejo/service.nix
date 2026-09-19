@@ -111,6 +111,7 @@
       hostname
       nix
       nodejs
+      openssh
       wget
       just
       stylua
@@ -131,7 +132,19 @@
       ReadWritePaths = ["/var/lib/gitea-runner"];
     };
 
+  # Read-only deploy key for the "skills" flake input, which is fetched over
+  # ssh:// (git-ssh serving is the host's own sshd, see yomi.ssh.extraHostNames
+  # above). git has no ssh client of its own, so `ssh` had to be added to
+  # hostPackages too, or `nix flake update` fails with "cannot run ssh".
+  systemd.services.gitea-runner-default.environment.GIT_SSH_COMMAND = "ssh -i ${config.sops.secrets.gitea_runner_skills_deploy_key.path} -o IdentitiesOnly=yes";
+
   sops.secrets.forgejo_runner_token = {
+    sopsFile = ../../secrets.yaml;
+    owner = "gitea-runner";
+    group = "gitea-runner";
+  };
+
+  sops.secrets.gitea_runner_skills_deploy_key = {
     sopsFile = ../../secrets.yaml;
     owner = "gitea-runner";
     group = "gitea-runner";
