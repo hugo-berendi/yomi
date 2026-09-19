@@ -130,6 +130,7 @@
       User = "gitea-runner";
       Group = "gitea-runner";
       ReadWritePaths = ["/var/lib/gitea-runner"];
+      EnvironmentFile = [config.sops.templates."gitea_runner_nix.env".path];
     };
 
   # Read-only deploy key for the "skills" flake input, which is fetched over
@@ -150,9 +151,26 @@
     group = "gitea-runner";
   };
 
+  # Scoped to no permissions, only good for raising nix's github: input
+  # resolution off the 60/hr anonymous rate limit that api.github.com
+  # applies per source IP -- inari's shared address hits that fast.
+  sops.secrets.gitea_runner_github_token = {
+    sopsFile = ../../secrets.yaml;
+    owner = "gitea-runner";
+    group = "gitea-runner";
+  };
+
   sops.templates."forgejo_runner_token.env" = {
     content = ''
       TOKEN=${config.sops.placeholder.forgejo_runner_token}
+    '';
+    owner = "gitea-runner";
+    group = "gitea-runner";
+  };
+
+  sops.templates."gitea_runner_nix.env" = {
+    content = ''
+      NIX_CONFIG=access-tokens = github.com=${config.sops.placeholder.gitea_runner_github_token}
     '';
     owner = "gitea-runner";
     group = "gitea-runner";
