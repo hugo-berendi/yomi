@@ -20,6 +20,7 @@
     ./services/llama-cpp-classifier.nix
     ./services/karakeep.nix
     ./services/n8n.nix
+    ./services/heartbeat.nix
     ./services/mail-sorter.nix
     ./services/cloudflared.nix
     ./services/forgejo
