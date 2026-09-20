@@ -1,6 +1,10 @@
 # This must only be loaded on actual Nixos, otherwise `assertions`
 # won't be defined when running `evaluateModules`.
-{config, ...}: let
+{
+  config,
+  lib,
+  ...
+}: let
   cfg = config.yomi.dns;
 in {
   config.assertions = let
@@ -12,5 +16,9 @@ in {
       '';
     };
   in
-    builtins.map assertProperToUsage cfg.records;
+    builtins.map assertProperToUsage cfg.records
+    ++ (import ./validate-records.nix {
+      inherit lib;
+      inherit (cfg) records;
+    });
 }

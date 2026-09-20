@@ -15,8 +15,6 @@
     inputs.nixarr.nixosModules.default
     inputs.playit-nixos-module.nixosModules.default
 
-    ../../../dns/implementation/nixos-module.nix
-    ../../../dns/implementation/nixos-module-assertions.nix
     ../../../common
 
     ./base
@@ -31,9 +29,7 @@
     ./services/beszel-agent.nix
     ./services/acme.nix
     ./services/greetd.nix
-    ./services/iocaine.nix
     ./services/memory.nix
-    ./services/nginx.nix
     ./services/oci.nix
     ./services/openssh.nix
     ./services/syncthing.nix

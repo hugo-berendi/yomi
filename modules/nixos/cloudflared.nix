@@ -5,8 +5,12 @@
 }: let
   cfg = config.yomi.cloudflared;
   iocaineCfg = config.yomi.iocaine;
-  anubisOffset = 200;
-  metricsOffset = 300;
+  enabled = lib.filterAttrs (_: e: e.enable) cfg.at;
+  upstream = e: "${e.protocol}://${e.proxyAddress}:${toString e.port}";
+  protected = e:
+    if e.enableAnubis
+    then "http://127.0.0.1:${toString e.anubis.port}"
+    else upstream e;
 in {
   options.yomi.cloudflared = {
     tunnel = lib.mkOption {
@@ -25,38 +29,27 @@ in {
       default = {};
       type = lib.types.attrsOf (
         lib.types.submodule (
-          {
-            name,
-            config,
-            ...
-          }: {
+          {config, ...}: {
             options = {
-              subdomain = lib.mkOption {
-                description = ''
-                  Subdomain to use for host generation.
-                  Only required if `host` is not set manually.
-                '';
-                type = lib.types.str;
-                default = name;
-              };
-
               port = lib.mkOption {
-                description = "Localhost port to point the tunnel at";
                 type = lib.types.port;
+                description = "Upstream application port.";
               };
-
-              host = lib.mkOption {
-                description = "Host to direct traffic from";
-                type = lib.types.str;
-                default = "${config.subdomain}.${cfg.domain}";
+              anubis.port = lib.mkOption {
+                type = lib.types.port;
+                default = config.port + 200;
+                description = "Loopback Anubis listener; checked against the port registry.";
               };
-
-              protocol = lib.mkOption {
-                description = "The protocol to redirect traffic through";
-                type = lib.types.str;
-                default = "http";
+              anubis.metricsPort = lib.mkOption {
+                type = lib.types.port;
+                default = config.port + 300;
+                description = "Loopback Anubis metrics listener.";
               };
-
+              proxyPort = lib.mkOption {
+                type = lib.types.port;
+                default = config.port + 400;
+                description = "Loopback nginx listener when iocaine is enabled.";
+              };
               enableAnubis = lib.mkOption {
                 description = "Enable Anubis bot protection for this service";
                 type = lib.types.bool;
@@ -68,101 +61,84 @@ in {
                 type = lib.types.bool;
                 default = false;
               };
-
-              url = lib.mkOption {
-                description = "External https url used to access this host";
-                type = lib.types.str;
-              };
             };
-
-            config.url = "https://${config.host}";
+            imports = [
+              (import ./lib/endpoint.nix {
+                inherit lib;
+                inherit (cfg) domain;
+              })
+            ];
           }
         )
       );
     };
   };
 
-  config = lib.mkIf (cfg.at != {}) {
-    services.cloudflared.tunnels.${cfg.tunnel}.ingress =
-      lib.attrsets.mapAttrs' (
-        _name: {
-          host,
-          port,
-          protocol,
-          enableAnubis,
-          ...
-        }: let
-          anubisPort = port + anubisOffset;
-          targetPort =
-            if enableAnubis
-            then anubisPort
-            else port;
-        in {
-          name = host;
-          value = {
-            service = "${protocol}://localhost:${toString targetPort}";
-            originRequest = {
-              noTLSVerify = protocol != "https";
-              httpHostHeader = host;
-            };
-          };
-        }
-      )
-      cfg.at;
+  config = lib.mkIf (enabled != {}) {
+    services.cloudflared.tunnels.${cfg.tunnel}.ingress = lib.mapAttrs' (_: e:
+      lib.nameValuePair e.host {
+        service =
+          if e.enableIocaine
+          then "http://127.0.0.1:${toString e.proxyPort}"
+          else protected e;
+        originRequest.httpHostHeader = e.host;
+      })
+    enabled;
 
-    services.anubis.instances = let
-      mkAnubisInstance = _name: {
-        subdomain,
-        port,
-        protocol,
-        ...
-      }: let
-        anubisPort = port + anubisOffset;
-        metricsPort = port + metricsOffset;
-      in {
-        name = subdomain;
-        value = {
-          settings = {
-            BIND_NETWORK = "tcp";
-            BIND = "127.0.0.1:${toString anubisPort}";
-            METRICS_BIND_NETWORK = "tcp";
-            METRICS_BIND = "127.0.0.1:${toString metricsPort}";
-            TARGET = "${protocol}://localhost:${toString port}";
-            USE_REMOTE_ADDRESS = "true";
-          };
+    services.anubis.instances = lib.mapAttrs' (name: e:
+      lib.nameValuePair name {
+        enable = true;
+        settings = {
+          BIND_NETWORK = "tcp";
+          BIND = "127.0.0.1:${toString e.anubis.port}";
+          METRICS_BIND_NETWORK = "tcp";
+          METRICS_BIND = "127.0.0.1:${toString e.anubis.metricsPort}";
+          TARGET = upstream e;
+          USE_REMOTE_ADDRESS = "true";
         };
-      };
-    in
-      lib.attrsets.mapAttrs' mkAnubisInstance (lib.attrsets.filterAttrs (_: svc: svc.enableAnubis) cfg.at);
+      }) (lib.filterAttrs (_: e: e.enableAnubis) enabled);
 
-    services.nginx.virtualHosts = let
-      iocaineServices = lib.attrsets.filterAttrs (_: svc: svc.enableIocaine) cfg.at;
-      mkIocaineVhost = _: {host, ...}: {
-        name = host;
-        value = {
-          extraConfig = iocaineCfg.nginxExtraConfig;
-          locations."/.well-known/@iocaine" = {
-            proxyPass = "http://127.0.0.1:${toString iocaineCfg.port}";
-            extraConfig = ''
-              proxy_set_header Host $host;
-              proxy_set_header X-Real-IP $remote_addr;
-              proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            '';
-          };
+    yomi.iocaine.enable = lib.mkIf (lib.any (e: e.enableIocaine) (lib.attrValues enabled)) (lib.mkDefault true);
+    services.nginx.enable = lib.mkIf (lib.any (e: e.enableIocaine) (lib.attrValues enabled)) true;
+    assertions = [
+      {
+        assertion = !(lib.any (e: e.enableIocaine) (lib.attrValues enabled)) || iocaineCfg.enable;
+        message = "Cloudflare iocaine endpoints require yomi.iocaine.enable.";
+      }
+    ];
+    services.nginx.virtualHosts = lib.mapAttrs' (name: e:
+      lib.nameValuePair "tunnel-${name}" {
+        serverName = e.host;
+        listen = [
+          {
+            addr = "127.0.0.1";
+            port = e.proxyPort;
+          }
+        ];
+        extraConfig = iocaineCfg.nginxExtraConfig;
+        locations."/" = {
+          proxyPass = protected e;
+          proxyWebsockets = true;
         };
-      };
-    in
-      lib.mkIf iocaineCfg.enable (lib.attrsets.mapAttrs' mkIocaineVhost iocaineServices);
+        locations."/.well-known/@iocaine" = {proxyPass = "http://127.0.0.1:${toString iocaineCfg.port}";};
+      }) (lib.filterAttrs (_: e: e.enableIocaine) enabled);
 
-    yomi.dns.records = let
-      mkDnsRecord = {subdomain, ...}: {
-        type = "CNAME";
-        at = subdomain;
-        zone = cfg.domain;
-        value = "${cfg.tunnel}.cfargotunnel.com.";
-        enableCloudflareProxy = true;
-      };
-    in
-      lib.attrsets.mapAttrsToList (_: mkDnsRecord) cfg.at;
+    yomi.ports = lib.mkMerge (lib.mapAttrsToList (name: e:
+      lib.mkMerge [
+        (lib.mkIf e.enableAnubis {
+          "anubis-${name}" = e.anubis.port;
+          "anubis-metrics-${name}" = e.anubis.metricsPort;
+        })
+        (lib.mkIf e.enableIocaine {"tunnel-proxy-${name}" = e.proxyPort;})
+      ])
+    enabled);
+
+    yomi.dns.records = lib.mapAttrsToList (_: e: {
+      type = "CNAME";
+      at = e.dns.name;
+      zone = e.dns.zone;
+      value = "${cfg.tunnel}.cfargotunnel.com.";
+      enableCloudflareProxy = true;
+    }) (lib.filterAttrs (_: e: e.dns.enable) enabled);
   };
 }

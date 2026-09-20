@@ -90,8 +90,7 @@ in {
       type = lib.types.lines;
       readOnly = true;
       default = ''
-        if ($iocaine_badagent) { rewrite ^ /.well-known/@iocaine$request_uri; }
-        if ($iocaine_badrange) { rewrite ^ /.well-known/@iocaine$request_uri; }
+        if ($iocaine_redirect) { rewrite ^ /.well-known/@iocaine$request_uri last; }
       '';
       description = "Nginx extra config to include in virtual hosts for iocaine redirection";
     };
@@ -110,6 +109,14 @@ in {
       geo $iocaine_badrange {
         default 0;
         ${ipRangesMap}
+      }
+
+      # Internal redirects re-enter server rewrite rules. Exclude the trap
+      # location so a crawler cannot cause a rewrite cycle and a 500 response.
+      map "$iocaine_badagent:$iocaine_badrange:$uri" $iocaine_redirect {
+        default 0;
+        "~^[01]:[01]:/\\.well-known/@iocaine" 0;
+        "~^(1:|0:1:)" 1;
       }
     '';
 

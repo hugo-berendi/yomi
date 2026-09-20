@@ -3,19 +3,10 @@
   lib,
   ...
 }: let
-  lanTcpServicePorts = map (name: config.yomi.ports.${name}) [
-    "beszel"
-    "home-assistant"
-    "mqtt"
-    "pelican-node1"
-    "windrose-direct"
-    "windrose-rcon"
-  ];
-  lanUdpServicePorts = map (name: config.yomi.ports.${name}) [
-    "valheim"
-    "valheim-query"
-    "windrose-direct"
-  ];
+  grants = lib.attrValues config.yomi.network.exposure;
+  portsFor = protocol: map (entry: entry.port) (lib.filter (entry: lib.elem protocol entry.protocols) grants);
+  lanTcpServicePorts = portsFor "tcp";
+  lanUdpServicePorts = portsFor "udp";
   lanTcpPorts = lib.concatMapStringsSep ", " toString (
     lib.unique ([22 53 80 443 445 2049 22000] ++ lanTcpServicePorts)
   );
@@ -41,6 +32,39 @@
     iifname "tailscale0" oifname "br0" accept
   '';
 in {
+  yomi.network.exposure = {
+    beszel = {interface = "br0";};
+    home-assistant = {interface = "br0";};
+    mqtt = {interface = "br0";};
+    pelican-node1 = {
+      interface = "br0";
+      service = "wings";
+    };
+    windrose-direct = {
+      interface = "br0";
+      protocols = ["tcp" "udp"];
+      service = "windrose";
+    };
+    windrose-rcon = {
+      interface = "br0";
+      service = "windrose";
+    };
+    valheim = {
+      interface = "br0";
+      protocols = ["udp"];
+    };
+    valheim-query = {
+      interface = "br0";
+      protocols = ["udp"];
+      service = "valheim";
+    };
+  };
+  assertions = [
+    {
+      assertion = lib.all (entry: entry.scope == "lan" && entry.interface == "br0") grants;
+      message = "Inari's service grants support LAN access on br0 only; add a reviewed firewall rule for other scopes.";
+    }
+  ];
   # Reloading nftables flushes the rules docker installs for itself, and docker
   # only re-adds them at startup -- so this restart is required for container
   # networking to keep working. It does mean every ruleset change, down to a
@@ -58,8 +82,8 @@ in {
   warnings = lib.optional (inertFirewallPorts != []) ''
     networking.firewall is disabled on this host, so these ports opened via
     allowedTCPPorts/allowedUDPPorts reach nothing: ${lib.concatMapStringsSep ", " toString (lib.unique inertFirewallPorts)}.
-    A service setting openFirewall = true here has no effect. Add the port to
-    lanTcpServicePorts/lanUdpServicePorts in hosts/nixos/inari/networking/nftables.nix
+    A service setting openFirewall = true here has no effect. Add an explicit yomi.network.exposure grant in
+    hosts/nixos/inari/networking/nftables.nix
     if it really should be reachable from the LAN.
   '';
 

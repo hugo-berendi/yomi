@@ -5,7 +5,7 @@
 }: let
   format = pkgs.formats.yaml {};
   cfg = config.yomi.dns;
-  grouped = builtins.groupBy (entry: entry.zone) cfg.records;
+  grouped = builtins.groupBy (entry: entry.zone) (lib.unique cfg.records);
   cpInvocations =
     lib.mapAttrsToList (
       zone: group: let
@@ -33,7 +33,11 @@
     )
     grouped;
 in
-  pkgs.runCommand "octodns-zones" {} ''
-    mkdir $out
-    ${lib.concatStringsSep "\n" cpInvocations}
-  ''
+  assert lib.assertMsg (lib.all (check: check.assertion) (import ./validate-records.nix {
+    inherit lib;
+    inherit (cfg) records;
+  })) "Conflicting DNS records across hosts";
+    pkgs.runCommand "octodns-zones" {} ''
+      mkdir $out
+      ${lib.concatStringsSep "\n" cpInvocations}
+    ''

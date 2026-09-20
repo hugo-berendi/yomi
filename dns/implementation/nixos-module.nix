@@ -21,8 +21,12 @@ in {
           {config, ...}: {
             options = {
               at = lib.mkOption {
-                description = "Subdomain to use for entry";
+                description = "Record name relative to its zone; empty or null denotes the apex.";
                 type = lib.types.nullOr lib.types.str;
+                apply = value:
+                  if value == null
+                  then ""
+                  else value;
               };
 
               zone = lib.mkOption {
@@ -44,7 +48,7 @@ in {
 
               to = lib.mkOption {
                 type = lib.types.nullOr lib.types.str;
-                description = "Shorthand for CNMAE-ing to a subdomain of the given zone";
+                description = "Shorthand for CNAME-ing to a subdomain of the given zone";
                 default = null;
               };
 
@@ -54,7 +58,7 @@ in {
               };
 
               ttl = lib.mkOption {
-                type = lib.types.int;
+                type = lib.types.ints.between 1 2147483647;
                 description = "The TTL assigned to the record";
                 default = 300;
               };

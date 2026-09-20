@@ -4,35 +4,24 @@
   ...
 }: let
   port = config.yomi.ports.gatus;
-  mkHttp = name: {
-    inherit name;
-    group = "Services";
-    url = "https://${name}.hugo-berendi.de";
-    interval = "1m";
-    conditions = ["[STATUS] == 200" "[RESPONSE_TIME] < 2000"];
+  endpoints =
+    (
+      if config.yomi.nginx.enable
+      then lib.attrValues config.yomi.nginx.at
+      else []
+    )
+    ++ lib.attrValues config.yomi.cloudflared.at;
+  monitored = lib.filter (e: e.enable && e.monitor.enable) endpoints;
+  mkEndpoint = e: {
+    inherit (e.monitor) name group interval conditions;
+    url = e.url + e.monitor.path;
     alerts = [
       {
         type = "email";
         failure-threshold = 3;
         success-threshold = 2;
         send-on-resolved = true;
-        description = "${name} is down";
-      }
-    ];
-  };
-  mkHttpAt = url: name: {
-    inherit name;
-    group = "Services";
-    inherit url;
-    interval = "1m";
-    conditions = ["[STATUS] == 200" "[RESPONSE_TIME] < 2000"];
-    alerts = [
-      {
-        type = "email";
-        failure-threshold = 3;
-        success-threshold = 2;
-        send-on-resolved = true;
-        description = "${name} is down";
+        description = "${e.monitor.name} is down";
       }
     ];
   };
@@ -53,8 +42,21 @@
     ];
   };
 in {
+  yomi.cloudflared.at = lib.genAttrs ["pocket-id" "immich-share" "cloud" "media" "request-media" "search" "bin" "git"] (name: {
+    monitor.enable = true;
+    monitor.name =
+      {
+        cloud = "owncloud";
+        media = "jellyfin";
+        request-media = "jellyseerr";
+        search = "searxng";
+        bin = "microbin";
+      }.${
+        name
+      } or name;
+  });
+  yomi.nginx.at = (lib.genAttrs ["paperless" "immich" "lab" "n8n" "karakeep" "warden" "yt" "radarr" "sonarr" "lidarr" "readarr" "bazarr" "prowlarr" "torrent" "cal" "pdf" "grafana" "prometheus" "home" "adguard" "monitoring"] (_: {monitor.enable = true;})) // {status.port = port;};
   # {{{ Reverse proxy
-  yomi.nginx.at.status.port = port;
   # }}}
   # {{{ Secrets
   sops.secrets.gatus_env = {
@@ -105,49 +107,16 @@ in {
       };
       # }}}
 
-      endpoints = [
-        # {{{ External-facing services (subdomain name == attr name)
-        (mkHttpAt "https://auth.hugo-berendi.de" "pocket-id")
-        (mkHttpAt "https://immich-share.hugo-berendi.de" "immich-share")
-        (mkHttpAt "https://cloud.hugo-berendi.de" "owncloud")
-        (mkHttpAt "https://media.hugo-berendi.de" "jellyfin")
-        (mkHttpAt "https://request-media.hugo-berendi.de" "jellyseerr")
-        (mkHttpAt "https://search.hugo-berendi.de" "searxng")
-        (mkHttpAt "https://bin.hugo-berendi.de" "microbin")
-        # }}}
-        # {{{ Internal nginx vhosts (also reachable via tailscale)
-        (mkHttp "git")
-        (mkHttp "paperless")
-        (mkHttp "immich")
-        (mkHttp "lab")
-        (mkHttp "n8n")
-        (mkHttp "karakeep")
-        (mkHttp "warden")
-        (mkHttp "yt")
-        (mkHttp "radarr")
-        (mkHttp "sonarr")
-        (mkHttp "lidarr")
-        (mkHttp "readarr")
-        (mkHttp "bazarr")
-        (mkHttp "prowlarr")
-        (mkHttp "torrent")
-        (mkHttp "cal")
-        (mkHttp "pdf")
-        (mkHttp "grafana")
-        (mkHttp "prometheus")
-        (mkHttp "home")
-        # guacamole has autoStart = false (deliberately, see 6f0401c) - it's
-        # started on demand, so it's always "down" here. Not monitored.
-        (mkHttp "adguard")
-        (mkHttp "monitoring")
-        # }}}
-        # {{{ Local-only services (probe via 127.0.0.1 for tight SLA)
-        (mkInternalHttp "loki" config.yomi.ports.loki "/ready")
-        (mkInternalHttp "forgejo" config.yomi.ports.forgejo "")
-        (mkInternalHttp "beszel" config.yomi.ports.beszel "")
-        (mkInternalHttp "pocket-id" config.yomi.ports.pocket-id "")
-        # }}}
-      ];
+      endpoints =
+        (map mkEndpoint monitored)
+        ++ [
+          # {{{ Local-only services (probe via 127.0.0.1 for tight SLA)
+          (mkInternalHttp "loki" config.yomi.ports.loki "/ready")
+          (mkInternalHttp "forgejo" config.yomi.ports.forgejo "")
+          (mkInternalHttp "beszel" config.yomi.ports.beszel "")
+          (mkInternalHttp "pocket-id" config.yomi.ports.pocket-id "")
+          # }}}
+        ];
     };
   };
   # }}}

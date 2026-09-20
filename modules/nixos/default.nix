@@ -1,5 +1,10 @@
 # (https://nixos.wiki/wiki/Module).
 {
+  dns = {imports = [../../dns/implementation/nixos-module.nix ../../dns/implementation/nixos-module-assertions.nix];};
+  acme = import ./acme.nix;
+  network-exposure = import ./network-exposure.nix;
+  nginx = import ./nginx.nix;
+  endpoint-checks = import ./endpoint-checks.nix;
   cloudflared = import ./cloudflared.nix;
   iocaine = import ./iocaine.nix;
   playit = import ./playit.nix;

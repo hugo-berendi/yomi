@@ -4,11 +4,13 @@
   ...
 }: let
   cfg = config.yomi.nginx;
+  enabled = lib.filterAttrs (_: e: e.enable) cfg.at;
 
   mkNginxConfig = {
     host,
     port,
     proxyAddress,
+    protocol,
     files,
     clientMaxBodySize,
     ...
@@ -19,7 +21,7 @@
         if port != null
         then {
           locations."/" = {
-            proxyPass = "http://${proxyAddress}:${toString port}";
+            proxyPass = "${protocol}://${proxyAddress}:${toString port}";
             proxyWebsockets = true;
           };
         }
@@ -39,18 +41,18 @@
       // bodySize;
   };
 
-  mkDnsRecord = {subdomain, ...}: {
+  mkDnsRecord = {dns, ...}: {
     type = "CNAME";
-    zone = cfg.domain;
-    at = subdomain;
-    to = config.networking.hostName;
+    inherit (dns) zone;
+    at = dns.name;
+    value = "${config.networking.hostName}.${config.yomi.dns.domain}.";
   };
 in {
   options.yomi.nginx = {
     enable =
       lib.mkEnableOption "yomi's nginx integration"
       // {
-        default = true;
+        default = enabled != {};
       };
 
     domain = lib.mkOption {
@@ -63,44 +65,18 @@ in {
       description = "Per-subdomain nginx configuration";
       default = {};
 
-      type = lib.types.attrsOf (lib.types.submodule ({
-        name,
-        config,
-        ...
-      }: {
-        options.subdomain = lib.mkOption {
-          description = ''
-            Subdomain to use for host generation.
-            Only required if `host` is not set manually.
-          '';
-          type = lib.types.str;
-          default = name;
-        };
-
-        options.host = lib.mkOption {
-          description = "Host to route requests from";
-          type = lib.types.str;
-        };
-
-        config.host = "${config.subdomain}.${cfg.domain}";
-
-        options.url = lib.mkOption {
-          description = "External https url used to access this host";
-          type = lib.types.str;
-        };
-
-        config.url = "https://${config.host}";
+      type = lib.types.attrsOf (lib.types.submodule ({...}: {
+        imports = [
+          (import ./lib/endpoint.nix {
+            inherit lib;
+            inherit (cfg) domain;
+          })
+        ];
 
         options.port = lib.mkOption {
           description = "Port to proxy requests to";
           type = lib.types.nullOr lib.types.port;
           default = null;
-        };
-
-        options.proxyAddress = lib.mkOption {
-          description = "Address to proxy requests to (defaults to localhost)";
-          type = lib.types.str;
-          default = "localhost";
         };
 
         options.files = lib.mkOption {
@@ -131,7 +107,7 @@ in {
           must be specified.
         '';
       })
-      cfg.at;
+      enabled;
 
     yomi.acme.enable = true;
     services.nginx = {
@@ -141,9 +117,9 @@ in {
       recommendedProxySettings = true;
       recommendedTlsSettings = true;
       statusPage = true;
-      virtualHosts = lib.attrsets.mapAttrs' (_: mkNginxConfig) cfg.at;
+      virtualHosts = lib.attrsets.mapAttrs' (_: mkNginxConfig) enabled;
     };
 
-    yomi.dns.records = lib.attrsets.mapAttrsToList (_: mkDnsRecord) cfg.at;
+    yomi.dns.records = lib.attrsets.mapAttrsToList (_: mkDnsRecord) (lib.filterAttrs (_: e: e.dns.enable) enabled);
   };
 }
