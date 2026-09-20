@@ -296,6 +296,10 @@
             hosts
           ))
           // {
+            custom-options = import ./tests/options.nix {
+              inherit pkgs;
+              configurations = self.nixosConfigurations;
+            };
             backup-monitoring = import ./tests/backup-monitoring.nix {
               inherit pkgs;
               rules = self.nixosConfigurations.inari.config.services.grafana.provision.alerting.rules.settings;

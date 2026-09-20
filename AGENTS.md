@@ -90,7 +90,7 @@ Forgejo Actions (`.forgejo/workflows/`):
 | Layer | Path | Loaded by | Purpose |
 |-------|------|-----------|---------|
 | Common | `modules/common/` | Both NixOS + HM | Options usable from both sides (`yomi.pilot`, `yomi.theming`, `yomi.location`) |
-| NixOS | `modules/nixos/` | NixOS only | System modules (`yomi.cloudflared`, `yomi.hardening`, `yomi.ports`) |
+| NixOS | `modules/nixos/` | NixOS only | System modules (`yomi.cloudflared`, `yomi.restic`, `yomi.ports`) |
 | HM | `modules/home-manager/` | Home-manager only | User modules (`yomi.monitors`, `yomi.persistence`, `yomi.dev`) |
 | Shared host | `hosts/nixos/common/` | All hosts | Base: users, networking, boot, filesystems, persistence |
 | Per-host | `hosts/nixos/<host>/` | Single host | Hardware, partitions, services |
@@ -116,7 +116,7 @@ Forgejo Actions (`.forgejo/workflows/`):
 - `yomi.dns.records` — octodns records, also feeding `/etc/hosts`
 - `yomi.ssh.extraHostNames` — extra names a host's sshd answers to, pinned in every host's `knownHosts`
 - `yomi.persistence.at.{state,cache}.apps.<name>.directories` — impermanence paths
-- `yomi.hardening.services.<unit>` — systemd hardening (see below)
+- `systemd.services.<unit>.serviceConfig` — native, service-local sandbox settings (see below)
 - `yomi.restic.{repository,offsite}` — local and off-site backup sets
 - `yomi.filesystems.*` — BTRFS rollback + persistPaths
 - `yomi.n8n.workflows.<name>` — workflow JSON imported into n8n on inari at start; see `hosts/nixos/inari/services/n8n/AGENTS.md` before touching a workflow or adding a new one
@@ -127,29 +127,22 @@ Modules wrapping upstream NixOS services use `services.*`: `services.vrising`, `
 
 ## Hardening
 
-Use `yomi.hardening.services.<unit>`:
+Use native `systemd.services.<unit>.serviceConfig` beside the service definition.
+The custom tiers were removed. Preserve upstream sandboxing and add only reviewed
+local requirements. Use `mkForce` on individual conflicting settings, with a reason;
+do not force a whole preset over an upstream module. Lists still concatenate.
 
-```nix
-yomi.hardening.services.immich-server = {
-  tier = "standard";                                  # base | standard | strict
-  readWritePaths = ["/raid5pool/media/photos"];       # appended to upstream's
-};
-```
+Check the real unit name first. Defining `systemd.services.<name>` creates the name,
+so a typo can create an empty service. There is no `karakeep.service` or
+`owncloud.service`; inspect the evaluated configuration and generated units.
 
-- `allowNetwork` adds `AF_NETLINK`, and is a **no-op below `strict`** — that is the only tier restricting address families
-- `allowDevices` drops `PrivateDevices`; `allowSubprocesses` widens `SystemCallFilter`
-- The tier resolves to one attrset before the module system sees it, so relaxations replace rather than append
+`just hardening-report <host>` reports evaluated settings and definition sources
+without changing services. `--json` saves a baseline; `--baseline FILE` compares
+settings. `just security-audit` inspects the running generation. Unset directives
+can be implied by systemd, especially with DynamicUser, and exposure scores are
+not vulnerability assessments.
 
-**Check the unit name exists before writing it.** `systemd.services.<name>` *creates* a unit, so a typo or a guessed name yields a unit with no `ExecStart` that systemd refuses — while the services you meant to harden keep running open. There is no `karakeep.service` (it is `karakeep-{init,web,workers,browser}`) and no `owncloud.service` (it is `ocis`). An assertion now catches this, but check anyway:
-
-```bash
-nix eval --json '.#nixosConfigurations.inari.config.systemd.services' \
-  --apply 's: builtins.filter (n: builtins.match "immich.*" n != null) (builtins.attrNames s)'
-```
-
-Most upstream nixpkgs modules already set `ProtectSystem=strict`. Check before adding anything.
-
-`presets`/`overrides` are the older interface, still used by ~27 call sites. `overrides.network` is sharp — merged into a non-strict tier it *adds* a restriction, and its `mkForce` concatenates lists instead of replacing them. Prefer `yomi.hardening.services` for anything new.
+See `docs/custom-options.md` for endpoint, exposure, persistence and backup APIs.
 
 ## Code Style
 
@@ -199,7 +192,7 @@ Tabs, width 4, max column 120 (`stylua.toml`). Config uses nvf; plugin specs go 
 ### Services
 - **`PasswordAuthentication = false` alone does not disable password login.** `KbdInteractiveAuthentication` defaults to true and `UsePAM` backs it with `pam_unix`, so a prompt comes straight back. Set both.
 - **A nixpkgs bump can move a language runtime under a package.** karakeep 0.32.0 core-dumped on every start once nodejs 24 arrived (`better_sqlite3.node`, `Assertion failed: (env) != nullptr`); unstable's 0.33.1 is built against nodejs 22. When a service dies with no application error, compare the runtime version across generations.
-- **On inari `networking.firewall.enable = false`** — nftables owns the ruleset, so `openFirewall`/`allowedTCPPorts` reach nothing. Ports go in `lanTcpServicePorts`/`lanUdpServicePorts` in `hosts/nixos/inari/networking/nftables.nix`. A warning lists any port that asked and was ignored.
+- **On inari `networking.firewall.enable = false`** — nftables owns the ruleset, so `openFirewall`/`allowedTCPPorts` reach nothing. LAN grants go in `yomi.network.exposure` in `hosts/nixos/inari/networking/nftables.nix`. A warning lists any port that asked and was ignored.
 - **Any nftables ruleset change bounces every container**, down to a comment — `postStart` restarts docker, which docker needs in order to reinstall its own rules. Game servers set `--stop-timeout` for this.
 - **ghostty** has no home-manager module; install via `home.packages` + `xdg.configFile`.
 
