@@ -3,7 +3,7 @@
   lib,
   ...
 }: {
-  config = lib.mkIf config.yomi.machine.graphical {
+  config = lib.mkIf config.yomi.machine.audio {
     security.rtkit.enable = true;
     services.pulseaudio.enable = false;
 

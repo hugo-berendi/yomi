@@ -6,5 +6,6 @@
   shell-theme = import ./shell-theme.nix;
   theming = import ./theming.nix;
   themes = import ./themes.nix;
+  terminal = import ./terminal.nix;
   toggles = import ./toggles.nix;
 }

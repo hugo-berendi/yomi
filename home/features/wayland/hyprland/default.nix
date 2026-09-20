@@ -153,7 +153,7 @@ in {
         "hyprland.start"
         (lua ''
           function()
-            hl.exec_cmd(${luaString config.yomi.settings.terminal-cmd})
+            hl.exec_cmd(${luaString config.yomi.terminal.execCommand})
             hl.exec_cmd("helium")
             hl.exec_cmd("vesktop")
             hl.exec_cmd(${luaString spotifyCmd})
@@ -195,7 +195,7 @@ in {
           (mkExecBind "SUPER + SHIFT + T" "wl-qr")
           (mkExecBind "SUPER + CONTROL + T" "hyprpicker | wl-copy && notify-send 'Copied color $(wp-paste)'")
           (mkExecBind "SUPER + B" "wlsunset-toggle")
-          (mkExecBind "SUPER + RETURN" config.yomi.settings.terminal)
+          (mkExecBind "SUPER + RETURN" config.yomi.terminal.command)
           (mkExecBind "SUPER + PRINT" "grimblast --notify copysave area")
           (mkExecBind "SUPER + SHIFT + PRINT" "grimblast --notify copysave active")
           (mkExecBind "SUPER + CONTROL + PRINT" "grimblast --notify copysave screen")

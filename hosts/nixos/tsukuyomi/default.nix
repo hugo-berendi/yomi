@@ -5,6 +5,7 @@
 }: {
   # {{{ Imports
   imports = [
+    {yomi.tailscale.enable = true;}
     ../common
 
     ../common/desktop/steam.nix

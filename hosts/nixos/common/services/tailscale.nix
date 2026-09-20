@@ -9,7 +9,7 @@ in {
     enable =
       lib.mkEnableOption "yomi's tailscale integration"
       // {
-        default = true;
+        default = false;
       };
     exitNode = lib.mkOption {
       type = lib.types.bool;

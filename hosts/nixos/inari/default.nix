@@ -5,6 +5,7 @@
 }: {
   # {{{ Imports
   imports = [
+    {yomi.tailscale.enable = true;}
     ../common
 
     ./networking

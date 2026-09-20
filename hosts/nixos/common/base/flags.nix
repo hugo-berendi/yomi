@@ -7,13 +7,18 @@
     graphical = lib.mkOption {
       default = false;
       type = lib.types.bool;
-      description = "
-        Whether modules requiring a graphical user interface should be enabled.
-        Note that features like audio and bluetooth support get bundled with
-        this throughout most of the config, as I don't use them on any 
-        non-graphical machines. Still, I should one day come up with a better
-        name for this.
-      ";
+      description = "Whether this host runs a graphical desktop.";
+    };
+
+    audio = lib.mkOption {
+      type = lib.types.bool;
+      default = config.yomi.machine.graphical;
+      description = "Enable PipeWire audio independently of the desktop.";
+    };
+    bluetooth = lib.mkOption {
+      type = lib.types.bool;
+      default = config.yomi.machine.graphical;
+      description = "Enable Bluetooth independently of the desktop.";
     };
 
     interactible = lib.mkOption {

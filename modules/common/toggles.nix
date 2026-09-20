@@ -11,15 +11,10 @@
   options.yomi = {
     toggles = lib.mkOption {
       default = {};
-      description = "Record of custom toggles to use throughput the config";
-      type = lib.types.attrsOf (lib.types.submodule (name: {
+      description = "Record of custom toggles to use throughout the config";
+      type = lib.types.attrsOf (lib.types.submodule ({name, ...}: {
         options.enable = lib.mkEnableOption "Toggle for ${name}";
       }));
-    };
-    settings = lib.mkOption {
-      default = {};
-      description = "Record of custom settings to use throughput the config";
-      type = lib.types.attrsOf lib.types.str;
     };
   };
 }

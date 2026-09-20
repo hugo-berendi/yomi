@@ -4,9 +4,9 @@
   pkgs,
   ...
 }: {
-  yomi.settings = {
-    terminal = "ghostty";
-    terminal-cmd = "ghostty";
+  yomi.terminal = {
+    command = "ghostty";
+    execCommand = "ghostty";
   };
   home.packages = [
     inputs.ghostty-pkg.packages.${pkgs.stdenv.hostPlatform.system}.default
