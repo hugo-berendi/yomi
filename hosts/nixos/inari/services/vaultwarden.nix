@@ -40,7 +40,9 @@
   # }}}
   # {{{ Hardening
   systemd.services.vaultwarden.serviceConfig =
-    config.yomi.hardening.presets.standard
+    {
+      PrivateMounts = true;
+    }
     // {
       ReadWritePaths = ["/var/lib/bitwarden_rs"];
     };

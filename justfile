@@ -382,6 +382,11 @@ dns-clear zoneid bearerfile="/run/secrets/cloudflare_dns_api_token":
   print("🚀 All done!")
 # }}}
 # {{{ Security
+[doc("Report evaluated service sandbox settings; use --json to save a baseline or --baseline FILE to compare")]
+[group("security")]
+hardening-report host=hostname *args:
+  nix develop -c python3 scripts/hardening-report.py {{host}} {{args}}
+
 [doc("Audit systemd service hardening using systemd-analyze security")]
 [group("security")]
 security-audit host=hostname services="":

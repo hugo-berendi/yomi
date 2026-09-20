@@ -81,11 +81,9 @@
 
   systemd.tmpfiles.rules = ["d ${config.services.forgejo.stateDir}/dump - - - 7d"];
 
-  systemd.services.forgejo.serviceConfig =
-    config.yomi.hardening.presets.standard
-    // {
-      ReadWritePaths = [config.services.forgejo.stateDir];
-    };
+  systemd.services.forgejo.serviceConfig = {
+    ReadWritePaths = [config.services.forgejo.stateDir];
+  };
   # }}}
   # {{{ Actions runner
   users.users.gitea-runner = {
@@ -123,8 +121,13 @@
   };
 
   systemd.services.gitea-runner-default.serviceConfig =
-    config.yomi.hardening.presets.base
-    // config.yomi.hardening.overrides.devices
+    {
+      NoNewPrivileges = true;
+      PrivateTmp = true;
+      ProtectSystem = "strict";
+      ProtectHome = true;
+    }
+    // {PrivateDevices = lib.mkForce false;}
     // {
       DynamicUser = lib.mkForce false;
       User = "gitea-runner";

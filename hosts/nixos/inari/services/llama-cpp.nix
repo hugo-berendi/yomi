@@ -85,5 +85,21 @@ in {
 
   # ExecStartPre downloads models into /var/lib/llama-cpp/models, which
   # ProtectSystem=strict would otherwise make read-only.
-  yomi.hardening.services.llama-cpp.readWritePaths = ["/var/lib/llama-cpp"];
+  systemd.services.llama-cpp.serviceConfig = {
+    NoNewPrivileges = true;
+    PrivateDevices = true;
+    PrivateMounts = true;
+    PrivateTmp = true;
+    ProtectClock = true;
+    ProtectControlGroups = true;
+    ProtectHome = true;
+    ProtectKernelLogs = true;
+    ProtectKernelModules = true;
+    ProtectKernelTunables = true;
+    ProtectSystem = "strict";
+    RestrictNamespaces = true;
+    RestrictSUIDSGID = true;
+    SystemCallArchitectures = "native";
+    ReadWritePaths = ["/var/lib/llama-cpp"];
+  };
 }

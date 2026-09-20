@@ -70,7 +70,12 @@ in {
   };
 
   systemd.services.jupyterhub.serviceConfig = lib.mkMerge [
-    config.yomi.hardening.presets.base
+    {
+      NoNewPrivileges = true;
+      PrivateTmp = true;
+      ProtectSystem = "strict";
+      ProtectHome = true;
+    }
     {
       ProtectClock = true;
       ProtectControlGroups = true;

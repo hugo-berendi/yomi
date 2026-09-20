@@ -165,7 +165,10 @@
   ];
 
   systemd.services.prometheus.serviceConfig = lib.mkMerge [
-    (lib.mapAttrs (_: lib.mkForce) config.yomi.hardening.presets.standard)
+    {
+      ProtectSystem = lib.mkForce "strict";
+      PrivateMounts = true;
+    }
     {ReadWritePaths = ["/var/lib/prometheus2"];}
   ];
   # }}}

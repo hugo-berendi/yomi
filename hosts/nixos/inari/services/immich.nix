@@ -111,18 +111,21 @@ in {
   # Unit names checked against the evaluated config rather than guessed: there
   # is no immich.service, and hardening that name would have produced a unit
   # with no ExecStart instead of hardening anything.
-  yomi.hardening.services = {
-    # Writes the library itself; StateDirectory=immich covers /var/lib/immich,
-    # and the redis and postgres sockets keep working under ProtectSystem=strict
-    # -- miniflux already runs that way against the same postgres.
-    immich-server.readWritePaths = [config.services.immich.mediaLocation];
-
-    # Model cache, matplotlib config and XDG_CACHE_HOME all point at
-    # /var/cache/immich, which CacheDirectory=immich already makes writable.
-    immich-machine-learning = {};
-
-    # Runs as its own `ipp` user and needs nothing writable.
-    immich-public-proxy = {};
+  systemd.services = {
+    immich-server.serviceConfig = {
+      ProtectSystem = "strict";
+      SystemCallArchitectures = "native";
+      ReadWritePaths = [config.services.immich.mediaLocation];
+    };
+    # CacheDirectory already keeps the model and matplotlib caches writable.
+    immich-machine-learning.serviceConfig = {
+      ProtectSystem = "strict";
+      SystemCallArchitectures = "native";
+    };
+    immich-public-proxy.serviceConfig = {
+      ProtectSystem = "strict";
+      SystemCallArchitectures = "native";
+    };
   };
   # }}}
 }

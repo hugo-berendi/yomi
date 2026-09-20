@@ -43,7 +43,9 @@
   };
 
   systemd.services.adguardhome.serviceConfig = lib.mkMerge [
-    (lib.mapAttrs (_: lib.mkForce) config.yomi.hardening.presets.standard)
+    {
+      RestrictSUIDSGID = true;
+    }
     {
       AmbientCapabilities = lib.mkForce ["CAP_NET_BIND_SERVICE"];
       CapabilityBoundingSet = lib.mkForce ["CAP_NET_BIND_SERVICE"];

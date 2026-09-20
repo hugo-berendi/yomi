@@ -23,8 +23,22 @@
   yomi.anubis.enable = true;
 
   systemd.services."cloudflared-tunnel-${config.yomi.cloudflared.tunnel}".serviceConfig = lib.mkMerge [
-    (lib.mapAttrs (_: lib.mkForce) config.yomi.hardening.presets.standard)
-    {}
+    {
+      NoNewPrivileges = true;
+      PrivateTmp = true;
+      ProtectSystem = "strict";
+      ProtectHome = true;
+      PrivateDevices = true;
+      PrivateMounts = true;
+      ProtectClock = true;
+      ProtectControlGroups = true;
+      ProtectKernelLogs = true;
+      ProtectKernelModules = true;
+      ProtectKernelTunables = true;
+      RestrictNamespaces = true;
+      RestrictSUIDSGID = true;
+      SystemCallArchitectures = "native";
+    }
   ];
   # }}}
 }

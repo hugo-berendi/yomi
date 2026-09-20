@@ -78,8 +78,27 @@
   # SuccessAction=. Refusing."), while the services that do exist ran unhardened.
   # Browser is left out: it drives a headless chromium and wants a wider
   # sandbox than the rest.
-  yomi.hardening.services =
+  systemd.services =
     lib.genAttrs ["karakeep-init" "karakeep-web" "karakeep-workers"]
-    (_: {readWritePaths = ["/var/lib/karakeep"];});
+    (_: {
+      serviceConfig = {
+        NoNewPrivileges = true;
+        PrivateDevices = true;
+        PrivateMounts = true;
+        # Preserve the existing sandbox; upstream spells the same value "yes".
+        PrivateTmp = lib.mkForce true;
+        ProtectClock = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectKernelLogs = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectSystem = "strict";
+        RestrictNamespaces = true;
+        RestrictSUIDSGID = true;
+        SystemCallArchitectures = "native";
+        ReadWritePaths = ["/var/lib/karakeep"];
+      };
+    });
   # }}}
 }

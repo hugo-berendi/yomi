@@ -29,7 +29,9 @@ in {
   };
 
   systemd.services.radicale.serviceConfig = lib.mkMerge [
-    (lib.mapAttrs (_: lib.mkForce) config.yomi.hardening.presets.standard)
+    {
+      PrivateMounts = true;
+    }
     {ReadWritePaths = [dataDir];}
   ];
 }

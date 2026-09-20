@@ -31,6 +31,21 @@
   };
   # }}}
   # {{{ Hardening
-  systemd.services.mealie.serviceConfig = config.yomi.hardening.presets.standard;
+  systemd.services.mealie.serviceConfig = {
+    NoNewPrivileges = true;
+    PrivateTmp = true;
+    ProtectSystem = "strict";
+    ProtectHome = true;
+    PrivateDevices = true;
+    PrivateMounts = true;
+    ProtectClock = true;
+    ProtectControlGroups = true;
+    ProtectKernelLogs = true;
+    ProtectKernelModules = true;
+    ProtectKernelTunables = true;
+    RestrictNamespaces = true;
+    RestrictSUIDSGID = true;
+    SystemCallArchitectures = "native";
+  };
   # }}}
 }

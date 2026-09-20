@@ -45,24 +45,36 @@ in {
   ];
 
   systemd.services.scrutiny.serviceConfig = lib.mkMerge [
-    (lib.mapAttrs (_: lib.mkForce) config.yomi.hardening.presets.standard)
     {
       DynamicUser = lib.mkForce false;
       User = "scrutiny";
       Group = "scrutiny";
       ReadWritePaths = ["/var/lib/scrutiny"];
-      PrivateDevices = lib.mkOverride 40 false;
+      PrivateDevices = lib.mkForce false;
     }
   ];
 
   systemd.services.scrutiny-collector.serviceConfig = lib.mkMerge [
-    (lib.mapAttrs (_: lib.mkForce) config.yomi.hardening.presets.standard)
+    {
+      NoNewPrivileges = true;
+      PrivateTmp = true;
+      ProtectHome = true;
+      PrivateMounts = true;
+      ProtectClock = true;
+      ProtectControlGroups = true;
+      ProtectKernelLogs = true;
+      ProtectKernelModules = true;
+      ProtectKernelTunables = true;
+      RestrictNamespaces = true;
+      RestrictSUIDSGID = true;
+      SystemCallArchitectures = "native";
+    }
     {
       DynamicUser = lib.mkForce false;
       User = "scrutiny";
       Group = "scrutiny";
-      PrivateDevices = lib.mkOverride 40 false;
-      ProtectSystem = lib.mkOverride 40 false;
+      PrivateDevices = lib.mkForce false;
+      ProtectSystem = lib.mkForce false;
     }
   ];
   # }}}

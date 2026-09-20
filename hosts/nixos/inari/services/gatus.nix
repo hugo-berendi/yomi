@@ -162,8 +162,25 @@ in {
   ];
 
   systemd.services.gatus.serviceConfig = lib.mkMerge [
-    (lib.mapAttrs (_: lib.mkForce) config.yomi.hardening.presets.standard)
-    config.yomi.hardening.overrides.network
+    {
+      PrivateTmp = true;
+      ProtectSystem = "strict";
+      ProtectHome = true;
+      PrivateDevices = true;
+      PrivateMounts = true;
+      ProtectClock = true;
+      ProtectControlGroups = true;
+      ProtectKernelLogs = true;
+      ProtectKernelModules = true;
+      ProtectKernelTunables = true;
+      RestrictNamespaces = true;
+      RestrictSUIDSGID = true;
+      SystemCallArchitectures = "native";
+    }
+    {
+      PrivateNetwork = lib.mkForce false;
+      RestrictAddressFamilies = lib.mkForce ["AF_INET" "AF_INET6" "AF_UNIX" "AF_NETLINK"];
+    }
     {
       DynamicUser = lib.mkForce false;
       User = "gatus";

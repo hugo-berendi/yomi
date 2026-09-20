@@ -79,7 +79,19 @@
   ];
 
   systemd.services.loki.serviceConfig = lib.mkMerge [
-    (lib.mapAttrs (_: lib.mkForce) config.yomi.hardening.presets.standard)
+    {
+      ProtectSystem = lib.mkForce "strict";
+      PrivateDevices = true;
+      PrivateMounts = true;
+      ProtectClock = true;
+      ProtectControlGroups = true;
+      ProtectKernelLogs = true;
+      ProtectKernelModules = true;
+      ProtectKernelTunables = true;
+      RestrictNamespaces = true;
+      RestrictSUIDSGID = true;
+      SystemCallArchitectures = "native";
+    }
     {ReadWritePaths = [config.services.loki.dataDir];}
   ];
   # }}}

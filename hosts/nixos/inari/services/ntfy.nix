@@ -58,7 +58,13 @@ in {
   # }}}
   # {{{ Hardening
   systemd.services.ntfy-sh.serviceConfig = lib.mkMerge [
-    (lib.mapAttrs (_: lib.mkForce) config.yomi.hardening.presets.standard)
+    {
+      ProtectSystem = lib.mkForce "strict";
+      ProtectHome = true;
+      PrivateMounts = true;
+      ProtectClock = true;
+      SystemCallArchitectures = "native";
+    }
     {
       DynamicUser = lib.mkForce false;
       User = config.users.users.ntfy-sh.name;

@@ -417,7 +417,10 @@ in {
   ];
 
   systemd.services.grafana.serviceConfig = lib.mkMerge [
-    (lib.mapAttrs (_: lib.mkForce) config.yomi.hardening.presets.standard)
+    {
+      ProtectSystem = lib.mkForce "strict";
+      PrivateMounts = true;
+    }
     {ReadWritePaths = [config.services.grafana.dataDir];}
   ];
 

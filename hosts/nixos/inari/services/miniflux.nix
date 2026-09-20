@@ -62,8 +62,19 @@ in {
   users.users.miniflux.extraGroups = ["smtp"];
   # {{{ Hardening
   systemd.services.miniflux.serviceConfig = lib.mkMerge [
-    (lib.mapAttrs (_: lib.mkForce) config.yomi.hardening.presets.strict)
-    config.yomi.hardening.overrides.network
+    {
+      NoNewPrivileges = true;
+      PrivateTmp = true;
+      ProtectSystem = "strict";
+      PrivateMounts = true;
+      # Netlink is needed for interface discovery. Define the replacement once;
+      # equally forced lists concatenate rather than overriding each other.
+      RestrictAddressFamilies = lib.mkForce ["AF_INET" "AF_INET6" "AF_UNIX" "AF_NETLINK"];
+      SystemCallFilter = lib.mkForce ["@system-service" "~@privileged" "~@resources"];
+    }
+    {
+      PrivateNetwork = lib.mkForce false;
+    }
     {
       DynamicUser = lib.mkForce false;
       User = "miniflux";

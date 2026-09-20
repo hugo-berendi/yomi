@@ -41,7 +41,15 @@
   };
 
   systemd.services.microbin.serviceConfig = lib.mkMerge [
-    (lib.mapAttrs (_: lib.mkForce) config.yomi.hardening.presets.standard)
+    {
+      NoNewPrivileges = true;
+      PrivateTmp = true;
+      ProtectSystem = "strict";
+      ProtectHome = true;
+      PrivateMounts = true;
+      RestrictSUIDSGID = true;
+      SystemCallArchitectures = lib.mkForce "native";
+    }
     {ReadWritePaths = lib.mkForce [];}
   ];
   # }}}

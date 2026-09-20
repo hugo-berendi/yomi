@@ -106,5 +106,21 @@ in {
 
   # ExecStartPre writes the model into the state directory, which
   # ProtectSystem=strict would otherwise make read-only.
-  yomi.hardening.services.llama-cpp-classifier.readWritePaths = ["/var/lib/llama-cpp-classifier"];
+  systemd.services.llama-cpp-classifier.serviceConfig = {
+    NoNewPrivileges = true;
+    PrivateDevices = true;
+    PrivateMounts = true;
+    PrivateTmp = true;
+    ProtectClock = true;
+    ProtectControlGroups = true;
+    ProtectHome = true;
+    ProtectKernelLogs = true;
+    ProtectKernelModules = true;
+    ProtectKernelTunables = true;
+    ProtectSystem = "strict";
+    RestrictNamespaces = true;
+    RestrictSUIDSGID = true;
+    SystemCallArchitectures = "native";
+    ReadWritePaths = ["/var/lib/llama-cpp-classifier"];
+  };
 }

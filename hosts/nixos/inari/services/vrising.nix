@@ -35,8 +35,11 @@
   };
 
   systemd.services.vrising.serviceConfig = lib.mkIf config.services.vrising.enable (lib.mkMerge [
-    config.yomi.hardening.presets.base
     {
+      NoNewPrivileges = true;
+      PrivateTmp = true;
+      ProtectSystem = "strict";
+      ProtectHome = true;
       ProtectClock = true;
       ProtectControlGroups = true;
       ProtectKernelLogs = true;

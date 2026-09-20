@@ -13,6 +13,11 @@
   };
 
   systemd.services.stirling-pdf.serviceConfig = lib.mkMerge [
-    (lib.mapAttrs (_: lib.mkForce) config.yomi.hardening.presets.standard)
+    {
+      PrivateTmp = true;
+      ProtectSystem = "strict";
+      PrivateMounts = true;
+      RestrictSUIDSGID = true;
+    }
   ];
 }

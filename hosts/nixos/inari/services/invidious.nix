@@ -38,7 +38,17 @@
   };
 
   systemd.services.invidious.serviceConfig =
-    config.yomi.hardening.presets.standard
+    {
+      NoNewPrivileges = true;
+      PrivateTmp = true;
+      ProtectSystem = "strict";
+      PrivateMounts = true;
+      ProtectClock = true;
+      ProtectControlGroups = true;
+      ProtectKernelModules = true;
+      ProtectKernelTunables = true;
+      RestrictSUIDSGID = true;
+    }
     // {
       DynamicUser = lib.mkForce false;
       User = "invidious";

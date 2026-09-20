@@ -11,7 +11,27 @@ with lib; let
   cfg = config.services.pounce;
   pkg = pkgs.pounce;
   defaultUser = "pounce";
-  hardeningFlags = config.yomi.hardening.presets.strict;
+  hardeningFlags = {
+    NoNewPrivileges = true;
+    PrivateTmp = true;
+    ProtectSystem = "strict";
+    ProtectHome = true;
+    PrivateDevices = true;
+    PrivateMounts = true;
+    ProtectClock = true;
+    ProtectControlGroups = true;
+    ProtectKernelLogs = true;
+    ProtectKernelModules = true;
+    ProtectKernelTunables = true;
+    RestrictNamespaces = true;
+    RestrictSUIDSGID = true;
+    SystemCallArchitectures = "native";
+    CapabilityBoundingSet = [""];
+    PrivateUsers = true;
+    ProtectProc = "invisible";
+    RestrictAddressFamilies = ["AF_INET" "AF_INET6" "AF_UNIX"];
+    SystemCallFilter = ["@system-service" "~@privileged" "~@resources"];
+  };
 in {
   # {{{ Options
   options.services.pounce = {

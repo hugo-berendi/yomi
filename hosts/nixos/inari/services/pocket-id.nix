@@ -80,7 +80,9 @@
   # }}}
   # {{{ Hardening
   systemd.services.pocket-id.serviceConfig =
-    config.yomi.hardening.presets.standard
+    {
+      PrivateMounts = true;
+    }
     // {
       ReadWritePaths = [config.services.pocket-id.dataDir];
     };
