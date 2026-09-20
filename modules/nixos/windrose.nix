@@ -20,14 +20,14 @@ in {
       description = "Name of the Windrose server";
     };
 
-    password = lib.mkOption {
-      type = lib.types.str;
-      default = "";
-      description = "Server password";
+    passwordFile = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      description = "Absolute runtime file containing the server password; loaded through systemd credentials.";
     };
 
     maxPlayerCount = lib.mkOption {
-      type = lib.types.int;
+      type = lib.types.ints.positive;
       default = 4;
       description = "Maximum number of connected users";
     };
@@ -74,12 +74,6 @@ in {
       description = "Whether to auto load latest backup for broken saves";
     };
 
-    inviteCode = lib.mkOption {
-      type = lib.types.nullOr lib.types.str;
-      default = null;
-      description = "Optional static invite code";
-    };
-
     serviceConfig = lib.mkOption {
       type = lib.types.attrs;
       default = {};
@@ -110,8 +104,8 @@ in {
           DeploymentId = "";
           ServerDescription_Persistent = {
             PersistentServerId = "";
-            IsPasswordProtected = cfg.password != "";
-            Password = cfg.password;
+            IsPasswordProtected = false;
+            Password = "";
             ServerName = cfg.serverName;
             WorldIslandId = cfg.worldIslandId;
             MaxPlayerCount = cfg.maxPlayerCount;
@@ -126,7 +120,17 @@ in {
         });
       in ''
         mkdir -p ${serverDir}/R5
-        cp ${serverDescription} ${serverDir}/R5/ServerDescription.json
+        umask 077
+        target=${serverDir}/R5/ServerDescription.json
+        tmp=$(mktemp "$target.XXXXXX")
+        trap 'rm -f "$tmp"' EXIT
+        ${
+          if cfg.passwordFile == null
+          then "cp ${serverDescription} \"$tmp\""
+          else "${pkgs.jq}/bin/jq --rawfile password \"$CREDENTIALS_DIRECTORY/server-password\" '.ServerDescription_Persistent.Password = ($password | rtrimstr(\"\\n\")) | .ServerDescription_Persistent.IsPasswordProtected = (.ServerDescription_Persistent.Password != \"\")' ${serverDescription} > \"$tmp\""
+        }
+        mv -f "$tmp" "$target"
+        trap - EXIT
       '';
       script = ''
         mkdir -p ${serverDir}/R5/Saved/Logs
@@ -151,7 +155,12 @@ in {
       '';
       allowedTCPPorts = lib.optionals cfg.useDirectConnection [cfg.directConnectionServerPort];
       allowedUDPPorts = lib.optionals cfg.useDirectConnection [cfg.directConnectionServerPort];
-      inherit (cfg) serviceConfig;
+      serviceConfig = lib.mkMerge [
+        cfg.serviceConfig
+        (lib.mkIf (cfg.passwordFile != null) {
+          LoadCredential = ["server-password:${cfg.passwordFile}"];
+        })
+      ];
     };
   };
 }
