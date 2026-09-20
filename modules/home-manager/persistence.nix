@@ -30,13 +30,29 @@ in {
             type = lib.types.str;
             description = "The path to the home directory for files in this record";
           };
+
+          prefixDirectories = lib.mkOption {
+            type = lib.types.bool;
+            default = true;
+            description = ''
+              Whether to give every app its own gnu/stow-style subdirectory in
+              persistent storage, so an app's state can be inspected or wiped
+              as a unit instead of being scattered through a shared home.
+            '';
+          };
           # }}}
           # {{{ Apps
           apps = lib.mkOption {
             default = {};
             description = "Record of gnu/stow-style groups of files/directories to be stored in this location";
-            type = lib.types.attrsOf (lib.types.submodule {
+            type = lib.types.attrsOf (lib.types.submodule ({name, ...}: {
               options = {
+                name = lib.mkOption {
+                  type = lib.types.str;
+                  default = name;
+                  description = "The gnu/stow-style subdirectory name";
+                };
+
                 files = lib.mkOption {
                   type = lib.types.listOf lib.types.str;
                   default = [];
@@ -56,7 +72,7 @@ in {
                   type = lib.types.listOf lib.types.str;
                 };
               };
-            });
+            }));
           };
           # }}}
         };
@@ -68,18 +84,34 @@ in {
   config = let
     makeLocation = location: let
       # {{{ Path processing
-      # Home Manager's persistence module bind-mounts each directory/file at
-      # the *same* relative path on both the persistent-storage side and the
-      # live $HOME side, so there is no way to namespace persistent storage
-      # by app name without also moving the live mount point away from where
-      # programs actually expect it (eg. it would mount ~/claude-code/.claude
-      # instead of ~/.claude, which nothing reads and which gets silently
-      # wiped every reboot). Paths are kept verbatim to avoid that footgun.
+      # Impermanence v2 bind-mounts `persistentStoragePath + $HOME + path`, so
+      # the live path has to stay verbatim — bending it is how you end up
+      # mounting ~/claude-code/.claude, which nothing reads and which gets
+      # wiped every reboot. The stow-style grouping that `removePrefixDirectory`
+      # used to provide (dropped in impermanence v2, see nix-community/
+      # impermanence#287) is recreated on the *storage* side instead, by giving
+      # each app its own persistentStoragePath under the location.
       processPath = path: lib.strings.removePrefix "${config.home.homeDirectory}/" (builtins.toString path);
+
+      storageFor = app:
+        if location.prefixDirectories
+        then "${location.path}/${app.name}"
+        else location.path;
       # }}}
       # {{{ Constructors
-      mkAppDirectory = app: builtins.map processPath app.directories;
-      mkAppFiles = app: builtins.map processPath app.files;
+      mkAppDirectory = app:
+        builtins.map (directory: {
+          directory = processPath directory;
+          persistentStoragePath = storageFor app;
+        })
+        app.directories;
+
+      mkAppFiles = app:
+        builtins.map (file: {
+          file = processPath file;
+          persistentStoragePath = storageFor app;
+        })
+        app.files;
       # }}}
     in
       # {{{ Impermanence config generation

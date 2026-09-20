@@ -167,6 +167,12 @@ gc:
 
   echo "🚀 All done!"
 # }}}
+# {{{ Persistence
+[doc("Move home persistence data into the per-app storage layout; pass --apply to commit to it")]
+[group("nix")]
+migrate-home-persistence host=hostname *args:
+  nix develop -c python3 scripts/migrate-home-persistence.py {{host}} {{args}}
+# }}}
 # {{{ Age / sops related thingies
 [doc("Save the user's SSH key as a key usable by sops")]
 [group("secrets")]
