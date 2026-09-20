@@ -13,7 +13,6 @@
     ./memory-limits.nix
 
     ../common/services/anubis.nix
-    ../common/services/meilisearch.nix
 
     ./services/ollama.nix
     ./services/llama-cpp.nix

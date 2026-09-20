@@ -121,7 +121,7 @@ in {
   };
   # }}}
   # {{{ Storage
-  environment.persistence."/persist/state".directories = [
+  yomi.persistence.at.state.apps.gatus.directories = [
     {
       directory = "/var/lib/gatus";
       mode = "u=rwx,g=,o=";

@@ -74,7 +74,7 @@ in {
   };
   # }}}
   # {{{ Persistence
-  environment.persistence."/persist/state".directories = [
+  yomi.persistence.at.state.apps.llama-cpp.directories = [
     {
       directory = "/var/lib/llama-cpp";
       user = "llama-cpp";

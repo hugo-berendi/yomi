@@ -34,7 +34,6 @@
     ./services/openssh.nix
     ./services/syncthing.nix
     ./services/tailscale.nix
-    ./services/postgres.nix
     ./services/restic
   ];
   # }}}

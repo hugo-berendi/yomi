@@ -6,6 +6,12 @@
 }: {
   imports = [inputs.impermanence.nixosModules.impermanence];
 
+  yomi.persistence.at = {
+    state.path = "/persist/state";
+    data.path = "/persist/data";
+    cache.path = "/persist/local/cache";
+  };
+
   # {{{ Base persistence
   environment.persistence."/persist/state".directories = [
     "/var/lib/systemd"

@@ -1,8 +1,12 @@
 # (https://nixos.wiki/wiki/Module).
 {
   dns = {imports = [../../dns/implementation/nixos-module.nix ../../dns/implementation/nixos-module-assertions.nix];};
+  restic = import ./restic.nix;
+  postgres = import ./postgres.nix;
+  meilisearch = import ./meilisearch.nix;
   acme = import ./acme.nix;
   network-exposure = import ./network-exposure.nix;
+  persistence = import ./persistence.nix;
   nginx = import ./nginx.nix;
   endpoint-checks = import ./endpoint-checks.nix;
   cloudflared = import ./cloudflared.nix;

@@ -95,7 +95,7 @@ in {
   # The model is two gigabytes fetched over the network: worth keeping across
   # reboots, and it is regenerable, so it belongs beside the other caches
   # rather than in a backup set.
-  environment.persistence."/persist/state".directories = [
+  yomi.persistence.at.state.apps.llama-cpp-classifier.directories = [
     {
       directory = "/var/lib/llama-cpp-classifier";
       user = "llama-cpp-classifier";

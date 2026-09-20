@@ -25,12 +25,10 @@ in {
       startAt = lib.mkIf config.yomi.restic.enable [];
     };
 
-    systemd.services = lib.mkIf config.yomi.restic.enable (lib.genAttrs
-      (["restic-backups-state"] ++ lib.optional config.yomi.restic.offsite.enable "restic-backups-offsite")
-      (_: {
-        requires = ["postgresqlBackup.service"];
-        after = ["postgresqlBackup.service"];
-      }));
+    yomi.restic.sets = lib.mkIf config.yomi.restic.enable {
+      state.requires = ["postgresqlBackup.service"];
+      offsite = lib.mkIf config.yomi.restic.offsite.enable {requires = ["postgresqlBackup.service"];};
+    };
 
     environment.persistence."/persist/state".directories = [
       {
