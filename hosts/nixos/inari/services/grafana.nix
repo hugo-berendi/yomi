@@ -166,7 +166,9 @@ in {
             name = "Prometheus";
             type = "prometheus";
             access = "proxy";
-            url = "https://prometheus.hugo-berendi.de";
+            # Alerts must still evaluate when local DNS or the reverse proxy fails.
+            url = "http://127.0.0.1:${toString config.yomi.ports.prometheus}";
+            jsonData.manageAlerts = false;
           }
           {
             uid = "loki";
@@ -174,6 +176,8 @@ in {
             type = "loki";
             access = "proxy";
             url = "http://127.0.0.1:${toString config.yomi.ports.loki}";
+            # Rules live in Grafana; Loki has no ruler API to discover.
+            jsonData.manageAlerts = false;
           }
         ];
       };
