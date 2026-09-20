@@ -76,11 +76,12 @@ in {
     description = "Periodic inbox sorting";
     wantedBy = ["timers.target"];
     timerConfig = {
-      # Every two hours rather than continuously: each unseen sender costs
-      # about fifteen seconds of CPU on a box with no GPU, and mail that waits
-      # two hours to be filed has cost nobody anything.
-      OnCalendar = "*-*-* 0/2:07:00";
-      RandomizedDelaySec = "5m";
+      # Every ten minutes rather than every two hours: each unseen sender
+      # still costs about fifteen seconds of CPU on a box with no GPU, but a
+      # run that finds nothing new exits in under a second, so the tighter
+      # interval only costs anything when there is mail to file.
+      OnCalendar = "*-*-* *:0/10:00";
+      RandomizedDelaySec = "30s";
       Persistent = true;
     };
   };
