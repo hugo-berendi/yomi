@@ -61,7 +61,7 @@ in {
   yomi.nginx.at.sable.port = port;
 
   virtualisation.oci-containers.containers.sable = {
-    image = "ghcr.io/sableclient/sable@sha256:2b031ef97230bd93bd02f8629c9ce8025a0df549f146a961c8145276a05c58b0";
+    image = "ghcr.io/sableclient/sable@sha256:8f988d9e7a8ef5ed6b332677220110479e7f04e0b449a3ac820a251b39ade357";
     ports = ["127.0.0.1:${toString port}:8080"];
     volumes = ["${sableConfig}:/app/config.json:ro"];
     log-driver = "journald";
