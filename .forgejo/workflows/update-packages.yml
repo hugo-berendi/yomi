@@ -77,10 +77,16 @@ jobs:
           set -e
           echo "::endgroup::"
 
+      - name: Update pinned docker image digests
+        run: |
+          echo "::group::update-docker-digests"
+          nix develop -c bash scripts/update-docker-digests.sh
+          echo "::endgroup::"
+
       - name: Check for changes
         id: check-changes
         run: |
-          if git diff --quiet -- pkgs/; then
+          if git diff --quiet -- pkgs/ hosts/; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
             echo "changed=true" >> "$GITHUB_OUTPUT"
@@ -97,12 +103,12 @@ jobs:
         run: |
           branch="update-packages/$(date +%Y-%m-%d)"
           git checkout -b "$branch"
-          git add pkgs/
+          git add pkgs/ hosts/
           git commit -m "chore: update packages"
           git push --force origin "$branch"
 
           summary=""
-          for f in $(git diff --name-only main -- pkgs/); do
+          for f in $(git diff --name-only main -- pkgs/ hosts/); do
             pkg=$(basename "$f" .nix)
             old=$(git show "main:$f" 2>/dev/null | sed -n 's/.*version = "\([^"]*\)".*/\1/p' | head -1)
             new=$(sed -n 's/.*version = "\([^"]*\)".*/\1/p' "$f" | head -1)
@@ -113,7 +119,7 @@ jobs:
             fi
           done
 
-          diffSummary=$(git diff main -- pkgs/ | head -c 60000)
+          diffSummary=$(git diff main -- pkgs/ hosts/ | head -c 60000)
           body=$(printf '%s\n<details>\n<summary>Show diff</summary>\n\n```diff\n%s\n```\n\n</details>\n' "$summary" "$diffSummary")
 
           prResponse=$(curl -fsSL -X POST \
