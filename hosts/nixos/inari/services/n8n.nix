@@ -91,6 +91,10 @@ in {
     sops.secrets = lib.genAttrs [
       "n8n_webuntis_env"
       "n8n_immich_api_key"
+      "n8n_paperless_api_token"
+      "n8n_mealie_api_token"
+      "n8n_home_assistant_api_token"
+      "n8n_jellyseerr_api_key"
       "sonarr_api_key"
       "radarr_api_key"
       "lidarr_api_key"
@@ -99,6 +103,10 @@ in {
 
     sops.templates."n8n-services.env".content = ''
       IMMICH_API_KEY=${config.sops.placeholder.n8n_immich_api_key}
+      PAPERLESS_API_TOKEN=${config.sops.placeholder.n8n_paperless_api_token}
+      MEALIE_API_TOKEN=${config.sops.placeholder.n8n_mealie_api_token}
+      HOME_ASSISTANT_API_TOKEN=${config.sops.placeholder.n8n_home_assistant_api_token}
+      JELLYSEERR_API_KEY=${config.sops.placeholder.n8n_jellyseerr_api_key}
       SONARR_API_KEY=${config.sops.placeholder.sonarr_api_key}
       RADARR_API_KEY=${config.sops.placeholder.radarr_api_key}
       LIDARR_API_KEY=${config.sops.placeholder.lidarr_api_key}
@@ -227,6 +235,12 @@ in {
     yomi.n8n.workflows.forgejo-ci.source = ./n8n/workflows/forgejo-ci.json;
     yomi.n8n.workflows.inbox-organizer.source = ./n8n/workflows/inbox-organizer.json;
     yomi.n8n.workflows.immich-location-albums.source = ./n8n/workflows/immich-location-albums.json;
+    yomi.n8n.workflows.immich-maintenance.source = ./n8n/workflows/immich-maintenance.json;
+    yomi.n8n.workflows.jellyseerr-tracker.source = ./n8n/workflows/jellyseerr-tracker.json;
+    yomi.n8n.workflows.mealie-groceries.source = ./n8n/workflows/mealie-groceries.json;
+    yomi.n8n.workflows.home-assistant-anomalies.source = ./n8n/workflows/home-assistant-anomalies.json;
+    yomi.n8n.workflows.paperless-dates.source = ./n8n/workflows/paperless-dates.json;
+    yomi.n8n.workflows.forgejo-releases.source = ./n8n/workflows/forgejo-releases.json;
     # }}}
   };
 }

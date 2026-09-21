@@ -1,0 +1,336 @@
+{
+  "name": "Paperless · Reminders and document calendar",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "60000000-0000-4000-8000-000000000001",
+      "name": "Manual test",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -650,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 7 * * *"
+            }
+          ]
+        }
+      },
+      "id": "60000000-0000-4000-8000-000000000002",
+      "name": "Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -650,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const token = $env.PAPERLESS_API_TOKEN;\nconst calendarUrl = String($env.PAPERLESS_CALENDAR_URL ?? '').replace(/\\/+$/, '') + '/';\nif (!token) throw new Error('PAPERLESS_API_TOKEN is not configured');\nif (!/^https:\\/\\//.test(calendarUrl)) throw new Error('PAPERLESS_CALENDAR_URL is not configured');\nconst headers = {Authorization: `Token ${token}`};\nconst api = async (method, path, body) =>\n  await this.helpers.httpRequest({method, url: `http://127.0.0.1:8445${path}`, headers, body, json: true});\n\nconst fieldsResponse = await api('GET', '/api/custom_fields/?page_size=100');\nlet field = fieldsResponse.results.find((candidate) => candidate.name === 'Calendar date');\nif (!field) field = await api('POST', '/api/custom_fields/', {name: 'Calendar date', data_type: 'date'});\n\nconst documents = [];\nlet next = `/api/documents/?page_size=100&custom_fields__id__in=${field.id}`;\nwhile (next) {\n  const pagePath = next.replace(/^https?:\\/\\/[^/]+/, '');\n  const page = await api('GET', pagePath);\n  documents.push(...page.results);\n  next = page.next;\n}\n\nconst escapeIcs = (value) => String(value ?? '').replace(/\\\\/g, '\\\\\\\\').replace(/\\r?\\n/g, '\\\\n').replace(/,/g, '\\\\,').replace(/;/g, '\\\\;');\nconst hash = (value) => {\n  let result = 0x811c9dc5;\n  for (let i = 0; i < value.length; i++) result = Math.imul(result ^ value.charCodeAt(i), 0x01000193);\n  return (result >>> 0).toString(16).padStart(8, '0');\n};\nconst addDay = (date) => {\n  const value = new Date(`${date}T12:00:00Z`);\n  value.setUTCDate(value.getUTCDate() + 1);\n  return value.toISOString().slice(0, 10);\n};\nconst compact = (date) => date.replaceAll('-', '');\n\nconst desired = {};\nfor (const document of documents) {\n  const value = document.custom_fields?.find((entry) => entry.field === field.id)?.value;\n  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(String(value ?? ''))) continue;\n  const href = `paperless-document-${document.id}.ics`;\n  const body = [\n    'BEGIN:VCALENDAR',\n    'VERSION:2.0',\n    'PRODID:-//n8n//Paperless dates//EN',\n    'CALSCALE:GREGORIAN',\n    'BEGIN:VEVENT',\n    `UID:paperless-${document.id}@n8n.local`,\n    `DTSTART;VALUE=DATE:${compact(value)}`,\n    `DTEND;VALUE=DATE:${compact(addDay(value))}`,\n    // Keep the generated file stable across retries. Using the current time\n    // here would change the hash and rewrite every event on every run.\n    `DTSTAMP:${compact(value)}T000000Z`,\n    `SUMMARY:${escapeIcs(document.title)}`,\n    `DESCRIPTION:${escapeIcs(`Paperless document #${document.id}\\\\nhttps://paperless.hugo-berendi.de/documents/${document.id}/details`)}`,\n    'TRANSP:TRANSPARENT',\n    'END:VEVENT',\n    'END:VCALENDAR',\n    '',\n  ].join('\\r\\n');\n  desired[href] = {hash: hash(body), body};\n}\n\nconst state = $getWorkflowStaticData('global');\nstate.calendar ??= {};\nconst operations = [];\nfor (const [href, event] of Object.entries(desired)) {\n  if (state.calendar[href] !== event.hash) {\n    operations.push({method: 'PUT', href, url: calendarUrl + href, body: event.body, hash: event.hash});\n  }\n}\nfor (const href of Object.keys(state.calendar)) {\n  if (!(href in desired)) operations.push({method: 'DELETE', href, url: calendarUrl + href, body: ''});\n}\nif (!operations.length) return [];\nreturn operations.map((operation) => ({json: operation}));\n"
+      },
+      "id": "60000000-0000-4000-8000-000000000003",
+      "name": "Prepare document calendar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -390,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "60000000-0000-4000-8000-000000000011",
+              "leftValue": "={{ $json.method }}",
+              "rightValue": "PUT",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "60000000-0000-4000-8000-000000000004",
+      "name": "PUT or DELETE?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -120,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "={{ $json.url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "text/calendar; charset=utf-8"
+            },
+            {
+              "name": "Accept",
+              "value": "text/plain, */*"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "text/calendar; charset=utf-8",
+        "body": "={{ $json.body }}",
+        "options": {}
+      },
+      "id": "60000000-0000-4000-8000-000000000005",
+      "name": "Write calendar event",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        140,
+        -150
+      ],
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "tM9PYzotsyf5X1GW",
+          "name": "Radicale"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "={{ $json.url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "text/plain, */*"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "60000000-0000-4000-8000-000000000006",
+      "name": "Delete calendar event",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        140,
+        0
+      ],
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "tM9PYzotsyf5X1GW",
+          "name": "Radicale"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const op = $('Prepare document calendar').item.json;\nconst state = $getWorkflowStaticData('global');\nstate.calendar ??= {};\nif (op.method === 'PUT') state.calendar[op.href] = op.hash;\nelse delete state.calendar[op.href];\nreturn $input.item;"
+      },
+      "id": "60000000-0000-4000-8000-000000000007",
+      "name": "Commit calendar state",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const token = $env.PAPERLESS_API_TOKEN;\nif (!token) throw new Error('PAPERLESS_API_TOKEN is not configured');\nconst headers = {Authorization: `Token ${token}`};\nconst api = async (method, path, body) =>\n  await this.helpers.httpRequest({method, url: `http://127.0.0.1:8445${path}`, headers, body, json: true});\n\nconst fieldsResponse = await api('GET', '/api/custom_fields/?page_size=100');\nlet field = fieldsResponse.results.find((candidate) => candidate.name === 'Reminder date');\nif (!field) field = await api('POST', '/api/custom_fields/', {name: 'Reminder date', data_type: 'date'});\n\nconst documents = [];\nlet next = `/api/documents/?page_size=100&custom_fields__id__in=${field.id}`;\nwhile (next) {\n  const pagePath = next.replace(/^https?:\\/\\/[^/]+/, '');\n  const page = await api('GET', pagePath);\n  documents.push(...page.results);\n  next = page.next;\n}\n\nconst today = new Date();\ntoday.setHours(12, 0, 0, 0);\nconst wantedDays = new Set([30, 14, 7, 3, 1, 0]);\nconst due = [];\nfor (const document of documents) {\n  const date = document.custom_fields?.find((entry) => entry.field === field.id)?.value;\n  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(String(date ?? ''))) continue;\n  const target = new Date(`${date}T12:00:00`);\n  const days = Math.round((target - today) / 86400000);\n  if (wantedDays.has(days)) due.push({id: document.id, title: document.title, date, days});\n}\nif (!due.length) return [];\n\nconst state = $getWorkflowStaticData('global');\nstate.sent ??= {};\nconst unsent = due.filter((item) => !state.sent[`${item.id}:${item.date}:${item.days}`]);\nif (!unsent.length) return [];\nconst keys = unsent.map((item) => `${item.id}:${item.date}:${item.days}`);\nconst esc = (value) =>\n  String(value ?? '')\n    .replaceAll('&', '&amp;')\n    .replaceAll('<', '&lt;')\n    .replaceAll('>', '&gt;')\n    .replaceAll('\"', '&quot;');\nconst rows = unsent\n  .map((item) => `<tr><td style=\"padding:10px 0;border-bottom:1px solid #393552;color:#e0def4;\"><a href=\"https://paperless.hugo-berendi.de/documents/${item.id}/details\" style=\"color:#9ccfd8;font-weight:bold;\">${esc(item.title)}</a><br><span style=\"color:#f6c177;\">${esc(item.date)} · ${item.days === 0 ? 'today' : `${item.days} days`}</span></td></tr>`)\n  .join('');\nconst html = `<html><body style=\"margin:0;padding:24px;background:#232136;\"><table role=\"presentation\" width=\"100%\" style=\"max-width:600px;margin:auto;background:#2a273f;border:1px solid #393552;padding:24px;font-family:Verdana,sans-serif;\"><tr><td style=\"color:#c4a7e7;font:700 20px 'Courier New',monospace;\">PAPERLESS REMINDERS</td></tr>${rows}</table></body></html>`;\nreturn [{json: {subject: `[Paperless] ${unsent.length} document reminder${unsent.length === 1 ? '' : 's'}`, html, sentKeys: keys}}];\n"
+      },
+      "id": "60000000-0000-4000-8000-000000000008",
+      "name": "Prepare reminders",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -390,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "no-reply@tengu.hugo-berendi.de",
+        "toEmail": "status@hugo-berendi.de",
+        "subject": "={{ $json.subject }}",
+        "emailFormat": "html",
+        "html": "={{ $json.html }}",
+        "options": {}
+      },
+      "id": "60000000-0000-4000-8000-000000000009",
+      "name": "Send reminders",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        -100,
+        260
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "njtrBIl1Zg5hBBqU",
+          "name": "Migadu (no-reply)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const keys = $('Prepare reminders').first().json.sentKeys;\nconst state = $getWorkflowStaticData('global');\nstate.sent ??= {};\nconst now = Date.now();\nfor (const key of keys) state.sent[key] = now;\nfor (const [key, timestamp] of Object.entries(state.sent)) {\n  if (now - Number(timestamp) > 180 * 86400000) delete state.sent[key];\n}\nreturn $input.all();"
+      },
+      "id": "60000000-0000-4000-8000-000000000010",
+      "name": "Commit reminder state",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        180,
+        260
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual test": {
+      "main": [
+        [
+          {
+            "node": "Prepare document calendar",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Prepare reminders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule": {
+      "main": [
+        [
+          {
+            "node": "Prepare document calendar",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Prepare reminders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare document calendar": {
+      "main": [
+        [
+          {
+            "node": "PUT or DELETE?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PUT or DELETE?": {
+      "main": [
+        [
+          {
+            "node": "Write calendar event",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Delete calendar event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write calendar event": {
+      "main": [
+        [
+          {
+            "node": "Commit calendar state",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete calendar event": {
+      "main": [
+        [
+          {
+            "node": "Commit calendar state",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare reminders": {
+      "main": [
+        [
+          {
+            "node": "Send reminders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send reminders": {
+      "main": [
+        [
+          {
+            "node": "Commit reminder state",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "66000000-0000-4000-8000-000000000001",
+  "id": "PaperlessDates26",
+  "tags": [],
+  "nodeGroups": []
+}

@@ -1,0 +1,119 @@
+{
+  "name": "Immich · Metadata repair and duplicate review",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "10000000-0000-4000-8000-000000000001",
+      "name": "Manual test",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -420,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * 1"
+            }
+          ]
+        }
+      },
+      "id": "10000000-0000-4000-8000-000000000002",
+      "name": "Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -420,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const API = 'http://127.0.0.1:8416';\nconst key = $env.IMMICH_API_KEY;\nif (!key) throw new Error('IMMICH_API_KEY is not configured');\n\nconst request = async (method, path, body) =>\n  await this.helpers.httpRequest({\n    method,\n    url: `${API}${path}`,\n    headers: {'x-api-key': key},\n    body,\n    json: true,\n    timeout: 120000,\n  });\n\n// `force:false` only queues assets whose metadata job has not completed. A\n// repeated run therefore repairs missing work without reprocessing the whole\n// library.\nawait request('PUT', '/api/jobs/metadataExtraction', {command: 'start', force: false});\nconst duplicates = await request('GET', '/api/duplicates');\n\nconst esc = (value) =>\n  String(value ?? '')\n    .replaceAll('&', '&amp;')\n    .replaceAll('<', '&lt;')\n    .replaceAll('>', '&gt;')\n    .replaceAll('\"', '&quot;');\nconst size = (bytes) => {\n  const value = Number(bytes ?? 0);\n  if (!value) return 'unknown size';\n  if (value >= 1024 ** 3) return `${(value / 1024 ** 3).toFixed(1)} GiB`;\n  return `${(value / 1024 ** 2).toFixed(1)} MiB`;\n};\n\nconst rows = duplicates\n  .slice(0, 50)\n  .map((group) => {\n    const files = group.assets\n      .map((asset) => {\n        const keep = group.suggestedKeepAssetIds.includes(asset.id) ? 'keep' : 'review';\n        return `<a href=\"https://immich.hugo-berendi.de/photos/${asset.id}\" style=\"color:#9ccfd8;\">${esc(asset.originalFileName)}</a> <span style=\"color:#6e6a86;\">${size(asset.exifInfo?.fileSizeInByte)} · ${keep}</span>`;\n      })\n      .join('<br>');\n    return `<tr><td style=\"padding:10px 0;border-bottom:1px solid #393552;color:#e0def4;\">${files}</td></tr>`;\n  })\n  .join('');\n\nconst hidden = Math.max(0, duplicates.length - 50);\nconst html = `<html><body style=\"margin:0;padding:24px;background:#232136;color:#e0def4;font-family:Verdana,sans-serif;\">\n<table role=\"presentation\" width=\"100%\" style=\"max-width:600px;margin:auto;background:#2a273f;border:1px solid #393552;border-collapse:separate;padding:24px;\">\n<tr><td><div style=\"color:#c4a7e7;font:700 20px 'Courier New',monospace;\">IMMICH MAINTENANCE</div>\n<p style=\"color:#908caa;line-height:1.5;\">Queued missing metadata extraction. Immich currently reports ${duplicates.length} duplicate group${duplicates.length === 1 ? '' : 's'}.</p></td></tr>\n${rows || '<tr><td style=\"padding:12px 0;color:#9ccfd8;\">No duplicate groups need review.</td></tr>'}\n${hidden ? `<tr><td style=\"padding-top:12px;color:#f6c177;\">${hidden} more groups are available in Immich.</td></tr>` : ''}\n</table></body></html>`;\n\nreturn [{json: {subject: `[Immich] Metadata repair queued · ${duplicates.length} duplicate groups`, html}}];\n"
+      },
+      "id": "10000000-0000-4000-8000-000000000003",
+      "name": "Repair metadata and collect duplicates",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "no-reply@tengu.hugo-berendi.de",
+        "toEmail": "status@hugo-berendi.de",
+        "subject": "={{ $json.subject }}",
+        "emailFormat": "html",
+        "html": "={{ $json.html }}",
+        "options": {}
+      },
+      "id": "10000000-0000-4000-8000-000000000004",
+      "name": "Send maintenance report",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        100,
+        80
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "njtrBIl1Zg5hBBqU",
+          "name": "Migadu (no-reply)"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual test": {
+      "main": [
+        [
+          {
+            "node": "Repair metadata and collect duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule": {
+      "main": [
+        [
+          {
+            "node": "Repair metadata and collect duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Repair metadata and collect duplicates": {
+      "main": [
+        [
+          {
+            "node": "Send maintenance report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "11000000-0000-4000-8000-000000000001",
+  "id": "ImmichMaint2026",
+  "tags": [],
+  "nodeGroups": []
+}

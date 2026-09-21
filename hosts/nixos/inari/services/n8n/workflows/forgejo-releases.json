@@ -1,0 +1,143 @@
+{
+  "name": "Forgejo · Public release announcements",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "20000000-0000-4000-8000-000000000001",
+      "name": "Manual test",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -520,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "20000000-0000-4000-8000-000000000002",
+      "name": "Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -520,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const API = 'http://127.0.0.1:8409/api/v1';\nconst owner = 'hugo-berendi';\nconst repos = await this.helpers.httpRequest({method: 'GET', url: `${API}/users/${owner}/repos`, qs: {limit: 100}, json: true});\nconst current = {};\n\nfor (const repo of repos.filter((item) => !item.private && !item.archived)) {\n  let releases = [];\n  try {\n    releases = await this.helpers.httpRequest({\n      method: 'GET',\n      url: `${API}/repos/${owner}/${repo.name}/releases`,\n      qs: {limit: 20},\n      json: true,\n    });\n  } catch (error) {\n    // Forgejo returns 404 when a repository has no releases.\n    if (Number(error?.statusCode ?? error?.response?.statusCode) !== 404) throw error;\n  }\n  for (const release of Array.isArray(releases) ? releases : []) {\n    if (release.draft) continue;\n    current[`${repo.name}:${release.id}`] = {\n      repo: repo.name,\n      name: release.name || release.tag_name,\n      tag: release.tag_name,\n      url: release.html_url,\n      publishedAt: release.published_at,\n      prerelease: Boolean(release.prerelease),\n    };\n  }\n}\n\nconst state = $getWorkflowStaticData('global');\nif (!state.releases) {\n  state.releases = current;\n  return [];\n}\nconst added = Object.entries(current).filter(([id]) => !(id in state.releases)).map(([, release]) => release);\nif (!added.length) return [];\nconst esc = (value) =>\n  String(value ?? '')\n    .replaceAll('&', '&amp;')\n    .replaceAll('<', '&lt;')\n    .replaceAll('>', '&gt;')\n    .replaceAll('\"', '&quot;');\nconst rows = added\n  .map((release) => `<tr><td style=\"padding:10px 0;border-bottom:1px solid #393552;color:#e0def4;\"><a href=\"${esc(release.url)}\" style=\"color:#9ccfd8;font-weight:bold;\">${esc(release.repo)} ${esc(release.tag)}</a><br><span style=\"color:#908caa;\">${esc(release.name)}${release.prerelease ? ' · prerelease' : ''}</span></td></tr>`)\n  .join('');\nconst html = `<html><body style=\"margin:0;padding:24px;background:#232136;\"><table role=\"presentation\" width=\"100%\" style=\"max-width:600px;margin:auto;background:#2a273f;border:1px solid #393552;padding:24px;font-family:Verdana,sans-serif;\"><tr><td style=\"color:#c4a7e7;font:700 20px 'Courier New',monospace;\">FORGEJO RELEASES</td></tr>${rows}</table></body></html>`;\nreturn [{json: {subject: `[Forgejo] ${added.length} new release${added.length === 1 ? '' : 's'}`, html, nextState: current}}];\n"
+      },
+      "id": "20000000-0000-4000-8000-000000000003",
+      "name": "Check public releases",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -260,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "no-reply@tengu.hugo-berendi.de",
+        "toEmail": "status@hugo-berendi.de",
+        "subject": "={{ $json.subject }}",
+        "emailFormat": "html",
+        "html": "={{ $json.html }}",
+        "options": {}
+      },
+      "id": "20000000-0000-4000-8000-000000000004",
+      "name": "Send release announcements",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        80
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "njtrBIl1Zg5hBBqU",
+          "name": "Migadu (no-reply)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const nextState = $('Check public releases').first().json.nextState;\nconst state = $getWorkflowStaticData('global');\nstate.releases = nextState;\nreturn $input.all();"
+      },
+      "id": "20000000-0000-4000-8000-000000000005",
+      "name": "Commit notification state",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        80
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual test": {
+      "main": [
+        [
+          {
+            "node": "Check public releases",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule": {
+      "main": [
+        [
+          {
+            "node": "Check public releases",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check public releases": {
+      "main": [
+        [
+          {
+            "node": "Send release announcements",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send release announcements": {
+      "main": [
+        [
+          {
+            "node": "Commit notification state",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "44000000-0000-4000-8000-000000000001",
+  "id": "ForgejoRelease26",
+  "tags": [],
+  "nodeGroups": []
+}

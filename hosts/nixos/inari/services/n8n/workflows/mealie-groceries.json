@@ -1,0 +1,84 @@
+{
+  "name": "Mealie · Weekly managed grocery list",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "50000000-0000-4000-8000-000000000001",
+      "name": "Manual test",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -300,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 17 * * *"
+            }
+          ]
+        }
+      },
+      "id": "50000000-0000-4000-8000-000000000002",
+      "name": "Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -300,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const token = $env.MEALIE_API_TOKEN;\nif (!token) throw new Error('MEALIE_API_TOKEN is not configured');\nconst headers = {Authorization: `Bearer ${token}`};\nconst request = async (method, path, body) =>\n  await this.helpers.httpRequest({method, url: `http://127.0.0.1:8488${path}`, headers, body, json: true});\n\nconst iso = (date) => date.toISOString().slice(0, 10);\nconst start = new Date();\nstart.setHours(12, 0, 0, 0);\nconst daysSinceMonday = (start.getDay() + 6) % 7;\n// Sunday prepares the coming week. On every other day, reconcile the current\n// week's managed list so late meal-plan changes are still included.\nstart.setDate(start.getDate() + (start.getDay() === 0 ? 1 : -daysSinceMonday));\nconst end = new Date(start);\nend.setDate(end.getDate() + 6);\nconst startDate = iso(start);\nconst endDate = iso(end);\n\nconst plan = await request('GET', `/api/households/mealplans?start_date=${startDate}&end_date=${endDate}&perPage=100`);\nconst recipeIds = [...new Set((plan.items ?? []).map((entry) => entry.recipeId).filter(Boolean))];\nif (!recipeIds.length) return [{json: {created: false, reason: 'No planned recipes', startDate, endDate}}];\n\nconst listName = `Groceries ${startDate} - ${endDate}`;\nconst lists = await request('GET', '/api/households/shopping/lists?page=1&perPage=100');\n// A user may happen to create a list with the same date-based title. Only\n// reconcile lists carrying our marker; personal lists remain untouched.\nlet list = (lists.items ?? []).find(\n  (candidate) => candidate.name === listName && candidate.extras?.yomiManaged === true,\n);\nif (!list) {\n  list = await request('POST', '/api/households/shopping/lists', {\n    name: listName,\n    extras: {yomiManaged: true, startDate, endDate},\n  });\n}\n\nconst existing = new Set((list.recipeReferences ?? []).map((reference) => reference.recipeId));\nlet added = 0;\nfor (const recipeId of recipeIds) {\n  if (existing.has(recipeId)) continue;\n  await request('POST', `/api/households/shopping/lists/${list.id}/recipe/${recipeId}`, {recipeIncrementQuantity: 1});\n  added += 1;\n}\n\nreturn [{json: {listId: list.id, listName, recipes: recipeIds.length, added}}];\n"
+      },
+      "id": "50000000-0000-4000-8000-000000000003",
+      "name": "Reconcile managed grocery list",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        80
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual test": {
+      "main": [
+        [
+          {
+            "node": "Reconcile managed grocery list",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule": {
+      "main": [
+        [
+          {
+            "node": "Reconcile managed grocery list",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "55000000-0000-4000-8000-000000000001",
+  "id": "MealieGrocery26",
+  "tags": [],
+  "nodeGroups": []
+}
