@@ -31,7 +31,7 @@ in {
   ];
 
   virtualisation.oci-containers.containers.valheim = {
-    image = "ghcr.io/lloesche/valheim-server:latest@sha256:dc1323b0e6a27cd9b25506551e4b85123472056c5978958d0b32c341d860d207";
+    image = "ghcr.io/lloesche/valheim-server:latest@sha256:c885aa902faf885ceb8f69a34663b90519e65aa65fbd9f893451f0640e218a4f";
     autoStart = true;
 
     # Valheim speaks UDP only, and claims the query port right above the game

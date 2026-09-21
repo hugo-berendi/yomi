@@ -76,7 +76,7 @@ in {
   # }}}
   # {{{ Containers
   virtualisation.oci-containers.containers.changedetection-browser = {
-    image = "dgtlmoon/sockpuppetbrowser:latest@sha256:61cf3a922a1a9c5358da4bf669582c12704ffcbcebf2d17ec17c82df8978a0ec";
+    image = "dgtlmoon/sockpuppetbrowser:latest@sha256:1d8f72d2ce2085faed4232e5ae1e65c02efe5b831a18e127829b267c260b4fb2";
     autoStart = true;
     environment = {
       SCREEN_WIDTH = "1920";
@@ -92,7 +92,7 @@ in {
   };
 
   virtualisation.oci-containers.containers.changedetection = {
-    image = "ghcr.io/dgtlmoon/changedetection.io:latest@sha256:7bb6963b730df6a1070f7a08a607b0eb7a87fe65abfa4742d876ad33bb1267eb";
+    image = "ghcr.io/dgtlmoon/changedetection.io:latest@sha256:096dae27b5d677b89f0e810fff95a70403271aa3ff3b6437952d2db9be7e74c5";
     autoStart = true;
     dependsOn = ["changedetection-browser"];
     ports = ["127.0.0.1:${toString port}:5000"];
