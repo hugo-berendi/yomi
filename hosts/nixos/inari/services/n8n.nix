@@ -84,12 +84,13 @@ in {
   config = {
     yomi.nginx.at.n8n.port = config.yomi.ports.n8n;
 
-    # {{{ Service API keys for the digest workflows
-    # A template rather than a fourth copy of each key: these same secrets are
-    # already consumed by the *arr services themselves, and duplicating the
-    # values into an n8n-specific blob would mean rotating each one twice.
+    # {{{ Service API keys for workflows
+    # The *arr values are the same secrets their services consume, so a
+    # template avoids a second copy to rotate. Immich gets a dedicated key
+    # limited to asset reads and album management.
     sops.secrets = lib.genAttrs [
       "n8n_webuntis_env"
+      "n8n_immich_api_key"
       "sonarr_api_key"
       "radarr_api_key"
       "lidarr_api_key"
@@ -97,6 +98,7 @@ in {
     ] (_: {sopsFile = ../secrets.yaml;});
 
     sops.templates."n8n-services.env".content = ''
+      IMMICH_API_KEY=${config.sops.placeholder.n8n_immich_api_key}
       SONARR_API_KEY=${config.sops.placeholder.sonarr_api_key}
       RADARR_API_KEY=${config.sops.placeholder.radarr_api_key}
       LIDARR_API_KEY=${config.sops.placeholder.lidarr_api_key}
@@ -224,6 +226,7 @@ in {
     yomi.n8n.workflows.media-arrivals.source = ./n8n/workflows/media-arrivals.json;
     yomi.n8n.workflows.forgejo-ci.source = ./n8n/workflows/forgejo-ci.json;
     yomi.n8n.workflows.inbox-organizer.source = ./n8n/workflows/inbox-organizer.json;
+    yomi.n8n.workflows.immich-location-albums.source = ./n8n/workflows/immich-location-albums.json;
     # }}}
   };
 }

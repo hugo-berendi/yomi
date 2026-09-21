@@ -1,0 +1,83 @@
+{
+  "active": true,
+  "connections": {
+    "Every five minutes": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Sort into city albums",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Run manually": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Sort into city albums",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "id": "d2caf235487e4cd5",
+  "name": "Immich · Location albums",
+  "nodes": [
+    {
+      "id": "b02a7c28-e3b7-4a1b-9eae-fd06cd8db8ec",
+      "name": "Run manually",
+      "parameters": {},
+      "position": [
+        0,
+        180
+      ],
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1
+    },
+    {
+      "id": "cadb6bbc-fbf8-476f-b69b-59154f34b0a8",
+      "name": "Every five minutes",
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 5
+            }
+          ]
+        }
+      },
+      "position": [
+        0,
+        0
+      ],
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2
+    },
+    {
+      "id": "9d903bfa-6fe5-4be6-bf1e-188f13ac57b5",
+      "name": "Sort into city albums",
+      "parameters": {
+        "jsCode": "// {{{ Intent\n// Keep every located Immich photo and video in an album for its city. The\n// first successful execution scans the whole library. Later executions scan\n// three days of uploads, and a weekly full scan catches delayed metadata and\n// repairs anything missed during an outage.\n//\n// Album membership is additive. Re-running this node is safe: Immich reports\n// an existing album membership as a duplicate, which counts as success here.\n// }}}\n\nconst API = $env.IMMICH_URL ?? 'http://127.0.0.1:8416';\nconst API_KEY = $env.IMMICH_API_KEY;\nconst FULL_SCAN_AFTER_MS = 7 * 24 * 60 * 60 * 1000;\nconst RECENT_WINDOW_MS = 3 * 24 * 60 * 60 * 1000;\nconst PAGE_SIZE = 1000;\nconst ADD_BATCH_SIZE = 500;\nconst MARKER = 'yomiLocationAlbum';\n\nif (!API_KEY) throw new Error('IMMICH_API_KEY is not configured');\n\nconst request = async (method, path, body) =>\n  await this.helpers.httpRequest({\n    method,\n    url: `${API}${path}`,\n    headers: {'x-api-key': API_KEY},\n    body,\n    json: true,\n    timeout: 120000,\n  });\n\nconst locationKey = (city, country) => `${city.toLocaleLowerCase()}\\u0000${country.toLocaleLowerCase()}`;\nconst cityKey = (city) => city.toLocaleLowerCase();\nconst descriptionFor = (city, country) =>\n  `Managed by n8n from Immich location metadata.\\n${JSON.stringify({[MARKER]: 1, city, country})}`;\n\nconst managedLocation = (album) => {\n  const line = String(album.description ?? '')\n    .split('\\n')\n    .find((candidate) => candidate.includes(`\"${MARKER}\"`));\n  if (!line) return null;\n\n  try {\n    const value = JSON.parse(line);\n    if (value?.[MARKER] !== 1 || !value.city || !value.country) return null;\n    return {city: String(value.city).trim(), country: String(value.country).trim()};\n  } catch {\n    return null;\n  }\n};\n\n// {{{ Select assets\nconst state = $getWorkflowStaticData('global');\nconst now = Date.now();\nconst lastFullScan = Date.parse(state.lastFullScanAt ?? '');\nconst fullScan = !Number.isFinite(lastFullScan) || now - lastFullScan >= FULL_SCAN_AFTER_MS;\n\nconst assets = [];\nlet cursor;\ndo {\n  const filter = {city: {ne: null}};\n  if (!fullScan) filter.createdAt = {gte: new Date(now - RECENT_WINDOW_MS).toISOString()};\n\n  const response = await request('POST', '/api/search/metadata', {\n    withExif: true,\n    size: PAGE_SIZE,\n    filter,\n    ...(cursor ? {cursor} : {}),\n  });\n\n  assets.push(...(response?.assets?.items ?? []));\n  cursor = response?.assets?.nextCursor ?? null;\n} while (cursor);\n\nconst byLocation = new Map();\nlet waitingForLocation = 0;\nfor (const asset of assets) {\n  const city = String(asset.exifInfo?.city ?? '').trim();\n  const country = String(asset.exifInfo?.country ?? '').trim();\n  if (!city || !country) {\n    waitingForLocation += 1;\n    continue;\n  }\n\n  const key = locationKey(city, country);\n  const group = byLocation.get(key) ?? {city, country, assetIds: []};\n  group.assetIds.push(asset.id);\n  byLocation.set(key, group);\n}\n// }}}\n\n// {{{ Reconcile albums\nconst albums = await request('GET', '/api/albums?isOwned=true');\nconst albumById = new Map(albums.map((album) => [album.id, album]));\nconst albumsNamed = (name) =>\n  [...albumById.values()].filter((album) => album.albumName.toLocaleLowerCase() === name.toLocaleLowerCase());\nconst managedAlbums = () =>\n  [...albumById.values()]\n    .map((album) => ({album, location: managedLocation(album)}))\n    .filter(({location}) => location);\n\nconst countriesByCity = new Map();\nfor (const group of byLocation.values()) {\n  const key = cityKey(group.city);\n  const countries = countriesByCity.get(key) ?? new Set();\n  countries.add(group.country.toLocaleLowerCase());\n  countriesByCity.set(key, countries);\n}\nfor (const {location} of managedAlbums()) {\n  const key = cityKey(location.city);\n  const countries = countriesByCity.get(key) ?? new Set();\n  countries.add(location.country.toLocaleLowerCase());\n  countriesByCity.set(key, countries);\n}\n\nlet albumsCreated = 0;\nlet albumsRenamed = 0;\nlet assetsAdded = 0;\nlet duplicates = 0;\n\nconst ensureQualifiedManagedAlbums = async (city) => {\n  const entries = managedAlbums().filter(({location}) => cityKey(location.city) === cityKey(city));\n  const collision = (countriesByCity.get(cityKey(city))?.size ?? 0) > 1;\n  if (!collision) return;\n\n  for (const {album, location} of entries) {\n    if (album.albumName.toLocaleLowerCase() !== location.city.toLocaleLowerCase()) continue;\n    const qualified = `${location.city}, ${location.country}`;\n    await request('PATCH', `/api/albums/${album.id}`, {albumName: qualified});\n    album.albumName = qualified;\n    albumsRenamed += 1;\n  }\n};\n\nconst sortedGroups = [...byLocation.values()].sort(\n  (a, b) => a.city.localeCompare(b.city) || a.country.localeCompare(b.country),\n);\n\nfor (const group of sortedGroups) {\n  await ensureQualifiedManagedAlbums(group.city);\n\n  const managed = managedAlbums().find(\n    ({location}) => locationKey(location.city, location.country) === locationKey(group.city, group.country),\n  )?.album;\n  const collision = (countriesByCity.get(cityKey(group.city))?.size ?? 0) > 1;\n  const desiredName = collision ? `${group.city}, ${group.country}` : group.city;\n  let album = managed ?? albumsNamed(desiredName)[0];\n\n  if (!album) {\n    album = await request('POST', '/api/albums', {\n      albumName: desiredName,\n      description: descriptionFor(group.city, group.country),\n      assetIds: group.assetIds,\n    });\n    albumById.set(album.id, album);\n    albumsCreated += 1;\n    assetsAdded += group.assetIds.length;\n    continue;\n  }\n\n  for (let offset = 0; offset < group.assetIds.length; offset += ADD_BATCH_SIZE) {\n    const ids = group.assetIds.slice(offset, offset + ADD_BATCH_SIZE);\n    const results = await request('PUT', `/api/albums/${album.id}/assets`, {ids});\n    for (const result of results ?? []) {\n      if (result.success) assetsAdded += 1;\n      else if (result.error === 'duplicate') duplicates += 1;\n      else throw new Error(`Immich refused asset ${result.id}: ${result.errorMessage ?? result.error ?? 'unknown error'}`);\n    }\n  }\n}\n// }}}\n\n// Save the full-scan checkpoint only after every mutation succeeds. A crash\n// repeats the scan and converges through duplicate-safe album additions.\nif (fullScan) state.lastFullScanAt = new Date(now).toISOString();\nstate.lastSuccessfulRunAt = new Date().toISOString();\n\nreturn [\n  {\n    json: {\n      mode: fullScan ? 'full' : 'recent',\n      assetsExamined: assets.length,\n      locations: byLocation.size,\n      waitingForLocation,\n      albumsCreated,\n      albumsRenamed,\n      assetsAdded,\n      alreadySorted: duplicates,\n    },\n  },\n];\n"
+      },
+      "position": [
+        260,
+        80
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    }
+  ],
+  "settings": {
+    "availableInMCP": false,
+    "binaryMode": "separate",
+    "executionOrder": "v1"
+  },
+  "tags": [],
+  "triggerCount": null,
+  "versionId": "a56487a6-488a-4663-8365-44c0197c477c"
+}
