@@ -26,6 +26,12 @@
   yomi.wireless.enable = true;
   yomi.wireless.backend = "networkmanager";
 
+  # udev rules so the pilot can use the YubiKey as a FIDO2 SSH authenticator
+  # (ssh-keygen -t ed25519-sk) without root. libfido2 ships its own rules;
+  # openssh's built-in security-key support needs no separate provider.
+  services.udev.packages = [pkgs.libfido2];
+  environment.systemPackages = [pkgs.libfido2]; # fido2-token, for diagnostics
+
   boot.kernelPackages = pkgs.linuxPackages_6_12;
   boot.loader.systemd-boot.enable = true;
 

@@ -6,18 +6,32 @@
     # Record containing all the hosts
     hosts = outputs.nixosConfigurations;
 
-    # Function from hostname to relative path to public ssh key
-    idKey = host: ../../${host}/keys/id_ed25519.pub;
+    # Every id_*.pub in a host's keys/ dir -- lets a host list more than one
+    # login key (e.g. a resident FIDO2 credential alongside a plain key
+    # during rollover) without touching this file again. ssh_host_*.pub in
+    # the same directory is the host key, not a login key, and is excluded
+    # by the "id_" prefix.
+    loginKeys = host: let
+      dir = ../../${host}/keys;
+    in
+      if builtins.pathExists dir
+      then
+        lib.pipe (builtins.readDir dir) [
+          builtins.attrNames
+          (builtins.filter (name: lib.hasPrefix "id_" name && lib.hasSuffix ".pub" name))
+          (map (name: dir + "/${name}"))
+        ]
+      else [];
   in
     lib.pipe hosts [
-      # attrsetof host -> attrsetof path
+      # attrsetof host -> attrsetof path[]
       (builtins.mapAttrs
-        (name: _: idKey name)) # string -> host -> path
+        (name: _: loginKeys name)) # string -> host -> path[]
 
-      # attrsetof path -> path[]
+      # attrsetof path[] -> path[][]
       builtins.attrValues
 
-      # path[] -> path[]
-      (builtins.filter builtins.pathExists)
+      # path[][] -> path[]
+      lib.flatten
     ];
 }
