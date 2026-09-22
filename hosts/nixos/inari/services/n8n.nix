@@ -5,6 +5,18 @@
   ...
 }: let
   cfg = config.yomi.n8n;
+
+  # sops-install-secrets validates its manifest at build time, so naming a
+  # key that does not exist in secrets.yaml fails the entire nixos-rebuild
+  # -- not just this service. That is a bad trade for a notification token:
+  # it means the host cannot apply any configuration at all until somebody
+  # with the age key is at a keyboard.
+  #
+  # The key names in a sops file are plaintext (only the values are
+  # encrypted), so whether it is present can be decided at eval time. The
+  # token wires itself up the moment it is added, and until then the spine
+  # runs without one and ntfy answers 403.
+  hasNtfyToken = builtins.match ".*[[:space:]]*n8n_ntfy_token:.*" (builtins.readFile ../secrets.yaml) != null;
   n8n = lib.getExe' config.services.n8n.package "n8n";
 
   # {{{ Workflow import
@@ -88,22 +100,24 @@ in {
     # The *arr values are the same secrets their services consume, so a
     # template avoids a second copy to rotate. Immich gets a dedicated key
     # limited to asset reads and album management.
-    sops.secrets = lib.genAttrs [
-      "n8n_webuntis_env"
-      "n8n_ntfy_token"
-      "n8n_immich_api_key"
-      "n8n_paperless_api_token"
-      "n8n_mealie_api_token"
-      "n8n_home_assistant_api_token"
-      "n8n_jellyseerr_api_key"
-      "sonarr_api_key"
-      "radarr_api_key"
-      "lidarr_api_key"
-      "readarr_api_key"
-    ] (_: {sopsFile = ../secrets.yaml;});
+    sops.secrets = lib.genAttrs (
+      [
+        "n8n_webuntis_env"
+        "n8n_immich_api_key"
+        "n8n_paperless_api_token"
+        "n8n_mealie_api_token"
+        "n8n_home_assistant_api_token"
+        "n8n_jellyseerr_api_key"
+        "sonarr_api_key"
+        "radarr_api_key"
+        "lidarr_api_key"
+        "readarr_api_key"
+      ]
+      ++ lib.optional hasNtfyToken "n8n_ntfy_token"
+    ) (_: {sopsFile = ../secrets.yaml;});
 
     sops.templates."n8n-services.env".content = ''
-      NTFY_TOKEN=${config.sops.placeholder.n8n_ntfy_token}
+      ${lib.optionalString hasNtfyToken "NTFY_TOKEN=${config.sops.placeholder.n8n_ntfy_token}"}
       IMMICH_API_KEY=${config.sops.placeholder.n8n_immich_api_key}
       PAPERLESS_API_TOKEN=${config.sops.placeholder.n8n_paperless_api_token}
       MEALIE_API_TOKEN=${config.sops.placeholder.n8n_mealie_api_token}
