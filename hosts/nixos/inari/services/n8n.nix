@@ -90,6 +90,7 @@ in {
     # limited to asset reads and album management.
     sops.secrets = lib.genAttrs [
       "n8n_webuntis_env"
+      "n8n_ntfy_token"
       "n8n_immich_api_key"
       "n8n_paperless_api_token"
       "n8n_mealie_api_token"
@@ -102,6 +103,7 @@ in {
     ] (_: {sopsFile = ../secrets.yaml;});
 
     sops.templates."n8n-services.env".content = ''
+      NTFY_TOKEN=${config.sops.placeholder.n8n_ntfy_token}
       IMMICH_API_KEY=${config.sops.placeholder.n8n_immich_api_key}
       PAPERLESS_API_TOKEN=${config.sops.placeholder.n8n_paperless_api_token}
       MEALIE_API_TOKEN=${config.sops.placeholder.n8n_mealie_api_token}
@@ -197,6 +199,12 @@ in {
         # this CPU-only box. Not a secret, so it belongs here rather than in
         # the EnvironmentFile.
         CLASSIFIER_URL = "http://127.0.0.1:${toString config.yomi.ports.llama-cpp-classifier}/v1/chat/completions";
+
+        # The alert spine publishes straight to ntfy on loopback rather than
+        # through its public url: a notification about the tunnel being down
+        # should not have to travel through the tunnel to arrive.
+        NTFY_URL = "http://127.0.0.1:${toString config.yomi.ports.ntfy}";
+        NTFY_TOPIC = "inari-alerts";
       };
     };
 
@@ -242,6 +250,7 @@ in {
     yomi.n8n.workflows.home-assistant-anomalies.source = ./n8n/workflows/home-assistant-anomalies.json;
     yomi.n8n.workflows.paperless-dates.source = ./n8n/workflows/paperless-dates.json;
     yomi.n8n.workflows.forgejo-releases.source = ./n8n/workflows/forgejo-releases.json;
+    yomi.n8n.workflows.alert-router.source = ./n8n/workflows/alert-router.json;
     # }}}
   };
 }
