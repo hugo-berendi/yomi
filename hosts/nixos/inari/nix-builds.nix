@@ -26,7 +26,25 @@ _: {
   # this deliberately does not order nix-daemon after the mount -- needing nix
   # in order to repair a pool that nix refuses to run without is a worse trap
   # than a silent fallback to the status quo.
-  systemd.tmpfiles.rules = ["d /raid5pool/nix-build 0755 root root -"];
+  # /raid5pool itself is 1777 on disk -- world-writable with a sticky bit,
+  # like /tmp. Nothing in this repository asks for that; it is leftover state
+  # from however the pool was first made, and every directory under it is
+  # created by an explicit rule with its own owner and mode.
+  #
+  # Nix refuses to use a build directory with a world-writable ancestor
+  # ("Path /raid5pool is world-writable or a symlink"), which is a sound
+  # objection rather than an inconvenience: anything a local user can rename
+  # underneath a build is a way into that build. It checks every component,
+  # so no path under the pool works until the root itself is fixed.
+  #
+  # 0755 costs nothing here. Group-writable trees like /raid5pool/media
+  # (2775 root:media) keep their own modes and keep working; the only thing
+  # lost is the ability for a non-root user to create a new top-level
+  # directory in the pool, which nothing does.
+  systemd.tmpfiles.rules = [
+    "d /raid5pool          0755 root root -"
+    "d /raid5pool/nix-build 0755 root root -"
+  ];
 
   nix.settings.build-dir = "/raid5pool/nix-build";
 }
