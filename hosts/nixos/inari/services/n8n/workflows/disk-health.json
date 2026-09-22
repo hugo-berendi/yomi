@@ -1,0 +1,129 @@
+{
+  "active": true,
+  "connections": {
+    "Every six hours": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Examine drives",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Examine drives": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Send to alert spine",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Run manually": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Examine drives",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "id": "f2aeeb19d7bba23a",
+  "name": "Inari Disks · Pre-failure watch",
+  "nodeGroups": null,
+  "nodes": [
+    {
+      "id": "6d97ccb0-f976-4917-8b75-4c160e0bf8de",
+      "name": "Every six hours",
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      },
+      "position": [
+        0,
+        120
+      ],
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2
+    },
+    {
+      "id": "f097cb66-7d32-49c0-9b87-f339c63847eb",
+      "name": "Run manually",
+      "parameters": {},
+      "position": [
+        0,
+        280
+      ],
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1
+    },
+    {
+      "id": "12aeb300-0fcc-4183-89c0-e39779cc8412",
+      "name": "Examine drives",
+      "parameters": {
+        "jsCode": "// Storage pre-failure watch.\n//\n// This deliberately does not duplicate health-monitor, which already reports\n// zfs_pool_health and smart_status once a day. Those two are pass/fail and\n// stay \"pass\" until the moment they do not -- SMART's whole failure mode is\n// that it says PASSED right up to the end. What this looks at instead is the\n// numbers that move first: wear, spare blocks, reallocated and pending\n// sectors, media errors, and the rate the wear indicator is climbing at.\n//\n// It sends nothing itself. Everything goes to the alert spine, which owns\n// suppression, so a drive that has been dying for a month does not send a\n// notification every six hours.\n\nconst PROM = \"http://127.0.0.1:8451/api/v1/query\";\nconst SOURCE = \"disk-health\";\n\n// Tiers, not a single threshold: crossing 80% is worth one push, and a drive\n// sitting at 81% for a month is worth none. The spine cannot know that, so\n// wear is the one check here that tracks its own state.\nconst WEAR_TIERS = [75, 80, 85, 90, 95, 100];\nconst PROJECTION_CRITICAL_DAYS = 30;\nconst PROJECTION_WARNING_DAYS = 90;\n\n// Drive temperature limits differ by kind, and the exporter only reports a\n// rotation rate for spinning disks, so that is how a device is classified.\nconst TEMP_LIMITS = { hdd: { warning: 55, critical: 60 }, ssd: { warning: 70, critical: 80 } };\n\nconst query = `\nlabel_replace(zfs_pool_health, \"metric\", \"zfs_health\", \"\", \"\")\nor label_replace(smartctl_device_smart_status, \"metric\", \"smart_status\", \"\", \"\")\nor label_replace(smartctl_device_critical_warning, \"metric\", \"nvme_critical\", \"\", \"\")\nor label_replace(smartctl_device_available_spare, \"metric\", \"nvme_spare\", \"\", \"\")\nor label_replace(smartctl_device_available_spare_threshold, \"metric\", \"nvme_spare_floor\", \"\", \"\")\nor label_replace(smartctl_device_percentage_used, \"metric\", \"wear_pct\", \"\", \"\")\nor label_replace(deriv(smartctl_device_percentage_used[7d]) * 86400, \"metric\", \"wear_per_day\", \"\", \"\")\nor label_replace(smartctl_device_media_errors, \"metric\", \"media_errors\", \"\", \"\")\nor label_replace(smartctl_device_temperature, \"metric\", \"temperature\", \"\", \"\")\nor label_replace(smartctl_device_rotation_rate, \"metric\", \"rotation\", \"\", \"\")\nor label_replace(smartctl_device_smartctl_exit_status, \"metric\", \"exit_status\", \"\", \"\")\nor label_replace(smartctl_device_attribute{attribute_value_type=\"raw\", attribute_name=~\"Current_Pending_Sector|Offline_Uncorrectable|Reallocated_Sector_Ct|UDMA_CRC_Error_Count\"}, \"metric\", \"ata\", \"\", \"\")\n`;\n\nlet series;\ntry {\n  const response = await this.helpers.httpRequest({ method: \"GET\", url: PROM, qs: { query }, json: true });\n  series = response?.data?.result ?? [];\n} catch (error) {\n  // Prometheus being unreachable is itself a storage-adjacent problem worth\n  // one warning, and returning silently would look identical to \"all drives\n  // healthy\" -- which is the failure mode this whole workflow exists to avoid.\n  return [\n    {\n      json: {\n        source: SOURCE,\n        severity: \"warning\",\n        title: \"cannot read drive metrics\",\n        message: `Prometheus at ${PROM} did not answer, so no drive was checked this run.\\n\\n${error.message}`,\n        fingerprint: `${SOURCE}:prometheus-unreachable`,\n      },\n    },\n  ];\n}\n\nconst pick = (name) => series.filter((s) => s.metric.metric === name);\nconst num = (s) => Number(s.value[1]);\nconst first = (name, device) => pick(name).find((s) => s.metric.device === device);\nconst devices = [...new Set(pick(\"smart_status\").map((s) => s.metric.device))].sort();\n\nconst state = $getWorkflowStaticData(\"global\");\nif (!state.wearTier) state.wearTier = {};\n\nconst alerts = [];\n// `resolved` is emitted for every binary check that currently passes. The\n// spine drops resolutions for alerts it never sent, so this closes out a\n// recovered drive without this workflow having to remember what it sent.\nconst report = (severity, title, message, fingerprint, resolved = false) =>\n  alerts.push({ json: { source: SOURCE, severity, title, message, fingerprint, resolved } });\n\n// {{{ Pools\nfor (const s of pick(\"zfs_health\")) {\n  const pool = s.metric.pool;\n  const healthy = num(s) === 0;\n  report(\n    \"critical\",\n    `zpool ${pool} is not ONLINE`,\n    `zfs_pool_health reports ${num(s)} for ${pool}. Run \\`zpool status -v ${pool}\\`; a degraded pool still serves reads, so nothing else will look wrong.`,\n    `${SOURCE}:zpool:${pool}`,\n    healthy,\n  );\n}\n// }}}\n\nfor (const device of devices) {\n  const rotation = first(\"rotation\", device);\n  const kind = rotation && num(rotation) > 0 ? \"hdd\" : \"ssd\";\n  const label = `${device} (${kind === \"hdd\" ? \"spinning\" : \"solid state\"})`;\n\n  // {{{ Overall SMART verdict\n  const smart = first(\"smart_status\", device);\n  if (smart) {\n    report(\n      \"critical\",\n      `SMART on ${device} reports FAILING`,\n      `The drive's own overall-health self-assessment has flipped. Replace ${label} now and do not wait for a scrub.`,\n      `${SOURCE}:smart:${device}`,\n      num(smart) === 1,\n    );\n  }\n\n  const exit = first(\"exit_status\", device);\n  if (exit) {\n    report(\n      \"warning\",\n      `cannot read SMART data from ${device}`,\n      `smartctl exited ${num(exit)} for ${label}, so this drive is unmonitored rather than healthy.`,\n      `${SOURCE}:smartctl-exit:${device}`,\n      num(exit) === 0,\n    );\n  }\n  // }}}\n\n  // {{{ Wear, and how fast it is moving\n  const wear = first(\"wear_pct\", device);\n  if (wear) {\n    const pct = num(wear);\n    const perDayRaw = first(\"wear_per_day\", device);\n    const perDay = perDayRaw ? num(perDayRaw) : 0;\n    const daysLeft = perDay > 0 ? Math.round((100 - pct) / perDay) : null;\n\n    const trend =\n      daysLeft === null\n        ? \"Not enough history to project a trend.\"\n        : `Climbing ${perDay.toFixed(2)} points/day, which reaches 100% in about ${daysLeft} days.`;\n    const caveat =\n      \"100% is the manufacturer's wear estimate, not a cliff -- drives usually keep going past it, but it is the point after which endurance is no longer specified.\";\n\n    const tier = WEAR_TIERS.filter((t) => pct >= t).pop() ?? null;\n    if (tier !== null && tier > (state.wearTier[device] ?? 0)) {\n      state.wearTier[device] = tier;\n      report(\n        tier >= 95 ? \"critical\" : tier >= 85 ? \"warning\" : \"info\",\n        `${device} wear crossed ${tier}%`,\n        `${label} reports ${pct}% of rated write endurance used.\\n\\n${trend}\\n\\n${caveat}`,\n        `${SOURCE}:wear-tier:${device}:${tier}`,\n      );\n    }\n\n    // The projection repeats where the tier crossing does not: running out of\n    // drive inside a month is worth being reminded about.\n    if (daysLeft !== null && daysLeft < PROJECTION_WARNING_DAYS) {\n      report(\n        daysLeft < PROJECTION_CRITICAL_DAYS ? \"critical\" : \"warning\",\n        `${device} projected to exhaust endurance in ${daysLeft} days`,\n        `${label} is at ${pct}% wear. ${trend}\\n\\nOrder a replacement.\\n\\n${caveat}`,\n        `${SOURCE}:wear-projection:${device}`,\n      );\n    }\n  }\n  // }}}\n\n  // {{{ NVMe specifics\n  const critical = first(\"nvme_critical\", device);\n  if (critical) {\n    report(\n      \"critical\",\n      `${device} raised an NVMe critical warning`,\n      `critical_warning = ${num(critical)}. The bits mean, in order: spare below threshold, temperature out of range, reliability degraded, media in read-only, volatile memory backup failed.`,\n      `${SOURCE}:nvme-critical:${device}`,\n      num(critical) === 0,\n    );\n  }\n\n  const spare = first(\"nvme_spare\", device);\n  const floor = first(\"nvme_spare_floor\", device);\n  if (spare && floor) {\n    report(\n      \"critical\",\n      `${device} is out of spare blocks`,\n      `Available spare ${num(spare)}% has reached the drive's own floor of ${num(floor)}%. Remapping is what hides bad flash; past this point failures surface as read errors.`,\n      `${SOURCE}:nvme-spare:${device}`,\n      num(spare) > num(floor),\n    );\n  }\n\n  const media = first(\"media_errors\", device);\n  if (media) {\n    report(\n      \"warning\",\n      `${device} reports ${num(media)} media errors`,\n      `Uncorrectable data-integrity errors on ${label}. On a pool with redundancy ZFS will have repaired the data; on ${device} it is still a reason to look.`,\n      `${SOURCE}:media-errors:${device}`,\n      num(media) === 0,\n    );\n  }\n  // }}}\n\n  // {{{ Temperature\n  const temp = first(\"temperature\", device);\n  if (temp) {\n    const limits = TEMP_LIMITS[kind];\n    const value = num(temp);\n    report(\n      value >= limits.critical ? \"critical\" : \"warning\",\n      `${device} is running at ${value}°C`,\n      `Above the ${kind === \"hdd\" ? \"spinning-disk\" : \"solid-state\"} limit of ${limits.warning}°C. Sustained heat is the one wear factor that is cheap to fix -- check airflow before replacing anything.`,\n      `${SOURCE}:temperature:${device}`,\n      value < limits.warning,\n    );\n  }\n  // }}}\n}\n\n// {{{ ATA surface defects\n// Reallocated sectors are history and only interesting when they grow;\n// pending and offline-uncorrectable sectors are live surface damage and mean\n// the drive could not read data it was asked for.\nconst ATA_RULES = {\n  Current_Pending_Sector: { severity: \"critical\", note: \"Sectors the drive could not read and has not yet remapped. This is unreadable data right now.\" },\n  Offline_Uncorrectable: { severity: \"critical\", note: \"Sectors that failed a background scan and could not be recovered.\" },\n  Reallocated_Sector_Ct: { severity: \"warning\", note: \"Sectors already remapped to spares. A non-zero count that keeps growing is a drive on the way out.\" },\n  UDMA_CRC_Error_Count: { severity: \"warning\", note: \"Transfer errors on the cable, not the platter. Reseat the SATA cable before suspecting the drive.\" },\n};\n\nfor (const s of pick(\"ata\")) {\n  const { device, attribute_name: attribute } = s.metric;\n  const rule = ATA_RULES[attribute];\n  if (!rule) continue;\n  const count = num(s);\n  report(\n    rule.severity,\n    `${device}: ${attribute} = ${count}`,\n    rule.note,\n    `${SOURCE}:ata:${device}:${attribute}`,\n    count === 0,\n  );\n}\n// }}}\n\nreturn alerts;"
+      },
+      "position": [
+        240,
+        200
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "16c41717-8a49-40a8-92fc-d16bd3724ec9",
+      "name": "Send to alert spine",
+      "parameters": {
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "specifyBody": "json",
+        "url": "={{ $env.ALERT_WEBHOOK_URL }}"
+      },
+      "position": [
+        480,
+        200
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3
+    },
+    {
+      "id": "1dd0c1ad-fed5-49ec-a089-d3382b5d13d3",
+      "name": "Why this is not health-monitor",
+      "parameters": {
+        "color": 3,
+        "content": "## Pre-failure, not health\n\n`health-monitor` already mails `zfs_pool_health` and `smart_status` every morning. Both are pass/fail, and SMART reports PASSED until the drive is gone.\n\nThis watches what moves first -- wear, spare blocks, reallocated and pending sectors, media errors -- and the *rate* the wear indicator climbs, so the projection arrives months before the verdict does.\n\nIt sends nothing itself. Everything goes to the spine, which owns suppression.",
+        "height": 280,
+        "width": 380
+      },
+      "position": [
+        -420,
+        -60
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    }
+  ],
+  "pinData": null,
+  "settings": {
+    "availableInMCP": false,
+    "binaryMode": "separate",
+    "executionOrder": "v1"
+  },
+  "tags": [],
+  "versionId": "9a4befde-9f84-473e-9136-7c89a1702081"
+}

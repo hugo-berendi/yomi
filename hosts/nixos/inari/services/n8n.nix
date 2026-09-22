@@ -205,6 +205,11 @@ in {
         # should not have to travel through the tunnel to arrive.
         NTFY_URL = "http://127.0.0.1:${toString config.yomi.ports.ntfy}";
         NTFY_TOPIC = "inari-alerts";
+
+        # Workflows reach the spine on loopback for the same reason it reaches
+        # ntfy that way, and naming it here means a workflow never has to
+        # hardcode the port it happens to listen on today.
+        ALERT_WEBHOOK_URL = "http://127.0.0.1:${toString config.yomi.ports.n8n}/webhook/alert";
       };
     };
 
@@ -251,6 +256,7 @@ in {
     yomi.n8n.workflows.paperless-dates.source = ./n8n/workflows/paperless-dates.json;
     yomi.n8n.workflows.forgejo-releases.source = ./n8n/workflows/forgejo-releases.json;
     yomi.n8n.workflows.alert-router.source = ./n8n/workflows/alert-router.json;
+    yomi.n8n.workflows.disk-health.source = ./n8n/workflows/disk-health.json;
     # }}}
   };
 }
