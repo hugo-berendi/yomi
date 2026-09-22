@@ -12,6 +12,7 @@
     ./filesystems
     ./hardware
     ./memory-limits.nix
+    ./nix-builds.nix
 
     ../common/services/anubis.nix
 

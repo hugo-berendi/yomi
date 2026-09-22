@@ -1,7 +1,12 @@
 name: Update Flake Inputs
 on:
+  # Mondays and Thursdays rather than daily. Every lock bump that moves
+  # stdenv rebuilds the world for four host configurations, and the write
+  # volume lands on the NVMe holding zroot, which is already near its rated
+  # endurance. Two batched updates a week instead of seven, at the cost of
+  # security patches arriving up to three days later.
   schedule:
-    - cron: "0 4 * * *"
+    - cron: "0 4 * * 1,4"
   workflow_dispatch:
 concurrency:
   group: update-flake-inputs
