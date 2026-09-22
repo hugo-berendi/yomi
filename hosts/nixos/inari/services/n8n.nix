@@ -236,6 +236,7 @@ in {
     yomi.n8n.workflows.inbox-organizer.source = ./n8n/workflows/inbox-organizer.json;
     yomi.n8n.workflows.immich-location-albums.source = ./n8n/workflows/immich-location-albums.json;
     yomi.n8n.workflows.immich-maintenance.source = ./n8n/workflows/immich-maintenance.json;
+    yomi.n8n.workflows.immich-trip-albums.source = ./n8n/workflows/immich-trip-albums.json;
     yomi.n8n.workflows.jellyseerr-tracker.source = ./n8n/workflows/jellyseerr-tracker.json;
     yomi.n8n.workflows.mealie-groceries.source = ./n8n/workflows/mealie-groceries.json;
     yomi.n8n.workflows.home-assistant-anomalies.source = ./n8n/workflows/home-assistant-anomalies.json;
