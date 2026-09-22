@@ -37,7 +37,7 @@
   },
   "id": "f2aeeb19d7bba23a",
   "name": "Inari Disks · Pre-failure watch",
-  "nodeGroups": null,
+  "nodeGroups": [],
   "nodes": [
     {
       "id": "6d97ccb0-f976-4917-8b75-4c160e0bf8de",

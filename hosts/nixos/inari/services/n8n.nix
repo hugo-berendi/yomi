@@ -163,6 +163,22 @@ in {
           '';
         }
         {
+          assertion = (parsed.nodeGroups or null) != null;
+          message = ''
+            yomi.n8n.workflows.${name} has `nodeGroups: null`, which
+            violates the NOT NULL constraint on workflow_entity.nodeGroups
+            and makes `n8n import:workflow` fail with SQLITE_CONSTRAINT.
+
+            It fails only on insert, so a workflow already in the database
+            imports cleanly and the same file breaks on a fresh one -- which
+            is to say it breaks during a restore, and nowhere else. The
+            import step is an ExecStartPre prefixed with `-`, so
+            nixos-rebuild reports success either way.
+
+            Use `nodeGroups: []`, as every working export here does.
+          '';
+        }
+        {
           assertion = !usesProcessEnv;
           message = ''
             yomi.n8n.workflows.${name} has a Code node reading `process.env`.

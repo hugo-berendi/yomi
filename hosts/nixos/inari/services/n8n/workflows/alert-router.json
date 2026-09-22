@@ -38,7 +38,7 @@
   },
   "id": "b38c31f750bb1e60",
   "name": "Inari Alerts · ntfy spine",
-  "nodeGroups": null,
+  "nodeGroups": [],
   "nodes": [
     {
       "id": "ad4d571f-861a-4fce-b4f7-4de6e667fc50",

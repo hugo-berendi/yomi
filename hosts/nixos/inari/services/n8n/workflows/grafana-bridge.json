@@ -26,7 +26,7 @@
   },
   "id": "57ce4ac6872b14b8",
   "name": "Grafana → alert spine",
-  "nodeGroups": null,
+  "nodeGroups": [],
   "nodes": [
     {
       "id": "37db623f-dd16-4c7d-a340-f77710db427c",
