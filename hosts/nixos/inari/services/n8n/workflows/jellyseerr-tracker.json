@@ -1,18 +1,85 @@
 {
+  "active": true,
+  "connections": {
+    "Build push": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Send to alert spine",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Check request changes": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Send request changes",
+            "type": "main"
+          },
+          {
+            "index": 0,
+            "node": "Build push",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Manual test": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Check request changes",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Schedule": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Check request changes",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Send request changes": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Commit notification state",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "id": "JellyReqTrack26",
   "name": "Jellyseerr · Request state notifications",
+  "nodeGroups": [],
   "nodes": [
     {
-      "parameters": {},
       "id": "20000000-0000-4000-8000-000000000001",
       "name": "Manual test",
-      "type": "n8n-nodes-base.manualTrigger",
-      "typeVersion": 1,
+      "parameters": {},
       "position": [
         -520,
         0
-      ]
+      ],
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1
     },
     {
+      "id": "20000000-0000-4000-8000-000000000002",
+      "name": "Schedule",
       "parameters": {
         "rule": {
           "interval": [
@@ -23,121 +90,101 @@
           ]
         }
       },
-      "id": "20000000-0000-4000-8000-000000000002",
-      "name": "Schedule",
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1.2,
       "position": [
         -520,
         180
-      ]
+      ],
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2
     },
     {
-      "parameters": {
-        "jsCode": "const key = $env.JELLYSEERR_API_KEY;\nif (!key) throw new Error('JELLYSEERR_API_KEY is not configured');\n\nconst response = await this.helpers.httpRequest({\n  method: 'GET',\n  url: 'http://127.0.0.1:8423/api/v1/request',\n  qs: {take: 100, skip: 0, sort: 'added'},\n  headers: {'X-Api-Key': key},\n  json: true,\n});\n\nconst state = $getWorkflowStaticData('global');\nconst current = Object.fromEntries(\n  (response.results ?? []).map((request) => [\n    String(request.id),\n    {\n      requestStatus: request.status,\n      mediaStatus: request.media?.status ?? null,\n      type: request.type,\n      tmdbId: request.media?.tmdbId ?? null,\n      requester: request.requestedBy?.displayName ?? request.requestedBy?.email ?? 'unknown',\n      mediaUrl: request.media?.mediaUrl ?? null,\n    },\n  ]),\n);\n\nif (!state.requests) {\n  state.requests = current;\n  return [];\n}\n\nconst requestLabel = {1: 'pending approval', 2: 'approved', 3: 'declined', 4: 'failed', 5: 'completed'};\nconst mediaLabel = {1: 'unknown', 2: 'pending', 3: 'processing', 4: 'partly available', 5: 'available'};\nconst changes = [];\nfor (const [id, item] of Object.entries(current)) {\n  const previous = state.requests[id];\n  if (!previous) {\n    changes.push({id, item, text: `new request, ${requestLabel[item.requestStatus] ?? item.requestStatus}`});\n  } else if (previous.requestStatus !== item.requestStatus || previous.mediaStatus !== item.mediaStatus) {\n    changes.push({\n      id,\n      item,\n      text: `${requestLabel[previous.requestStatus] ?? previous.requestStatus} to ${requestLabel[item.requestStatus] ?? item.requestStatus}; media ${mediaLabel[item.mediaStatus] ?? item.mediaStatus}`,\n    });\n  }\n}\nif (!changes.length) return [];\n\nconst esc = (value) =>\n  String(value ?? '')\n    .replaceAll('&', '&amp;')\n    .replaceAll('<', '&lt;')\n    .replaceAll('>', '&gt;')\n    .replaceAll('\"', '&quot;');\n\nconst rows = changes\n  .map(({id, item, text}) => `<tr><td style=\"padding:10px 0;border-bottom:1px solid #393552;color:#e0def4;\">\n  <strong>${esc(item.type)} request #${esc(id)}</strong> <span style=\"color:#908caa;\">by ${esc(item.requester)}</span><br>\n  <span style=\"color:#9ccfd8;\">${esc(text)}</span>${item.mediaUrl ? ` · <a href=\"${esc(item.mediaUrl)}\" style=\"color:#c4a7e7;\">open in Jellyfin</a>` : ''}\n</td></tr>`)\n  .join('');\nconst html = `<html><body style=\"margin:0;padding:24px;background:#232136;\"><table role=\"presentation\" width=\"100%\" style=\"max-width:600px;margin:auto;background:#2a273f;border:1px solid #393552;padding:24px;font-family:Verdana,sans-serif;\"><tr><td style=\"color:#c4a7e7;font:700 20px 'Courier New',monospace;\">MEDIA REQUESTS</td></tr>${rows}</table></body></html>`;\nreturn [{json: {subject: `[Media] ${changes.length} request change${changes.length === 1 ? '' : 's'}`, html, nextState: current}}];\n"
-      },
       "id": "20000000-0000-4000-8000-000000000003",
       "name": "Check request changes",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "const key = $env.JELLYSEERR_API_KEY;\nif (!key) throw new Error('JELLYSEERR_API_KEY is not configured');\n\nconst response = await this.helpers.httpRequest({\n  method: 'GET',\n  url: 'http://127.0.0.1:8423/api/v1/request',\n  qs: {take: 100, skip: 0, sort: 'added'},\n  headers: {'X-Api-Key': key},\n  json: true,\n});\n\nconst state = $getWorkflowStaticData('global');\nconst current = Object.fromEntries(\n  (response.results ?? []).map((request) => [\n    String(request.id),\n    {\n      requestStatus: request.status,\n      mediaStatus: request.media?.status ?? null,\n      type: request.type,\n      tmdbId: request.media?.tmdbId ?? null,\n      requester: request.requestedBy?.displayName ?? request.requestedBy?.email ?? 'unknown',\n      mediaUrl: request.media?.mediaUrl ?? null,\n    },\n  ]),\n);\n\nif (!state.requests) {\n  state.requests = current;\n  return [];\n}\n\nconst requestLabel = {1: 'pending approval', 2: 'approved', 3: 'declined', 4: 'failed', 5: 'completed'};\nconst mediaLabel = {1: 'unknown', 2: 'pending', 3: 'processing', 4: 'partly available', 5: 'available'};\nconst changes = [];\nfor (const [id, item] of Object.entries(current)) {\n  const previous = state.requests[id];\n  if (!previous) {\n    changes.push({id, item, text: `new request, ${requestLabel[item.requestStatus] ?? item.requestStatus}`});\n  } else if (previous.requestStatus !== item.requestStatus || previous.mediaStatus !== item.mediaStatus) {\n    changes.push({\n      id,\n      item,\n      text: `${requestLabel[previous.requestStatus] ?? previous.requestStatus} to ${requestLabel[item.requestStatus] ?? item.requestStatus}; media ${mediaLabel[item.mediaStatus] ?? item.mediaStatus}`,\n    });\n  }\n}\nif (!changes.length) return [];\n\nconst esc = (value) =>\n  String(value ?? '')\n    .replaceAll('&', '&amp;')\n    .replaceAll('<', '&lt;')\n    .replaceAll('>', '&gt;')\n    .replaceAll('\"', '&quot;');\n\nconst rows = changes\n  .map(({id, item, text}) => `<tr><td style=\"padding:10px 0;border-bottom:1px solid #393552;color:#e0def4;\">\n  <strong>${esc(item.type)} request #${esc(id)}</strong> <span style=\"color:#908caa;\">by ${esc(item.requester)}</span><br>\n  <span style=\"color:#9ccfd8;\">${esc(text)}</span>${item.mediaUrl ? ` · <a href=\"${esc(item.mediaUrl)}\" style=\"color:#c4a7e7;\">open in Jellyfin</a>` : ''}\n</td></tr>`)\n  .join('');\nconst html = `<html><body style=\"margin:0;padding:24px;background:#232136;\"><table role=\"presentation\" width=\"100%\" style=\"max-width:600px;margin:auto;background:#2a273f;border:1px solid #393552;padding:24px;font-family:Verdana,sans-serif;\"><tr><td style=\"color:#c4a7e7;font:700 20px 'Courier New',monospace;\">MEDIA REQUESTS</td></tr>${rows}</table></body></html>`;\nreturn [{json: {subject: `[Media] ${changes.length} request change${changes.length === 1 ? '' : 's'}`, html, nextState: current, changes}}];"
+      },
       "position": [
         -260,
         80
-      ]
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
     },
     {
-      "parameters": {
-        "fromEmail": "no-reply@tengu.hugo-berendi.de",
-        "toEmail": "status@hugo-berendi.de",
-        "subject": "={{ $json.subject }}",
-        "emailFormat": "html",
-        "html": "={{ $json.html }}",
-        "options": {}
-      },
-      "id": "20000000-0000-4000-8000-000000000004",
-      "name": "Send request changes",
-      "type": "n8n-nodes-base.emailSend",
-      "typeVersion": 2.1,
-      "position": [
-        0,
-        80
-      ],
       "credentials": {
         "smtp": {
           "id": "njtrBIl1Zg5hBBqU",
           "name": "Migadu (no-reply)"
         }
-      }
+      },
+      "id": "20000000-0000-4000-8000-000000000004",
+      "name": "Send request changes",
+      "parameters": {
+        "emailFormat": "html",
+        "fromEmail": "no-reply@tengu.hugo-berendi.de",
+        "html": "={{ $json.html }}",
+        "options": {},
+        "subject": "={{ $json.subject }}",
+        "toEmail": "status@hugo-berendi.de"
+      },
+      "position": [
+        0,
+        80
+      ],
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1
     },
     {
+      "id": "20000000-0000-4000-8000-000000000005",
+      "name": "Commit notification state",
       "parameters": {
         "jsCode": "const nextState = $('Check request changes').first().json.nextState;\nconst state = $getWorkflowStaticData('global');\nstate.requests = nextState;\nreturn $input.all();"
       },
-      "id": "20000000-0000-4000-8000-000000000005",
-      "name": "Commit notification state",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
       "position": [
         260,
         80
-      ]
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "04f4e494-9c03-45ac-82a2-7575f5cca22c",
+      "name": "Build push",
+      "parameters": {
+        "jsCode": "// Only \"it is ready to watch\". Approvals, declines and processing steps are\n// bookkeeping and stay in the email; becoming available is the one transition\n// that asks you to do something.\nconst AVAILABLE = 5;\nconst { changes = [] } = $input.first().json;\n\nconst ready = changes.filter((c) => c.item?.mediaStatus === AVAILABLE);\nif (ready.length === 0) return [];\n\nconst label = (c) => {\n  const kind = c.item?.type === \"tv\" ? \"Serie\" : \"Film\";\n  return `${kind} #${c.item?.tmdbId ?? c.id}`;\n};\n\nreturn [{ json: {\n  source: \"jellyseerr\",\n  severity: \"info\",\n  title: ready.length === 1 ? `${label(ready[0])} ist verfügbar` : `${ready.length} Anfragen verfügbar`,\n  message: ready.map(label).join(\"\\n\"),\n  // Per media id, so the same title turning available twice (a re-grab, a\n  // season completing again) cannot push twice inside the window.\n  fingerprint: `jellyseerr:available:${ready.map((c) => c.id).sort().join(\",\")}`,\n  url: ready[0]?.item?.mediaUrl ?? null,\n} }];"
+      },
+      "position": [
+        -20,
+        300
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "24d984c8-441f-496e-9f9a-3b7ca54e9ce5",
+      "name": "Send to alert spine",
+      "parameters": {
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "specifyBody": "json",
+        "url": "={{ $env.ALERT_WEBHOOK_URL }}"
+      },
+      "position": [
+        220,
+        300
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3
     }
   ],
   "pinData": {},
-  "connections": {
-    "Manual test": {
-      "main": [
-        [
-          {
-            "node": "Check request changes",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Schedule": {
-      "main": [
-        [
-          {
-            "node": "Check request changes",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Check request changes": {
-      "main": [
-        [
-          {
-            "node": "Send request changes",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Send request changes": {
-      "main": [
-        [
-          {
-            "node": "Commit notification state",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    }
-  },
-  "active": true,
   "settings": {
-    "executionOrder": "v1",
+    "availableInMCP": false,
     "binaryMode": "separate",
-    "availableInMCP": false
+    "executionOrder": "v1"
   },
-  "versionId": "22000000-0000-4000-8000-000000000001",
-  "id": "JellyReqTrack26",
   "tags": [],
-  "nodeGroups": []
+  "versionId": "22000000-0000-4000-8000-000000000001"
 }

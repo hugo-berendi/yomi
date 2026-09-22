@@ -1,18 +1,85 @@
 {
+  "active": true,
+  "connections": {
+    "Build push": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Send to alert spine",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Check home anomalies": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Send anomaly changes",
+            "type": "main"
+          },
+          {
+            "index": 0,
+            "node": "Build push",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Manual test": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Check home anomalies",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Schedule": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Check home anomalies",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Send anomaly changes": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Commit notification state",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "id": "HomeAnomaly2026",
   "name": "Home Assistant · Actionable anomaly notifications",
+  "nodeGroups": [],
   "nodes": [
     {
-      "parameters": {},
       "id": "20000000-0000-4000-8000-000000000001",
       "name": "Manual test",
-      "type": "n8n-nodes-base.manualTrigger",
-      "typeVersion": 1,
+      "parameters": {},
       "position": [
         -520,
         0
-      ]
+      ],
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1
     },
     {
+      "id": "20000000-0000-4000-8000-000000000002",
+      "name": "Schedule",
       "parameters": {
         "rule": {
           "interval": [
@@ -23,121 +90,101 @@
           ]
         }
       },
-      "id": "20000000-0000-4000-8000-000000000002",
-      "name": "Schedule",
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1.2,
       "position": [
         -520,
         180
-      ]
+      ],
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2
     },
     {
-      "parameters": {
-        "jsCode": "const token = $env.HOME_ASSISTANT_API_TOKEN;\nif (!token) throw new Error('HOME_ASSISTANT_API_TOKEN is not configured');\n\nconst entities = await this.helpers.httpRequest({\n  method: 'GET',\n  url: 'http://127.0.0.1:8123/api/states',\n  headers: {Authorization: `Bearer ${token}`},\n  json: true,\n});\n\nconst usefulDomains = new Set(['climate', 'cover', 'fan', 'light', 'lock', 'media_player', 'switch', 'vacuum']);\nconst current = {};\nfor (const entity of entities) {\n  const domain = entity.entity_id.split('.')[0];\n  if (entity.state === 'unavailable' && usefulDomains.has(domain)) current[`unavailable:${entity.entity_id}`] = 'unavailable';\n\n  const battery = entity.attributes?.device_class === 'battery' ? Number(entity.state) : NaN;\n  if (Number.isFinite(battery) && battery < 20) current[`battery:${entity.entity_id}`] = `${battery}%`;\n\n  const temperature = entity.attributes?.device_class === 'temperature' ? Number(entity.state) : NaN;\n  if (\n    Number.isFinite(temperature) &&\n    !/battery|car|vehicle|target/i.test(entity.entity_id) &&\n    (temperature < 5 || temperature > 32)\n  ) {\n    current[`temperature:${entity.entity_id}`] = `${temperature} ${entity.attributes.unit_of_measurement ?? '°C'}`;\n  }\n}\n\nconst state = $getWorkflowStaticData('global');\nif (!state.alerts) {\n  state.alerts = current;\n  return [];\n}\n\nconst changes = [];\nfor (const [key, value] of Object.entries(current)) {\n  if (state.alerts[key] !== value) changes.push({key, value, status: 'alert'});\n}\nfor (const [key, value] of Object.entries(state.alerts)) {\n  if (!(key in current)) changes.push({key, value, status: 'recovered'});\n}\nif (!changes.length) return [];\n\nconst esc = (value) =>\n  String(value ?? '')\n    .replaceAll('&', '&amp;')\n    .replaceAll('<', '&lt;')\n    .replaceAll('>', '&gt;')\n    .replaceAll('\"', '&quot;');\n\nconst rows = changes\n  .map(({key, value, status}) => {\n    const [kind, entity] = key.split(':');\n    const colour = status === 'alert' ? '#eb6f92' : '#9ccfd8';\n    return `<tr><td style=\"padding:9px 0;border-bottom:1px solid #393552;color:#e0def4;\">${esc(entity)}<br><span style=\"color:${colour};\">[${status.toUpperCase()}] ${esc(kind)} ${esc(value)}</span></td></tr>`;\n  })\n  .join('');\nconst html = `<html><body style=\"margin:0;padding:24px;background:#232136;\"><table role=\"presentation\" width=\"100%\" style=\"max-width:600px;margin:auto;background:#2a273f;border:1px solid #393552;padding:24px;font-family:Verdana,sans-serif;\"><tr><td style=\"color:#c4a7e7;font:700 20px 'Courier New',monospace;\">HOME ANOMALIES</td></tr>${rows}</table></body></html>`;\nreturn [{json: {subject: `[Home] ${changes.length} anomaly change${changes.length === 1 ? '' : 's'}`, html, nextState: current}}];\n"
-      },
       "id": "20000000-0000-4000-8000-000000000003",
       "name": "Check home anomalies",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "parameters": {
+        "jsCode": "const token = $env.HOME_ASSISTANT_API_TOKEN;\nif (!token) throw new Error('HOME_ASSISTANT_API_TOKEN is not configured');\n\nconst entities = await this.helpers.httpRequest({\n  method: 'GET',\n  url: 'http://127.0.0.1:8123/api/states',\n  headers: {Authorization: `Bearer ${token}`},\n  json: true,\n});\n\nconst usefulDomains = new Set(['climate', 'cover', 'fan', 'light', 'lock', 'media_player', 'switch', 'vacuum']);\nconst current = {};\nfor (const entity of entities) {\n  const domain = entity.entity_id.split('.')[0];\n  if (entity.state === 'unavailable' && usefulDomains.has(domain)) current[`unavailable:${entity.entity_id}`] = 'unavailable';\n\n  const battery = entity.attributes?.device_class === 'battery' ? Number(entity.state) : NaN;\n  if (Number.isFinite(battery) && battery < 20) current[`battery:${entity.entity_id}`] = `${battery}%`;\n\n  const temperature = entity.attributes?.device_class === 'temperature' ? Number(entity.state) : NaN;\n  if (\n    Number.isFinite(temperature) &&\n    !/battery|car|vehicle|target/i.test(entity.entity_id) &&\n    (temperature < 5 || temperature > 32)\n  ) {\n    current[`temperature:${entity.entity_id}`] = `${temperature} ${entity.attributes.unit_of_measurement ?? '°C'}`;\n  }\n}\n\nconst state = $getWorkflowStaticData('global');\nif (!state.alerts) {\n  state.alerts = current;\n  return [];\n}\n\nconst changes = [];\nfor (const [key, value] of Object.entries(current)) {\n  if (state.alerts[key] !== value) changes.push({key, value, status: 'alert'});\n}\nfor (const [key, value] of Object.entries(state.alerts)) {\n  if (!(key in current)) changes.push({key, value, status: 'recovered'});\n}\nif (!changes.length) return [];\n\nconst esc = (value) =>\n  String(value ?? '')\n    .replaceAll('&', '&amp;')\n    .replaceAll('<', '&lt;')\n    .replaceAll('>', '&gt;')\n    .replaceAll('\"', '&quot;');\n\nconst rows = changes\n  .map(({key, value, status}) => {\n    const [kind, entity] = key.split(':');\n    const colour = status === 'alert' ? '#eb6f92' : '#9ccfd8';\n    return `<tr><td style=\"padding:9px 0;border-bottom:1px solid #393552;color:#e0def4;\">${esc(entity)}<br><span style=\"color:${colour};\">[${status.toUpperCase()}] ${esc(kind)} ${esc(value)}</span></td></tr>`;\n  })\n  .join('');\nconst html = `<html><body style=\"margin:0;padding:24px;background:#232136;\"><table role=\"presentation\" width=\"100%\" style=\"max-width:600px;margin:auto;background:#2a273f;border:1px solid #393552;padding:24px;font-family:Verdana,sans-serif;\"><tr><td style=\"color:#c4a7e7;font:700 20px 'Courier New',monospace;\">HOME ANOMALIES</td></tr>${rows}</table></body></html>`;\nreturn [{json: {subject: `[Home] ${changes.length} anomaly change${changes.length === 1 ? '' : 's'}`, html, nextState: current, changes}}];"
+      },
       "position": [
         -260,
         80
-      ]
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
     },
     {
-      "parameters": {
-        "fromEmail": "no-reply@tengu.hugo-berendi.de",
-        "toEmail": "status@hugo-berendi.de",
-        "subject": "={{ $json.subject }}",
-        "emailFormat": "html",
-        "html": "={{ $json.html }}",
-        "options": {}
-      },
-      "id": "20000000-0000-4000-8000-000000000004",
-      "name": "Send anomaly changes",
-      "type": "n8n-nodes-base.emailSend",
-      "typeVersion": 2.1,
-      "position": [
-        0,
-        80
-      ],
       "credentials": {
         "smtp": {
           "id": "njtrBIl1Zg5hBBqU",
           "name": "Migadu (no-reply)"
         }
-      }
+      },
+      "id": "20000000-0000-4000-8000-000000000004",
+      "name": "Send anomaly changes",
+      "parameters": {
+        "emailFormat": "html",
+        "fromEmail": "no-reply@tengu.hugo-berendi.de",
+        "html": "={{ $json.html }}",
+        "options": {},
+        "subject": "={{ $json.subject }}",
+        "toEmail": "status@hugo-berendi.de"
+      },
+      "position": [
+        0,
+        80
+      ],
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1
     },
     {
+      "id": "20000000-0000-4000-8000-000000000005",
+      "name": "Commit notification state",
       "parameters": {
         "jsCode": "const nextState = $('Check home anomalies').first().json.nextState;\nconst state = $getWorkflowStaticData('global');\nstate.alerts = nextState;\nreturn $input.all();"
       },
-      "id": "20000000-0000-4000-8000-000000000005",
-      "name": "Commit notification state",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
       "position": [
         260,
         80
-      ]
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "4c488465-67fc-4e04-9b6d-76dc4b74e4fa",
+      "name": "Build push",
+      "parameters": {
+        "jsCode": "// One alert per entity, and recoveries are sent as resolutions rather than as\n// fresh notifications -- the spine drops a resolution for something it never\n// alerted on, so this needs no memory of what it sent.\nconst { changes = [] } = $input.first().json;\nif (changes.length === 0) return [];\n\nreturn changes.map((change) => ({\n  json: {\n    source: \"home-assistant\",\n    severity: \"warning\",\n    title: String(change.key),\n    message: change.status === \"recovered\"\n      ? \"Back to normal.\"\n      : `Now ${change.value}.`,\n    fingerprint: `home-assistant:${change.key}`,\n    resolved: change.status === \"recovered\",\n  },\n}));"
+      },
+      "position": [
+        -20,
+        300
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "b4a18abe-8730-4d60-974c-04adffd812ad",
+      "name": "Send to alert spine",
+      "parameters": {
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "specifyBody": "json",
+        "url": "={{ $env.ALERT_WEBHOOK_URL }}"
+      },
+      "position": [
+        220,
+        300
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3
     }
   ],
   "pinData": {},
-  "connections": {
-    "Manual test": {
-      "main": [
-        [
-          {
-            "node": "Check home anomalies",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Schedule": {
-      "main": [
-        [
-          {
-            "node": "Check home anomalies",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Check home anomalies": {
-      "main": [
-        [
-          {
-            "node": "Send anomaly changes",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Send anomaly changes": {
-      "main": [
-        [
-          {
-            "node": "Commit notification state",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    }
-  },
-  "active": true,
   "settings": {
-    "executionOrder": "v1",
+    "availableInMCP": false,
     "binaryMode": "separate",
-    "availableInMCP": false
+    "executionOrder": "v1"
   },
-  "versionId": "33000000-0000-4000-8000-000000000001",
-  "id": "HomeAnomaly2026",
   "tags": [],
-  "nodeGroups": []
+  "versionId": "33000000-0000-4000-8000-000000000001"
 }
