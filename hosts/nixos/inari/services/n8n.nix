@@ -257,6 +257,7 @@ in {
     yomi.n8n.workflows.forgejo-releases.source = ./n8n/workflows/forgejo-releases.json;
     yomi.n8n.workflows.alert-router.source = ./n8n/workflows/alert-router.json;
     yomi.n8n.workflows.disk-health.source = ./n8n/workflows/disk-health.json;
+    yomi.n8n.workflows.grafana-bridge.source = ./n8n/workflows/grafana-bridge.json;
     # }}}
   };
 }

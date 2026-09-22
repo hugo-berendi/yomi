@@ -1,0 +1,87 @@
+{
+  "active": true,
+  "connections": {
+    "Grafana alert received": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Translate to spine format",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Translate to spine format": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Forward to alert spine",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "id": "57ce4ac6872b14b8",
+  "name": "Grafana → alert spine",
+  "nodeGroups": null,
+  "nodes": [
+    {
+      "id": "37db623f-dd16-4c7d-a340-f77710db427c",
+      "name": "Grafana alert received",
+      "parameters": {
+        "httpMethod": "POST",
+        "options": {},
+        "path": "grafana-alert"
+      },
+      "position": [
+        0,
+        180
+      ],
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "webhookId": "37db623f-dd16-4c7d-a340-f77710db427c"
+    },
+    {
+      "id": "adfef251-8a51-4eda-b234-f5a2c4ef35e7",
+      "name": "Translate to spine format",
+      "parameters": {
+        "jsCode": "// Grafana's alerting already knows things nothing else here does -- backup\n// staleness, targets down, the rules in grafana.nix -- but it only ever said\n// them into Discord and email. Both are places you read later, which makes\n// them the wrong shape for \"a backup has not run in two days\".\n//\n// This translates Grafana's unified-alerting webhook into the spine's format.\n// It is a translator and nothing more: no thresholds, no opinions about what\n// matters. Grafana decides what fires; the spine decides whether it is worth\n// interrupting someone.\n\nconst SOURCE = \"grafana\";\n\n// Grafana labels severity freely and its own rules here use \"warning\". Map\n// what is recognised and fall back to warning rather than guessing upward:\n// an unknown label should not invent a critical page.\nconst SEVERITY = {\n  critical: \"critical\",\n  error: \"critical\",\n  warning: \"warning\",\n  info: \"info\",\n  none: \"info\",\n};\n\nconst payload = $input.first().json.body ?? $input.first().json;\nconst alerts = Array.isArray(payload?.alerts) ? payload.alerts : [];\n\nif (alerts.length === 0) {\n  // A webhook that fires with no alerts is Grafana misconfigured, not silence.\n  // Saying so is cheap; swallowing it would look exactly like \"nothing wrong\".\n  return [\n    {\n      json: {\n        source: SOURCE,\n        severity: \"warning\",\n        title: \"alert webhook carried no alerts\",\n        message: `Grafana POSTed a payload with an empty or missing \\`alerts\\` array.\\n\\n${JSON.stringify(payload).slice(0, 400)}`,\n        fingerprint: `${SOURCE}:empty-payload`,\n      },\n    },\n  ];\n}\n\nreturn alerts.map((alert) => {\n  const labels = alert.labels ?? {};\n  const annotations = alert.annotations ?? {};\n  const resolved = (alert.status ?? payload.status) === \"resolved\";\n\n  const title = labels.alertname ?? payload.title ?? \"unnamed Grafana alert\";\n\n  // Prefer the human sentence the rule author wrote; valueString is the raw\n  // series and is only useful when nobody wrote one.\n  const body =\n    annotations.summary ||\n    annotations.description ||\n    alert.valueString ||\n    \"Grafana gave no summary for this rule.\";\n\n  // Grafana's own fingerprint is stable for the same rule and label set, which\n  // is exactly what the spine deduplicates on -- better than anything that\n  // could be reconstructed from the title here.\n  const fingerprint = alert.fingerprint\n    ? `${SOURCE}:${alert.fingerprint}`\n    : `${SOURCE}:${title}`;\n\n  return {\n    json: {\n      source: SOURCE,\n      severity: SEVERITY[String(labels.severity ?? \"\").toLowerCase()] ?? \"warning\",\n      title,\n      message: body,\n      fingerprint,\n      resolved,\n      url: alert.silenceURL || alert.dashboardURL || alert.generatorURL || payload.externalURL || null,\n    },\n  };\n});"
+      },
+      "position": [
+        240,
+        180
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "d94a71f7-2cb4-46e1-af3f-0752eaad5241",
+      "name": "Forward to alert spine",
+      "parameters": {
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "specifyBody": "json",
+        "url": "={{ $env.ALERT_WEBHOOK_URL }}"
+      },
+      "position": [
+        480,
+        180
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3
+    }
+  ],
+  "pinData": null,
+  "settings": {
+    "availableInMCP": false,
+    "binaryMode": "separate",
+    "executionOrder": "v1"
+  },
+  "tags": [],
+  "versionId": "dbffdfb4-4f13-4218-aba5-8e0e7085f5d7"
+}

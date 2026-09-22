@@ -132,6 +132,22 @@ in {
                 type = "email";
                 settings.addresses = "colimit@hugo-berendi.de";
               }
+              # Discord and email are both read later, which is the wrong
+              # shape for a backup that has not run in two days. The spine
+              # turns those into a push, and stays a third receiver rather
+              # than replacing either: nothing that works today stops.
+              #
+              # It posts to the translating workflow, not to the spine
+              # directly -- Grafana sends its own payload shape, and the
+              # spine deliberately understands only one.
+              {
+                uid = "main_ntfy";
+                type = "webhook";
+                settings = {
+                  url = "http://127.0.0.1:${toString config.yomi.ports.n8n}/webhook/grafana-alert";
+                  httpMethod = "POST";
+                };
+              }
             ];
           }
         ];
