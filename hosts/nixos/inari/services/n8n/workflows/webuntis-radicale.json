@@ -12,6 +12,17 @@
         ]
       ]
     },
+    "Kurzmeldung bauen": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "An Alert-Spine senden",
+            "type": "main"
+          }
+        ]
+      ]
+    },
     "Manuell testen": {
       "main": [
         [
@@ -68,7 +79,25 @@
         [
           {
             "index": 0,
+            "node": "Tagesdigest?",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Tagesdigest?": {
+      "main": [
+        [
+          {
+            "index": 0,
             "node": "Änderungs-E-Mail vorbereiten",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "Kurzmeldung bauen",
             "type": "main"
           }
         ]
@@ -419,7 +448,7 @@
       "id": "a7f3c1e2-5b84-4d19-9c62-8e0d1f4a7b35",
       "name": "Sync-Status festschreiben",
       "parameters": {
-        "jsCode": "// Laeuft erst, wenn beide HTTP-Zweige durch sind. Schlaegt einer fehl, bricht\n// n8n vorher ab, dieser Knoten laeuft nicht, und hashByHref bleibt unberuehrt\n// -- der naechste Lauf sieht die Differenz erneut und versucht es wieder.\nconst items = $input.all();\nconst carrier = items.find((item) => item.json?.nextState);\nif (!carrier) return items;\n\nconst state = $getWorkflowStaticData('global');\nconst previousState = state.hashByHref ?? {};\n\nconst unfoldIcs = (body) => String(body ?? '').replace(/\\r\\n[ \\t]/g, '');\nconst unescapeIcs = (value) =>\n  String(value ?? '')\n    .replace(/\\\\n/g, ' ')\n    .replace(/\\\\,/g, ',')\n    .replace(/\\\\;/g, ';')\n    .replace(/\\\\\\\\/g, '\\\\');\nconst parseSummary = (body) => {\n  const match = /^SUMMARY:(.*)$/m.exec(unfoldIcs(body));\n  return match ? unescapeIcs(match[1]) : null;\n};\nconst parseStart = (body) => {\n  const match = /DTSTART[^:]*:(\\d{8})T(\\d{4})/.exec(unfoldIcs(body));\n  if (!match) return null;\n  const [, ymd, hm] = match;\n  return `${ymd.slice(6, 8)}.${ymd.slice(4, 6)}. ${hm.slice(0, 2)}:${hm.slice(2, 4)}`;\n};\n\n// DELETE requests carry an empty body -- the summary text only survives in\n// the hash entry recorded the last time this href was written.\nconst changes = items\n  .filter((item) => item.json?.method)\n  .map((item) => {\n    const { method, href, body } = item.json;\n    if (method === 'PUT') {\n      return { method, label: parseSummary(body) || href, when: parseStart(body) };\n    }\n    const prior = previousState[href];\n    const priorDate = prior?.date ? `${prior.date.slice(8, 10)}.${prior.date.slice(5, 7)}.` : null;\n    return { method, label: 'Termin entfällt', when: priorDate };\n  })\n  .sort((a, b) => (a.when ?? '').localeCompare(b.when ?? ''));\n\nstate.hashByHref = carrier.json.nextState;\n\nreturn [\n  {\n    json: {\n      recorded: Object.keys(carrier.json.nextState).length,\n      operations: items.length,\n      summary: carrier.json.summary ?? null,\n      changes,\n    },\n  },\n];"
+        "jsCode": "// Laeuft erst, wenn beide HTTP-Zweige durch sind. Schlaegt einer fehl, bricht\n// n8n vorher ab, dieser Knoten laeuft nicht, und hashByHref bleibt unberuehrt\n// -- der naechste Lauf sieht die Differenz erneut und versucht es wieder.\nconst items = $input.all();\nconst carrier = items.find((item) => item.json?.nextState);\nif (!carrier) return items;\n\nconst state = $getWorkflowStaticData('global');\nconst previousState = state.hashByHref ?? {};\n\nconst unfoldIcs = (body) => String(body ?? '').replace(/\\r\\n[ \\t]/g, '');\nconst unescapeIcs = (value) =>\n  String(value ?? '')\n    .replace(/\\\\n/g, ' ')\n    .replace(/\\\\,/g, ',')\n    .replace(/\\\\;/g, ';')\n    .replace(/\\\\\\\\/g, '\\\\');\nconst parseSummary = (body) => {\n  const match = /^SUMMARY:(.*)$/m.exec(unfoldIcs(body));\n  return match ? unescapeIcs(match[1]) : null;\n};\nconst parseStart = (body) => {\n  const match = /DTSTART[^:]*:(\\d{8})T(\\d{4})/.exec(unfoldIcs(body));\n  if (!match) return null;\n  const [, ymd, hm] = match;\n  return `${ymd.slice(6, 8)}.${ymd.slice(4, 6)}. ${hm.slice(0, 2)}:${hm.slice(2, 4)}`;\n};\n\n// DELETE requests carry an empty body -- the summary text only survives in\n// the hash entry recorded the last time this href was written.\nconst changes = items\n  .filter((item) => item.json?.method)\n  .map((item) => {\n    const { method, href, body } = item.json;\n    if (method === 'PUT') {\n      return { method, label: parseSummary(body) || href, when: parseStart(body) };\n    }\n    const prior = previousState[href];\n    const priorDate = prior?.date ? `${prior.date.slice(8, 10)}.${prior.date.slice(5, 7)}.` : null;\n    return { method, label: 'Termin entfällt', when: priorDate };\n  })\n  .sort((a, b) => (a.when ?? '').localeCompare(b.when ?? ''));\n\nstate.hashByHref = carrier.json.nextState;\n\n// Nothing actually changed: say nothing at all. This node is only reached once\n// a PUT or DELETE has run, but an operation that resolves to no reportable\n// change would still have produced a mail, and a notification about nothing is\n// how a channel stops being read.\nif (changes.length === 0) return [];\n\n// The 05:10 run carries the day's ledger by mail; the seven daytime runs only\n// push a line to the alert spine. A cancellation is worth knowing within the\n// hour, and is not worth a full HTML page each time.\nconst berlinHour = Number(\n  new Intl.DateTimeFormat('de-DE', {\n    timeZone: 'Europe/Berlin',\n    hour: 'numeric',\n    hour12: false,\n  }).format(new Date()),\n);\n\nreturn [\n  {\n    json: {\n      recorded: Object.keys(carrier.json.nextState).length,\n      operations: items.length,\n      summary: carrier.json.summary ?? null,\n      digest: berlinHour < 6,\n      changes,\n    },\n  },\n];"
       },
       "position": [
         1680,
@@ -435,8 +464,8 @@
         "jsCode": "const { changes = [], summary } = $input.first().json;\n\n// {{{ Rosé Pine Moon\n// Same palette as every other digest from this instance, from the base16\n// scheme the desktops use (rose-pine-moon.yaml, via\n// common/themes/default.nix). Duplicated because n8n Code nodes cannot\n// import; change one, change all six.\n//\n// Names kept as they were so only the colours move: this mail is a ledger of\n// what the sync changed, and its shape was already right.\nconst palette = {\n  bg: '#232136',\n  card: '#2a273f',\n  cardBorder: '#393552',\n  divider: '#393552',\n  text: '#e0def4',\n  muted: '#6e6a86',\n  comment: '#3e8fb0',\n  accent: '#c4a7e7',\n  added: '#9ccfd8',\n  removed: '#eb6f92',\n};\nconst mono = \"ui-monospace,'JetBrains Mono','SFMono-Regular',Menlo,Consolas,'Liberation Mono',monospace\";\n// }}}\n\nconst rowsHtml = changes\n  .map((c) => {\n    const isPut = c.method === 'PUT';\n    const color = isPut ? palette.added : palette.removed;\n    const tag = isPut ? '[ PUT ]' : '[ DEL ]';\n    return `<tr>\n      <td style=\"padding:8px 28px;border-bottom:1px solid ${palette.divider};font-family:${mono};font-size:12px;color:${palette.muted};white-space:nowrap;\">${c.when ?? '--.--. --:--'}</td>\n      <td style=\"padding:8px 12px;border-bottom:1px solid ${palette.divider};font-family:${mono};font-size:13px;color:${palette.text};width:100%;\">${c.label}</td>\n      <td style=\"padding:8px 28px;border-bottom:1px solid ${palette.divider};font-family:${mono};font-size:12px;text-align:right;white-space:nowrap;\">\n        <span style=\"color:${color};font-weight:700;\">${tag}</span>\n      </td>\n    </tr>`;\n  })\n  .join('\\n');\n\nconst added = changes.filter((c) => c.method === 'PUT').length;\nconst removed = changes.filter((c) => c.method === 'DELETE').length;\nconst statusLine = [added ? `${added} neu/geändert` : null, removed ? `${removed} entfallen` : null]\n  .filter(Boolean)\n  .join(' · ');\n\nconst timestamp = new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin', dateStyle: 'medium', timeStyle: 'short' });\n\nconst html = `<!DOCTYPE html>\n<html>\n  <body style=\"margin:0;padding:32px 16px;background:${palette.bg};font-family:${mono};\">\n    <table role=\"presentation\" width=\"100%\" style=\"max-width:600px;margin:0 auto;\">\n      <tr>\n        <td style=\"background:${palette.card};border:1px solid ${palette.cardBorder};border-radius:6px;overflow:hidden;\">\n          <table role=\"presentation\" width=\"100%\" style=\"border-collapse:collapse;\">\n            <tr><td style=\"height:4px;line-height:4px;font-size:0;background:${palette.accent};\">&nbsp;</td></tr>\n            <tr>\n              <td style=\"padding:28px 28px 20px 28px;\">\n                <div style=\"font-family:${mono};font-size:12px;color:${palette.comment};\">$ n8n run webuntis-radicale --sync</div>\n                <div style=\"font-family:${mono};font-size:21px;font-weight:700;letter-spacing:0.04em;color:${palette.text};margin-top:14px;\">STUNDENPLAN_SYNC</div>\n                <div style=\"font-family:${mono};font-size:14px;font-weight:700;color:${palette.accent};margin-top:8px;\">[ SYNC ] ${statusLine || `${changes.length} Änderungen`}</div>\n                <div style=\"font-family:${mono};font-size:12px;color:${palette.muted};margin-top:10px;\">${timestamp} · Zeitraum ${summary?.range ?? '–'}</div>\n              </td>\n            </tr>\n            <tr><td style=\"border-top:1px solid ${palette.cardBorder};\"></td></tr>\n            <tr>\n              <td style=\"padding:16px 28px 2px 28px;font-family:${mono};font-size:12px;color:${palette.comment};\"># changes</td>\n            </tr>\n            <tr>\n              <td style=\"padding:0 0 20px 0;\">\n                <table role=\"presentation\" width=\"100%\" style=\"border-collapse:collapse;\">${rowsHtml}</table>\n              </td>\n            </tr>\n            <tr><td style=\"border-top:1px solid ${palette.cardBorder};\"></td></tr>\n            <tr>\n              <td style=\"padding:16px 28px;font-family:${mono};font-size:11px;color:${palette.muted};\">generated by n8n @ inari · ${summary?.managedTotal ?? '?'} Termine verwaltet, ${summary?.ignored ?? 0} ignoriert</td>\n            </tr>\n          </table>\n        </td>\n      </tr>\n    </table>\n  </body>\n</html>`;\n\nreturn [{ json: { subject: `[WebUntis] ${statusLine || `${changes.length} Änderungen`}`, html } }];"
       },
       "position": [
-        1920,
-        576
+        2100,
+        460
       ],
       "type": "n8n-nodes-base.code",
       "typeVersion": 2
@@ -459,11 +488,75 @@
         "toEmail": "status@hugo-berendi.de"
       },
       "position": [
-        2160,
-        576
+        2340,
+        460
       ],
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1
+    },
+    {
+      "id": "f018d8ad-8d63-48b0-85e1-76306d98f49f",
+      "name": "Tagesdigest?",
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "83243299-6b1e-4408-9eb9-c832c390c74d",
+              "leftValue": "={{ $json.digest }}",
+              "operator": {
+                "operation": "true",
+                "singleValue": true,
+                "type": "boolean"
+              },
+              "rightValue": ""
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "strict",
+            "version": 2
+          }
+        },
+        "options": {}
+      },
+      "position": [
+        1860,
+        576
+      ],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2
+    },
+    {
+      "id": "7a57b3da-0953-404f-ab61-0fc3ceb83954",
+      "name": "Kurzmeldung bauen",
+      "parameters": {
+        "jsCode": "// Short form of the change ledger for the alert spine. The mail node still\n// renders the full table at 05:10; this exists so a cancellation during the\n// school day arrives while it can still be acted on.\n\nconst { changes = [] } = $input.first().json;\n\n// Reached only when there is something to say -- the sync node returns no item\n// at all for an empty change set -- but assert it rather than trusting it,\n// since an empty push is exactly the noise this split was made to remove.\nif (changes.length === 0) return [];\n\nconst added = changes.filter((c) => c.method === 'PUT').length;\nconst removed = changes.filter((c) => c.method === 'DELETE').length;\n\n// Cancellations lead. They are the only kind of change that lets you do\n// something differently today, and \"2 entfallen\" buried after a reordering\n// count is a worse headline than it looks.\nconst headline = [\n  removed ? `${removed} entfallen` : null,\n  added ? `${added} neu/geändert` : null,\n]\n  .filter(Boolean)\n  .join(\" · \");\n\nconst lines = changes\n  .slice(0, 8)\n  .map((c) => `${c.method === \"PUT\" ? \"+\" : \"−\"} ${[c.when, c.label].filter(Boolean).join(\" \")}`);\nif (changes.length > 8) lines.push(`… und ${changes.length - 8} weitere`);\n\n// Fingerprint the content, not the run. WebUntis republishes the same\n// substitution repeatedly across a day; with a per-run fingerprint each repeat\n// would push again, and with a fixed one the second genuine change of the day\n// would be swallowed. Hashing the change set gets both right.\nconst fnv1a = (value) => {\n  let hash = 0x811c9dc5;\n  for (let i = 0; i < value.length; i++) {\n    hash ^= value.charCodeAt(i);\n    hash = Math.imul(hash, 0x01000193);\n  }\n  return (hash >>> 0).toString(16).padStart(8, \"0\");\n};\nconst signature = fnv1a(\n  changes.map((c) => `${c.method}|${c.when ?? \"\"}|${c.label ?? \"\"}`).sort().join(\"\\n\"),\n);\n\nreturn [\n  {\n    json: {\n      source: \"webuntis\",\n      severity: \"info\",\n      title: headline || `${changes.length} Änderungen`,\n      message: lines.join(\"\\n\"),\n      fingerprint: `webuntis:${signature}`,\n    },\n  },\n];"
+      },
+      "position": [
+        2100,
+        760
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "64c42d7a-371c-4173-a655-cbf4c58e5217",
+      "name": "An Alert-Spine senden",
+      "parameters": {
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "specifyBody": "json",
+        "url": "={{ $env.ALERT_WEBHOOK_URL }}"
+      },
+      "position": [
+        2340,
+        760
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3
     }
   ],
   "pinData": {},
