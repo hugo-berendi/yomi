@@ -17,11 +17,6 @@
         [
           {
             "index": 0,
-            "node": "Send request changes",
-            "type": "main"
-          },
-          {
-            "index": 0,
             "node": "Build push",
             "type": "main"
           }
@@ -50,7 +45,7 @@
         ]
       ]
     },
-    "Send request changes": {
+    "Send to alert spine": {
       "main": [
         [
           {
@@ -101,7 +96,7 @@
       "id": "20000000-0000-4000-8000-000000000003",
       "name": "Check request changes",
       "parameters": {
-        "jsCode": "const key = $env.JELLYSEERR_API_KEY;\nif (!key) throw new Error('JELLYSEERR_API_KEY is not configured');\n\nconst response = await this.helpers.httpRequest({\n  method: 'GET',\n  url: 'http://127.0.0.1:8423/api/v1/request',\n  qs: {take: 100, skip: 0, sort: 'added'},\n  headers: {'X-Api-Key': key},\n  json: true,\n});\n\nconst state = $getWorkflowStaticData('global');\nconst current = Object.fromEntries(\n  (response.results ?? []).map((request) => [\n    String(request.id),\n    {\n      requestStatus: request.status,\n      mediaStatus: request.media?.status ?? null,\n      type: request.type,\n      tmdbId: request.media?.tmdbId ?? null,\n      requester: request.requestedBy?.displayName ?? request.requestedBy?.email ?? 'unknown',\n      mediaUrl: request.media?.mediaUrl ?? null,\n    },\n  ]),\n);\n\nif (!state.requests) {\n  state.requests = current;\n  return [];\n}\n\nconst requestLabel = {1: 'pending approval', 2: 'approved', 3: 'declined', 4: 'failed', 5: 'completed'};\nconst mediaLabel = {1: 'unknown', 2: 'pending', 3: 'processing', 4: 'partly available', 5: 'available'};\nconst changes = [];\nfor (const [id, item] of Object.entries(current)) {\n  const previous = state.requests[id];\n  if (!previous) {\n    changes.push({id, item, text: `new request, ${requestLabel[item.requestStatus] ?? item.requestStatus}`});\n  } else if (previous.requestStatus !== item.requestStatus || previous.mediaStatus !== item.mediaStatus) {\n    changes.push({\n      id,\n      item,\n      text: `${requestLabel[previous.requestStatus] ?? previous.requestStatus} to ${requestLabel[item.requestStatus] ?? item.requestStatus}; media ${mediaLabel[item.mediaStatus] ?? item.mediaStatus}`,\n    });\n  }\n}\nif (!changes.length) return [];\n\nconst esc = (value) =>\n  String(value ?? '')\n    .replaceAll('&', '&amp;')\n    .replaceAll('<', '&lt;')\n    .replaceAll('>', '&gt;')\n    .replaceAll('\"', '&quot;');\n\nconst rows = changes\n  .map(({id, item, text}) => `<tr><td style=\"padding:10px 0;border-bottom:1px solid #393552;color:#e0def4;\">\n  <strong>${esc(item.type)} request #${esc(id)}</strong> <span style=\"color:#908caa;\">by ${esc(item.requester)}</span><br>\n  <span style=\"color:#9ccfd8;\">${esc(text)}</span>${item.mediaUrl ? ` · <a href=\"${esc(item.mediaUrl)}\" style=\"color:#c4a7e7;\">open in Jellyfin</a>` : ''}\n</td></tr>`)\n  .join('');\nconst html = `<html><body style=\"margin:0;padding:24px;background:#232136;\"><table role=\"presentation\" width=\"100%\" style=\"max-width:600px;margin:auto;background:#2a273f;border:1px solid #393552;padding:24px;font-family:Verdana,sans-serif;\"><tr><td style=\"color:#c4a7e7;font:700 20px 'Courier New',monospace;\">MEDIA REQUESTS</td></tr>${rows}</table></body></html>`;\nreturn [{json: {subject: `[Media] ${changes.length} request change${changes.length === 1 ? '' : 's'}`, html, nextState: current, changes}}];"
+        "jsCode": "const key = $env.JELLYSEERR_API_KEY;\nif (!key) throw new Error('JELLYSEERR_API_KEY is not configured');\n\nconst response = await this.helpers.httpRequest({\n  method: 'GET',\n  url: 'http://127.0.0.1:8423/api/v1/request',\n  qs: {take: 100, skip: 0, sort: 'added'},\n  headers: {'X-Api-Key': key},\n  json: true,\n});\n\nconst state = $getWorkflowStaticData('global');\nconst current = Object.fromEntries(\n  (response.results ?? []).map((request) => [\n    String(request.id),\n    {\n      requestStatus: request.status,\n      mediaStatus: request.media?.status ?? null,\n      type: request.type,\n      tmdbId: request.media?.tmdbId ?? null,\n      requester: request.requestedBy?.displayName ?? request.requestedBy?.email ?? 'unknown',\n      mediaUrl: request.media?.mediaUrl ?? null,\n    },\n  ]),\n);\n\nif (!state.requests) {\n  state.requests = current;\n  return [];\n}\n\nconst requestLabel = {1: 'pending approval', 2: 'approved', 3: 'declined', 4: 'failed', 5: 'completed'};\nconst mediaLabel = {1: 'unknown', 2: 'pending', 3: 'processing', 4: 'partly available', 5: 'available'};\nconst changes = [];\nfor (const [id, item] of Object.entries(current)) {\n  const previous = state.requests[id];\n  if (!previous) {\n    changes.push({id, item, text: `new request, ${requestLabel[item.requestStatus] ?? item.requestStatus}`});\n  } else if (previous.requestStatus !== item.requestStatus || previous.mediaStatus !== item.mediaStatus) {\n    changes.push({\n      id,\n      item,\n      text: `${requestLabel[previous.requestStatus] ?? previous.requestStatus} to ${requestLabel[item.requestStatus] ?? item.requestStatus}; media ${mediaLabel[item.mediaStatus] ?? item.mediaStatus}`,\n    });\n  }\n}\nif (!changes.length) return [];\n\nreturn [{json: {nextState: current, changes}}];"
       },
       "position": [
         -260,
@@ -109,30 +104,6 @@
       ],
       "type": "n8n-nodes-base.code",
       "typeVersion": 2
-    },
-    {
-      "credentials": {
-        "smtp": {
-          "id": "njtrBIl1Zg5hBBqU",
-          "name": "Migadu (no-reply)"
-        }
-      },
-      "id": "20000000-0000-4000-8000-000000000004",
-      "name": "Send request changes",
-      "parameters": {
-        "emailFormat": "html",
-        "fromEmail": "no-reply@tengu.hugo-berendi.de",
-        "html": "={{ $json.html }}",
-        "options": {},
-        "subject": "={{ $json.subject }}",
-        "toEmail": "status@hugo-berendi.de"
-      },
-      "position": [
-        0,
-        80
-      ],
-      "type": "n8n-nodes-base.emailSend",
-      "typeVersion": 2.1
     },
     {
       "id": "20000000-0000-4000-8000-000000000005",
@@ -151,7 +122,7 @@
       "id": "04f4e494-9c03-45ac-82a2-7575f5cca22c",
       "name": "Build push",
       "parameters": {
-        "jsCode": "// Only \"it is ready to watch\". Approvals, declines and processing steps are\n// bookkeeping and stay in the email; becoming available is the one transition\n// that asks you to do something.\nconst AVAILABLE = 5;\nconst { changes = [] } = $input.first().json;\n\nconst ready = changes.filter((c) => c.item?.mediaStatus === AVAILABLE);\nif (ready.length === 0) return [];\n\nconst key = $env.JELLYSEERR_API_KEY;\n\n// /api/v1/request does not carry a title -- only tmdbId -- so a readable name\n// costs one lookup per item. That is affordable here precisely because this\n// runs only for things that just became available, which is almost always\n// none or one, rather than for all hundred tracked requests.\n//\n// MovieDetails carries `title` and TvDetails carries `name`; both confirmed\n// against the jellyseerr-api.yml shipped with the package rather than assumed.\nconst titleOf = async (item, id) => {\n  const fallback = `${item?.type === \"tv\" ? \"Serie\" : \"Film\"} #${item?.tmdbId ?? id}`;\n  if (!key || !item?.tmdbId) return fallback;\n  try {\n    const details = await this.helpers.httpRequest({\n      method: \"GET\",\n      url: `http://127.0.0.1:8423/api/v1/${item.type === \"tv\" ? \"tv\" : \"movie\"}/${item.tmdbId}`,\n      headers: { \"X-Api-Key\": key },\n      json: true,\n    });\n    return details?.title || details?.name || fallback;\n  } catch {\n    // \"Film #12345 ist verfügbar\" is worth far more than no notification at\n    // all, so a lookup that fails degrades to the id instead of throwing and\n    // losing the news entirely.\n    return fallback;\n  }\n};\n\nconst labels = [];\nfor (const change of ready) labels.push(await titleOf(change.item, change.id));\n\nreturn [\n  {\n    json: {\n      source: \"jellyseerr\",\n      severity: \"info\",\n      title: labels.length === 1 ? `${labels[0]} ist verfügbar` : `${labels.length} Anfragen verfügbar`,\n      message: labels.join(\"\\n\"),\n      // Per media id, so the same title turning available twice (a re-grab, a\n      // season completing again) cannot push twice inside the window.\n      fingerprint: `jellyseerr:available:${ready.map((c) => c.id).sort().join(\",\")}`,\n      url: ready[0]?.item?.mediaUrl ?? null,\n    },\n  },\n];"
+        "jsCode": "// Only \"it is ready to watch\". Approvals, declines and processing steps are\n// bookkeeping; becoming available is the one transition that asks you to do\n// something. The bookkeeping used to go out as a mail on every change, polled\n// every ten minutes, which is how this workflow alone could spend most of the\n// twenty outgoing mails a day Migadu allows. Jellyseerr's own request list is\n// the record of those steps.\nconst AVAILABLE = 5;\nconst { changes = [], nextState } = $input.first().json;\n\nconst ready = changes.filter((c) => c.item?.mediaStatus === AVAILABLE);\nif (ready.length === 0) {\n  // Nothing goes to the spine, so \"Commit notification state\" never runs:\n  // record the bookkeeping here, or the same steps are re-detected forever.\n  $getWorkflowStaticData('global').requests = nextState;\n  return [];\n}\n\nconst key = $env.JELLYSEERR_API_KEY;\n\n// /api/v1/request does not carry a title -- only tmdbId -- so a readable name\n// costs one lookup per item. That is affordable here precisely because this\n// runs only for things that just became available, which is almost always\n// none or one, rather than for all hundred tracked requests.\n//\n// MovieDetails carries `title` and TvDetails carries `name`; both confirmed\n// against the jellyseerr-api.yml shipped with the package rather than assumed.\nconst titleOf = async (item, id) => {\n  const fallback = `${item?.type === \"tv\" ? \"Serie\" : \"Film\"} #${item?.tmdbId ?? id}`;\n  if (!key || !item?.tmdbId) return fallback;\n  try {\n    const details = await this.helpers.httpRequest({\n      method: \"GET\",\n      url: `http://127.0.0.1:8423/api/v1/${item.type === \"tv\" ? \"tv\" : \"movie\"}/${item.tmdbId}`,\n      headers: { \"X-Api-Key\": key },\n      json: true,\n    });\n    return details?.title || details?.name || fallback;\n  } catch {\n    // \"Film #12345 ist verfügbar\" is worth far more than no notification at\n    // all, so a lookup that fails degrades to the id instead of throwing and\n    // losing the news entirely.\n    return fallback;\n  }\n};\n\nconst labels = [];\nfor (const change of ready) labels.push(await titleOf(change.item, change.id));\n\nreturn [\n  {\n    json: {\n      source: \"jellyseerr\",\n      severity: \"info\",\n      title: labels.length === 1 ? `${labels[0]} ist verfügbar` : `${labels.length} Anfragen verfügbar`,\n      message: labels.join(\"\\n\"),\n      // Per media id, so the same title turning available twice (a re-grab, a\n      // season completing again) cannot push twice inside the window.\n      fingerprint: `jellyseerr:available:${ready.map((c) => c.id).sort().join(\",\")}`,\n      url: ready[0]?.item?.mediaUrl ?? null,\n    },\n  },\n];"
       },
       "position": [
         -20,
