@@ -127,15 +127,9 @@ in {
                   {{ template "default.message" . }}
                 '';
               }
-              {
-                uid = "main_email";
-                type = "email";
-                settings.addresses = "colimit@hugo-berendi.de";
-              }
-              # Discord and email are both read later, which is the wrong
-              # shape for a backup that has not run in two days. The spine
-              # turns those into a push, and stays a third receiver rather
-              # than replacing either: nothing that works today stops.
+              # Discord is read later, which is the wrong shape for a backup
+              # that has not run in two days. The spine turns those into a
+              # push.
               #
               # It posts to the translating workflow, not to the spine
               # directly -- Grafana sends its own payload shape, and the
@@ -150,6 +144,32 @@ in {
               }
             ];
           }
+          # Mail lives in its own contact point so only critical alerts reach
+          # it. It used to sit in "main" beside Discord, which meant every
+          # warning mailed too, and re-mailed at Grafana's default four-hour
+          # repeat for as long as it fired. A laptop that is off for a week
+          # keeps its backup alerts firing for that week, so that alone was
+          # six mails a day. The Migadu plan allows twenty outgoing mails a
+          # day for the whole account, and each of these also counted
+          # inbound.
+          {
+            name = "mail";
+            receivers = [
+              {
+                uid = "mail_email";
+                type = "email";
+                settings.addresses = "colimit@hugo-berendi.de";
+              }
+            ];
+          }
+        ];
+        # Provisioning never removes an integration on its own; without this
+        # the old receiver stays attached to "main" and keeps mailing.
+        deleteContactPoints = [
+          {
+            orgId = 1;
+            uid = "main_email";
+          }
         ];
       };
 
@@ -157,7 +177,20 @@ in {
         apiVersion = 1;
         policies = [
           {
+            orgId = 1;
             receiver = "main";
+            routes = [
+              # continue so a critical alert still reaches Discord and the
+              # spine through the catch-all below; a matched route otherwise
+              # stops routing there.
+              {
+                receiver = "mail";
+                object_matchers = [["severity" "=" "critical"]];
+                continue = true;
+                repeat_interval = "24h";
+              }
+              {receiver = "main";}
+            ];
           }
         ];
       };
