@@ -204,8 +204,9 @@ disconnected during partitioning. The current disko configuration defaults to
 ready-to-run replacement installer. Select the SSD by its verified identity and
 review the encryption-key setup before running any destructive command.
 `scripts/live.sh` asks for kagutsuchi's passphrase when it unlocks the stick.
-The ISO's `liftoff` helper clones `https://github.com:hugo-berendi/yomi.git`,
-which is not a valid URL; clone the repository by hand until it is fixed.
+The ISO's `liftoff` helper clones the GitHub mirror over https, which needs no
+credentials and is kept in sync with Inari's Forgejo. It runs in its own
+process, so `cd yomi` afterwards yourself.
 Replace `secrets/inari/disk.key` with a freshly generated key before disko runs;
 the current file is the stale 2024 passphrase.
 

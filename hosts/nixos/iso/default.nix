@@ -46,7 +46,7 @@
 
   environment.systemPackages = let
     cloneConfig = pkgs.writeShellScriptBin "liftoff" ''
-      git clone https://github.com:hugo-berendi/yomi.git
+      git clone https://github.com/hugo-berendi/yomi.git
       cd yomi
     '';
   in
