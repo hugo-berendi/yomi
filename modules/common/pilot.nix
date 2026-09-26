@@ -33,9 +33,12 @@
       description = "GPG keygrip for gpg-agent SSH support";
     };
     sshIdentity = lib.mkOption {
-      type = lib.types.str;
-      default = "~/.ssh/id_ed25519";
-      description = "Path to SSH identity file";
+      type = with lib.types; coercedTo str lib.singleton (listOf str);
+      default = ["~/.ssh/id_ed25519"];
+      description = ''
+        SSH identity files, tried in order. Missing files are skipped by ssh,
+        so a fallback can stay listed while a key is being rolled over.
+      '';
     };
   };
 

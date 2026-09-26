@@ -87,6 +87,18 @@ in {
     "${config.home.homeDirectory}/.t3"
   ];
 
+  # {{{ SSH identity
+  # The YubiKey's resident FIDO2 key first, the old shared key as a fallback
+  # until the sops/ZFS recovery path no longer depends on it.
+  yomi.pilot.sshIdentity = ["~/.ssh/id_ed25519_sk" "~/.ssh/id_ed25519"];
+
+  # The FIDO2 key is verify-required, so an agent holding it would have to ask
+  # for the PIN itself, and there is no askpass here to do that. Once added,
+  # every signature through the agent fails and ssh falls back to the old key.
+  # Keep keys out of the agent; ssh prompts for the PIN on the terminal.
+  programs.ssh.settings."*".AddKeysToAgent = "no";
+  # }}}
+
   yomi.toggles.isServer.enable = false;
   yomi = {
     # Symlink some commonly modified dotfiles outside the nix store

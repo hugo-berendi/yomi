@@ -1,4 +1,8 @@
-{config, ...}: {
+{
+  config,
+  lib,
+  ...
+}: {
   programs.ssh = {
     enable = true;
     enableDefaultConfig = false;
@@ -10,7 +14,7 @@
       # attached it simply fails. That is how `git pull` against
       # ssh.git.hugo-berendi.de used to fall through to password auth, which
       # stopped being a fallback once PasswordAuthentication was turned off.
-      AddKeysToAgent = "yes";
+      AddKeysToAgent = lib.mkDefault "yes";
     };
   };
 
