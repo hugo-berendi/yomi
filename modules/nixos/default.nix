@@ -18,5 +18,4 @@
   steam-game-server = import ./steam-game-server.nix;
   vrising = import ./vrising;
   windrose = import ./windrose.nix;
-  yubikey = import ./yubikey.nix;
 }

@@ -99,6 +99,15 @@ in {
   programs.ssh.settings."*".AddKeysToAgent = "no";
   # }}}
 
+  # {{{ Smartcard
+  # Reach the card through pcscd (see hosts/nixos/amaterasu), and share it,
+  # so ykman and age-plugin-yubikey still work while gpg-agent is running.
+  programs.gpg.scdaemonSettings = {
+    disable-ccid = true;
+    pcsc-shared = true;
+  };
+  # }}}
+
   yomi.toggles.isServer.enable = false;
   yomi = {
     # Symlink some commonly modified dotfiles outside the nix store
