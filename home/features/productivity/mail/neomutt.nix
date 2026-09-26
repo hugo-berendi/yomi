@@ -1,4 +1,4 @@
-_: {
+{config, ...}: {
   # {{{ hugob
   accounts.email.accounts.hugob.neomutt = {
     enable = true;
@@ -10,6 +10,12 @@ _: {
       "Sent"
       "Trash"
     ];
+    # The account's gpg block makes neomutt sign but does not name a key, so
+    # gpgme would choose by From address. The revoked 2024 key has the same
+    # address and is still in the keyring on amaterasu; name the key.
+    extraConfig = ''
+      set pgp_default_key = "${config.yomi.pilot.gpgKey}"
+    '';
   };
   # }}}
 

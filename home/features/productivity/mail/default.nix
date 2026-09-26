@@ -31,10 +31,13 @@
         trash = "Trash";
       };
 
-      # gpg = {
-      #   key = "0x702AA7FD444CDC73";
-      #   signByDefault = true;
-      # };
+      # Signs with the YubiKey's subkey. Mail is only on hosts that have the
+      # card. Not encryptByDefault: that would break mail to anyone without a
+      # key.
+      gpg = {
+        key = config.yomi.pilot.gpgKey;
+        signByDefault = true;
+      };
 
       passwordCommand = "cat ${config.sops.secrets.hugob_mail_pass.path}";
       primary = true;
