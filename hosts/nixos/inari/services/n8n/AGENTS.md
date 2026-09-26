@@ -118,6 +118,35 @@ Generate node/workflow ids with `uuidgen` (nodes) or 16 random alnum
 characters (workflow `id`, matching n8n's own nanoid-style ids) — anything
 n8n hasn't already seen is fine, since import upserts by id.
 
+## Mail is a budget: digests only
+
+The Migadu plan allows **20 outgoing and 200 incoming mails a day**, for the
+whole account. Every workflow mail goes from `no-reply@tengu…` to
+`status@hugo-berendi.de`, both on that account, so each one costs one of the
+twenty *and* one of the two hundred. Other services also send through
+Migadu (changedetection, pocket-id, healthchecks, immich, ZED via msmtp),
+so n8n does not get all twenty.
+
+The rule that follows:
+
+- **Mail is for scheduled digests**, at most one per workflow per day.
+  Today that is health-monitor, inbox-organizer, paperless reminders and
+  the 05:10 webuntis ledger daily, plus backup-storage, forgejo-ci,
+  immich-maintenance and media-arrivals weekly: four a day, seven on a
+  Monday.
+- **Events go to the alert spine** (`$env.ALERT_WEBHOOK_URL`, see
+  `alert-router.json`), which pushes to ntfy and suppresses repeats. A
+  workflow that polls every few minutes and mails "on change" is a mail per
+  run as soon as whatever it watches starts to flap. home-assistant-anomalies,
+  jellyseerr-tracker and forgejo-releases did exactly this and pushed the
+  account over its limit. They are push-only now.
+- **Commit state after the send, but make sure it gets committed.** A
+  workflow that commits state only once its mail has gone out sees the same
+  changes again on every run after Migadu starts refusing, and sends them
+  again every run. When the notification branch can
+  legitimately emit nothing, commit in that branch too (see "Build push" in
+  `jellyseerr-tracker.json`).
+
 ## Email design language
 
 **One palette, one look per kind of mail.** Every digest from this instance is
