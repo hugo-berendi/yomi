@@ -1,5 +1,9 @@
 # Prompt for the agent on Amaterasu
 
+Ran on 26 September; its findings are recorded in [inari-migration.md](inari-migration.md).
+It predates the rekey that same day. The two recipients below are the old ones,
+and the independent identities are now `pilot_yubikey` and `recovery_offline`.
+
 Help verify an independent recovery identity for Inari before its SSD is returned.
 
 Run hostname first and follow the local AGENTS.md. Do not print, upload, or commit

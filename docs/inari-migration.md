@@ -4,9 +4,11 @@ Status on 26 September 2026: **not cleared for erasure or return**. Repository
 access, a restore rehearsal and preservation of `/boot` still require a local
 sudo password. No installation, pool export, service restart or disk erasure has
 been performed for this audit.
-Independent decryption of both SOPS secret files on Amaterasu is now confirmed
-by the agent report supplied by Hugo. Restic restores and boot-key recovery
-remain unverified.
+Every SOPS file now also decrypts without the old keys: on 26 September Hugo
+proved each of the six files opens with the YubiKey's PIV identity alone and with
+the offline key on kagutsuchi alone. Restic restores and boot-key recovery remain
+unverified. The key changes that wait for the new hardware are listed in
+[Key changes after the migration](#key-changes-after-the-migration).
 
 ## Hardware and timing
 
@@ -70,6 +72,10 @@ labels as well as serials. Import on replacement hardware remains untested.
 `/boot/zroot-key.jwe` sealed to the old TPM and
 `/boot/zroot-recovery-key.age` as its recovery copy. Their existence, decryption
 and key validity have not yet been checked because `/boot` is root-only.
+`zfs get` reports `keyformat raw` for zroot, while `partitions.nix` creates it
+with `keyformat = "passphrase"` from `/kagutsuchi/secrets/inari/disk.key`: the
+key was replaced after installation. That 9-byte file therefore no longer
+unlocks the pool, and disko would reuse it for a new pool unless it is replaced.
 
 ## Run the non-destructive audit
 
@@ -106,72 +112,68 @@ come from `hosts/nixos/inari/secrets.yaml`. SOPS currently uses the shared SSH
 host private key at `/persist/state/etc/ssh/ssh_host_ed25519_key`. Keeping that
 key only inside an encrypted Restic backup creates a recovery dependency loop.
 
-The archive is encrypted to both recipients in `.sops.yaml`: the pilot's
-SSH-derived Age identity and the shared host identity also configured on
-Amaterasu. The public recipient strings alone cannot decrypt backups.
+Four recipients can decrypt the SOPS files, and the audit script encrypts
+`recovery.tar.age` to the same four by reading `.sops.yaml`:
 
-Hugo supplied the Amaterasu agent's completed report on 26 September. It tested
-both the pilot Age identity and the shared host identity against both SOPS files;
-all four decryptions succeeded with plaintext discarded. No passphrase was
-required. This confirms access to the encrypted credential files without Inari's
-SSD. It does not yet prove repository authentication, recovery archive decryption
-or validity of the boot recovery key.
-
-| Identity on Amaterasu | Reported location | Result |
+| Recipient | Private half | Status |
 | --- | --- | --- |
-| Pilot Age identity | `/persist/state/home/hugob/.config/sops/age/keys.txt` | Matches pilot recipient; decrypts both SOPS files |
-| Duplicate pilot Age identity | `/persist/state/home/hugob/sops/.config/sops/age/keys.txt` | Same public recipient |
-| Shared host SSH identity | `/persist/state/etc/ssh/ssh_host_ed25519_key` | Matches shared-host recipient; decrypts both SOPS files |
+| `pilot_yubikey` | PIV slot 82 on YubiKey 30636315. Identity stub `~/.config/sops/age/yubikey.txt` on Amaterasu | Decrypts all six files on its own (tested 26 September) |
+| `recovery_offline` | `age/yomi-recovery.txt` on kagutsuchi | Decrypts all six files on its own (tested 26 September) |
+| `pilot_user_key` | Old shared SSH login key, SHA256:mYs7VNSw… | To be retired after the migration |
+| `shared_host_key` | Inari's and Amaterasu's shared host key, SHA256:G5JybhUg… | To be replaced after the migration |
 
-The pilot and shared host identities are different keys. The shared host copy is
-on a separate machine but is the same key used by Inari, not a separate host
-identity. No new recovery identity is needed for this migration.
+kagutsuchi is the USB key stick that `scripts/live.sh` and disko take their
+install-time keys from. It was plain ext4 and held `shared_host_key`'s private
+half, the old login key and every host's SSH host keys in the clear. It is now
+LUKS2 (header UUID `40ed3eaf-4232-4961-b87b-88b2f998ec10`), unlocked with
+`sudo scripts/kagutsuchi.sh open` and locked with `close`. Besides `secrets/<host>/`
+it holds `gpg/` (the pilot's OpenPGP primary key, its backups and revocation
+certificates) and `age/`. Its passphrase is kept offline; without it the stick is
+unreadable.
 
-The report also found these permission and persistence issues. They have not
-been changed as part of this audit:
+The 26 September Amaterasu report also found permission problems:
 
-- Both pilot Age key files are mode 0644. Restrict them to 0600. The file modes
-  grant read access to others; actual traversal also depends on parent-directory
-  permissions. Do not infer that the keys were accessed from file mode alone.
-- `/persist/state/home/hugob/.ssh/id_ed25519` is an unencrypted pilot private key,
-  mode 0700. The older copy under `/persist/state/home/hugob/ssh/.ssh/` is
-  passphrase-protected. Blanket claims that every pilot-key copy requires a
-  passphrase are therefore inaccurate. Adding a passphrase to the SSH copy alone
-  would not protect the separate unencrypted Age identity files.
-- The shared host private key is reportedly owned by `hugob:users`, mode 0700.
-  Review its intended ownership separately; do not rotate or replace it during
-  recovery preparation without accounting for its SOPS role.
-- Live `~/.ssh/id_ed25519` and `~/.config/sops/age/keys.txt` are absent. Explicit
-  persistent paths work for recovery. Automatic identity discovery in a plain
-  shell has not been established; the linking issue's cause is unconfirmed.
+- Both old pilot Age key files, `/persist/state/home/hugob/.config/sops/age/keys.txt`
+  and `/persist/state/home/hugob/sops/.config/sops/age/keys.txt`, were mode 0644.
+  Hugo was given `chmod 600` for both; the result has not been rechecked.
+- `/persist/state/home/hugob/.ssh/id_ed25519` is an unencrypted copy of the old
+  login key. It goes when that key is retired.
+- The shared host private key is owned by `hugob:users`, mode 0700, on Amaterasu
+  and on Inari. Home-manager's sops reads it through `sops.age.sshKeyPaths`.
+  Replacing the host keys has to account for that.
+- `~/.gnupg` was 0755 on both hosts; it is 0700 on Inari. Impermanence copies the
+  mode of an existing source directory, so a `chmod 700 ~/.gnupg` fixes it for
+  good.
 
-Inari's earlier SSH attempt stopped because Amaterasu had no trusted host key
-locally. The Amaterasu agent independently checked its persistent host key
-against the live daemon and reported:
+Amaterasu's host key, checked against its live daemon:
 
 ```text
 SHA256:G5JybhUglUyo8obZulgovg1mVvyQf6PQQejW8QjC1GE
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAOhNvRjubxhkVPKRHqiGzPvmMX5vD7kQP9b1+k+mvOq root@amaterasu
 ```
 
-No known-hosts entry has been changed here. The
-[Amaterasu agent prompt](amaterasu-recovery-prompt.md) is retained for reference.
-SSH login authorization does not add an Age recipient.
-Age supports YubiKey PIV identities through a separate plugin; that is distinct
-from the existing FIDO2 SSH credential. See the [Age documentation](https://github.com/FiloSottile/age#readme).
+This is the same key as Inari's. The
+[Amaterasu agent prompt](amaterasu-recovery-prompt.md) that produced the report is
+kept for reference.
 
-On an independent machine, using its existing Age identity:
+On Amaterasu, test the archive with each new identity, never with the old keys:
 
-```sh
-age -d -i /path/to/independent-age-identity recovery.tar.age | tar -tf -
+```fish
+set t (mktemp -d -p /run/user/(id -u))
+sudo scripts/kagutsuchi.sh open
+sudo cat /kagutsuchi/age/yomi-recovery.txt > $t/offline.txt; chmod 600 $t/offline.txt
+sudo scripts/kagutsuchi.sh close
+age -d -i $t/offline.txt recovery.tar.age | tar -tf - >/dev/null; and echo OFFLINE-OK
+age -d -i ~/.config/sops/age/yubikey.txt recovery.tar.age | tar -tf - >/dev/null; and echo PIV-OK
+command rm -rf $t
 ```
 
-Require both pipeline commands to succeed, and confirm the boot recovery file,
-Restic password, B2 credentials and host keys are present. Then extract into
-private temporary storage, decrypt the inner ZFS recovery file, and test access
-to Restic using the recovered password. Test B2 snapshot listing with its archived
-credentials too. Never print the credential values. Local decryption on Inari
-alone does not establish independent access.
+Require both. Then confirm the boot recovery file, Restic password, B2
+credentials and host keys are present. Extract into private temporary storage,
+decrypt the inner ZFS recovery file, and test access to Restic with the recovered
+password. Test B2 snapshot listing with its archived credentials too. Never print
+the credential values. Local decryption on Inari alone does not establish
+independent access.
 
 ## Before returning the SSD
 
@@ -201,6 +203,11 @@ disconnected during partitioning. The current disko configuration defaults to
 `/dev/nvme0n1` and references `/kagutsuchi/secrets/inari/disk.key`; it is not a
 ready-to-run replacement installer. Select the SSD by its verified identity and
 review the encryption-key setup before running any destructive command.
+`scripts/live.sh` asks for kagutsuchi's passphrase when it unlocks the stick.
+The ISO's `liftoff` helper clones `https://github.com:hugo-berendi/yomi.git`,
+which is not a valid URL; clone the repository by hand until it is fixed.
+Replace `secrets/inari/disk.key` with a freshly generated key before disko runs;
+the current file is the stale 2024 passphrase.
 
 Create a fresh encrypted `zroot`, its blank rollback snapshot and persistent
 datasets. Reconnect and import the existing HDD pool, initially read-only to
@@ -211,16 +218,99 @@ warning instead of blindly forcing import.
 
 Restore the selected snapshots under the installer target, preserving Restic's
 `persist/data` and `persist/state` paths, ownership and permissions. Restore host
-keys before SOPS activation. Keep application services stopped until persistent
+keys before SOPS activation: the replacement boots with the existing shared host
+key, which every SOPS file is still encrypted to. It gets its own key only once it
+is running (see below). `live.sh` copies `secrets/inari/ssh*` from kagutsuchi into
+`/mnt/persist/state/etc/ssh/`; those are the same keys the archive holds. Keep application services stopped until persistent
 mounts and database recovery are verified. Review the generated hardware config
 and actual NIC names; the existing config explicitly uses `eno1` and `wlp2s0`.
 
 Seal the new root key to the replacement TPM, create a new independently
 decryptable recovery copy, and install the new blob at `/boot/zroot-key.jwe`.
+Encrypt the recovery copy to `recovery_offline` and `pilot_yubikey`, not to the
+old keys, and prove it with each of them and `zfs load-key -n`.
 The old TPM blob is archival material, not a portable unlock mechanism. Validate
 manual recovery and TPM boot on the replacement, then verify mounts, secrets,
 networking and services. Run a new backup and restore check before declaring the
 migration complete.
+
+## Key changes after the migration
+
+Held until the replacement runs, because until then the migration archive and
+the first boot depend on the old keys. Do them in this order, verifying each step
+before the next.
+
+### 1. Separate host keys
+
+`shared_host_key` is one private key installed on both hosts, and it sat
+unencrypted on kagutsuchi until 26 September. Both hosts get a new one. The order
+guarantees each host can decrypt at every boot:
+
+1. On the host, as root, generate the new key beside the old one:
+   `ssh-keygen -t ed25519 -N '' -C root@<host> -f /persist/state/etc/ssh/ssh_host_ed25519_key.new`.
+2. Add `ssh-to-age < …key.new.pub` to `.sops.yaml` as `<host>_host_key`, in every
+   rule the host needs, next to `shared_host_key`. Run `just sops-rekey`, commit,
+   and switch. The secrets are now encrypted to both keys.
+3. Move the new key into place (`…key.new` → `ssh_host_ed25519_key`, both halves),
+   keeping the owner and mode home-manager's sops expects (see above). Switch
+   again and confirm `sops-install-secrets` succeeds, then reboot once. A decryption
+   failure is visible at this point, while the old key is still a recipient and
+   can be put back.
+4. `just import-host-key <host>` pins the new key in `hosts/nixos/<host>/keys/`,
+   which feeds every host's `knownHosts`. Commit, and switch the other hosts.
+5. `just export-keys` on the host puts the new keys on kagutsuchi.
+
+Do this for Inari while Hugo is at home, and for Amaterasu, then remove
+`shared_host_key` from `.sops.yaml` and rekey. Inari's initrd has its own RSA host
+key in `/etc/secrets/initrd/`; the port 2222 unlock uses that, not these keys.
+
+### 2. Retire the old login key
+
+The old shared login key (SHA256:mYs7VNSw…) may leave only when:
+
+- the new `/boot/zroot-recovery-key.age` and `recovery.tar.age` no longer need it
+  (both are encrypted to all `.sops.yaml` recipients),
+- a reboot at home has unlocked Inari's initrd over port 2222 with the YubiKey
+  key. It is already authorized there (`boot.initrd.network.ssh.authorizedKeys`
+  lists `id_ed25519_sk.pub`), but that has never been tried. If the YubiKey were
+  refused, unlocking needs someone at the machine.
+
+Then remove it from:
+
+- `hosts/nixos/amaterasu/keys/id_ed25519.pub`, `hosts/nixos/tsukuyomi/keys/id_ed25519.pub`
+  and `hosts/nixos/inari/services/guacamole/ed25519.pub`. The guacamole
+  user-mapping does not contain the private key: its secret decrypts to 393
+  bytes, and the private key alone is 464.
+- The `~/.ssh/id_ed25519` fallbacks in `yomi.pilot.sshIdentity` (`home/amaterasu.nix`,
+  `home/inari.nix`) and the key files under `~/.ssh` on both hosts.
+- `pilot_user_key` in `.sops.yaml`, then `just sops-rekey`.
+- `secrets/amaterasu/id_ed25519*` on kagutsuchi.
+- Hugo's Forgejo and GitHub accounts.
+
+The `just ssh-to-age` recipe converts that key and goes with it.
+
+### 3. Rotate the secret values
+
+Rekeying does not revoke anything. Every past revision stays encrypted to
+`pilot_user_key` and `shared_host_key`, and the repository is mirrored publicly.
+Anyone holding either private key can read every value ever committed. That was
+anyone with kagutsuchi until 26 September. So every value in the six
+`secrets.yaml` files needs rotating. `sops` lists the names. Start with the
+credentials that reach outside the house:
+
+- the B2 account (`b2_account_id`, `b2_account_key`) and `backup_password`,
+  which protects the Restic repositories themselves. Changing it means
+  `restic key add`/`remove` on every repository, not a new repository.
+- the Cloudflare tokens and tunnel credentials, `tailscale_auth_key`, the
+  `GITHUB_TOKEN` and the Forgejo runner tokens
+- the mail and SMTP passwords (`hugob_mail_pass`, `outlook_mail_pass`,
+  `imap_personal_password`, `msmtp_password`, `no_reply_smtp_password`, …)
+- third-party API keys (Exa, AccuWeather, Govee, MaxMind, WakaTime, …)
+- `wireless`/`wifi_password`, `pilot_password` and `amaterasu_restic_ssh_key`.
+
+Service-internal secrets (OIDC clients, app keys, `*_env` files) come after
+those; each needs its service's own procedure. `yubikey/u2f_keys` is unused
+since `yomi.yubikey` was removed and can be deleted.
 
 ## Filesystem choice for the replacement SSD
 
