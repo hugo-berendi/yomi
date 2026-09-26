@@ -11,9 +11,10 @@ cd "$(dirname "$(readlink -f "$0")")/.."
 if ((EUID != 0)); then
 	restic="$(nix eval --raw '.#nixosConfigurations.inari.config.services.restic.backups.data.package.outPath')/bin/restic"
 	exec /run/wrappers/bin/sudo bash "$PWD/scripts/inari-migration-check.sh" \
-		"$(command -v age)" "$(command -v ssh-to-age)" "$(command -v jq)" "$restic"
+		"$(command -v age)" "$(command -v ssh-to-age)" "$(command -v jq)" "$restic" \
+		"$(nix build --no-link --print-out-paths '.#nixosConfigurations.inari.pkgs.age-plugin-yubikey')/bin"
 fi
-[[ $# == 4 ]] || {
+[[ $# == 5 ]] || {
 	echo 'Start with: nix develop -c bash scripts/inari-migration-check.sh' >&2
 	exit 1
 }
@@ -21,6 +22,8 @@ age=$1
 ssh_to_age=$2
 jq=$3
 restic=$4
+# age calls age-plugin-yubikey from PATH to encrypt to the PIV recipient.
+export PATH="$5:$PATH"
 for tool in "$age" "$ssh_to_age" "$jq" "$restic"; do test -x "$tool"; done
 [[ $(findmnt -n -o SOURCE -T /raid5pool/backups) == raid5pool/backups ]]
 for file in /boot/zroot-key.jwe /boot/zroot-recovery-key.age \
@@ -43,15 +46,20 @@ zpool status -P
 zpool get guid,compatibility raid5pool
 zfs get -t filesystem -r encryption,keylocation,keystatus,mountpoint raid5pool zroot
 
+# Encrypt to every recipient in .sops.yaml, so the archive opens with whatever
+# opens the secrets: the offline key on kagutsuchi and the YubiKey's PIV identity
+# as well as the old keys, which are retired after this migration.
+mapfile -t recipients < <(awk '$1 == "-" && $2 ~ /^&/ {print "-r"; print $3}' .sops.yaml)
+((${#recipients[@]} > 0))
+printf '%s\n' "${recipients[@]}" | grep -v '^-r$'
+
 # Encrypt before writing to the unencrypted HDD pool. Include the checkout because
 # the regular local backup excludes projects and .git. Never log credential values.
 tar -C / -chf - boot persist/state/etc/ssh persist/state/etc/secrets/initrd \
 	run/secrets/backup_password run/secrets/rendered/restic-b2.env \
 	run/secrets/rendered/restic-b2-repository \
 	-C "$PWD" . |
-	"$age" -r age1aew0wld84lhcdte90ra0a4xhkwd2tlaanyr94xeffufpl3rls55qclcsfv \
-		-r age1x9dhumaa3qg77z9swunz3zl5r6ez6gqyhwd66ytp20ndzjefdvcsq6yfu8 \
-		-o "$work/recovery.tar.age"
+	"$age" "${recipients[@]}" -o "$work/recovery.tar.age"
 "$ssh_to_age" -private-key -i /persist/state/etc/ssh/ssh_host_ed25519_key -o "$scratch/identity"
 "$age" -d -i "$scratch/identity" "$work/recovery.tar.age" | tar -tf - >/dev/null
 "$age" -d -i "$scratch/identity" "$work/recovery.tar.age" |
