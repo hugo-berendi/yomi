@@ -33,7 +33,7 @@ in {
     settings = {
       user = {
         name = "hugo-berendi";
-        email = config.yomi.pilot.email;
+        email = config.yomi.pilot.gitEmail;
       };
 
       alias = {

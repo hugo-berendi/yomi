@@ -10,6 +10,16 @@
       default = "personal@hugo-berendi.de";
       description = "Primary email address for the pilot user";
     };
+    gitEmail = lib.mkOption {
+      type = lib.types.str;
+      default = "git@hugo-berendi.de";
+      description = ''
+        Address git commits and tags are made with. It is the one verified on
+        the GitHub and Forgejo accounts, so the forges attribute commits to
+        them only with this, and GitHub marks signatures verified only when a
+        key's user ID carries it.
+      '';
+    };
     githubUser = lib.mkOption {
       type = lib.types.str;
       default = "hugo-berendi";
