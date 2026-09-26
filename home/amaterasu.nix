@@ -49,7 +49,6 @@ in {
       # {{{ messaging
       signal-desktop
       upkgs.fluffychat
-      teams-for-linux
       # }}}
       qbittorrent
       # upkgs.unityhub

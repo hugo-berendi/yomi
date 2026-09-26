@@ -5,6 +5,7 @@
 }: {
   # {{{ Imports
   imports = [
+    ./teams.nix
     ./foot.nix
     ./ghostty.nix
     ./discord
