@@ -7,7 +7,17 @@
 }: let
   pilot = config.yomi.pilot.name;
   port = config.yomi.ports.cliproxyapi;
-  package = upkgs.cliproxyapi;
+  # Take the newer Nixpkgs package without moving every unstable package on Inari.
+  package = upkgs.cliproxyapi.overrideAttrs (finalAttrs: {
+    version = "7.3.10";
+    src = upkgs.fetchFromGitHub {
+      owner = "router-for-me";
+      repo = "CLIProxyAPI";
+      tag = "v${finalAttrs.version}";
+      hash = "sha256-pKguqvvQA1IVIE4f3qQbZ8VOWEcY4evkyacyYt36+T8=";
+    };
+    vendorHash = "sha256-r3yWkdMcM40G9jV7MxW/qNv3E9WrHavFilW24quEf+8=";
+  });
   plugin = pkgs.cliproxyapi-copilot-plugin;
   managementKeyPath = config.sops.secrets.cliproxyapi_management_key.path;
   # Gates a loopback-only endpoint against stray local processes, same trust
