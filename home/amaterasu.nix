@@ -181,9 +181,17 @@ in {
   # {{{ Smartcard
   # Reach the card through pcscd (see hosts/nixos/amaterasu), and share it,
   # so ykman and age-plugin-yubikey still work while gpg-agent is running.
+  #
+  # The signature PIN policy is "once" (ykman openpgp info), so the card
+  # stays verified for as long as it stays powered. card-timeout powers it
+  # down after ten minutes with no card use, which drops that verification:
+  # the PIN is asked when the key goes in and again after ten idle minutes,
+  # not on every signature. GnuPG 2.4 still accepts the option
+  # (gpgconf --list-options scdaemon).
   programs.gpg.scdaemonSettings = {
     disable-ccid = true;
     pcsc-shared = true;
+    card-timeout = "600";
   };
 
   # The YubiKey holds the signing subkey of yomi.pilot.gpgKey, so this is the
