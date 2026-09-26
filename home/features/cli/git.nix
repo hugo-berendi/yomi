@@ -87,6 +87,25 @@ in {
     settings.git_protocol = "ssh";
   };
 
+  # GH_TOKEN below is only exported from *interactive* shell init, so anything
+  # started outside a terminal -- the t3code desktop app, systemd user units,
+  # and every agent they spawn -- ran gh unauthenticated. Render gh's own
+  # credential file from the same sops secret so gh is logged in for any
+  # process running as the pilot, however it was launched.
+  # The rendered file is read-only on purpose: the login is declarative, so
+  # `gh auth login`/`logout` are meant to fail rather than silently diverge.
+  sops.templates."gh-hosts.yml".content = builtins.toJSON {
+    "github.com" = {
+      user = config.yomi.pilot.githubUser;
+      oauth_token = config.sops.placeholder.GITHUB_TOKEN;
+      git_protocol = "ssh";
+      users.${config.yomi.pilot.githubUser}.oauth_token = config.sops.placeholder.GITHUB_TOKEN;
+    };
+  };
+
+  xdg.configFile."gh/hosts.yml".source =
+    config.lib.file.mkOutOfStoreSymlink config.sops.templates."gh-hosts.yml".path;
+
   programs.delta = {
     enable = true;
     options = {};
