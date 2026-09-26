@@ -13,17 +13,9 @@
   ];
   # }}}
 
-  # {{{ Automount kagutsuchi
-  fileSystems."/kagutsuchi" = {
-    device = "/dev/disk/by-uuid/9e2345c6-7c31-4a76-97d8-73adc71c1a19";
-    fsType = "ext4";
-    neededForBoot = true;
-    options = [
-      "nofail"
-      "x-systemd.automount"
-    ];
-  };
-  # }}}
+  # kagutsuchi, the key stick, is LUKS-encrypted and has no automount here:
+  # scripts/live.sh unlocks it through scripts/kagutsuchi.sh, which asks for
+  # its passphrase. cryptsetup and e2fsprogs come with the installer profile.
 
   users.users.root = {
     hashedPasswordFile = lib.mkForce null;

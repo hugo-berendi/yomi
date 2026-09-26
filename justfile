@@ -307,13 +307,16 @@ export-keys:
   #!/usr/bin/env bash
   set -euo pipefail
 
+  sudo scripts/kagutsuchi.sh open
+
   dir=/kagutsuchi/secrets/{{hostname}}/
-  mkdir -p $dir
+  sudo mkdir -p $dir
 
-  cp /persist/state/etc/ssh/ssh* $dir
-  cp /home/*/.ssh/id* $dir
+  sudo cp /persist/state/etc/ssh/ssh* $dir
+  sudo cp /home/*/.ssh/id* $dir
 
-  touch $dir/disk.key
+  sudo touch $dir/disk.key
+  sudo scripts/kagutsuchi.sh close
   echo "💫 Don't forget to provide a disk encryption key!"
 # }}}
 # {{{ DNS

@@ -24,13 +24,8 @@ if [ "$#" != "2" ] && [ "$action" != "install" ] && [ "$action" != "enter" ]; th
 	exit 1
 fi
 
-if mountpoint -q /kagutsuchi; then
-	echo "📂 Keys already mounted"
-else
-	echo "📁 Mounting keys"
-	mkdir -p /kagutsuchi
-	mount /dev/disk/by-uuid/9e2345c6-7c31-4a76-97d8-73adc71c1a19 /kagutsuchi
-fi
+echo "📁 Mounting keys"
+"$(dirname "$0")/kagutsuchi.sh" open
 
 if [ "$mode" = "mount" ] && [ "$host" = "inari" ]; then
 	echo "🏊 Importing zpool"
