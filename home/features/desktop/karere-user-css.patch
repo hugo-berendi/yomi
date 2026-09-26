@@ -1,0 +1,26 @@
+diff --git a/src/window.rs b/src/window.rs
+index 56a3d5e..cc0bc83 100644
+--- a/src/window.rs
++++ b/src/window.rs
+@@ -652,6 +652,21 @@ mod imp {
+                     &[]
+                 );
+                 ucm.add_script(&notif_script);
++
++                // Local patch (yomi): load a user stylesheet, so WhatsApp can
++                // follow the desktop colour scheme. User level plus !important
++                // in the sheet outranks the custom properties the page sets.
++                let user_css = glib::user_config_dir().join("karere").join("user.css");
++                if let Ok(css) = std::fs::read_to_string(&user_css) {
++                    let sheet = webkit6::UserStyleSheet::new(
++                        &css,
++                        webkit6::UserContentInjectedFrames::AllFrames,
++                        webkit6::UserStyleLevel::User,
++                        &[],
++                        &[]
++                    );
++                    ucm.add_style_sheet(&sheet);
++                }
+             }
+ 
+             let obj = self.obj();

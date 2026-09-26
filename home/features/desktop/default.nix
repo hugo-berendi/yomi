@@ -6,6 +6,7 @@
   # {{{ Imports
   imports = [
     ./teams.nix
+    ./karere.nix
     ./foot.nix
     ./ghostty.nix
     ./discord
@@ -49,7 +50,6 @@
     krita
     libreoffice
     bitwarden-desktop
-    karere
     qbittorrent
     overskride
     mpv
