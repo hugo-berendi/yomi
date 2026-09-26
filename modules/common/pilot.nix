@@ -12,7 +12,7 @@
     };
     githubUser = lib.mkOption {
       type = lib.types.str;
-      default = "hugo-berende";
+      default = "hugo-berendi";
       description = "GitHub username for git and gh CLI";
     };
     signingKey = lib.mkOption {
