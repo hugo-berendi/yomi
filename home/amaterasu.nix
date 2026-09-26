@@ -106,6 +106,14 @@ in {
     disable-ccid = true;
     pcsc-shared = true;
   };
+
+  # The YubiKey holds the signing subkey of yomi.pilot.gpgKey, so this is the
+  # host that signs. Its touch policy is "cached", so a rebase re-signing a
+  # run of commits needs one touch per 15 seconds rather than one per commit.
+  programs.git.settings = {
+    commit.gpgsign = true;
+    tag.gpgsign = true;
+  };
   # }}}
 
   yomi.toggles.isServer.enable = false;

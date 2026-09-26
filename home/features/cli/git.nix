@@ -1,4 +1,5 @@
 {
+  lib,
   pkgs,
   config,
   ...
@@ -70,13 +71,13 @@ in {
       #  }}}
 
       # {{{ Signing
-      # Sign commits using ssh
-      gpg.format = "ssh";
-      user.signingkey = config.yomi.pilot.signingKey;
-
-      # Sign everything by default
-      commit.gpgsign = false;
-      tag.gpgsign = true;
+      # The signing subkey is only on the YubiKey, so hosts without it
+      # (inari, wsl) would fail every commit if signing were on. Hosts that
+      # have the card turn it on (home/amaterasu.nix).
+      gpg.format = "openpgp";
+      user.signingkey = config.yomi.pilot.gpgKey;
+      commit.gpgsign = lib.mkDefault false;
+      tag.gpgsign = lib.mkDefault false;
       # }}}
     };
   };

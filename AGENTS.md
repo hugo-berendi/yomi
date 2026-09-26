@@ -108,7 +108,7 @@ Forgejo Actions (`.forgejo/workflows/`):
 
 ### Key option namespaces
 
-- `yomi.pilot.*` — user settings (name, email, githubUser, signingKey, sshIdentity)
+- `yomi.pilot.*` — user settings (name, email, gitEmail, githubUser, gpgKey, sshIdentity)
 - `yomi.machine.*` — host capabilities (graphical, interactible, gaming)
 - `yomi.ports.*` — port registry, source of truth at `hosts/nixos/common/base/ports.nix`
 - `yomi.cloudflared.at.<name>` — tunnel ingress (port, host, enableAnubis, enableIocaine)

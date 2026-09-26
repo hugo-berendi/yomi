@@ -19,10 +19,8 @@
   };
 
   # {{{ Agent
-  # gpg-agent is enabled on every host and hands it a keygrip through
-  # services.gpg-agent.sshKeys, but it never sets enableSshSupport, so the
-  # keygrip lands in ~/.gnupg/sshcontrol and nothing serves SSH. Only wsl had a
-  # real agent; everywhere else SSH_AUTH_SOCK was simply unset.
+  # SSH authenticates with keys on disk and the YubiKey's FIDO2 resident key,
+  # not through gpg-agent; the OpenPGP card is for signing and decryption only.
   services.ssh-agent.enable = true;
 
   # Both agents export SSH_AUTH_SOCK, so turning on gpg-agent's SSH support
@@ -32,8 +30,8 @@
       assertion = !(config.services.gpg-agent.enableSshSupport && config.services.ssh-agent.enable);
       message = ''
         services.gpg-agent.enableSshSupport and services.ssh-agent.enable both
-        provide SSH_AUTH_SOCK. Pick one: gpg-agent to authenticate with the
-        yubikey, ssh-agent to cache ~/.ssh/id_ed25519.
+        provide SSH_AUTH_SOCK. SSH is meant to go through ssh-agent here;
+        leave gpg-agent's SSH support off.
       '';
     }
   ];

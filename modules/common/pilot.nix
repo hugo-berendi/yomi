@@ -25,22 +25,19 @@
       default = "hugo-berendi";
       description = "GitHub username for git and gh CLI";
     };
-    signingKey = lib.mkOption {
+    gpgKey = lib.mkOption {
       type = lib.types.str;
-      default = "~/.ssh/id_ed25519.pub";
+      default = "0E0F00D0D176B857A972E4D8ABC3ACDB6348CD34";
       description = ''
-        Path to the SSH public key git signs with.
+        Fingerprint of the pilot's OpenPGP key, which git and mail sign with.
+        Its primary key is offline on kagutsuchi; the signing, encryption and
+        authentication subkeys live only on the YubiKey (serial 30636315), so
+        signing works only where that card is plugged in. The public key is
+        home/features/cli/pilot.asc.
 
-        Was ~/.ssh/yubikey.pub, which no longer exists on any host, so every
-        `git tag` failed with "Couldn't load public key" -- tag.gpgsign is on
-        even though commit.gpgsign is not. The pilot's own key signs fine; it
-        is passphrase-protected, so it needs to be in the agent.
+        It replaces 67D63C5F40CC55DA (rsa4096, 2024), revoked on 2026-09-26.
+        That ID sat here as "gpgKeygrip", though it was a key ID.
       '';
-    };
-    gpgKeygrip = lib.mkOption {
-      type = lib.types.str;
-      default = "67D63C5F40CC55DA";
-      description = "GPG keygrip for gpg-agent SSH support";
     };
     sshIdentity = lib.mkOption {
       type = with lib.types; coercedTo str lib.singleton (listOf str);

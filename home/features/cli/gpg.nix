@@ -6,16 +6,10 @@
   services.gpg-agent = {
     enable = true;
 
-    # sshKeys = [config.yomi.pilot.gpgKeygrip] used to sit here, but without
-    # enableSshSupport it only wrote the keygrip to ~/.gnupg/sshcontrol and
-    # nothing served SSH -- it read as though the yubikey were an ssh agent
-    # while SSH_AUTH_SOCK was unset on every host. features/cli/ssh.nix runs a
-    # plain ssh-agent instead, and asserts the two are never both enabled.
-    #
-    # To hand ssh back to the yubikey: set enableSshSupport and sshKeys here,
-    # turn off services.ssh-agent, and add the yubikey's ssh public key to
-    # users.users.<pilot>.openssh.authorizedKeys -- it is not authorized on any
-    # host today, so the switch would otherwise lock ssh out.
+    # No SSH support: ssh authenticates with the YubiKey's FIDO2 resident key
+    # through plain ssh-agent (features/cli/ssh.nix, which asserts the two
+    # agents are never both enabled). gpg-agent only serves the OpenPGP card
+    # for signing and decryption.
 
     pinentry.package =
       if config.gtk.enable
@@ -31,7 +25,8 @@
     enable = true;
     publicKeys = [
       {
-        source = ./yubikey_pub;
+        # yomi.pilot.gpgKey; the secret subkeys are only on the YubiKey.
+        source = ./pilot.asc;
         trust = "ultimate";
       }
     ];
