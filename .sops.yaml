@@ -8,10 +8,20 @@
 # name is the honest one, and compromising either machine exposes every secret
 # below.
 #
-# pilot_user_key is the pilot's ssh login key (hosts/nixos/*/keys/id_ed25519.pub),
-# converted with ssh-to-age. It is the break-glass path for editing secrets by
-# hand. Note that it is passphrase-protected, so `just ssh-to-age` cannot
-# convert it unattended -- set SSH_TO_AGE_PASSPHRASE when running that recipe.
+# pilot_yubikey is an age-plugin-yubikey identity in PIV slot 82 of the
+# pilot's YubiKey (serial 30636315; PIN once, touch cached). It is the
+# everyday way to edit secrets by hand. The identity stub is
+# ~/.config/sops/age/yubikey.txt on amaterasu, and encrypting to it needs
+# age-plugin-yubikey on PATH.
+#
+# recovery_offline is a plain age key that exists only on kagutsuchi, the
+# LUKS key stick (age/yomi-recovery.txt). It is the break-glass path that
+# works without the YubiKey.
+#
+# pilot_user_key is the old shared ssh login key (hosts/nixos/*/keys/id_ed25519.pub),
+# converted with ssh-to-age, and is being retired. Note that it is
+# passphrase-protected, so `just ssh-to-age` cannot convert it unattended --
+# set SSH_TO_AGE_PASSPHRASE when running that recipe.
 #
 # A tsukuyomi key used to be listed here. That machine runs Windows now and its
 # private key is no longer under control, so it was removed and every file
@@ -19,40 +29,56 @@
 keys:
   - &pilot_user_key age1aew0wld84lhcdte90ra0a4xhkwd2tlaanyr94xeffufpl3rls55qclcsfv
   - &shared_host_key age1x9dhumaa3qg77z9swunz3zl5r6ez6gqyhwd66ytp20ndzjefdvcsq6yfu8
+  - &pilot_yubikey age1yubikey1qf5f7jzwf4gne74982a05qrgw0w6983dxhtrjms5qt5ht0v5f9g5qpxnjsk
+  - &recovery_offline age14x5ura52w96p3wprxwfka9s8cvyjd59gz9fx9j4gwhqymvq97gfswca00r
 creation_rules:
   - path_regex: hosts/nixos/common/secrets.*\.yaml
     key_groups:
       - age:
           - *pilot_user_key
           - *shared_host_key
+          - *pilot_yubikey
+          - *recovery_offline
   - path_regex: hosts/nixos/inari/secrets.yaml
     key_groups:
       - age:
           - *pilot_user_key
           - *shared_host_key
+          - *pilot_yubikey
+          - *recovery_offline
   - path_regex: hosts/nixos/amaterasu/secrets.yaml
     key_groups:
       - age:
           - *pilot_user_key
           - *shared_host_key
+          - *pilot_yubikey
+          - *recovery_offline
   - path_regex: home/features/desktop/wakatime/secrets.yaml
     key_groups:
       - age:
           - *pilot_user_key
           - *shared_host_key
+          - *pilot_yubikey
+          - *recovery_offline
   - path_regex: home/features/productivity/secrets.yaml
     key_groups:
       - age:
           - *pilot_user_key
           - *shared_host_key
+          - *pilot_yubikey
+          - *recovery_offline
   # No such file exists today; kept so that creating it encrypts correctly.
   - path_regex: home/features/cli/secrets.yaml
     key_groups:
       - age:
           - *pilot_user_key
           - *shared_host_key
+          - *pilot_yubikey
+          - *recovery_offline
   - path_regex: home/features/cli/ai/secrets.yaml
     key_groups:
       - age:
           - *pilot_user_key
           - *shared_host_key
+          - *pilot_yubikey
+          - *recovery_offline
