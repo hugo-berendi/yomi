@@ -1,4 +1,8 @@
-{pkgs, ...}: {
+{
+  config,
+  pkgs,
+  ...
+}: {
   # {{{ Imports
   imports = [
     ./foot.nix
@@ -22,6 +26,16 @@
   # }}}
   # {{{ Theming
   stylix.targets.gtk.enable = true;
+
+  # What the settings portal answers when an app asks whether to go dark.
+  # The stylix gtk target themes GTK widgets but leaves this unset, so the
+  # portal reported "no preference" and everything that follows the system
+  # rather than GTK -- Thunderbird, Teams, karere's WhatsApp page, T3 Code's
+  # "system" mode -- rendered light beside a dark desktop.
+  dconf.settings."org/gnome/desktop/interface".color-scheme =
+    if config.stylix.polarity == "light"
+    then "prefer-light"
+    else "prefer-dark";
 
   gtk.iconTheme = {
     package = pkgs.papirus-icon-theme;
