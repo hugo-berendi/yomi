@@ -43,7 +43,6 @@ in {
       localsend
 
       prismlauncher
-      thunderbird
       pay-respects
       sxiv
       t3code-desktop
