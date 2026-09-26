@@ -4,6 +4,9 @@ Status on 26 September 2026: **not cleared for erasure or return**. Repository
 access, a restore rehearsal and preservation of `/boot` still require a local
 sudo password. No installation, pool export, service restart or disk erasure has
 been performed for this audit.
+Independent decryption of both SOPS secret files on Amaterasu is now confirmed
+by the agent report supplied by Hugo. Restic restores and boot-key recovery
+remain unverified.
 
 ## Hardware and timing
 
@@ -105,15 +108,55 @@ key only inside an encrypted Restic backup creates a recovery dependency loop.
 
 The archive is encrypted to both recipients in `.sops.yaml`: the pilot's
 SSH-derived Age identity and the shared host identity also configured on
-Amaterasu. Confirm an independent private identity is present and usable before
-returning anything. The public recipient strings alone cannot decrypt backups.
-The pilot's SSH private key also needs its passphrase when converted to Age.
+Amaterasu. The public recipient strings alone cannot decrypt backups.
 
-Hugo currently has a YubiKey SSH login key, but has not confirmed an independent
-Age identity. Inari's attempted SSH connection to Amaterasu stopped at host-key
-verification because no trusted ED25519 host key was available. No remote key
-inspection was performed. Use the [Amaterasu agent prompt](amaterasu-recovery-prompt.md)
-to establish this locally. SSH login authorization does not add an Age recipient.
+Hugo supplied the Amaterasu agent's completed report on 26 September. It tested
+both the pilot Age identity and the shared host identity against both SOPS files;
+all four decryptions succeeded with plaintext discarded. No passphrase was
+required. This confirms access to the encrypted credential files without Inari's
+SSD. It does not yet prove repository authentication, recovery archive decryption
+or validity of the boot recovery key.
+
+| Identity on Amaterasu | Reported location | Result |
+| --- | --- | --- |
+| Pilot Age identity | `/persist/state/home/hugob/.config/sops/age/keys.txt` | Matches pilot recipient; decrypts both SOPS files |
+| Duplicate pilot Age identity | `/persist/state/home/hugob/sops/.config/sops/age/keys.txt` | Same public recipient |
+| Shared host SSH identity | `/persist/state/etc/ssh/ssh_host_ed25519_key` | Matches shared-host recipient; decrypts both SOPS files |
+
+The pilot and shared host identities are different keys. The shared host copy is
+on a separate machine but is the same key used by Inari, not a separate host
+identity. No new recovery identity is needed for this migration.
+
+The report also found these permission and persistence issues. They have not
+been changed as part of this audit:
+
+- Both pilot Age key files are mode 0644. Restrict them to 0600. The file modes
+  grant read access to others; actual traversal also depends on parent-directory
+  permissions. Do not infer that the keys were accessed from file mode alone.
+- `/persist/state/home/hugob/.ssh/id_ed25519` is an unencrypted pilot private key,
+  mode 0700. The older copy under `/persist/state/home/hugob/ssh/.ssh/` is
+  passphrase-protected. Blanket claims that every pilot-key copy requires a
+  passphrase are therefore inaccurate. Adding a passphrase to the SSH copy alone
+  would not protect the separate unencrypted Age identity files.
+- The shared host private key is reportedly owned by `hugob:users`, mode 0700.
+  Review its intended ownership separately; do not rotate or replace it during
+  recovery preparation without accounting for its SOPS role.
+- Live `~/.ssh/id_ed25519` and `~/.config/sops/age/keys.txt` are absent. Explicit
+  persistent paths work for recovery. Automatic identity discovery in a plain
+  shell has not been established; the linking issue's cause is unconfirmed.
+
+Inari's earlier SSH attempt stopped because Amaterasu had no trusted host key
+locally. The Amaterasu agent independently checked its persistent host key
+against the live daemon and reported:
+
+```text
+SHA256:G5JybhUglUyo8obZulgovg1mVvyQf6PQQejW8QjC1GE
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAOhNvRjubxhkVPKRHqiGzPvmMX5vD7kQP9b1+k+mvOq root@amaterasu
+```
+
+No known-hosts entry has been changed here. The
+[Amaterasu agent prompt](amaterasu-recovery-prompt.md) is retained for reference.
+SSH login authorization does not add an Age recipient.
 Age supports YubiKey PIV identities through a separate plugin; that is distinct
 from the existing FIDO2 SSH credential. See the [Age documentation](https://github.com/FiloSottile/age#readme).
 
