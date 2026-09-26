@@ -6,6 +6,18 @@
   brightnessctl = lib.getExe pkgs.brightnessctl;
   hyprctl = lib.getExe' pkgs.hyprland "hyprctl";
   hyprlock = lib.getExe pkgs.hyprlock;
+
+  # The YubiKey stands in for presence: while it is plugged in, idling does
+  # not lock, and pulling it out locks at once (the udev rule in
+  # hosts/nixos/amaterasu/yubikey.nix). 1050 is Yubico's USB vendor id.
+  # Only the lock is skipped -- dimming, screen-off and suspend still run,
+  # and suspending still locks through before_sleep_cmd.
+  lockUnlessYubikey = pkgs.writeShellScript "lock-unless-yubikey" ''
+    if ${lib.getExe pkgs.gnugrep} -qsx 1050 /sys/bus/usb/devices/*/idVendor; then
+      exit 0
+    fi
+    exec ${lib.getExe' pkgs.systemd "loginctl"} lock-session
+  '';
 in {
   services.hypridle = {
     enable = true;
@@ -25,7 +37,7 @@ in {
         }
         {
           timeout = 600;
-          on-timeout = "loginctl lock-session";
+          on-timeout = "${lockUnlessYubikey}";
         }
         {
           timeout = 660;

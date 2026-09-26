@@ -6,10 +6,17 @@
   # pamu2fcfg output: the pilot's username, a key handle and a public key.
   # None of it is secret -- it identifies the credential, it cannot sign --
   # so it lives here rather than in ~/.config/Yubico, where the rollback
-  # would wipe it and take sudo's second factor with it.
-  authFile = ./u2f_keys;
+  # would wipe it on every boot and quietly bring the passwords back.
+  #
+  # builtins.path so the file gets its own store path; a bare ./u2f_keys
+  # lands in the flake source, whose hash moves on every commit and would
+  # rewrite every /etc/pam.d file on every switch.
+  registered = builtins.pathExists ./u2f_keys;
+  authFile = builtins.path {
+    path = ./u2f_keys;
+    name = "u2f_keys";
+  };
   origin = "pam://amaterasu";
-  registered = builtins.pathExists authFile;
 in {
   # {{{ Touch instead of a password
   # The key has to be inserted and touched; no PIN. A process running as the
@@ -31,9 +38,10 @@ in {
     };
   };
 
-  # pam_u2f is added to every PAM service by default. sshd must not have it:
-  # it would let a remote login succeed on a touch of the key sitting in this
-  # laptop, which is not what a touch means to whoever is sitting here.
+  # pam_u2f is added to every PAM service by default. sshd here is key-only
+  # (password and keyboard-interactive both off), so its auth stack is never
+  # reached today -- but if that ever changed, a remote login would succeed
+  # on a touch of the key sitting in this laptop.
   security.pam.services.sshd.u2fAuth = false;
 
   warnings = lib.optional (!registered) ''

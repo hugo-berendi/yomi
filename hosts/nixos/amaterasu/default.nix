@@ -13,6 +13,7 @@
     ./hardware
     ./filesystems
     ./services/restic.nix
+    ./yubikey.nix
   ];
   # }}}
 
