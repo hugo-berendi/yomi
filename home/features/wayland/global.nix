@@ -107,6 +107,7 @@
       wl-clipboard
       hyprpicker
       grimblast
+      satty
       brightnessctl
       pamixer
       wl-screenrec
