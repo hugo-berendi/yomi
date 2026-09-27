@@ -296,6 +296,7 @@
             hosts
           ))
           // {
+            diabetes = self.nixosConfigurations.inari.config.system.build.diabetes-tests;
             custom-options = import ./tests/options.nix {
               inherit pkgs;
               configurations = self.nixosConfigurations;

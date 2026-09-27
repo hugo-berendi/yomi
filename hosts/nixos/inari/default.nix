@@ -21,6 +21,7 @@
     ./services/llama-cpp-classifier.nix
     ./services/karakeep.nix
     ./services/n8n.nix
+    ./services/diabetes.nix
     ./services/mail-sorter.nix
     ./services/cloudflared.nix
     ./services/forgejo
@@ -76,6 +77,7 @@
   system.stateVersion = "24.05";
 
   yomi.pilot.name = "hugob";
+  yomi.diabetes.enable = true;
   yomi.machine.interactible = true;
   yomi.containers.enable = true;
   yomi.postgres.enable = true;

@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block body %}
+<section class="intro"><p class="eyebrow">Your private journal</p><h1>A little less<br>to remember.</h1><p>Weekly comparisons, supplies and questions for your next appointment.</p></section>
+<form method="post" class="panel narrow">
+  <input type="hidden" name="csrf" value="{{ session.csrf }}">
+  <label>Access key<input type="password" name="token" required autocomplete="current-password"></label>
+  {% if error %}<p role="alert">{{ error }}</p>{% endif %}
+  <button>Open journal</button>
+</form>
+{% endblock %}

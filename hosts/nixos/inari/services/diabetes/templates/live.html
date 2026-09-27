@@ -1,0 +1,4 @@
+{% extends 'base.html' %}
+{% block body %}<section class="intro"><p class="eyebrow">Dexcom Share · read-only</p>
+{% if reading.available %}<h1>{{ reading.display_value }} {{ reading.unit }}<br>{{ reading.trend }}</h1><p>Reading age: {{ reading.age_seconds }} seconds. Timestamp: {{ reading.timestamp|localtime }}.</p>{% else %}<h1>Glucose unavailable.</h1><p>{{ reading.reason }}</p>{% endif %}
+<p>This page refreshes every minute. Use Dexcom and your pump for treatment decisions.</p><a href="/">Return to journal</a></section>{% endblock %}

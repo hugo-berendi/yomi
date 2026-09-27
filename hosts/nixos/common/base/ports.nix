@@ -83,5 +83,6 @@
     miniflux = lib.mkDefault 8500;
     t3code = lib.mkDefault 8501;
     cliproxyapi = lib.mkDefault 8502;
+    diabetes = lib.mkDefault 8503;
   };
 }

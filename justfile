@@ -134,6 +134,11 @@ shell-check:
 [group("ci")]
 lint: format-check format-lua-check statix-check deadnix-check python-check shell-check
 
+[doc("Run synthetic diabetes importer, report and authentication tests")]
+[group("ci")]
+diabetes-test:
+  nix build --no-link '.#nixosConfigurations.inari.config.system.build.diabetes-tests'
+
 [doc("Format all code (Nix + Lua)")]
 [group("ci")]
 fmt: format format-lua
