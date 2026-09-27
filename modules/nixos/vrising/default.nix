@@ -230,14 +230,19 @@ in {
         ${lib.optionalString (cfg.preset == "")
           "cp ${gameSettingsJson} ${dataDir}/Settings/ServerGameSettings.json"}
       '';
+      # Wine 11 dropped the separate wine64 launcher; `wine` runs 64-bit PEs
+      # through WoW64. The filter sits in a process substitution so $! is
+      # wine itself and `wait` returns its exit code — piping into grep made
+      # a missing binary exit 0 and the unit report success.
       script = ''
-        ${pkgs.wineWowPackages.stable}/bin/wine64 ${serverDir}/VRisingServer.exe \
+        ${pkgs.wineWow64Packages.stable}/bin/wine ${serverDir}/VRisingServer.exe \
           -persistentDataPath ${dataDir} \
-          -logFile ${dataDir}/VRisingServer.log 2>&1 | grep -v "XKEYBOARD\|keysym" &
+          -logFile ${dataDir}/VRisingServer.log \
+          > >(grep --line-buffered -v "XKEYBOARD\|keysym") 2>&1 &
 
         WINE_PID=$!
 
-        trap "kill $WINE_PID; ${pkgs.wineWowPackages.stable}/bin/wineserver -k; wait" SIGTERM SIGINT
+        trap "kill $WINE_PID; ${pkgs.wineWow64Packages.stable}/bin/wineserver -k; wait" SIGTERM SIGINT
 
         wait $WINE_PID
       '';
