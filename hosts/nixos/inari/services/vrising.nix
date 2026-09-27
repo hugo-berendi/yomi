@@ -16,6 +16,7 @@
       dropTableModifierGeneral = 4.0;
       dropTableModifierMissions = 4.0;
       dropTableModifierStygianShards = 4.0;
+      warEventInterval = "Minimum";
       castleHeartLevel1FloorLimit = 60;
       castleHeartLevel1HeightLimit = 3;
       castleHeartLevel1ServantLimit = 6;
