@@ -1,6 +1,7 @@
 """Private Yomi diabetes journal, reports and optional read-only integrations."""
 
 import argparse
+from collections import defaultdict
 import contextlib
 import fcntl
 import hmac
@@ -77,7 +78,8 @@ def init_db(root):
         db.executescript("""
         CREATE TABLE IF NOT EXISTS records (
           kind TEXT, ts INTEGER, value REAL, carbs REAL,
-          PRIMARY KEY(kind, ts));
+          event_index INTEGER NOT NULL DEFAULT 0,
+          PRIMARY KEY(kind, ts, event_index));
         CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT);
         CREATE TABLE IF NOT EXISTS reports (week TEXT PRIMARY KEY, payload TEXT, ai TEXT);
         CREATE TABLE IF NOT EXISTS actions (id TEXT PRIMARY KEY);
@@ -91,6 +93,18 @@ def init_db(root):
         CREATE TABLE IF NOT EXISTS sent (key TEXT PRIMARY KEY, ts INTEGER);
         CREATE TABLE IF NOT EXISTS state (key TEXT PRIMARY KEY, value TEXT);
         """)
+        db.execute("BEGIN IMMEDIATE")
+        if "event_index" not in {
+            row["name"] for row in db.execute("PRAGMA table_info(records)")
+        }:
+            db.execute("ALTER TABLE records RENAME TO legacy_records")
+            db.execute("""CREATE TABLE records (
+                kind TEXT, ts INTEGER, value REAL, carbs REAL,
+                event_index INTEGER NOT NULL DEFAULT 0,
+                PRIMARY KEY(kind, ts, event_index))""")
+            db.execute("""INSERT INTO records (kind,ts,value,carbs)
+                SELECT kind,ts,value,carbs FROM legacy_records""")
+            db.execute("DROP TABLE legacy_records")
 
 
 def get_settings(db):
@@ -121,21 +135,39 @@ def snapshot_database(root):
 
 def import_records(db, records):
     inserted = 0
+    grouped = defaultdict(set)
     for kind, ts, value, carbs in records:
         if ts > time.time() + 300:
             raise ValueError(
                 "Export contains future records; check its timestamp timezone"
             )
-        old = db.execute(
-            "SELECT value, carbs FROM records WHERE kind=? AND ts=?", (kind, ts)
-        ).fetchone()
-        if old and (old[0] != value or old[1] != carbs):
+        grouped[kind, ts].add((value, carbs))
+    for (kind, ts), events in grouped.items():
+        old = {
+            tuple(row)
+            for row in db.execute(
+                "SELECT value, carbs FROM records WHERE kind=? AND ts=?", (kind, ts)
+            )
+        }
+        # Minute-resolution exports can contain distinct boluses at one time.
+        # Compare the whole group on reimport; a changed or partial group must
+        # not silently add insulin or replace an earlier event.
+        if (kind == "cgm" and len(events) != 1) or (old and old != events):
             raise ValueError(
                 "Conflicting records at the same timestamp. Choose one source; nothing was imported."
             )
-        inserted += db.execute(
-            "INSERT OR IGNORE INTO records VALUES (?,?,?,?)", (kind, ts, value, carbs)
-        ).rowcount
+        if old:
+            continue
+        for index, (value, carbs) in enumerate(
+            sorted(
+                events,
+                key=lambda event: (event[0], -1 if event[1] is None else event[1]),
+            )
+        ):
+            inserted += db.execute(
+                "INSERT INTO records VALUES (?,?,?,?,?)",
+                (kind, ts, value, carbs, index),
+            ).rowcount
     return inserted
 
 
@@ -608,7 +640,7 @@ def create_app(root=None, config=None):
         return render_template(
             "message.html",
             title="Import complete",
-            message=f"Added {inserted} records. Existing identical records were kept once. Skipped {len(skipped)} unsupported CSV files. "
+            message=f"Added {inserted} records. Existing identical records were kept once. Import notices: {len(skipped)}. "
             + "; ".join(sorted(set(skipped))),
         )
 

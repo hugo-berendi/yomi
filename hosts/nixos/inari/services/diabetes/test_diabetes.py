@@ -73,6 +73,60 @@ class AnalysisTests(unittest.TestCase):
         )
         self.assertEqual(rows[0][0], "cgm")
 
+    def test_german_glooko_export(self):
+        output = io.BytesIO()
+        with zipfile.ZipFile(output, "w") as file:
+            file.writestr(
+                "cgm_data_1.csv",
+                "Name,Synthetic\nZeitstempel,CGM-Glukosewert (mg/dl),Seriennummer\n"
+                '01.09.2026 12:00,"100,0",ignored\n',
+            )
+            file.writestr(
+                "Insulin data/bolus_data_1.csv",
+                "Name,Synthetic\nZeitstempel,Insulin-Typ,Kohlenhydrataufnahme (g),"
+                "Abgegebenes Insulin (E),Anfängliche Abgabe (E),Verzögerte Abgabe (E)\n"
+                '01.09.2026 12:00,Normal,"20,0","1,25","1,00","0,25"\n',
+            )
+            for filename, header in (
+                ("basal_data_1.csv", "Abgegebenes Insulin (E)"),
+                ("insulin_data_1.csv", "Bolus gesamt (U)"),
+                ("bg_data_1.csv", "Glukosewert (mg/dl)"),
+            ):
+                file.writestr(filename, f"Zeitstempel,{header}\n01.09.2026 12:00,10\n")
+        rows, skipped = parse_export(output.getvalue(), "Europe/Berlin")
+        ts = timestamp("2026-09-01T10:00:00Z")
+        self.assertEqual(rows, [("cgm", ts, 100.0, None), ("bolus", ts, 1.25, 20.0)])
+        self.assertEqual(len(skipped), 3)
+
+    def test_german_glooko_mmol(self):
+        rows, _ = parse_export(
+            archive(
+                "cgm_data_1.csv",
+                "Zeitstempel;CGM-Glukosewert (mmol/l)\n01.09.2026 12:00;5,5\n",
+            ),
+            "Europe/Berlin",
+        )
+        self.assertAlmostEqual(rows[0][2], 99.1001, places=3)
+
+    def test_glooko_out_of_range_code_leaves_gap(self):
+        rows, notices = parse_export(
+            archive(
+                "cgm_data_1.csv",
+                "Zeitstempel,CGM-Glukosewert (mg/dl)\n"
+                '01.09.2026 12:00,"100,0"\n'
+                '01.09.2026 12:05,"2001,0"\n'
+                '01.09.2026 12:10,"100,0"\n',
+            ),
+            "Europe/Berlin",
+        )
+        self.assertEqual(len(rows), 2)
+        self.assertEqual(len(notices), 1)
+        self.assertIn("2001", notices[0])
+        result = weekly_summary(
+            [(r[1], r[2]) for r in rows], [], rows[0][1], rows[0][1] + 900
+        )
+        self.assertEqual(result["coverage"], 66.67)
+
     def test_bolus_and_carbs(self):
         rows, _ = parse_export(
             archive(
@@ -199,6 +253,36 @@ class AppTests(unittest.TestCase):
             self.assertEqual(
                 db.execute("SELECT COUNT(*) FROM records").fetchone()[0], 1
             )
+
+    def test_distinct_boluses_in_same_minute(self):
+        rows = [("bolus", 1000, 1.0, 10.0), ("bolus", 1000, 2.0, None)]
+        with database(self.root) as db:
+            self.assertEqual(import_records(db, rows), 2)
+            self.assertEqual(import_records(db, rows[::-1]), 0)
+            self.assertEqual(
+                [
+                    tuple(r)
+                    for r in db.execute(
+                        "SELECT value,carbs FROM records ORDER BY event_index"
+                    )
+                ],
+                [(1.0, 10.0), (2.0, None)],
+            )
+        with self.assertRaises(ValueError), database(self.root) as db:
+            import_records(db, rows[:1])
+
+    def test_legacy_records_migration(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            with sqlite3.connect(root / "journal.sqlite") as db:
+                db.execute(
+                    "CREATE TABLE records (kind TEXT, ts INTEGER, value REAL, carbs REAL, PRIMARY KEY(kind,ts))"
+                )
+                db.execute("INSERT INTO records VALUES ('bolus',1000,1,10)")
+            create_app(root, {"TESTING": True})
+            create_app(root, {"TESTING": True})
+            with database(root) as db:
+                self.assertEqual(import_records(db, [("bolus", 1000, 1, 10)]), 0)
 
     def test_import_ui_and_escape_notes(self):
         payload = archive(

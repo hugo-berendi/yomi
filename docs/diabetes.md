@@ -60,14 +60,22 @@ Supported UTF-8 export families:
   `Carbs Input (g)` or `Carbohydrates (g)`.
 - A standalone normalized CSV may use the same columns plus `Type` explicitly
   set to `cgm` or `bolus`. Metadata lines before the header are supported.
+- German Glooko ZIPs support `Zeitstempel`, `CGM-Glukosewert (mg/dl)` or
+  `CGM-Glukosewert (mmol/l)`, and `Abgegebenes Insulin (E)` with optional
+  `Kohlenhydrataufnahme (g)`. Decimal commas and nested CSV folders are supported.
+  Choose `Europe/Berlin` for timestamps exported in German local time.
+  Entries with the observed unsupported code `2001` in the German mg/dL CGM
+  column are excluded with an import notice. Their meaning is unknown; they
+  remain gaps in coverage and are not counted as measured glucose or highs.
 - ISO 8601, German dotted dates, and explicitly selected day/month or month/day
   slash dates with a time. Offsets override the selected timestamp timezone.
 
 Unknown CSVs are reported and skipped. Recognized malformed rows abort the entire
-import. Overlapping exports deduplicate by kind and exact timestamp. Conflicting
-values at the same timestamp abort the transaction, including different boluses
-at the same timestamp; select one export source or extend the importer with an
-explicit event identifier before importing such data. BG fingersticks, basal,
+import. Overlapping exports deduplicate identical records. Distinct bolus rows at
+the same timestamp are retained separately. Reimports must contain the same full
+set of boluses at an existing timestamp; changed or partial sets abort the
+transaction, as do conflicting CGM readings. Identical bolus rows cannot be
+distinguished without event identifiers and are counted once. BG fingersticks, basal,
 alarms and manually logged events are not interpreted as CGM or boluses.
 
 ## Local AI

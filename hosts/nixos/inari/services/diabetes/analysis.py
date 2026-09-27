@@ -58,6 +58,19 @@ def normalize(value):
     return re.sub(r"\s+", " ", value.strip().lower().replace("\ufeff", ""))
 
 
+def normalize_header(value):
+    header = normalize(value)
+    # Match explicit units and delivered insulin only. Basal and daily totals
+    # remain excluded by the file-family checks below.
+    return {
+        "zeitstempel": "timestamp",
+        "cgm-glukosewert (mg/dl)": "glucose (mg/dl)",
+        "cgm-glukosewert (mmol/l)": "glucose (mmol/l)",
+        "abgegebenes insulin (e)": "insulin delivered (u)",
+        "kohlenhydrataufnahme (g)": "carbs (g)",
+    }.get(header, header)
+
+
 def parse_export(payload, zone="UTC", date_order="day-first"):
     """Read a ZIP in memory, never extract paths or retain names/serial numbers.
 
@@ -88,14 +101,17 @@ def parse_export(payload, zone="UTC", date_order="day-first"):
             (
                 i
                 for i, r in enumerate(rows[:30])
-                if "timestamp" in [normalize(c) for c in r]
+                if "timestamp" in [normalize_header(c) for c in r]
             ),
             None,
         )
         if header_at is None:
             skipped.append("CSV without a supported timestamp header")
             continue
-        headers = [normalize(c) for c in rows[header_at]]
+        headers = [normalize_header(c) for c in rows[header_at]]
+        german_cgm_mg = "cgm-glukosewert (mg/dl)" in [
+            normalize(c) for c in rows[header_at]
+        ]
         glucose = next(
             (
                 h
@@ -130,6 +146,7 @@ def parse_export(payload, zone="UTC", date_order="day-first"):
         if not ((glucose and cgm_file) or (bolus and bolus_file) or "type" in headers):
             skipped.append("CSV outside supported CGM/bolus schema")
             continue
+        excluded_codes = 0
         for line_no, values in enumerate(rows[header_at + 1 :], header_at + 2):
             if not any(v.strip() for v in values):
                 continue
@@ -146,6 +163,11 @@ def parse_export(payload, zone="UTC", date_order="day-first"):
                 )
             ts = timestamp(row["timestamp"], zone, date_order)
             val = number(row[column])
+            # This export contains 2001 in the CGM column. Its meaning is
+            # unknown; retain a coverage gap instead of inventing a glucose value.
+            if kind == "cgm" and cgm_file and german_cgm_mg and val == 2001:
+                excluded_codes += 1
+                continue
             if kind == "cgm" and "mmol/l" in column:
                 val *= 18.0182
             if not (0 < val <= 1000 if kind == "cgm" else 0 <= val <= 200):
@@ -161,6 +183,11 @@ def parse_export(payload, zone="UTC", date_order="day-first"):
             if carbs is not None and not 0 <= carbs <= 1000:
                 raise ValueError("Out-of-bounds recorded carbs")
             records.append((kind, ts, round(val, 5), carbs))
+        if excluded_codes:
+            skipped.append(
+                f"Excluded {excluded_codes} CGM entries with unsupported code 2001; "
+                "these remain gaps in coverage, not measured glucose"
+            )
     if not records:
         raise ValueError(
             "No supported records. Export CGM/bolus CSVs or use the documented normalized schema."
