@@ -6,6 +6,21 @@
 <nav><a href="#review">Weekly review</a><a href="#supplies">Supplies</a><a href="#notes">Notes & appointments</a><a href="/appointment">Print-ready packet</a></nav></section>
 
 {% if jobs and jobs.errors %}<aside class="warning" role="status">{% for error in jobs.errors %}<p>{{ error }}</p>{% endfor %}</aside>{% endif %}
+<section id="glooko" class="panel no-print">
+<h2>Automatic Glooko sync</h2>
+{% if glooko_connected %}
+<p>Login saved for daily imports. Last attempt: {{ glooko.attempt|localtime }}. Last successful sync: {{ glooko.success|localtime }}. Latest imported glucose reading: {{ glooko.latest_cgm|localtime }}.</p>
+{% if glooko.error %}<p class="warning" role="status">{{ glooko.error }}</p>{% endif %}
+{% for notice in glooko.notices or [] %}<p class="muted">{{ notice }}</p>{% endfor %}
+<form method="post" action="/glooko" class="inline">{{ csrf() }}<button name="action" value="retry">Sync within five minutes</button><button name="action" value="disconnect">Disconnect Glooko</button></form>
+{% else %}<p>Connect once to import the last 30 days automatically each day. Your weekly comparison then updates without downloading or uploading files.</p>{% endif %}
+<details><summary>{% if glooko_connected %}Update login{% else %}Connect Glooko{% endif %}</summary>
+<form method="post" action="/glooko">{{ csrf() }}<input type="hidden" name="action" value="connect">
+<label>Glooko email<input type="email" name="email" autocomplete="username" required></label>
+<label>Glooko password<input type="password" name="password" autocomplete="current-password" required></label>
+<label>Timezone used in your Glooko exports<select name="timezone"><option>Europe/Berlin</option><option>UTC</option></select></label>
+<p class="muted">Your login is stored in a private file on Inari and included in its encrypted backups. This unofficial browser integration can need attention if Glooko changes its website or asks you to sign in again. It reads exports only. Keep your devices syncing with Glooko.</p>
+<button>Save and start automatic sync</button></form></details></section>
 <section id="review">
 <div class="section-title"><h2>Weekly comparison</h2><a href="/report.json">Download latest JSON</a></div>
 {% if report %}

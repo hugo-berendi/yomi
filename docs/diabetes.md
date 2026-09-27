@@ -2,8 +2,9 @@
 
 The journal compares complete Monday–Sunday weeks in Europe/Berlin. It runs on
 Inari at `https://diabetes.hugo-berendi.de`, through the existing tailnet nginx
-endpoint. There is no Cloudflare tunnel or new firewall grant. Raw Glooko uploads
-stay in memory; the database retains normalized CGM/delivered-bolus records,
+endpoint. There is no Cloudflare tunnel or new firewall grant. Raw manual uploads
+stay in memory; automatic downloads use the sync service's private temporary
+directory and are deleted after import. The database retains normalized CGM/delivered-bolus records,
 notes, appointments, supply counts and calculated reports. No treatment settings
 are written to Dexcom or Omnipod.
 
@@ -12,13 +13,15 @@ are written to Dexcom or Omnipod.
 1. Retrieve `/var/lib/diabetes/access-token` with interactive sudo on Inari and
    save it in your password manager. Do not paste it into chat or commit it.
    Open the journal over HTTPS and log in with that key.
-2. In Glooko's web app, export 30 days as CSV ZIP. Upload it under **Import a
-   Glooko export**, checking the date order and timezone against the export.
+2. Under **Automatic Glooko sync**, enter your Glooko email and password once.
+   Select the timezone used in your exports. The first attempt starts within
+   five minutes. Successful syncs repeat daily, importing the last 30 days.
+   The manual **Import a Glooko export** form remains available as a fallback.
    The journal rejects ambiguous Berlin clock-change timestamps without offsets.
 3. Review the imported count, unsupported-file notice, date boundaries and
-   glucose graphs against Glooko before relying on the report. No real export
-   was available during implementation; unsupported regional headers must be
-   mapped explicitly, rather than guessed by column position.
+   glucose graphs against Glooko before relying on the report. A German Glooko
+   ZIP was validated against the importer. The authenticated browser export flow
+   still needs verification with the account after setup.
 4. Confirm analysis ranges and display units in Settings. Defaults are 70–180
    mg/dL for retrospective analysis, not a prescription or a pump target.
 5. Enter your actual stock, usual replacement intervals and delivery lead times.
@@ -29,6 +32,44 @@ The service creates an access key, a separate read-only glucose key and a sessio
 signing key on first startup, mode 0600. The directory is mode 0700 and owned by
 `diabetes`. They are runtime secrets, never Nix-store values. The pre-existing
 Home Assistant token is passed using systemd LoadCredential from sops-nix.
+
+## Automatic Glooko connection
+
+The **Automatic Glooko sync** panel stores the login in
+`/var/lib/diabetes/glooko-credentials.json`, mode 0600, owned by `diabetes`.
+It is never shown again or included in Git or the Nix store. It is included in
+the existing encrypted backups; disconnect removes the live copy, not past
+backups. Never paste this password into chat or command-line arguments.
+
+`diabetes-glooko.timer` checks every five minutes. The worker opens an isolated
+Chromium browser, signs in, selects **Export to CSV → 30 days → Export**, and
+passes the ZIP to the same importer as manual uploads. It requests no changes
+to pump settings. Browser sessions, downloads and cookies are temporary. Browser
+traces, screenshots and raw exception messages are not retained. The connection
+uses Glooko's personal website, not an officially supported API, and can break
+when that website changes or requires an additional login challenge.
+
+The panel shows the last successful import and latest imported CGM timestamp.
+A successful download does not prove the devices have uploaded fresh data.
+Keep Omnipod/Glooko syncing as usual. Choose **Sync within five minutes** to
+request another attempt or **Disconnect Glooko** to stop automatic imports.
+Disconnect keeps imported records and reports.
+
+One lock serializes sync and credential changes. Attempts record a six-hour
+backoff before starting, so a timeout or restart does not trigger a login loop.
+After success, the next attempt is due in 24 hours. Imports and success status
+commit in one transaction. A failed login, malformed export or conflicting
+record leaves existing records intact and displays a fixed error message.
+The worker has a five-minute timeout and a separate memory limit so browser
+failures do not take down the journal or reminder job.
+
+The login page was inspected against the live website; unit tests cover the
+import/scheduling path with synthetic exports. The first authenticated download
+must be checked after entering the account credentials. If it fails, report the
+status shown in the panel without sharing the password.
+
+References: [Glooko's CSV export instructions](https://support.glooko.com/hc/en-gb/articles/4460340377875-How-can-I-export-my-diabetes-data-from-Glooko)
+and [commercial API integrations](https://developers.glooko.com/docs/directintegrations).
 
 ## Report methodology
 
@@ -100,7 +141,7 @@ journal Settings enter only `mobile_app_...`. The service deliberately does not
 choose an existing family member's phone or the `all_devices` group.
 
 The five-minute background job sends generic notifications for a weekly report
-or missing upload, due replacements, low stock, appointment preparation and
+or incomplete data, due replacements, low stock, appointment preparation and
 manually started meal checks. Health values never appear in these notifications.
 Delivery is retried on failure. Stable tags replace duplicates if a crash occurs
 after the send and before acknowledgement is stored. Reorder notices remain

@@ -424,7 +424,11 @@ def create_app(root=None, config=None):
                         else f"week:{week}:upload",
                         "Your weekly review is ready."
                         if report["comparable"]
-                        else "Upload recent data to complete your weekly review.",
+                        else (
+                            "Your weekly review has missing data. Check Glooko sync in your journal."
+                            if (root / "glooko-credentials.json").exists()
+                            else "Connect Glooko in your journal to update your weekly review automatically."
+                        ),
                     )
                 ]
                 if now >= report["weeks"][0]["end"] + 8 * 3600
@@ -617,10 +621,35 @@ def create_app(root=None, config=None):
                     (int(time.time()),),
                 ).fetchall(),
                 jobs=get_state(db, "jobs"),
+                glooko=get_state(db, "glooko", {}),
+                glooko_connected=(root / "glooko-credentials.json").exists(),
                 meal=get_state(db, "meal"),
                 action_id=str(uuid.uuid4()),
                 packet=request.path == "/appointment",
             )
+
+    @app.post("/glooko")
+    def glooko_connection():
+        from glooko_sync import save_credentials, sync_lock
+
+        action = request.form.get("action")
+        with sync_lock(root):
+            if action == "connect":
+                save_credentials(
+                    root,
+                    request.form.get("email", ""),
+                    request.form.get("password", ""),
+                    request.form.get("timezone", "Europe/Berlin"),
+                )
+            elif action == "disconnect":
+                (root / "glooko-credentials.json").unlink(missing_ok=True)
+            elif action != "retry" or not (root / "glooko-credentials.json").exists():
+                raise ValueError("Choose a configured Glooko connection")
+            with database(root) as db:
+                state = get_state(db, "glooko", {})
+                state.update(next_attempt=0, error=None)
+                put_state(db, "glooko", state)
+        return redirect("/#glooko")
 
     @app.post("/import")
     def upload():
@@ -869,11 +898,15 @@ def create_app(root=None, config=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("command", choices=["serve", "tick"])
+    parser.add_argument("command", choices=["serve", "tick", "sync-glooko"])
     parser.add_argument("--port", type=int, default=8503)
     args = parser.parse_args()
     application = create_app()
-    if args.command == "tick":
+    if args.command == "sync-glooko":
+        from glooko_sync import sync
+
+        print(sync(application.config["ROOT"]))
+    elif args.command == "tick":
         print(json.dumps(application.extensions["tick"]()))
     else:
         from waitress import serve

@@ -20,7 +20,9 @@ from app import (
     create_app,
     database,
     import_records,
+    get_state,
 )
+from glooko_sync import sync, sync_lock
 
 
 def archive(name, text):
@@ -227,6 +229,97 @@ class AppTests(unittest.TestCase):
 
     def tearDown(self):
         self.temp.cleanup()
+
+    def connect_glooko(self):
+        response = self.client.post(
+            "/glooko",
+            headers=self.headers,
+            data={
+                "action": "connect",
+                "email": "synthetic@example.invalid",
+                "password": "test-private-password",
+                "timezone": "UTC",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+
+    def test_glooko_connection_is_private_and_can_disconnect(self):
+        self.assertEqual(self.client.post("/glooko", data={}).status_code, 302)
+        self.connect_glooko()
+        path = self.root / "glooko-credentials.json"
+        self.assertEqual(path.stat().st_mode & 0o777, 0o600)
+        page = self.client.get("/", headers=self.headers)
+        self.assertEqual(page.status_code, 200)
+        self.assertNotIn(b"test-private-password", page.data)
+        self.assertNotIn(b"synthetic@example.invalid", page.data)
+        self.client.post("/glooko", headers=self.headers, data={"action": "disconnect"})
+        self.assertFalse(path.exists())
+        self.assertEqual(sync(self.root), "not configured")
+
+    def test_glooko_sync_schedule_deduplication_and_retry(self):
+        self.connect_glooko()
+        payload = archive(
+            "cgm_data.csv", "Timestamp,Glucose (mg/dL)\n2026-09-01T12:00:00Z,100\n"
+        )
+        with patch("glooko_sync.download_export") as unused:
+            self.assertEqual(
+                sync(self.root, fetch=lambda _: payload, now=2000000000), "synced"
+            )
+            self.assertEqual(sync(self.root, fetch=unused, now=2000000300), "not due")
+            unused.assert_not_called()
+        self.assertEqual(
+            sync(self.root, fetch=lambda _: payload, now=2000086400), "synced"
+        )
+        with database(self.root) as db:
+            state = get_state(db, "glooko")
+            self.assertEqual(state["added"], 0)
+            self.assertEqual(
+                db.execute("SELECT count(*) FROM records").fetchone()[0], 1
+            )
+        self.client.post("/glooko", headers=self.headers, data={"action": "retry"})
+        self.assertEqual(
+            sync(self.root, fetch=lambda _: payload, now=2000086500), "synced"
+        )
+
+    def test_glooko_failure_preserves_data_and_redacts_exception(self):
+        self.connect_glooko()
+        with database(self.root) as db:
+            import_records(db, [("cgm", 1000, 100, None)])
+
+        def failure(_):
+            raise RuntimeError("secret-password and private health data")
+
+        self.assertEqual(sync(self.root, fetch=failure, now=2000000000), "failed")
+        with database(self.root) as db:
+            state = get_state(db, "glooko")
+            self.assertNotIn("secret-password", json.dumps(state))
+            self.assertEqual(state["next_attempt"], 2000021600)
+            self.assertNotIn("success", state)
+            self.assertEqual(
+                db.execute("SELECT count(*) FROM records").fetchone()[0], 1
+            )
+        self.assertEqual(sync(self.root, fetch=failure, now=2000000300), "not due")
+
+    def test_glooko_conflict_rolls_back_and_parallel_sync_is_skipped(self):
+        self.connect_glooko()
+        with database(self.root) as db:
+            import_records(db, [("cgm", 1000, 100, None)])
+        payload = b"Timestamp,Type,Glucose (mg/dL)\n1970-01-01T00:20:00Z,cgm,100\n1970-01-01T00:16:40Z,cgm,200\n"
+        self.assertEqual(
+            sync(self.root, fetch=lambda _: payload, now=2000000000), "failed"
+        )
+        with database(self.root) as db:
+            self.assertEqual(
+                db.execute("SELECT count(*) FROM records").fetchone()[0], 1
+            )
+        with sync_lock(self.root):
+            self.assertEqual(sync(self.root), "already running")
+            self.assertEqual(
+                self.client.post(
+                    "/glooko", headers=self.headers, data={"action": "disconnect"}
+                ).status_code,
+                400,
+            )
 
     def test_private_routes_and_read_token_scope(self):
         self.assertEqual(self.client.get("/").status_code, 302)

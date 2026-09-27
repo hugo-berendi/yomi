@@ -5,7 +5,7 @@
   ...
 }: let
   cfg = config.yomi.diabetes;
-  python = pkgs.python3.withPackages (p: [p.flask p.waitress p.pydexcom p.matplotlib]);
+  python = pkgs.python3.withPackages (p: [p.flask p.waitress p.pydexcom p.matplotlib p.playwright]);
   source = builtins.path {
     path = ./diabetes;
     name = "yomi-diabetes";
@@ -129,6 +129,46 @@ in {
         OnCalendar = "*:0/5";
         Persistent = true;
         RandomizedDelaySec = 10;
+      };
+    };
+    systemd.services.diabetes-glooko = {
+      description = "Import Glooko exports automatically";
+      after = ["network-online.target" "diabetes.service"];
+      wants = ["network-online.target"];
+      environment = {
+        GLOOKO_CHROMIUM = "${pkgs.chromium}/bin/chromium";
+        HOME = "/var/lib/diabetes";
+      };
+      serviceConfig = {
+        Type = "oneshot";
+        User = "diabetes";
+        Group = "diabetes";
+        StateDirectory = "diabetes";
+        StateDirectoryMode = "0700";
+        UMask = "0077";
+        ExecStart = "${python}/bin/python ${source}/app.py sync-glooko";
+        TimeoutStartSec = 300;
+        MemoryMax = "1G";
+        NoNewPrivileges = true;
+        PrivateTmp = true;
+        PrivateDevices = true;
+        ProtectSystem = "strict";
+        ProtectHome = true;
+        ProtectKernelTunables = true;
+        ProtectKernelModules = true;
+        ProtectControlGroups = true;
+        RestrictSUIDSGID = true;
+        RestrictAddressFamilies = ["AF_UNIX" "AF_INET" "AF_INET6"];
+      };
+    };
+    systemd.timers.diabetes-glooko = {
+      wantedBy = ["timers.target"];
+      timerConfig = {
+        # The application runs daily, with a six-hour backoff on failure.
+        # Frequent checks let a newly saved login start without a manual command.
+        OnCalendar = "*:0/5";
+        Persistent = true;
+        RandomizedDelaySec = 5;
       };
     };
     # }}}
