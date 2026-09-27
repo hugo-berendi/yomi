@@ -12,7 +12,7 @@
     else "spotify";
   vicinae = lib.getExe config.programs.vicinae.package;
   swayosd = lib.getExe' config.services.swayosd.package "swayosd-client";
-  sessionMenu = "${lib.getExe pkgs.wlogout} --protocol layer-shell --buttons-per-row 3";
+  sessionMenu = config.yomi.sessionMenu;
   lua = lib.generators.mkLuaInline;
   luaString = builtins.toJSON;
   mkBind = keys: dispatcher: {
@@ -325,6 +325,11 @@ in {
         }
         {
           match.namespace = "anyrun";
+          blur = true;
+          ignore_alpha = 0;
+        }
+        {
+          match.namespace = "logout_dialog";
           blur = true;
           ignore_alpha = 0;
         }

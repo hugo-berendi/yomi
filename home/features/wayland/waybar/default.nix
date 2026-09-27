@@ -220,7 +220,7 @@ in {
       "custom/power" = {
         format = "󰐥";
         tooltip = false;
-        on-click = "${lib.getExe pkgs.wlogout} --protocol layer-shell --buttons-per-row 3";
+        on-click = config.yomi.sessionMenu;
       };
     };
   };

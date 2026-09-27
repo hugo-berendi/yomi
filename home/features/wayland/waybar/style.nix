@@ -111,7 +111,7 @@ in {
     #pulseaudio:hover,
     #custom-notifications:hover,
     #custom-power:hover {
-      color: ${shell.palette.bright};
+      color: ${shell.palette.textStrong};
       background: ${shell.rgba "surfaceRaised" 0.72};
     }
 
