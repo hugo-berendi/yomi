@@ -1,37 +1,69 @@
-{config, ...}: {
-  programs.nvf.settings.vim.lsp = {
-    enable = true;
-    inlayHints.enable = true;
-    formatOnSave = true;
-
-    lspconfig.sources = {
-      nixd = ''
-        lspconfig.nixd.setup {
-          capabilities = capabilities,
-          on_attach = on_attach,
-          settings = {
-            nixd = {
-              formatting = { command = { "alejandra" } },
-              nixpkgs = { expr = "import <nixpkgs> { }" },
-              options = {
-                nixos = { expr = "(builtins.getFlake "${config.home.homeDirectory}/projects/yomi").nixosConfigurations.${config.networking.hostName}.options" },
-                ["home-manager"] = { expr = "(builtins.getFlake "${config.home.homeDirectory}/projects/yomi").homeConfigurations.${config.networking.hostName}.options" },
-              },
-            },
-          },
-        }
-      '';
+{
+  config,
+  hostname,
+  ...
+}: let
+  flake = ''(builtins.getFlake "${config.home.homeDirectory}/projects/yomi")'';
+  host = "${flake}.nixosConfigurations.${hostname}";
+in {
+  programs.nvf.settings.vim = {
+    # {{{ nixd
+    # nil (nvf's default) knows no options; nixd evaluates this flake, so
+    # yomi.*, NixOS and home-manager options complete and hover with docs.
+    languages.nix.lsp.servers = ["nixd"];
+    lsp.servers.nixd.settings.nixd = {
+      nixpkgs.expr = "import ${flake}.inputs.nixpkgs { }";
+      options = {
+        nixos.expr = "${host}.options";
+        # users.type.getSubOptions misses modules imported per user (nvf,
+        # yomi.*); the evaluated user's own option tree has them.
+        home-manager.expr = "${host}.options.home-manager.users.valueMeta.attrs.${config.home.username}.configuration.options";
+      };
     };
+    # }}}
 
-    trouble = {
+    lsp = {
       enable = true;
+      inlayHints.enable = true;
+      formatOnSave = true;
+
+      # {{{ Mappings
+      # nvf puts everything under <leader>l, which writing.nix uses for LaTeX.
       mappings = {
-        workspaceDiagnostics = "<leader>xw";
-        documentDiagnostics = "<leader>xd";
-        lspReferences = "<leader>xr";
-        quickfix = "<leader>xq";
-        locList = "<leader>xl";
-        symbols = "<leader>xs";
+        goToDefinition = "gd";
+        goToDeclaration = "gD";
+        goToType = "gy";
+        listImplementations = "gI";
+        listReferences = "gr";
+        hover = "K";
+        signatureHelp = "gK";
+        renameSymbol = "<leader>cr";
+        codeAction = "<leader>ca";
+        format = "<leader>cf";
+        toggleFormatOnSave = "<leader>uf";
+        listDocumentSymbols = "<leader>ss";
+        listWorkspaceSymbols = "<leader>sS";
+        # Covered by diagnostics.nix (]d, [d, <leader>cd) and illuminate.
+        nextDiagnostic = null;
+        previousDiagnostic = null;
+        openDiagnosticFloat = null;
+        documentHighlight = null;
+        addWorkspaceFolder = null;
+        removeWorkspaceFolder = null;
+        listWorkspaceFolders = null;
+      };
+      # }}}
+
+      trouble = {
+        enable = true;
+        mappings = {
+          workspaceDiagnostics = "<leader>xw";
+          documentDiagnostics = "<leader>xd";
+          lspReferences = "<leader>xr";
+          quickfix = "<leader>xq";
+          locList = "<leader>xl";
+          symbols = "<leader>xs";
+        };
       };
     };
   };
