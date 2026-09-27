@@ -7,6 +7,7 @@
   cfg = config.services.windrose;
   serverDir = "/persist/data/windrose/server";
   dataDir = "/persist/data/windrose/data";
+  wine = pkgs.wineWow64Packages.stable;
   steamAppId = "4129620";
 
   configHash = builtins.hashString "sha256" (builtins.toJSON cfg);
@@ -89,14 +90,13 @@ in {
       appId = steamAppId;
       steamPlatform = "windows";
       installDir = serverDir;
-      inherit dataDir;
+      inherit dataDir wine;
       restartTriggers = [
         configHash
       ];
       useXvfb = true;
       environment = {
         WINEDEBUG = "-all";
-        WINEPREFIX = "${dataDir}/.wine";
       };
       preStart = let
         serverDescription = pkgs.writeText "ServerDescription.json" (builtins.toJSON {
@@ -139,12 +139,12 @@ in {
         tail -n0 -F ${serverDir}/R5/Saved/Logs/R5.log | systemd-cat --identifier=windrose-r5 &
         LOG_TAIL_PID=$!
 
-        ${pkgs.wineWow64Packages.stable}/bin/wine ${serverDir}/R5/Binaries/Win64/WindroseServer-Win64-Shipping.exe -log -Server \
+        ${wine}/bin/wine ${serverDir}/R5/Binaries/Win64/WindroseServer-Win64-Shipping.exe -log -Server \
           > >(systemd-cat --identifier=windrose) 2>&1 &
 
         WINE_PID=$!
 
-        trap "kill $WINE_PID $LOG_TAIL_PID; ${pkgs.wineWow64Packages.stable}/bin/wineserver -k; wait" SIGTERM SIGINT
+        trap "kill $WINE_PID $LOG_TAIL_PID; ${wine}/bin/wineserver -k; wait" SIGTERM SIGINT
 
         wait $WINE_PID
         status=$?

@@ -8,7 +8,11 @@
 in {
   # {{{ Options
   options.services.steamGameServers = lib.mkOption {
-    type = lib.types.attrsOf (lib.types.submodule ({name, ...}: {
+    type = lib.types.attrsOf (lib.types.submodule ({
+      name,
+      config,
+      ...
+    }: {
       options = {
         enable = lib.mkEnableOption "Steam game server ${name}";
 
@@ -45,6 +49,18 @@ in {
           type = lib.types.str;
           default = "/persist/data/${name}/data";
           description = "Persistent data directory used by the server";
+        };
+
+        wine = lib.mkOption {
+          type = lib.types.nullOr lib.types.package;
+          default = null;
+          description = "Wine that runs the server; when set, its prefix is kept in step with it";
+        };
+
+        winePrefix = lib.mkOption {
+          type = lib.types.str;
+          default = "${config.dataDir}/.wine";
+          description = "WINEPREFIX for the server, exported when wine is set";
         };
 
         updateOnStart = lib.mkOption {
@@ -207,6 +223,9 @@ in {
             "${serverCfg.serviceName}" = let
               serviceEnvironment =
                 serverCfg.environment
+                // (lib.optionalAttrs (serverCfg.wine != null) {
+                  WINEPREFIX = serverCfg.winePrefix;
+                })
                 // (lib.optionalAttrs serverCfg.useXvfb {
                   DISPLAY = serverCfg.xvfbDisplay;
                 });
@@ -218,6 +237,28 @@ in {
                   +login anonymous \
                   +app_update ${serverCfg.appId} validate \
                   +quit
+              '';
+
+              # Wine updates a prefix only when .update-timestamp differs from
+              # wine.inf's mtime, and everything in the store has mtime 1 - so
+              # after a wine bump the prefix keeps the old DLLs forever. Wine 11
+              # then aborted V Rising: advapi32 forwards SystemFunction036 to a
+              # cryptbase.dll the January prefix never got. `wineboot -u` is no
+              # way out: it needs the same DLL, and crash-loops spawning winedbg.
+              # The servers keep their state outside the prefix, so a prefix
+              # built by another wine is moved aside and recreated on start.
+              winePrefixScript = lib.optionalString (serverCfg.wine != null) ''
+                prefix=${serverCfg.winePrefix}
+                if [ -d "$prefix" ] && [ "$(cat "$prefix/.nix-wine" 2>/dev/null)" != ${serverCfg.wine} ]; then
+                  echo "$prefix was built by another wine, moving it to $prefix.stale"
+                  rm -rf "$prefix.stale"
+                  mv "$prefix" "$prefix.stale"
+                fi
+                if [ ! -d "$prefix" ]; then
+                  ${serverCfg.wine}/bin/wineboot -i
+                  ${serverCfg.wine}/bin/wineserver -w
+                  echo ${serverCfg.wine} > "$prefix/.nix-wine"
+                fi
               '';
 
               serviceScript =
@@ -246,7 +287,7 @@ in {
 
               environment = serviceEnvironment;
 
-              preStart = steamUpdateScript + serverCfg.preStart;
+              preStart = steamUpdateScript + winePrefixScript + serverCfg.preStart;
 
               script = serviceScript;
 

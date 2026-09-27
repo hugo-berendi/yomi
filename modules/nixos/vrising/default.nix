@@ -9,6 +9,7 @@
   gs = cfg.gameSettings;
   serverDir = "/persist/data/vrising/server";
   dataDir = "/persist/data/vrising/data";
+  wine = pkgs.wineWow64Packages.stable;
   steamAppId = "1829350";
   configHash = builtins.hashString "sha256" (builtins.toJSON cfg);
 
@@ -208,12 +209,11 @@ in {
       appId = steamAppId;
       steamPlatform = "windows";
       installDir = serverDir;
-      inherit dataDir;
+      inherit dataDir wine;
       restartTriggers = [configHash];
       useXvfb = true;
       environment = {
         WINEDEBUG = "-all";
-        WINEPREFIX = "${dataDir}/.wine";
       };
       environmentFiles = [config.sops.secrets.vrising_rcon_password.path];
       preStart = ''
@@ -235,14 +235,14 @@ in {
       # wine itself and `wait` returns its exit code — piping into grep made
       # a missing binary exit 0 and the unit report success.
       script = ''
-        ${pkgs.wineWow64Packages.stable}/bin/wine ${serverDir}/VRisingServer.exe \
+        ${wine}/bin/wine ${serverDir}/VRisingServer.exe \
           -persistentDataPath ${dataDir} \
           -logFile ${dataDir}/VRisingServer.log \
           > >(grep --line-buffered -v "XKEYBOARD\|keysym") 2>&1 &
 
         WINE_PID=$!
 
-        trap "kill $WINE_PID; ${pkgs.wineWow64Packages.stable}/bin/wineserver -k; wait" SIGTERM SIGINT
+        trap "kill $WINE_PID; ${wine}/bin/wineserver -k; wait" SIGTERM SIGINT
 
         wait $WINE_PID
       '';
