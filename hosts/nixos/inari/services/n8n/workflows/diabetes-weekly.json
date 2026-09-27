@@ -1,0 +1,95 @@
+{
+  "active": false,
+  "connections": {
+    "Manual review": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Refresh private report",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Monday review": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Refresh private report",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "id": "ba04f0a751a347b0",
+  "name": "Diabetes \u00b7 Weekly comparison",
+  "nodeGroups": [],
+  "nodes": [
+    {
+      "id": "e4bb052e-ef77-4a1e-aa17-d9c390b19504",
+      "name": "Manual review",
+      "parameters": {},
+      "position": [
+        0,
+        0
+      ],
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1
+    },
+    {
+      "id": "193fb766-ae9f-4991-8a75-88b7291c05ee",
+      "name": "Monday review",
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "expression": "0 8 * * 1",
+              "field": "cronExpression"
+            }
+          ]
+        }
+      },
+      "position": [
+        0,
+        180
+      ],
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2
+    },
+    {
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CONFIGURE_DIABETES_ACCESS",
+          "name": "Diabetes service \u00b7 Authorization"
+        }
+      },
+      "id": "89c1eb16-0f76-424c-b575-824a1c17e775",
+      "name": "Refresh private report",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "method": "POST",
+        "options": {
+          "timeout": 240000
+        },
+        "url": "={{ $env.DIABETES_URL + \"/api/tick\" }}"
+      },
+      "position": [
+        300,
+        80
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    }
+  ],
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "saveManualExecutions": false,
+    "timezone": "Europe/Berlin"
+  }
+}

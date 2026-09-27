@@ -1,5 +1,6 @@
 {
   config,
+  osConfig,
   lib,
   pkgs,
   ...
@@ -9,6 +10,7 @@ in {
   imports = [./style.nix];
 
   home.packages = [pkgs.nerd-fonts.symbols-only];
+  yomi.persistence.at.state.apps.diabetes.directories = ["${config.xdg.configHome}/yomi-diabetes"];
 
   programs.waybar = {
     enable = true;
@@ -37,6 +39,7 @@ in {
       modules-center = ["clock"];
 
       modules-right = [
+        "custom/glucose"
         "mpris"
         "tray"
         "network"
@@ -53,6 +56,14 @@ in {
         format = "󰀻";
         tooltip = false;
         on-click = "${vicinae} toggle";
+      };
+
+      "custom/glucose" = {
+        exec = "${pkgs.python3}/bin/python ${./diabetes.py} ${config.xdg.configHome}/yomi-diabetes/config.json";
+        return-type = "json";
+        interval = 60;
+        escape = false;
+        on-click = "${lib.getExe' pkgs.xdg-utils "xdg-open"} https://diabetes.${osConfig.yomi.dns.domain}/live";
       };
 
       "hyprland/workspaces" = {
