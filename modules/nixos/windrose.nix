@@ -139,12 +139,12 @@ in {
         tail -n0 -F ${serverDir}/R5/Saved/Logs/R5.log | systemd-cat --identifier=windrose-r5 &
         LOG_TAIL_PID=$!
 
-        ${pkgs.wineWowPackages.stable}/bin/wine64 ${serverDir}/R5/Binaries/Win64/WindroseServer-Win64-Shipping.exe -log -Server \
+        ${pkgs.wineWow64Packages.stable}/bin/wine ${serverDir}/R5/Binaries/Win64/WindroseServer-Win64-Shipping.exe -log -Server \
           > >(systemd-cat --identifier=windrose) 2>&1 &
 
         WINE_PID=$!
 
-        trap "kill $WINE_PID $LOG_TAIL_PID; ${pkgs.wineWowPackages.stable}/bin/wineserver -k; wait" SIGTERM SIGINT
+        trap "kill $WINE_PID $LOG_TAIL_PID; ${pkgs.wineWow64Packages.stable}/bin/wineserver -k; wait" SIGTERM SIGINT
 
         wait $WINE_PID
         status=$?

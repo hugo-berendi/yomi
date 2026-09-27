@@ -224,7 +224,7 @@ in {
                 lib.optionalString serverCfg.useXvfb ''
                   rm -f /tmp/.X0-lock || true
 
-                  ${pkgs.xorg.xorgserver}/bin/Xvfb ${serverCfg.xvfbDisplay} -screen 0 ${serverCfg.xvfbScreen} 2>/dev/null &
+                  ${pkgs.xorg-server}/bin/Xvfb ${serverCfg.xvfbDisplay} -screen 0 ${serverCfg.xvfbScreen} 2>/dev/null &
                   XVFB_PID=$!
 
                   sleep 2
