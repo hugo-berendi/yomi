@@ -6,15 +6,8 @@ _: {
       enable = true;
       setupOpts.style = "glyph";
     };
-    comment = {
-      enable = true;
-      setupOpts.mappings = {
-        comment = "gcc";
-        comment_line = "gcc";
-        comment_visual = "gc";
-        textobject = "gcc";
-      };
-    };
+    # Upstream defaults: gc operator/visual/textobject, gcc for the line.
+    comment.enable = true;
     pairs = {
       enable = true;
     };

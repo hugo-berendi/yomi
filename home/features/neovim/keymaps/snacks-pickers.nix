@@ -21,7 +21,7 @@ _: {
     }
     {
       mode = "n";
-      key = "<leader>b";
+      key = "<leader>,";
       action = "<cmd>lua Snacks.picker.buffers()<cr>";
       desc = "Buffers";
     }
@@ -39,7 +39,7 @@ _: {
     }
     {
       mode = "n";
-      key = "<leader>fr";
+      key = "<leader>fg";
       action = "<cmd>lua Snacks.picker.grep()<cr>";
       desc = "Grep";
     }
@@ -51,7 +51,7 @@ _: {
     }
     {
       mode = "n";
-      key = "<leader>fg";
+      key = "<leader>fr";
       action = "<cmd>lua Snacks.picker.recent()<cr>";
       desc = "Recent";
     }
