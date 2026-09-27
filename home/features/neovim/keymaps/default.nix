@@ -20,5 +20,7 @@
     ./snacks-rename.nix
     ./yazi.nix
     ./tools.nix
+    ./lsp.nix
+    ./editing.nix
   ];
 }

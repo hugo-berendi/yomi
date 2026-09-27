@@ -5,6 +5,9 @@
     clock24 = true; # 24h clock format
     historyLimit = 10000; # increase amount of saved lines
     shell = "${pkgs.fish}/bin/fish";
+    # Neovim reloads files changed on disk on FocusGained, which tmux only
+    # forwards with focus-events on.
+    focusEvents = true;
 
     plugins = with pkgs.tmuxPlugins; [
       sessionist # Nicer workflow for switching around between sessions

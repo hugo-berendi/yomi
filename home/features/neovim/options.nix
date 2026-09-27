@@ -69,6 +69,21 @@
     };
 
     luaConfigPre = ''
+      -- Over SSH (nvim on inari) there is no Wayland for wl-copy, so copy with
+      -- OSC 52 through tmux (set-clipboard on) to the local terminal. Paste
+      -- reads the register instead: OSC 52 reads are slow or refused.
+      if vim.env.SSH_TTY then
+        local osc52 = require("vim.ui.clipboard.osc52")
+        local function paste()
+          return { vim.fn.split(vim.fn.getreg(""), "\n"), vim.fn.getregtype("") }
+        end
+        vim.g.clipboard = {
+          name = "OSC 52",
+          copy = { ["+"] = osc52.copy("+"), ["*"] = osc52.copy("*") },
+          paste = { ["+"] = paste, ["*"] = paste },
+        }
+      end
+
       vim.fn.sign_define("DiagnosticSignError", { text = " ", texthl = "DiagnosticError", linehl = "", numhl = "" })
       vim.fn.sign_define("DiagnosticSignWarn", { text = " ", texthl = "DiagnosticWarn", linehl = "", numhl = "" })
       vim.fn.sign_define("DiagnosticSignHint", { text = "󰌵", texthl = "DiagnosticHint", linehl = "", numhl = "" })

@@ -1,18 +1,12 @@
-{
-  lib,
-  pkgs,
-  ...
-}: let
+{lib, ...}: let
   inherit (lib.generators) mkLuaInline;
 in {
   programs.nvf.settings.vim = {
-    # {{{ Snippets
-    # nvf pulls friendly-snippets into luasnip once blink asks for it.
-    snippets.luasnip.enable = true;
-    # }}}
     # {{{ blink.cmp
     autocomplete.blink-cmp = {
       enable = true;
+      # Expanded by blink's native vim.snippet backend; luasnip only earns
+      # its place with hand-written Lua snippets, and there are none.
       friendly-snippets.enable = true;
 
       mappings = {
@@ -36,13 +30,10 @@ in {
 
         # nvf fills sources.default itself and lists concatenate, so leave it
         # alone; filetype-specific sources go in per_filetype.
-        sources.per_filetype.tex = mkLuaInline ''{ inherit_defaults = true, "vimtex" }'';
+        # VimTeX sets omnifunc on tex buffers; blink's built-in omni source
+        # reads it, so no cmp-vimtex/blink.compat bridge is needed.
+        sources.per_filetype.tex = mkLuaInline ''{ inherit_defaults = true, "omni" }'';
         sources.providers = {
-          # cmp-vimtex has no native blink source, so go through blink.compat.
-          vimtex = {
-            name = "vimtex";
-            module = "blink.compat.source";
-          };
           # autocmds.nix turns spell on for prose filetypes only.
           spell.opts.enable_in_context = mkLuaInline ''
             function() return vim.wo.spell end
@@ -101,10 +92,6 @@ in {
     };
 
     ui.colorful-menu-nvim.enable = true;
-
-    # Registers itself with the cmp shim from after/plugin, so it has to be a
-    # start plugin for the vimtex provider above to find it.
-    extraPlugins.cmp-vimtex.package = pkgs.vimPlugins.cmp-vimtex;
     # }}}
   };
 }

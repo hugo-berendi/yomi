@@ -14,19 +14,6 @@ _: {
       desc = "Highlight on yank";
     }
     {
-      event = ["FileType"];
-      pattern = ["help" "Startup" "startup" "Trouble" "trouble" "notify" "snacks_dashboard"];
-      callback = {
-        _type = "lua-inline";
-        expr = ''
-          function()
-            vim.b.miniindentscope_disable = true
-          end
-        '';
-      };
-      desc = "Disable mini indentscope for certain filetypes";
-    }
-    {
       event = ["BufReadPost"];
       pattern = ["*"];
       callback = {

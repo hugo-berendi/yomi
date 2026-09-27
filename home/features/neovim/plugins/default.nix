@@ -3,5 +3,6 @@ _: {
     ./git.nix
     ./editor.nix
     ./mini.nix
+    ./lsp-ui.nix
   ];
 }

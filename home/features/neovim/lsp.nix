@@ -37,13 +37,16 @@ in {
         listReferences = "gr";
         hover = "K";
         signatureHelp = "gK";
-        renameSymbol = "<leader>cr";
         codeAction = "<leader>ca";
-        format = "<leader>cf";
-        toggleFormatOnSave = "<leader>uf";
         listDocumentSymbols = "<leader>ss";
         listWorkspaceSymbols = "<leader>sS";
-        # Covered by diagnostics.nix (]d, [d, <leader>cd) and illuminate.
+        # Rename, format and the format toggle live in keymaps/lsp.nix: nvf's
+        # versions skip conform and inc-rename, and toggle a flag conform
+        # never reads.
+        renameSymbol = null;
+        format = null;
+        toggleFormatOnSave = null;
+        # Covered by diagnostics.nix (]d, [d, <leader>cd) and snacks.words.
         nextDiagnostic = null;
         previousDiagnostic = null;
         openDiagnosticFloat = null;

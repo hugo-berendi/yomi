@@ -1,4 +1,8 @@
-{pkgs, ...}: {
+{
+  lib,
+  pkgs,
+  ...
+}: {
   programs.nvf.settings.vim.utility = {
     snacks-nvim = {
       enable = true;
@@ -75,6 +79,19 @@
         };
         toggle.enabled = true;
         words.enabled = true;
+        zen.enabled = true;
+        dim.enabled = true;
+        scratch.enabled = true;
+        # Images and rendered LaTeX math inline, via the kitty graphics
+        # protocol; inside tmux this needs allow-passthrough (cli/tmux).
+        image = {
+          enabled = true;
+          doc = {
+            inline = true;
+            float = true;
+          };
+          math.enabled = true;
+        };
       };
     };
 
@@ -88,6 +105,32 @@
     grug-far-nvim.enable = true;
     diffview-nvim.enable = true;
 
+    # Yank ring kept in shada, so it survives restarts too.
+    yanky-nvim.enable = true;
+  };
+
+  # snacks.image converts through ImageMagick; math renders with the
+  # pdflatex already on PATH for VimTeX.
+  programs.nvf.settings.vim.extraPackages = [pkgs.imagemagick];
+
+  # Neovim's own default. nvf's yanky assertion only accepts shada when
+  # vim.options.shada is set explicitly.
+  programs.nvf.settings.vim.options.shada = "!,'100,<50,s10,h";
+
+  programs.nvf.settings.vim.utility = {
+    # C-h/j/k/l and A-h/j/k/l cross from Neovim splits into tmux panes.
+    # smart-splits marks the pane with @pane-is-vim for cli/tmux/tmux.conf.
+    smart-splits = {
+      enable = true;
+      # The default <leader><leader>h.. would stall <leader><space>.
+      keymaps = {
+        swap_buf_left = "<leader>wH";
+        swap_buf_down = "<leader>wJ";
+        swap_buf_up = "<leader>wK";
+        swap_buf_right = "<leader>wL";
+      };
+    };
+
     yazi-nvim = {
       enable = true;
       setupOpts = {
@@ -95,6 +138,41 @@
       };
     };
   };
+
+  # {{{ Sessions
+  # tmux-continuum relaunches nvim in each restored pane; this reopens that
+  # directory's buffers and splits. Only a bare `nvim` loads or records a
+  # session, so a `git commit` editor never overwrites the project's one.
+  programs.nvf.settings.vim.session.persisted = {
+    enable = true;
+    setupOpts = {
+      autostart = false;
+      use_git_branch = true;
+    };
+  };
+
+  programs.nvf.settings.vim.autocmds = [
+    {
+      event = ["VimEnter"];
+      nested = true;
+      callback = lib.generators.mkLuaInline ''
+        function()
+          if vim.fn.argc() == 0 and not vim.g.started_with_stdin then
+            local persisted = require("persisted")
+            persisted.load()
+            persisted.start()
+          end
+        end
+      '';
+      desc = "Restore and record the session for a bare nvim";
+    }
+    {
+      event = ["StdinReadPre"];
+      callback = lib.generators.mkLuaInline ''function() vim.g.started_with_stdin = true end'';
+      desc = "Remember nvim was fed stdin";
+    }
+  ];
+  # }}}
 
   programs.nvf.settings.vim.extraPlugins = {
     wakatime = {

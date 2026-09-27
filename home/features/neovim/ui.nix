@@ -34,25 +34,27 @@
 
     binds.whichKey.enable = true;
 
-    ui.illuminate.enable = true;
-
     ui = {
       colorizer.enable = true;
       noice = {
         enable = true;
         setupOpts = {
+          # snacks.notifier owns vim.notify; with noice also claiming it, the
+          # snacks history and <leader>un/<leader>nh never saw a notification.
+          notify.enabled = false;
           lsp = {
             override = {
               "vim.lsp.util.convert_input_to_markdown_lines" = true;
               "vim.lsp.util.stylize_markdown" = true;
             };
+            # blink.cmp shows signatures; noice keeps LSP progress (fidget went).
             signature.enabled = false;
           };
           presets = {
             bottom_search = true;
             command_palette = true;
             long_message_to_split = true;
-            inc_rename = false;
+            inc_rename = true;
             lsp_doc_border = true;
           };
           routes = [
@@ -78,8 +80,8 @@
     };
 
     visuals = {
-      fidget-nvim.enable = true;
       rainbow-delimiters.enable = true;
+      highlight-undo.enable = true;
     };
 
     notes.todo-comments.enable = true;
