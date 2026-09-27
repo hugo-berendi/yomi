@@ -196,6 +196,7 @@ in {
           (mkExecBind "SUPER + CONTROL + T" "hyprpicker | wl-copy && notify-send 'Copied color $(wp-paste)'")
           (mkExecBind "SUPER + B" "wlsunset-toggle")
           (mkExecBind "SUPER + RETURN" config.yomi.terminal.command)
+          (mkExecBind "PRINT" "grimblast --freeze --notify copysave area")
           (mkExecBind "SUPER + PRINT" "grimblast --freeze save area - | satty --filename - --copy-command wl-copy")
           (mkExecBind "SUPER + SHIFT + PRINT" "grimblast --notify copysave active")
           (mkExecBind "SUPER + CONTROL + PRINT" "grimblast --notify copysave screen")
