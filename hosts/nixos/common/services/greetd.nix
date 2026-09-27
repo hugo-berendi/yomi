@@ -112,8 +112,15 @@
     "--stylesheet"
     greeterStyle
   ];
+  # The greeter user has no home profile, so without these Hyprland falls back
+  # to its built-in cursor. The theme ships only in hyprcursor format.
+  cursorTheme = "rose-pine-hyprcursor";
+  cursorSize = toString config.stylix.cursor.size;
   greeterHyprlandConfig = pkgs.writeText "nwg-hello-hyprland.conf" ''
     monitor = , preferred, auto, 1
+    env = HYPRCURSOR_THEME,${cursorTheme}
+    env = HYPRCURSOR_SIZE,${cursorSize}
+    env = XCURSOR_SIZE,${cursorSize}
     animations {
       enabled = false
     }
@@ -123,7 +130,11 @@
     }
     exec-once = ${greeterCommand}; hyprctl dispatch exit
   '';
+  # greetd connects every session's stdio to its VT, so Hyprland's log lands
+  # on tty1 and shows through whenever the VT drops back to text mode.
   greeterSession = lib.escapeShellArgs [
+    (lib.getExe' config.systemd.package "systemd-cat")
+    "--identifier=greeter-hyprland"
     (lib.getExe' pkgs.hyprland "start-hyprland")
     "--"
     "--config"
@@ -140,7 +151,28 @@ in {
       };
     };
 
+    # Upstream orders greetd after plymouth-quit-wait, so the splash is gone
+    # and the text console is bare for the second or two Hyprland needs to
+    # draw. Hand over the way GDM does instead: greetd quits plymouth itself
+    # with --retain-splash, which leaves the last frame on screen, and wipes
+    # tty1 so nothing written there earlier is left to show through.
+    services.greetd.greeterManagesPlymouth = config.boot.plymouth.enable;
+    systemd.services = lib.mkIf config.boot.plymouth.enable {
+      greetd = {
+        after = ["plymouth-start.service"];
+        conflicts = ["plymouth-quit.service"];
+        onFailure = ["plymouth-quit.service"];
+        serviceConfig.ExecStartPre = [
+          "-${lib.getExe' config.boot.plymouth.package "plymouth"} quit --retain-splash"
+          "-${pkgs.writeShellScript "greetd-clear-tty" "printf '\\033[H\\033[2J\\033[3J' > /dev/tty1"}"
+        ];
+      };
+      # Otherwise multi-user.target pulls plymouth-quit back in on every
+      # switch, and its conflict with greetd stops the running session.
+      plymouth-quit.wantedBy = lib.mkForce [];
+    };
+
     services.accounts-daemon.enable = true;
-    environment.systemPackages = [pkgs.nwg-hello];
+    environment.systemPackages = [pkgs.nwg-hello config.stylix.cursor.package];
   };
 }

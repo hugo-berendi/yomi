@@ -28,8 +28,10 @@
         install -Dm644 \
           "${hyprland}/share/wayland-sessions/hyprland.desktop" \
           "$out/share/wayland-sessions/hyprland.desktop"
+        # greetd gives the session tty1 as stdio; keep Hyprland's log off the
+        # console, where it would show while the greeter hands over.
         sed -i \
-          's|^Exec=.*|Exec=${lib.getExe' hyprland "start-hyprland"} -- --config ${hyprlandConfig}|' \
+          's|^Exec=.*|Exec=${lib.getExe' config.systemd.package "systemd-cat"} --identifier=hyprland ${lib.getExe' hyprland "start-hyprland"} -- --config ${hyprlandConfig}|' \
           "$out/share/wayland-sessions/hyprland.desktop"
       '';
     };
