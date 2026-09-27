@@ -14,7 +14,9 @@ in {
   home.packages = [pkgs.wlogout];
 
   xdg.configFile = {
-    "wlogout/layout".text = builtins.toJSON [
+    # wlogout reads a stream of bare objects, not an array: a JSON list makes
+    # it exit 3 with "Invalid JSON Data" before drawing anything.
+    "wlogout/layout".text = lib.concatMapStrings (e: builtins.toJSON e + "\n") [
       (entry "lock" "loginctl lock-session" "Lock" "l")
       (entry "suspend" "systemctl suspend" "Suspend" "s")
       (entry "hibernate" "systemctl hibernate" "Hibernate" "h")
