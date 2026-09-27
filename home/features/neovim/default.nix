@@ -4,6 +4,9 @@
   lib,
   ...
 }: let
+  # nvf's mnw wrapper default; check with `grep NVIM_APPNAME $(which nvim)`.
+  appName = "nvf";
+
   # {{{ Client wrapper
   wrapClient = {
     base,
@@ -95,13 +98,15 @@ in {
   };
   # }}}
   # {{{ Persistence
+  # The nvf wrapper exports NVIM_APPNAME=nvf, so undo, shada and plugin data
+  # land in */nvf, not */nvim. Persisting */nvim kept nothing across reboots.
   yomi.persistence.at.state.apps.neovim.directories = [
-    ".local/state/nvim"
-    "${config.xdg.dataHome}/nvim"
+    "${config.xdg.stateHome}/${appName}"
+    "${config.xdg.dataHome}/${appName}"
   ];
 
   yomi.persistence.at.cache.apps.neovim.directories = [
-    "${config.xdg.cacheHome}/nvim"
+    "${config.xdg.cacheHome}/${appName}"
   ];
   # }}}
 }

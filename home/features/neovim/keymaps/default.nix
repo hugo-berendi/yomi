@@ -18,7 +18,6 @@
     ./snacks-terminal.nix
     ./snacks-words.nix
     ./snacks-rename.nix
-    ./avante.nix
     ./yazi.nix
   ];
 }
