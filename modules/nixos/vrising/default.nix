@@ -242,7 +242,10 @@ in {
 
         WINE_PID=$!
 
-        trap "kill $WINE_PID; ${wine}/bin/wineserver -k; wait" SIGTERM SIGINT
+        # Wine delivers SIGINT to the game as Ctrl+C, which runs
+        # SaveAndShutdownServer (about 5s). SIGTERM kills it without saving,
+        # losing up to one autosave interval on every switch or reboot.
+        trap "kill -INT $WINE_PID; wait $WINE_PID; ${wine}/bin/wineserver -k; exit 0" SIGTERM SIGINT
 
         wait $WINE_PID
       '';
