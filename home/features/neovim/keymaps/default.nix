@@ -19,5 +19,6 @@
     ./snacks-words.nix
     ./snacks-rename.nix
     ./yazi.nix
+    ./tools.nix
   ];
 }

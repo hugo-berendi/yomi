@@ -80,6 +80,14 @@
 
     motion.flash-nvim.enable = true;
 
+    # Loads a project's .envrc, so LSPs and formatters from its devshell are
+    # on PATH instead of whatever the profile happens to carry.
+    direnv.enable = true;
+    # Worth having now that undo history persists (see ../default.nix).
+    undotree.enable = true;
+    grug-far-nvim.enable = true;
+    diffview-nvim.enable = true;
+
     yazi-nvim = {
       enable = true;
       setupOpts = {
