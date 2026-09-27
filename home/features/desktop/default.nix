@@ -5,7 +5,7 @@
 }: {
   # {{{ Imports
   imports = [
-    ./teams.nix
+    ./teams
     ./karere.nix
     ./foot.nix
     ./ghostty.nix

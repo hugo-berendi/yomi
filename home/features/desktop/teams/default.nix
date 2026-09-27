@@ -34,9 +34,18 @@
   # generated class, so !important on the provider outranks it for
   # everything underneath. Colour tokens only; layout is Microsoft's to
   # change, and a stylesheet that restyles markup breaks with every release.
+  #
+  # The one markup rule: a link pasted from Outlook arrives as
+  # <a><span style="color: rgb(30, 83, 163)">, so the sender's dark blue
+  # beat the token and was unreadable on this background. Text inside a
+  # link now takes the link's colour; other colours a sender chose stay.
   css = pkgs.writeText "teams-stylix.css" ''
     .fui-FluentProvider, :root {
     ${lib.concatStrings (lib.mapAttrsToList (name: value: "  ${name}: ${value} !important;\n") (captured // chosen))}}
+
+    .fui-ChatMessage__body a[href] * {
+      color: inherit !important;
+    }
   '';
 in {
   home.packages = [pkgs.teams-for-linux];
