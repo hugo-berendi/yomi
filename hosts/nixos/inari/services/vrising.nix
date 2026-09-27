@@ -4,7 +4,7 @@
   ...
 }: {
   services.vrising = {
-    enable = false;
+    enable = true;
     sopsFile = ../secrets.yaml;
     serverName = "FischGHGesicht";
     worldName = "Yomi";
