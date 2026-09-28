@@ -1,8 +1,7 @@
 _: {
   # Nix unpacks, compiles and links inside `build-dir`, which defaults to
   # TMPDIR and therefore to /tmp. On this host /tmp is not a tmpfs -- nothing
-  # sets boot.tmp.useTmpfs, so the NixOS default of `false` applies and /tmp is
-  # the ZFS root, on the NVMe.
+  # sets boot.tmp.useTmpfs -- so it is the ZFS root, on the NVMe.
   #
   # That drive is the constraint here. It reported 100.4 TB written against a
   # ~110 TBW rating at 15,277 hours, and build scratch is the one large write
@@ -10,41 +9,35 @@ _: {
   # build and is then deleted, so it leaves no trace in any dataset's `written`
   # property and is invisible to per-service IO accounting.
   #
-  # raid5pool takes it instead. The three IronWolf Pro drives idle at
-  # 0.12 MiB/s with 13,727 hours, zero reallocated sectors and no media errors,
-  # so they have both the headroom and the endurance to absorb it. Builds get
-  # slower, because scratch is now on spinning disks and the finished result is
-  # copied to the store across a filesystem boundary rather than renamed.
+  # Scratch first moved to /raid5pool, which saved the NVMe but made the
+  # node builds unusable. n8n (unfree, so never in cache.nixos.org) and the
+  # OIDC seerr fork build here, and pnpmConfigHook's patchShebangs reads the
+  # head of every executable in node_modules. On raidz1 spinning disks that
+  # random-read load sat at ~120 IOPS per disk with IO pressure 40% "full";
+  # the flake-update check took 162 minutes against a 180 minute CI timeout,
+  # with 7 minutes of CPU time.
   #
-  # Scratch is deliberately a plain directory rather than a dataset: it wants
-  # no snapshots, no quota and no backup. yomi.restic.offsite.paths lists its
-  # members one by one, so this cannot drift into a backup set by accident.
+  # So scratch lives in RAM. The cap turns a runaway build into ENOSPC rather
+  # than an OOM: swap is zram, already holding ~13 GB, and the ARC takes up
+  # to 8 GiB. The largest local build, n8n, unpacks 2.1 GB of pnpm deps, so
+  # 16G leaves room for two heavy builds side by side.
   #
-  # The failure mode worth knowing: if raid5pool is not imported, tmpfiles
-  # creates /raid5pool/nix-build on the root filesystem and scratch lands back
-  # on the NVMe. That is exactly today's behaviour rather than a regression, so
-  # this deliberately does not order nix-daemon after the mount -- needing nix
-  # in order to repair a pool that nix refuses to run without is a worse trap
-  # than a silent fallback to the status quo.
-  # /raid5pool itself is 1777 on disk -- world-writable with a sticky bit,
-  # like /tmp. Nothing in this repository asks for that; it is leftover state
-  # from however the pool was first made, and every directory under it is
-  # created by an explicit rule with its own owner and mode.
-  #
-  # Nix refuses to use a build directory with a world-writable ancestor
-  # ("Path /raid5pool is world-writable or a symlink"), which is a sound
-  # objection rather than an inconvenience: anything a local user can rename
-  # underneath a build is a way into that build. It checks every component,
-  # so no path under the pool works until the root itself is fixed.
-  #
-  # 0755 costs nothing here. Group-writable trees like /raid5pool/media
-  # (2775 root:media) keep their own modes and keep working; the only thing
-  # lost is the ability for a non-root user to create a new top-level
-  # directory in the pool, which nothing does.
-  systemd.tmpfiles.rules = [
-    "d /raid5pool          0755 root root -"
-    "d /raid5pool/nix-build 0755 root root -"
-  ];
+  # If the mount fails, /nix/build is a plain directory on zroot and scratch
+  # lands on the NVMe again -- slower wear, not a broken nix-daemon.
+  fileSystems."/nix/build" = {
+    device = "tmpfs";
+    fsType = "tmpfs";
+    options = ["size=16G" "mode=0755" "noatime"];
+  };
 
-  nix.settings.build-dir = "/raid5pool/nix-build";
+  nix.settings.build-dir = "/nix/build";
+
+  # /raid5pool itself is 1777 on disk -- world-writable with a sticky bit,
+  # like /tmp -- leftover state from however the pool was first made. Nothing
+  # needs that, and every directory under it is created by an explicit rule
+  # with its own owner and mode. Group-writable trees like /raid5pool/media
+  # (2775 root:media) keep their own modes.
+  systemd.tmpfiles.rules = [
+    "d /raid5pool 0755 root root -"
+  ];
 }
