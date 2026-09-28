@@ -22,7 +22,7 @@
       src = jellyseerr-oidc-src;
       inherit pnpm;
       fetcherVersion = 3;
-      hash = "sha256-0CwHkxG3SOSd+xozONnAi7Mr0y+lXdxwJk8mRZf8Bhs=";
+      hash = "sha256-qv38UGPAqANLr3/MwwF75Vc8x3K5/IyfXnnBhypO7ck=";
     };
     nativeBuildInputs = [
       pkgs.python3

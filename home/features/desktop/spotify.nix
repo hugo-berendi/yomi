@@ -40,7 +40,6 @@ in {
 
     enabledExtensions = with spicePkgs.extensions; [
       adblock
-      betterGenres
       bookmark
       fullAlbumDate
       fullAppDisplayMod
