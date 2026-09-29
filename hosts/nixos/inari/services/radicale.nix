@@ -163,6 +163,12 @@ in {
         pairs.${syncJob} = {
           a = "radicale";
           b = "google";
+          # Radicale is the source of truth. Without this, any event present
+          # on both sides with no status entry stops its collection: the
+          # first sync aborted mid-collection, left 19 uploads unrecorded,
+          # and Google's copies differed only by the CREATED/STATUS/TRANSP
+          # it adds to everything it stores.
+          conflict_resolution = "a wins";
           collections =
             if calendars == {}
             then ["from a" "from b"]
