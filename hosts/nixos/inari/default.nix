@@ -41,7 +41,7 @@
     ./services/vaultwarden.nix
     ./services/immich.nix
     ./services/music
-    ./services/searxng.nix
+    ./services/searxng
     ./services/zfs.nix
     ./services/adguard-home.nix
     ./services/comics/default.nix

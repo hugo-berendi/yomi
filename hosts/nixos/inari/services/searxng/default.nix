@@ -3,10 +3,12 @@
   upkgs,
   ...
 }: {
+  imports = [./theme.nix];
+
   yomi.cloudflared.at.search.port = config.yomi.ports.searxng;
   # {{{ Secrets
   sops.secrets.searxng_env = {
-    sopsFile = ../secrets.yaml;
+    sopsFile = ../../secrets.yaml;
   };
   # }}}
   # {{{ General config
@@ -23,7 +25,16 @@
     domain = "search.hugo-berendi.de";
     environmentFile = config.sops.secrets.searxng_env.path;
     settings = {
-      use_default_settings = true;
+      # Brave answered every query with a 429 or a page the scraper could not
+      # parse. Removing it takes it out of preferences and bangs, not just
+      # the default set.
+      use_default_settings.engines.remove = [
+        "brave"
+        "brave.images"
+        "brave.videos"
+        "brave.news"
+        "braveapi"
+      ];
       general = {
         debug = false;
         instance_name = "hugosearch";
@@ -32,9 +43,16 @@
         port = config.yomi.ports.searxng;
         bind_address = "127.0.0.1";
         secret_key = "$SEARXNG_SECRET_KEY";
+        # Fixes the scheme and host in generated links (opensearch.xml, RSS)
+        # instead of trusting whatever headers came through the tunnel.
+        base_url = "https://${config.services.searx.domain}/";
       };
       search = {
         formats = ["html" "json"];
+        # Upstream's default autocompleter is DuckDuckGo, which sends one
+        # request from this IP per keystroke to the engine that CAPTCHAs it
+        # the most.
+        autocomplete = "wikipedia";
       };
       # Entries override the upstream engine with the same `name`. Any other
       # name adds a second copy of the engine, and that copy has no traits, so
