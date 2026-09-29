@@ -5,7 +5,7 @@
   ...
 }: {
   home.packages = [
-    inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.codex
+    (import ./codex-package.nix {inherit inputs pkgs;})
   ];
 
   yomi.persistence.at.state.apps.codex.directories = [

@@ -6,9 +6,10 @@
   ...
 }: let
   agents = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
+  codex = import ./features/cli/ai/codex-package.nix {inherit inputs pkgs;};
   t3code-desktop = agents.t3code-desktop.override {
     t3code = agents.t3code.override {
-      providerPackages = [agents.codex agents.claude-code agents.opencode];
+      providerPackages = [codex agents.claude-code agents.opencode];
     };
   };
 in {

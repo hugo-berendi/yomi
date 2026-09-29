@@ -8,8 +8,9 @@
   pilot = config.yomi.pilot.name;
   port = config.yomi.ports.t3code;
   agents = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
+  codex = import ../../../../home/features/cli/ai/codex-package.nix {inherit inputs pkgs;};
   package = agents.t3code.override {
-    providerPackages = [agents.codex agents.claude-code agents.opencode];
+    providerPackages = [codex agents.claude-code agents.opencode];
   };
 in {
   yomi.nginx.at.t3code.port = port;
