@@ -15,9 +15,15 @@
       dns = {
         bind_hosts = ["127.0.0.1" "::1"];
         port = config.yomi.ports.adguard-dns;
+        # DNS-over-TLS by IP: Quad9's certificate carries both addresses as
+        # SANs, so nothing needs bootstrapping. Plain UDP to Quad9 dropped
+        # over half the queries (9/20 answered; TCP and DoT 20/20), which
+        # stalled every uncached lookup on the LAN. The earlier
+        # "9.9.9.9#dns.quad9.net" form was parsed as a hostname and
+        # resolved through that same UDP path before every query.
         upstream_dns = [
-          "9.9.9.9#dns.quad9.net"
-          "149.112.112.112#dns.quad9.net"
+          "tls://9.9.9.9"
+          "tls://149.112.112.112"
         ];
       };
 
