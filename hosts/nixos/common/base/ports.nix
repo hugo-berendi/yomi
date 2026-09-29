@@ -84,5 +84,6 @@
     t3code = lib.mkDefault 8501;
     cliproxyapi = lib.mkDefault 8502;
     diabetes = lib.mkDefault 8503;
+    calsync = lib.mkDefault 8504;
   };
 }

@@ -35,6 +35,7 @@
     ./services/microbin.nix
     ./services/mealie.nix
     ./services/radicale.nix
+    ./services/calsync.nix
     ./services/redlib.nix
     ./services/restic.nix
     ./services/valheim.nix
