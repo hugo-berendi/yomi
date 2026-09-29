@@ -6,7 +6,9 @@
       # upstream DNS servers
       server = [
         "127.0.0.1#${toString config.yomi.ports.adguard-dns}" # AdGuard Home
-        "9.9.9.9" # Quad9
+        # Fallback when AdGuard is down. Not Quad9: plain UDP to 9.9.9.9 lost
+        # over half its queries (9/20) while 1.1.1.1 answered 20/20.
+        "1.1.1.1" # Cloudflare
       ];
 
       # sensible behaviours
