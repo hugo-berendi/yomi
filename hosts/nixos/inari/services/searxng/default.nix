@@ -147,11 +147,11 @@ in {
     }
     // {
       ReadWritePaths = ["/var/lib/searx"];
-      # wg.service reports ready once the endpoint answers a ping, before the
-      # tunnel carries DNS. On the first switch into the namespace every
-      # lookup timed out for 10s, SearXNG's startup network check gave up,
-      # and with upstream's Restart=no it stayed down; four minutes later the
-      # same namespace resolved fine. Retry instead of waiting on the tunnel.
+      # SearXNG exits if its startup network check fails, and upstream sets
+      # Restart=no, so one bad moment in the tunnel left search down until
+      # someone noticed. (The first outage was DNS misrouted out of the
+      # namespace, see media/vpn.nix; retrying did not fix that, but it does
+      # cover a tunnel that is merely slow or briefly down.)
       Restart = "on-failure";
       RestartSec = "10s";
     };
