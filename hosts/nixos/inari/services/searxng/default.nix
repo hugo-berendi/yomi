@@ -147,5 +147,12 @@ in {
     }
     // {
       ReadWritePaths = ["/var/lib/searx"];
+      # wg.service reports ready once the endpoint answers a ping, before the
+      # tunnel carries DNS. On the first switch into the namespace every
+      # lookup timed out for 10s, SearXNG's startup network check gave up,
+      # and with upstream's Restart=no it stayed down; four minutes later the
+      # same namespace resolved fine. Retry instead of waiting on the tunnel.
+      Restart = "on-failure";
+      RestartSec = "10s";
     };
 }
