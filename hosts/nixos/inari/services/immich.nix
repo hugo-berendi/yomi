@@ -30,6 +30,10 @@ in {
   # {{{ Public proxy
   services.immich-public-proxy = {
     enable = true;
+    # Must track the server's major version. Immich 3 stopped returning
+    # `assets` from GET /albums/:id; 26.05's IPP 1.15.6 still reads it and
+    # crashes on every album link. 3.x fetches them via the timeline API.
+    package = upkgs.immich-public-proxy;
     immichUrl = config.yomi.nginx.at.immich.url;
     port = config.yomi.ports.ipp;
   };
