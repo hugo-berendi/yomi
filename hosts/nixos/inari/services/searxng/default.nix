@@ -2,10 +2,15 @@
   config,
   upkgs,
   ...
-}: {
+}: let
+  vpn = config.vpnNamespaces.wg;
+in {
   imports = [./theme.nix];
 
-  yomi.cloudflared.at.search.port = config.yomi.ports.searxng;
+  yomi.cloudflared.at.search = {
+    port = config.yomi.ports.searxng;
+    proxyAddress = vpn.namespaceAddress;
+  };
   # {{{ Secrets
   sops.secrets.searxng_env = {
     sopsFile = ../../secrets.yaml;
@@ -41,7 +46,7 @@
       };
       server = {
         port = config.yomi.ports.searxng;
-        bind_address = "127.0.0.1";
+        bind_address = vpn.namespaceAddress;
         secret_key = "$SEARXNG_SECRET_KEY";
         # Fixes the scheme and host in generated links (opensearch.xml, RSS)
         # instead of trusting whatever headers came through the tunnel.
@@ -96,6 +101,28 @@
       ];
     };
   };
+
+  # {{{ VPN
+  # DuckDuckGo CAPTCHAs this line's Vodafone IP on every request, even a
+  # bare curl, and a CAPTCHA never suspends the engine, so each search
+  # re-offends. The nixarr WireGuard exit got a 200 from the same request
+  # on 2026-09-29. The whole service has to move: a namespace is per
+  # process, and SearXNG cannot send one engine through a different route.
+  #
+  # It is killswitched like transmission: if the tunnel is down, searx has
+  # no route out, rather than falling back to the home IP.
+  systemd.services.searx.vpnConfinement = {
+    enable = true;
+    vpnNamespace = "wg";
+  };
+  vpnNamespaces.wg.portMappings = [
+    {
+      from = config.yomi.ports.searxng;
+      to = config.yomi.ports.searxng;
+      protocol = "tcp";
+    }
+  ];
+  # }}}
 
   environment.persistence."/persist/state".directories = [
     "/var/lib/searx"
