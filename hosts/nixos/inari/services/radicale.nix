@@ -67,7 +67,7 @@
 
   # Keep false until a manual `systemctl start ${syncUnit}` has been checked on
   # both sides. Flipping it adds the timer and the path unit to their targets.
-  automate = false;
+  automate = true;
 
   secret = name: ["command" "${pkgs.coreutils}/bin/cat" config.sops.secrets.${name}.path];
 
