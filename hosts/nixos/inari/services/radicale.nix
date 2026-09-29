@@ -18,16 +18,52 @@
   # owner_only, so vdirsyncer has to log in as the owner to see them at all.
   radicaleUser = "hugob";
 
-  # Explicit Radicale collection -> Google calendar pairs, keyed by a pair
-  # name of your choosing. Fill in from `vdirsyncer-google discover` output:
-  # Radicale ids are the UUID path segments, Google ids look like e-mail
-  # addresses and need not match the calendar's display name.
-  #
-  #   family = { radicale = "e1119057-..."; google = "abc123@group.calendar.google.com"; };
-  #
-  # While this is empty the pair falls back to ["from a" "from b"], which is
-  # only for discovery: it selects every collection on both sides.
-  calendars = {};
+  # Radicale collection -> Google calendar, one pair each, taken from
+  # `vdirsyncer-google discover` output. Radicale ids are the UUID path
+  # segments; Google ids need not match the display name. Google's CalDAV
+  # cannot create calendars, so a new pair needs its Google calendar made in
+  # the web UI first. An empty set falls back to ["from a" "from b"], which
+  # is only for discovery: it selects every collection on both sides.
+  calendars = let
+    gcal = id: "${id}@group.calendar.google.com";
+  in {
+    concerts = {
+      radicale = "5fba7131-0cbb-a0d9-51af-3b092966f772";
+      google = gcal "96b14cb8a4b27ac08e873d2df1e27d2a8c3f3458e3988aa9b5cb6bc3a80e4446";
+    };
+    series_movies = {
+      radicale = "d4add776-f116-2e4b-d4a9-6d8184543dca";
+      google = gcal "8a1396bc79c1c64d72e03283c04efc47e573a89951ffd691d838cb79fe563352";
+    };
+    programming = {
+      radicale = "b3747fdf-ce93-8536-9bf6-efb4c3307408";
+      google = gcal "60fac0f9f8f5210da4f71c384674a1327ca0a3cb31e659170c31c96981044a0e";
+    };
+    general = {
+      radicale = "dd967f56-e6d7-572f-06ab-60142b423e22";
+      google = gcal "3aa78957a8485381df501568ec307aac0ba2f7b208805eb314fe31036f247f17";
+    };
+    documents = {
+      radicale = "9c68d359-d39e-1fbe-a37d-d9a2c963b908";
+      google = gcal "5f0917ef39fd703a4933f5b5dafb4b096e6367a000845dc3e423aa9fb4c96369";
+    };
+    school = {
+      radicale = "e1119057-4139-2be5-fa4b-2b8ac529a3cb";
+      google = gcal "c32c68851f3a8118c6b403905295ada321aff58c4f87417d8a1547c2dba4ab53";
+    };
+    work = {
+      radicale = "c65f759a-d734-d092-01ca-9544a24f2425";
+      google = gcal "49150cfa6c4c6d9abd09a1db1eca7e4b52c4c206853ef5513584466c5a832b55";
+    };
+    scouts = {
+      radicale = "ae5c8a55-1fdf-727a-e19c-885d5b553e46";
+      google = gcal "3a409c521ac5e41a06f9fcdadc16c4fa19eab3ae3266e62f5c12abf6b890708c";
+    };
+    diabetes = {
+      radicale = "394c354b-10e0-d4f5-cac5-e0201df0ebb2";
+      google = gcal "c6fb48664c133e2cd03366c99d9631ec9e92a9039ae81e7d50a3da179b5aadca";
+    };
+  };
 
   # Keep false until a manual `systemctl start ${syncUnit}` has been checked on
   # both sides. Flipping it adds the timer and the path unit to their targets.
