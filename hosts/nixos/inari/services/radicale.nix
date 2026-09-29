@@ -92,6 +92,20 @@
       ${pkgs.coreutils}/bin/env VDIRSYNCER_CONFIG=${config.systemd.services.${syncUnit}.environment.VDIRSYNCER_CONFIG} \
       ${config.services.vdirsyncer.package}/bin/vdirsyncer "$@"
   '';
+
+  # Google answers a burst of CalDAV writes with 403 Forbidden. The first
+  # sync of all nine pairs at once (vdirsyncer runs every collection
+  # concurrently, up to 16 requests per host) had 13 of 43 uploads refused;
+  # the same items went through with 201 when one collection ran alone.
+  # vdirsyncer 0.20 has no concurrency setting, so sync one pair at a time.
+  # A failed pair does not stop the rest; its items are retried next run.
+  syncSequentially = pkgs.writeShellScript "vdirsyncer-${syncJob}-sequential" ''
+    failed=0
+    for collection in ${lib.escapeShellArgs (lib.attrNames calendars)}; do
+      ${config.services.vdirsyncer.package}/bin/vdirsyncer sync "${syncJob}/$collection" || failed=1
+    done
+    exit "$failed"
+  '';
   # }}}
 in {
   # {{{ Radicale
@@ -214,6 +228,7 @@ in {
   environment.systemPackages = [vdirsyncerGoogle];
 
   systemd.services.${syncUnit} = {
+    serviceConfig.ExecStart = lib.mkIf (calendars != {}) (lib.mkForce ["${syncSequentially}"]);
     wants = ["network-online.target"];
     after = ["network-online.target"];
   };
