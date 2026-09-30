@@ -15,6 +15,11 @@ one of these" guide the module comment doesn't have room for.
   assertion, not a runtime surprise, because a missing id would create a
   duplicate workflow on every single restart instead of updating the existing
   one.
+- Startup imports strip `staticData` from the exported JSON. The live database
+  owns workflow cursors and notification deduplication state. Importing a null
+  or stale exported value would reset that state on each restart. The
+  `n8n-import` flake check exercises the generated import scripts with the
+  installed CLI against an isolated database.
 - **Activation is a separate step from import.** `n8n import:workflow
   --activeState=fromJson` is documented in `--help` but errors at runtime on
   this single-instance deployment ("can only be used ... in queue or

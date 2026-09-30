@@ -37,6 +37,11 @@
     # still documented in --help. Read the JSON's own `active` field at eval
     # time and drive the replacement `publish:workflow` command instead.
     parsed = builtins.fromJSON (builtins.readFile workflow.source);
+    # Import upserts every supplied column. Exported staticData=null erased
+    # deduplication cursors on each restart. Omitting the field leaves the
+    # instance's runtime state intact, including when an export contains an
+    # old non-null copy. New workflows start with the database's NULL default.
+    definition = pkgs.writeText "n8n-workflow-${name}.json" (builtins.toJSON (builtins.removeAttrs parsed ["staticData"]));
   in
     pkgs.writeShellScript "n8n-import-${name}" ''
       set -euo pipefail
@@ -52,7 +57,7 @@
         then "(enforced -- overwrites edits made in the web ui)"
         else "(seed -- first time only)"
       }"
-      ${n8n} import:workflow --input=${workflow.source}
+      ${n8n} import:workflow --input=${definition}
       ${
         if parsed.active or false
         then "${n8n} publish:workflow --id=${lib.escapeShellArg parsed.id}"

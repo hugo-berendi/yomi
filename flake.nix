@@ -301,6 +301,10 @@
               inherit pkgs;
               config = self.nixosConfigurations.inari.config;
             };
+            n8n-import = import ./tests/n8n-import.nix {
+              inherit pkgs;
+              configuration = self.nixosConfigurations.inari;
+            };
             custom-options = import ./tests/options.nix {
               inherit pkgs;
               configurations = self.nixosConfigurations;
