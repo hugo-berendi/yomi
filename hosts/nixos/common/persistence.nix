@@ -6,39 +6,41 @@
 }: {
   imports = [inputs.impermanence.nixosModules.impermanence];
 
-  yomi.persistence.at = {
-    state.path = "/persist/state";
-    data.path = "/persist/data";
-    cache.path = "/persist/local/cache";
-  };
+  config = lib.mkIf config.yomi.persistence.enable {
+    yomi.persistence.at = {
+      state.path = "/persist/state";
+      data.path = "/persist/data";
+      cache.path = "/persist/local/cache";
+    };
 
-  # {{{ Base persistence
-  environment.persistence."/persist/state".directories = [
-    "/var/lib/systemd"
-    "/var/lib/nixos"
-    "/var/log"
-    {
-      directory = "/var/lib/private";
-      mode = "0700";
-    }
-  ];
-  # }}}
-  # {{{ FUSE
-  programs.fuse.userAllowOther = true;
-  # }}}
-  # {{{ Create home directories
-  systemd.tmpfiles.rules = let
-    users = lib.filter (v: v != null && v.isNormalUser) (
-      lib.mapAttrsToList (_: u: u) config.users.users
-    );
-
-    mkHomePersistFor = location:
-      lib.forEach users (user: "d ${location}${user.home} ${user.homeMode} ${user.name} ${user.group} -");
-  in
-    lib.flatten [
-      (mkHomePersistFor "/persist/data")
-      (mkHomePersistFor "/persist/state")
-      (mkHomePersistFor "/persist/local/cache")
+    # {{{ Base persistence
+    environment.persistence."/persist/state".directories = [
+      "/var/lib/systemd"
+      "/var/lib/nixos"
+      "/var/log"
+      {
+        directory = "/var/lib/private";
+        mode = "0700";
+      }
     ];
-  # }}}
+    # }}}
+    # {{{ FUSE
+    programs.fuse.userAllowOther = true;
+    # }}}
+    # {{{ Create home directories
+    systemd.tmpfiles.rules = let
+      users = lib.filter (v: v != null && v.isNormalUser) (
+        lib.mapAttrsToList (_: u: u) config.users.users
+      );
+
+      mkHomePersistFor = location:
+        lib.forEach users (user: "d ${location}${user.home} ${user.homeMode} ${user.name} ${user.group} -");
+    in
+      lib.flatten [
+        (mkHomePersistFor "/persist/data")
+        (mkHomePersistFor "/persist/state")
+        (mkHomePersistFor "/persist/local/cache")
+      ];
+    # }}}
+  };
 }

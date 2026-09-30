@@ -27,7 +27,7 @@
       };
     };
   };
-  entries = lib.concatLists (lib.mapAttrsToList (
+  entries = lib.optionals cfg.enable (lib.concatLists (lib.mapAttrsToList (
       location: loc:
         lib.mapAttrsToList (app: value: {
           inherit location app;
@@ -36,9 +36,10 @@
         })
         loc.apps
     )
-    cfg.at);
+    cfg.at));
 in {
   options.yomi.persistence = {
+    enable = lib.mkEnableOption "system persistence" // {default = true;};
     at = lib.mkOption {
       default = {};
       description = "System persistence locations grouped by application; backup selection is explicit.";
@@ -82,10 +83,16 @@ in {
   };
   config = {
     yomi.persistence.inventory = entries;
-    environment.persistence = lib.mkMerge (map (entry: {
-        ${entry.path} = {inherit (entry) directories files;};
-      })
-      entries);
+    # Native declarations outside this wrapper must also respect the host's
+    # decision to keep its root filesystem, as WSL does.
+    environment.persistence =
+      if cfg.enable
+      then
+        lib.mkMerge (map (entry: {
+            ${entry.path} = {inherit (entry) directories files;};
+          })
+          entries)
+      else lib.mkForce {};
     yomi.restic.sets = lib.mkMerge (map (entry:
       lib.genAttrs entry.backupSets (_: {
         paths = (map (d: d.directory) entry.directories) ++ entry.files;

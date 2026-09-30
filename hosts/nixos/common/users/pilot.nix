@@ -65,9 +65,16 @@
   # `~/.ssh` are incorrect.
   systemd.tmpfiles.rules = let
     user = config.users.users.${config.yomi.pilot.name};
-    root = "/persist/state/${user.home}/ssh";
+    root =
+      if config.yomi.persistence.enable
+      then "/persist/state/${user.home}/ssh"
+      else user.home;
+    rootMode =
+      if config.yomi.persistence.enable
+      then "0755"
+      else user.homeMode;
   in [
-    "d ${root}                 0755 ${user.name} ${user.group}"
+    "d ${root}                 ${rootMode} ${user.name} ${user.group}"
     "d ${root}/.ssh            0755 ${user.name} ${user.group}"
     "z ${root}/.ssh/id_*.pub   0755 ${user.name} ${user.group}"
     "z ${root}/.ssh/id_rsa     0700 ${user.name} ${user.group}"

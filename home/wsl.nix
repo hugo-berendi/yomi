@@ -52,7 +52,7 @@
     ];
   };
 
-  home.persistence."/persist" = lib.mkForce {};
+  yomi.persistence.enable = lib.mkForce false;
 
   sops.age.sshKeyPaths = lib.mkForce ["/etc/ssh/ssh_host_ed25519_key"];
 

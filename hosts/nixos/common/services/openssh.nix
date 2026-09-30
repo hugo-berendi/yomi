@@ -10,6 +10,10 @@
 
   # Name of the current hostname
   hostname = config.networking.hostName;
+  stateRoot =
+    if config.yomi.persistence.enable
+    then "/persist/state"
+    else "";
 
   # Function from hostname to relative path to public ssh key
   pubKey = host: ../../${host}/keys/ssh_host_ed25519_key.pub;
@@ -56,8 +60,8 @@ in {
         mkKey = type: path: extra:
           {inherit type path;} // extra;
       in [
-        (mkKey "ed25519" "/persist/state/etc/ssh/ssh_host_ed25519_key" {})
-        (mkKey "rsa" "/persist/state/etc/ssh/ssh_host_rsa_key" {bits = 4096;})
+        (mkKey "ed25519" "${stateRoot}/etc/ssh/ssh_host_ed25519_key" {})
+        (mkKey "rsa" "${stateRoot}/etc/ssh/ssh_host_rsa_key" {bits = 4096;})
       ];
     };
 
@@ -104,9 +108,7 @@ in {
 
     # Makes it easy to copy host keys at install time without messing up permissions
     systemd.tmpfiles.rules =
-      [
-        "d /persist/state/etc/ssh"
-      ]
+      (map (path: "d ${path}") (lib.unique (map (key: dirOf key.path) config.services.openssh.hostKeys)))
       ++ (lib.lists.forEach config.services.openssh.hostKeys (key: "e ${key.path} 0700"));
   };
 }

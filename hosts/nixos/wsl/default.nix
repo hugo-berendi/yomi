@@ -20,6 +20,7 @@
   yomi.machine.interactible = true;
 
   # {{{ Disable features not applicable to WSL
+  yomi.persistence.enable = false;
   yomi.wireless.enable = false;
   boot.initrd.systemd.enable = lib.mkForce false;
   systemd.oomd.enable = lib.mkForce false;
