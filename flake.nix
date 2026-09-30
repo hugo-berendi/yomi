@@ -297,6 +297,7 @@
           ))
           // {
             diabetes = self.nixosConfigurations.inari.config.system.build.diabetes-tests;
+            installer = import ./tests/installer.nix {inherit pkgs;};
             inari-cpus = import ./tests/inari-cpus.nix {
               inherit pkgs;
               config = self.nixosConfigurations.inari.config;
