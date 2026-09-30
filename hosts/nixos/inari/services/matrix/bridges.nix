@@ -14,6 +14,16 @@
     "@kamachi:${matrixHost}" = "user";
   };
 in {
+  # These upstream services use static users, so /var/lib/private does not
+  # persist their databases. Migrate the live directories before the first
+  # switch with these bind mounts; see docs/backup-monitoring.md.
+  environment.persistence."/persist/state".directories = map (name: {
+    directory = "/var/lib/${name}";
+    user = name;
+    group = name;
+    mode = "0700";
+  }) ["mautrix-discord" "mautrix-signal" "mautrix-whatsapp"];
+
   # {{{ Secrets
   sops.templates = {
     "mautrix-whatsapp.env" = {

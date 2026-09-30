@@ -9,11 +9,11 @@ in {
   # A repository check cannot prove that a SQL dump can actually be imported.
   # Use the production extensions, but a disposable cluster with no TCP listener.
   systemd.services.restic-offsite-restore = {
-    description = "Restore a B2 document and PostgreSQL dump into disposable storage";
+    description = "Restore a B2 document, Paperless SQLite and PostgreSQL dump";
     wants = ["network-online.target"];
     after = ["network-online.target" "restic-backups-offsite.service" "restic-backups-offsite-check.service"];
     restartIfChanged = false;
-    path = [backup.package pkgs.jq pkgs.zstd config.services.postgresql.finalPackage];
+    path = [backup.package pkgs.jq pkgs.zstd pkgs.sqlite config.services.postgresql.finalPackage];
     environment = {
       PGHOST = "/run/restic-offsite-restore";
       PGPORT = "55432";
@@ -69,11 +69,15 @@ in {
       trap cleanup EXIT
 
       # Pin one snapshot so a concurrent backup cannot change 'latest' midway.
-      snapshot=$(restic --retry-lock=30m snapshots --host inari --json | jq -er 'max_by(.time).id')
+      snapshot=$(restic --retry-lock=30m snapshots --host inari --tag app-state-v1 --json | jq -er 'max_by(.time).id')
       restic --retry-lock=30m ls --json "$snapshot" /raid5pool/media/documents/originals > "$work/files.jsonl"
       document=$(jq -ser 'map(select(.type == "file" and .size > 0)) | first.path' "$work/files.jsonl")
       restic --retry-lock=30m dump "$snapshot" "$document" > "$work/document"
       test -s "$work/document"
+      restic --retry-lock=30m dump "$snapshot" /persist/state/var/backup/app-state/paperless/db.sqlite3 > "$work/paperless.sqlite3"
+      test "$(sqlite3 -readonly "$work/paperless.sqlite3" 'PRAGMA integrity_check')" = ok
+      count=$(sqlite3 -readonly "$work/paperless.sqlite3" 'SELECT count(*) FROM documents_document')
+      test "$count" -gt 0
       restic --retry-lock=30m dump "$snapshot" /persist/state/var/backup/postgresql/all.sql.zstd > "$work/all.sql.zstd"
       zstd --test "$work/all.sql.zstd"
 
@@ -85,11 +89,9 @@ in {
         exit 1
       }
       # An empty or truncated-but-valid SQL file must not count as recovery.
-      for database in immich paperless; do
-        count=$(psql -XAt --dbname="$database" -c "SELECT count(*) FROM pg_tables WHERE schemaname = 'public'")
-        test "$count" -gt 0
-      done
-      echo "Restored one document and imported the PostgreSQL dump successfully."
+      count=$(psql -XAt --dbname=immich -c "SELECT count(*) FROM pg_tables WHERE schemaname = 'public'")
+      test "$count" -gt 0
+      echo "Restored one document, validated Paperless SQLite and imported the PostgreSQL dump successfully."
     '';
   };
   systemd.timers.restic-offsite-restore = {

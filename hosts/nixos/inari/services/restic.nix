@@ -1,5 +1,5 @@
 {
-  imports = [./restic-restore.nix];
+  imports = [./restic-app-state.nix ./restic-restore.nix];
   # Backups of /persist/data and /persist/state. The repository lives on the
   # redundant raid5pool rather than on the NVMe the data itself sits on, so it
   # survives losing zroot.
@@ -28,10 +28,9 @@
         "/raid5pool/data" # paperless index, navidrome
         "/persist/data" # calendars, contacts, game server worlds
 
-        # Without the dumps, an off-site restore returns immich's photos and
-        # paperless' documents as loose files with nothing describing them --
-        # no albums, no users, no tags. Compressed dumps of every database,
-        # written successfully by postgresqlBackup before this unit may start.
+        # Immich's albums and users live in PostgreSQL. Paperless uses SQLite,
+        # covered by the app-state staging job alongside other critical state.
+        # postgresqlBackup must complete before this unit may start.
         "/persist/state/var/backup/postgresql"
       ];
 
