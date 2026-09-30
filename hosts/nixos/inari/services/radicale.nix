@@ -65,8 +65,8 @@
     };
   };
 
-  # Keep false until a manual `systemctl start ${syncUnit}` has been checked on
-  # both sides. Flipping it adds the timer and the path unit to their targets.
+  # Initial sync was checked before enabling the timer and path trigger.
+  # A recurring-event update still returns 409; see docs/calendar-sync.md.
   automate = true;
 
   secret = name: ["command" "${pkgs.coreutils}/bin/cat" config.sops.secrets.${name}.path];
