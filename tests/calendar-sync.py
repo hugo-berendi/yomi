@@ -85,7 +85,8 @@ class RecordingSession:
                 )
         return SimpleNamespace(
             status=204,
-            headers={"etag": '"synthetic-google-v2"'},
+            # Google's live successful PUT responses omit an ETag.
+            headers={},
             content=SimpleNamespace(read=AsyncMock(return_value=b"")),
             url=urljoin(self.url, href),
         )
@@ -114,9 +115,12 @@ async def main():
         google.session = RecordingSession(google=True)
         for operation in ("upload", "update", "update"):
             if operation == "upload":
-                await google.upload(original)
+                _, returned_etag = await google.upload(original)
             else:
-                await google.update("/events/synthetic.ics", original, '"fresh-etag"')
+                returned_etag = await google.update(
+                    "/events/synthetic.ics", original, '"fresh-etag"'
+                )
+            assert returned_etag is None, "Preserve Google's missing-ETag handling"
             method, _, data, headers = google.session.requests[-1]
             assert method == "PUT"
             sent = Item(data.decode())

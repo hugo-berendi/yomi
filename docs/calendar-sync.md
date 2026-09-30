@@ -78,10 +78,25 @@ Fresh ETags did not resolve the mixed-sequence case.
 Inari's vdirsyncer package carries a
 [Google-specific patch](../hosts/nixos/inari/services/radicale/google-recurrence-sequence.patch)
 that omits `SEQUENCE` from detached exception components in outgoing writes.
-The master revision stays intact. Google assigns the exception revision. The conversion creates a new in-memory item, preserving the source
-item and its sync hash. Dates, descriptions, folded properties, timezones and
+The master revision stays intact. Google assigns the exception revision.
+The conversion creates a new in-memory item, preserving the source item and its
+sync hash. Dates, descriptions, folded properties, timezones and
 alarms stay intact. Ordinary CalDAV writes are unaffected, and the normal
 `If-Match` and `If-None-Match` checks remain in place.
+
+The patched client subsequently passed all seven live write cases, retaining
+every exception. Its successful PUT responses still omitted ETags. Vdirsyncer
+therefore fetches Google's representation again on the next sync. The existing
+bidirectional sync can copy Google's assigned revision counters and normalized
+metadata back to Radicale. The outgoing conversion preserves the caller's item;
+it does not promise that later bidirectional syncs preserve its byte formatting
+or independent exception counters.
+
+A full sync rehearsal retained all four exceptions, and its subsequent unchanged
+sync made no further Google writes. That sync changed the isolated local fixture's
+bytes. A separate content comparison remains pending to distinguish revision and
+serialization changes from changes to event content. All eight temporary events
+were deleted, and the original timer and path trigger resumed.
 
 The `calendar-sync` flake check exercises uploads and repeated updates through
 the packaged Google storage client. It rejects the original mixed-sequence
