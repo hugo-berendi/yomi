@@ -66,7 +66,7 @@
   };
 
   # Initial sync was checked before enabling the timer and path trigger.
-  # A recurring-event update still returns 409; see docs/calendar-sync.md.
+  # Google's exception revision workaround is described in docs/calendar-sync.md.
   automate = true;
 
   secret = name: ["command" "${pkgs.coreutils}/bin/cat" config.sops.secrets.${name}.path];
@@ -152,6 +152,18 @@ in {
 
   services.vdirsyncer = {
     enable = true;
+    # Google rejects independently versioned recurrence exceptions. Strip their
+    # SEQUENCE only in the outgoing Google copy; leave source events untouched.
+    package = pkgs.vdirsyncer.overrideAttrs (old: {
+      patches =
+        (old.patches or [])
+        ++ [
+          (builtins.path {
+            path = ./radicale/google-recurrence-sequence.patch;
+            name = "vdirsyncer-google-recurrence-sequence.patch";
+          })
+        ];
+    });
     jobs.${syncJob} = {
       user = syncUser;
       group = syncUser;

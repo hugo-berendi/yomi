@@ -1,0 +1,36 @@
+--- a/vdirsyncer/storage/google.py
++++ b/vdirsyncer/storage/google.py
+@@ -17,6 +17,7 @@
+ from ..utils import checkdir
+ from ..utils import expand_path
+ from ..utils import open_graphical_browser
++from ..vobject import Item
+ from . import base
+ from . import dav
+ from .google_helpers import _RedirectWSGIApp
+@@ -182,6 +183,25 @@
+ 
+     storage_name = "google_calendar"
+ 
++    async def _put(self, href, item, etag):
++        # Google rejects detached instances with independent SEQUENCE values
++        # (409 even with a fresh ETag). Let Google assign those revisions.
++        # Preserve the master, source Item and DAV preconditions.
++        parsed = item.parsed
++        changed = False
++        if parsed is not None and parsed.name == "VCALENDAR":
++            for component in parsed.subcomponents:
++                if (
++                    component.name == "VEVENT"
++                    and "RECURRENCE-ID" in component
++                    and "SEQUENCE" in component
++                ):
++                    del component["SEQUENCE"]
++                    changed = True
++        if changed:
++            item = Item("\r\n".join(parsed.dump_lines()))
++        return await super()._put(href, item, etag)
++
+     def __init__(
+         self,
+         token_file,

@@ -60,7 +60,7 @@ outputs. Run a dry build before applying or committing system changes.
 See [the recovery installer guide](./docs/installation.md) for disk installation,
 key-device handling and the private flake input needed on a fresh ISO.
 The [calendar sync guide](./docs/calendar-sync.md) covers the live sync units and
-the recurring-event update failure under investigation.
+Google's recurring-event compatibility fix.
 
 ## Adding a host
 

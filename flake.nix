@@ -298,6 +298,10 @@
           // {
             diabetes = self.nixosConfigurations.inari.config.system.build.diabetes-tests;
             installer = import ./tests/installer.nix {inherit pkgs;};
+            calendar-sync = import ./tests/calendar-sync.nix {
+              inherit pkgs;
+              package = self.nixosConfigurations.inari.config.services.vdirsyncer.package;
+            };
             persistence = import ./tests/persistence.nix {
               inherit pkgs;
               configurations = self.nixosConfigurations;

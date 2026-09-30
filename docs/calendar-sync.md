@@ -39,7 +39,7 @@ UID and collection. Event text, passwords and OAuth tokens should not appear in
 shared reports. Vdirsyncer's debug logs include request headers and event bodies,
 so a raw debug log is unsuitable for sharing.
 
-## Recurring update failure investigated on 2026-09-30
+## Recurring update compatibility
 
 The running vdirsyncer 0.20.0 repeatedly received HTTP 409 while updating one
 recurring event in the scouts collection. Other collections completed.
@@ -61,8 +61,36 @@ The same symptom is reported in upstream
 [vdirsyncer issue 963](https://github.com/pimutils/vdirsyncer/issues/963).
 That similarity does not establish the cause of this event's failure.
 
-The exact rejection remains unresolved. A useful live reproduction must compare
-ordinary event updates, recurring master updates and exception updates using
-fresh DAV ETags. Test resources should have separate UIDs and be removed before
-resuming the timer and path trigger. Resetting all sync state or deleting the
-real series would lose diagnostic evidence and can propagate deletions.
+A live probe on 2026-09-30 isolated the incompatible property using temporary
+events with separate UIDs. All updates used freshly fetched DAV ETags:
+
+| Update | Google response |
+| ------ | --------------- |
+| Unchanged recurring event, ordinary event edit, recurring master edit | 204 |
+| One exception with its own sequence, four exceptions with mixed sequences | 409 |
+| Four exceptions with the master's sequence | 204, all four retained |
+| Four exceptions without explicit sequences | 204, all four retained |
+
+All seven test events were deleted and the original timer and path trigger
+resumed. The rejected requests returned only an empty DAV error element.
+Fresh ETags did not resolve the mixed-sequence case.
+
+Inari's vdirsyncer package carries a
+[Google-specific patch](../hosts/nixos/inari/services/radicale/google-recurrence-sequence.patch)
+that omits `SEQUENCE` from detached exception components in outgoing writes.
+The master revision stays intact. Google assigns the exception revision. The conversion creates a new in-memory item, preserving the source
+item and its sync hash. Dates, descriptions, folded properties, timezones and
+alarms stay intact. Ordinary CalDAV writes are unaffected, and the normal
+`If-Match` and `If-None-Match` checks remain in place.
+
+The `calendar-sync` flake check exercises uploads and repeated updates through
+the packaged Google storage client. It rejects the original mixed-sequence
+payload, then checks the compatible payload, source preservation and DAV
+preconditions. Keep this check when updating vdirsyncer; remove the local patch
+only after the packaged client passes the same regression and live probe.
+
+Deploying this package requires the operator's normal switch. A manual
+`vdirsyncer-google sync radicale_google/scouts` after deployment retries the
+existing pending edit. Verify the exceptions on both sides and a subsequent
+unchanged sync before considering the live event repaired. There is no need to
+delete the series or reset sync state.
