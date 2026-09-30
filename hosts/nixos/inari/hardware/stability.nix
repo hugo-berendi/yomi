@@ -7,12 +7,12 @@
   #
   # Every archived panic from both the 6.12 and 6.18 kernel lines occurred on
   # logical CPU 4 or 5. They are the two SMT threads of the same physical Zen
-  # 3+ core. Start with CPUs 0-3 only so that core can never execute during
-  # early boot; the service below then brings the other known-good cores
-  # online while deliberately leaving 4 and 5 disabled.
+  # 3+ core. maxcpus limits a count, not logical CPU IDs: maxcpus=4 booted
+  # with CPU 4 online. Start with only the boot CPU, then explicitly bring
+  # up the safe threads. This keeps the suspect core out of early boot too.
   boot.kernelParams = [
     "panic=30"
-    "maxcpus=4"
+    "maxcpus=1"
   ];
   boot.kernel.sysctl."kernel.panic_on_oops" = 1;
 
@@ -20,14 +20,29 @@
     description = "Bring known-good Inari CPU cores online";
     wantedBy = ["sysinit.target"];
     before = ["basic.target"];
+    # CPU hotplug is boot containment. Applying a configuration while this
+    # server is running must not change the CPUs underneath its services.
+    restartIfChanged = false;
     unitConfig.DefaultDependencies = "no";
     serviceConfig.Type = "oneshot";
     script = ''
-      for cpu in 6 7 8 9 10 11; do
+      set -euo pipefail
+      # Reconcile an unexpected starting state before enabling safe threads.
+      for cpu in 4 5; do
         online="/sys/devices/system/cpu/cpu$cpu/online"
-        if [[ -w "$online" ]]; then
+        state=$(cat "$online")
+        if [[ "$state" != 0 ]]; then
+          echo 0 > "$online"
+        fi
+        test "$(cat "$online")" = 0
+      done
+      for cpu in 1 2 3 6 7 8 9 10 11; do
+        online="/sys/devices/system/cpu/cpu$cpu/online"
+        state=$(cat "$online")
+        if [[ "$state" != 1 ]]; then
           echo 1 > "$online"
         fi
+        test "$(cat "$online")" = 1
       done
     '';
   };
@@ -47,8 +62,7 @@
   # live in the menu on its own terms.
   specialisation.rescue.configuration = {
     system.nixos.tags = ["rescue"];
-    boot.kernelParams = lib.mkAfter ["maxcpus=1"];
-    systemd.services.online-stable-cpus.wantedBy = lib.mkForce [];
+    systemd.services.online-stable-cpus.enable = lib.mkForce false;
   };
 
   # Offer memtest86+ straight from the boot menu, so a multi-hour memory test
