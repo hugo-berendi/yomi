@@ -1,14 +1,37 @@
-# My own module with nicer syntax for impernanence
+# Home persistence grouped by application.
 {
   lib,
   config,
   ...
 }: let
   cfg = config.yomi.persistence;
+  # Impermanence v2 binds the original live path. App grouping belongs on
+  # the storage side, through persistentStoragePath, rather than in the path
+  # applications read. See nix-community/impermanence#287.
+  processPath = path: lib.strings.removePrefix "${config.home.homeDirectory}/" (builtins.toString path);
+  storageFor = location: app:
+    if location.prefixDirectories
+    then "${location.path}/${app.name}"
+    else location.path;
+  localBackupExcludes = lib.concatMap (location: let
+    persisted = config.home.persistence.${location.home};
+  in
+    lib.concatMap (app:
+      map (d: d.persistentStoragePath + d.dirPath)
+      (lib.filter (d: d.persistentStoragePath == storageFor location app && lib.elem d.directory (map processPath app.directories)) persisted.directories)
+      ++ map (f: f.persistentStoragePath + f.filePath)
+      (lib.filter (f: f.persistentStoragePath == storageFor location app && lib.elem f.file (map processPath app.files)) persisted.files))
+    (lib.filter (app: app.excludeFromLocalBackups) (lib.attrValues location.apps)))
+  (lib.attrValues cfg.at);
 in {
   # {{{ Option definition
   options.yomi.persistence = {
     enable = lib.mkEnableOption "yomi persistence";
+    localBackupExcludes = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      readOnly = true;
+      description = "Physical storage paths explicitly omitted from local Restic backups.";
+    };
 
     at = lib.mkOption {
       default = {};
@@ -53,6 +76,12 @@ in {
                   description = "The gnu/stow-style subdirectory name";
                 };
 
+                excludeFromLocalBackups = lib.mkOption {
+                  type = lib.types.bool;
+                  default = false;
+                  description = "Omit this application's persisted directories and files from local Restic backups.";
+                };
+
                 files = lib.mkOption {
                   type = lib.types.listOf lib.types.str;
                   default = [];
@@ -83,33 +112,18 @@ in {
   # {{{ Config generation
   config = let
     makeLocation = location: let
-      # {{{ Path processing
-      # Impermanence v2 bind-mounts `persistentStoragePath + $HOME + path`, so
-      # the live path has to stay verbatim — bending it is how you end up
-      # mounting ~/claude-code/.claude, which nothing reads and which gets
-      # wiped every reboot. The stow-style grouping that `removePrefixDirectory`
-      # used to provide (dropped in impermanence v2, see nix-community/
-      # impermanence#287) is recreated on the *storage* side instead, by giving
-      # each app its own persistentStoragePath under the location.
-      processPath = path: lib.strings.removePrefix "${config.home.homeDirectory}/" (builtins.toString path);
-
-      storageFor = app:
-        if location.prefixDirectories
-        then "${location.path}/${app.name}"
-        else location.path;
-      # }}}
       # {{{ Constructors
       mkAppDirectory = app:
         builtins.map (directory: {
           directory = processPath directory;
-          persistentStoragePath = storageFor app;
+          persistentStoragePath = storageFor location app;
         })
         app.directories;
 
       mkAppFiles = app:
         builtins.map (file: {
           file = processPath file;
-          persistentStoragePath = storageFor app;
+          persistentStoragePath = storageFor location app;
         })
         app.files;
       # }}}
@@ -125,9 +139,9 @@ in {
           (lib.attrsets.mapAttrsToList (_: mkAppFiles) location.apps);
       };
     # }}}
-  in
-    lib.mkIf cfg.enable {
-      home.persistence = lib.attrsets.mapAttrs' (_: makeLocation) cfg.at;
-    };
+  in {
+    yomi.persistence.localBackupExcludes = lib.optionals cfg.enable localBackupExcludes;
+    home.persistence = lib.mkIf cfg.enable (lib.attrsets.mapAttrs' (_: makeLocation) cfg.at);
+  };
   # }}}
 }

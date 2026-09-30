@@ -20,9 +20,14 @@
     config.xdg.userDirs.pictures
     config.xdg.userDirs.music
     config.xdg.userDirs.videos
-    config.xdg.userDirs.extraConfig.PROJECTS
     config.xdg.userDirs.extraConfig.BOOKS
   ];
+  yomi.persistence.at.data.apps.projects = {
+    # Keep the existing backing path while giving projects its own backup policy.
+    name = "main";
+    directories = [config.xdg.userDirs.extraConfig.PROJECTS];
+    excludeFromLocalBackups = true;
+  };
   # }}}
   # {{{ yubikey
   yomi.persistence.at.state.apps.yubico.directories = ["${config.home.homeDirectory}/.yubico"];

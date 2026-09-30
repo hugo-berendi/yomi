@@ -57,6 +57,9 @@ just dns-diff
 `just check` validates the active host configurations as well as the DNS
 outputs. Run a dry build before applying or committing system changes.
 
+See [the recovery installer guide](./docs/installation.md) for disk installation,
+key-device handling and the private flake input needed on a fresh ISO.
+
 ## Adding a host
 
 1. Create `hosts/nixos/<hostname>/default.nix` and import `../common`.

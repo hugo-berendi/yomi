@@ -20,11 +20,14 @@
   # }}}
   # {{{ Persistence
   yomi.persistence.at.state.apps = {
-    steam.directories = [
-      ".factorio"
-      "${config.xdg.dataHome}/Terraria"
-      "${config.xdg.dataHome}/Steam"
-    ];
+    steam = {
+      excludeFromLocalBackups = true;
+      directories = [
+        ".factorio"
+        "${config.xdg.dataHome}/Terraria"
+        "${config.xdg.dataHome}/Steam"
+      ];
+    };
   };
   # }}}
 }
