@@ -30,8 +30,11 @@
           "$out/share/wayland-sessions/hyprland.desktop"
         # greetd gives the session tty1 as stdio; keep Hyprland's log off the
         # console, where it would show while the greeter hands over.
+        # No other '=' may appear on the Exec line: nwg-hello reads it with
+        # line.split("=")[1], so --identifier=hyprland reached greetd as a bare
+        # --identifier and systemd-cat refused to start the session.
         sed -i \
-          's|^Exec=.*|Exec=${lib.getExe' config.systemd.package "systemd-cat"} --identifier=hyprland ${lib.getExe' hyprland "start-hyprland"} -- --config ${hyprlandConfig}|' \
+          's|^Exec=.*|Exec=${lib.getExe' config.systemd.package "systemd-cat"} -t hyprland ${lib.getExe' hyprland "start-hyprland"} -- --config ${hyprlandConfig}|' \
           "$out/share/wayland-sessions/hyprland.desktop"
       '';
     };
