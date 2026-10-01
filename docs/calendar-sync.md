@@ -94,9 +94,13 @@ or independent exception counters.
 
 A full sync rehearsal retained all four exceptions, and its subsequent unchanged
 sync made no further Google writes. That sync changed the isolated local fixture's
-bytes. A separate content comparison remains pending to distinguish revision and
-serialization changes from changes to event content. All eight temporary events
-were deleted, and the original timer and path trigger resumed.
+bytes. A follow-up content comparison on 2026-10-01 passed with no event content
+differences. Dates, recurrence, descriptions and the other event properties
+survived the round trip. The comparison allows Google's revision counters,
+timestamps, calendar labels, equivalent timezone serialization and empty default
+properties; it still detects changes to descriptions, dates, recurrence, titles
+and cancellation status. All temporary events were deleted, no cleanup remained
+pending, and the original timer and path trigger resumed.
 
 The `calendar-sync` flake check exercises uploads and repeated updates through
 the packaged Google storage client. It rejects the original mixed-sequence
