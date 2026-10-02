@@ -4,75 +4,78 @@
   ...
 }: {
   # {{{ Imports
-  imports = [
-    {yomi.tailscale.enable = true;}
-    ../common
+  imports =
+    [
+      {yomi.tailscale.enable = true;}
+      ../common
 
-    ./networking
-    ./filesystems
-    ./hardware
-    ./memory-limits.nix
-    ./nix-builds.nix
+      ./networking
+      ./filesystems
+      ./hardware
+      ./memory-limits.nix
+      ./nix-builds.nix
 
-    ../common/services/anubis.nix
+      ../common/services/anubis.nix
 
-    ./services/ollama.nix
-    ./services/llama-cpp.nix
-    ./services/llama-cpp-classifier.nix
-    ./services/karakeep.nix
-    ./services/n8n.nix
-    ./services/diabetes.nix
-    ./services/mail-sorter.nix
-    ./services/cloudflared.nix
-    ./services/forgejo
-    ./services/guacamole
-    ./services/paperless.nix
-    ./services/paperless-ai.nix
-    ./services/homepage.nix
-    ./services/msmtp.nix
-    ./services/invidious.nix
-    ./services/jupyter.nix
-    ./services/microbin.nix
-    ./services/mealie.nix
-    ./services/radicale.nix
-    ./services/calsync.nix
-    ./services/redlib.nix
-    ./services/restic.nix
-    ./services/valheim.nix
-    ./services/vaultwarden.nix
-    ./services/immich.nix
-    ./services/music
-    ./services/searxng
-    ./services/zfs.nix
-    ./services/adguard-home.nix
-    ./services/comics/default.nix
-    ./services/media
-    ./services/home-assistant.nix
-    ./services/ntfy.nix
-    ./services/audiobookshelf.nix
-    ./services/gatus.nix
-    ./services/scrutiny.nix
-    ./services/miniflux.nix
-    ./services/healthchecks.nix
-    ./services/pocket-id.nix
-    ./services/prometheus.nix
-    ./services/grafana.nix
-    ./services/loki.nix
-    ./services/alloy.nix
-    ./services/playit.nix
-    ./services/windrose.nix
-    ./services/pelican
-    ./services/owncloud.nix
-    ./services/stirling-pdf.nix
-    ./services/vrising.nix
-    ./services/octodns-ddns.nix
-    ./services/beszel.nix
-    ./services/matrix
-    ./services/opencode.nix
-    ./services/t3code.nix
-    ./services/cliproxyapi.nix
-    ./services/changedetection.nix
-  ];
+      ./services/ollama.nix
+      ./services/llama-cpp.nix
+      ./services/llama-cpp-classifier.nix
+      ./services/karakeep.nix
+      ./services/n8n.nix
+      ./services/diabetes.nix
+      ./services/mail-sorter.nix
+      ./services/cloudflared.nix
+      ./services/forgejo
+      ./services/guacamole
+      ./services/paperless.nix
+      ./services/paperless-ai.nix
+      ./services/homepage.nix
+      ./services/msmtp.nix
+      ./services/invidious.nix
+      ./services/jupyter.nix
+      ./services/microbin.nix
+      ./services/mealie.nix
+      ./services/radicale.nix
+      ./services/calsync.nix
+      ./services/redlib.nix
+      ./services/restic.nix
+      ./services/valheim.nix
+      ./services/vaultwarden.nix
+      ./services/immich.nix
+      ./services/music
+      ./services/searxng
+      ./services/zfs.nix
+      ./services/adguard-home.nix
+      ./services/comics/default.nix
+      ./services/media
+      ./services/home-assistant.nix
+      ./services/ntfy.nix
+      ./services/audiobookshelf.nix
+      ./services/gatus.nix
+      ./services/scrutiny.nix
+      ./services/miniflux.nix
+      ./services/healthchecks.nix
+      ./services/pocket-id.nix
+      ./services/prometheus.nix
+      ./services/grafana.nix
+      ./services/loki.nix
+      ./services/alloy.nix
+      ./services/playit.nix
+      ./services/windrose.nix
+      ./services/pelican
+      ./services/owncloud.nix
+      ./services/stirling-pdf.nix
+      ./services/vrising.nix
+      ./services/octodns-ddns.nix
+      ./services/beszel.nix
+      ./services/matrix
+      ./services/opencode.nix
+      ./services/t3code.nix
+      ./services/cliproxyapi.nix
+      ./services/changedetection.nix
+    ]
+    # The wizard saves hardware choices alongside the restored checkout.
+    ++ lib.optional (builtins.pathExists ./recovery-local.nix) ./recovery-local.nix;
   # }}}
 
   system.stateVersion = "24.05";
@@ -92,7 +95,7 @@
   # current task in some crashes, not their common cause.
   systemd.oomd.enable = lib.mkForce false;
 
-  # The root dataset is rolled back to zroot@blank on every boot. Ensure the
+  # The configured root dataset is rolled back to @blank on every boot. Ensure the
   # home mountpoint itself follows the pilot user's current dynamically
   # allocated UID before Home Manager starts; persisted contents are separate
   # mounts below this directory.

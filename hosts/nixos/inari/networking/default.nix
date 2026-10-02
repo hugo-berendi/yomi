@@ -13,5 +13,5 @@
   ];
 
   networking.wireless.enable = lib.mkForce false;
-  networking.wireless.interfaces = ["wlp2s0"];
+  networking.wireless.interfaces = lib.optional (config.yomi.inari.wifiInterface != null) config.yomi.inari.wifiInterface;
 }

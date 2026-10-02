@@ -1,12 +1,16 @@
-{config, ...}:
+{
+  config,
+  lib,
+  ...
+}:
 # hostapd creates a WIFI network my other devices can connect to
 let
-  interface = "wlp2s0";
+  interface = config.yomi.inari.wifiInterface;
 in {
   sops.secrets.wifi_password = {
     sopsFile = ../secrets.yaml;
   };
-  services.hostapd = {
+  services.hostapd = lib.mkIf (interface != null) {
     enable = true;
     radios.${interface} = {
       band = "2g";

@@ -10,123 +10,141 @@
 # - vlan10: used by the WIFI network this device induces
 # - vlan20: private services accessible by me only
 # - vlan30: public services accessible by the internet
-{lib, ...}: {
-  # Forward packets (IPV4 only)
-  boot.kernel.sysctl = {
-    "net.ipv4.conf.all.forwarding" = true;
-    "net.ipv6.conf.all.forwarding" = lib.mkForce false;
+{
+  config,
+  lib,
+  ...
+}: {
+  options.yomi.inari = {
+    lanInterface = lib.mkOption {
+      type = lib.types.str;
+      default = "eno1";
+      description = "Physical LAN interface enslaved to br0 on the installed server.";
+    };
+    wifiInterface = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = "wlp2s0";
+      description = "Wi-Fi access-point interface, or null when the replacement has none.";
+    };
   };
-
-  # Useful for troubleshooting
-  systemd.services."systemd-networkd".environment.SYSTEMD_LOG_LEVEL = "debug";
-
-  # We'll configure this manually per-interface
-  networking.useDHCP = false;
-  networking.useNetworkd = true;
-
-  systemd.network = {
-    enable = true;
-
-    # Do not require all the interfaces to be up
-    wait-online.anyInterface = true;
-
-    # Devices
-    netdevs = {
-      "20-vlan10" = {
-        netdevConfig = {
-          Kind = "vlan";
-          Name = "vlan10";
-        };
-
-        vlanConfig.Id = 10;
-      };
-
-      "20-vlan20" = {
-        netdevConfig = {
-          Kind = "vlan";
-          Name = "vlan20";
-        };
-
-        vlanConfig.Id = 20;
-      };
-
-      "20-vlan30" = {
-        netdevConfig = {
-          Kind = "vlan";
-          Name = "vlan30";
-        };
-
-        vlanConfig.Id = 30;
-      };
-
-      "20-br0" = {
-        netdevConfig = {
-          Name = "br0";
-          Kind = "bridge";
-        };
-      };
-
-      "20-br1" = {
-        netdevConfig = {
-          Name = "br1";
-          Kind = "bridge";
-        };
-      };
+  config = {
+    # Forward packets (IPV4 only)
+    boot.kernel.sysctl = {
+      "net.ipv4.conf.all.forwarding" = true;
+      "net.ipv6.conf.all.forwarding" = lib.mkForce false;
     };
 
-    # Networks
-    networks = {
-      "30-eno1" = {
-        matchConfig.Name = "eno1"; # This is the laptop's ethernet interface
-        networkConfig.Bridge = "br0";
-        linkConfig.RequiredForOnline = "enslaved";
-      };
+    # Useful for troubleshooting
+    systemd.services."systemd-networkd".environment.SYSTEMD_LOG_LEVEL = "debug";
 
-      "30-wlp2s0" = {
-        matchConfig.Name = "wlp2s0"; # This is the laptop's wireless interface
-        linkConfig.Unmanaged = "yes"; # hostapd will take care of this!
-      };
+    # We'll configure this manually per-interface
+    networking.useDHCP = false;
+    networking.useNetworkd = true;
 
-      "40-br0" = {
-        matchConfig.Name = "br0";
-        linkConfig.RequiredForOnline = "carrier";
-        networkConfig = {
-          LinkLocalAddressing = "no";
-          Address = "192.168.178.200/24";
-          Gateway = "192.168.178.1";
+    systemd.network = {
+      enable = true;
+
+      # Do not require all the interfaces to be up
+      wait-online.anyInterface = true;
+
+      # Devices
+      netdevs = {
+        "20-vlan10" = {
+          netdevConfig = {
+            Kind = "vlan";
+            Name = "vlan10";
+          };
+
+          vlanConfig.Id = 10;
         };
 
-        vlan = [
-          "vlan10"
-          "vlan20"
-          "vlan30"
-        ];
-      };
+        "20-vlan20" = {
+          netdevConfig = {
+            Kind = "vlan";
+            Name = "vlan20";
+          };
 
-      "50-vlan20" = {
-        matchConfig.Name = "vlan20";
-        networkConfig = {
-          Address = "192.168.20.1/24";
+          vlanConfig.Id = 20;
+        };
+
+        "20-vlan30" = {
+          netdevConfig = {
+            Kind = "vlan";
+            Name = "vlan30";
+          };
+
+          vlanConfig.Id = 30;
+        };
+
+        "20-br0" = {
+          netdevConfig = {
+            Name = "br0";
+            Kind = "bridge";
+          };
+        };
+
+        "20-br1" = {
+          netdevConfig = {
+            Name = "br1";
+            Kind = "bridge";
+          };
         };
       };
 
-      "50-vlan30" = {
-        matchConfig.Name = "vlan30";
-        networkConfig = {
-          Address = "192.168.30.1/24";
+      # Networks
+      networks = {
+        "30-eno1" = {
+          matchConfig.Name = config.yomi.inari.lanInterface;
+          networkConfig.Bridge = "br0";
+          linkConfig.RequiredForOnline = "enslaved";
         };
-      };
 
-      "50-vlan10" = {
-        matchConfig.Name = "vlan10";
-        networkConfig.Bridge = "br1";
-        linkConfig.RequiredForOnline = "enslaved";
-      };
+        "30-wlp2s0" = lib.mkIf (config.yomi.inari.wifiInterface != null) {
+          matchConfig.Name = config.yomi.inari.wifiInterface;
+          linkConfig.Unmanaged = "yes"; # hostapd will take care of this!
+        };
 
-      "60-br1" = {
-        matchConfig.Name = "br1";
-        networkConfig = {
-          Address = "192.168.10.1/24";
+        "40-br0" = {
+          matchConfig.Name = "br0";
+          linkConfig.RequiredForOnline = "carrier";
+          networkConfig = {
+            LinkLocalAddressing = "no";
+            Address = "192.168.178.200/24";
+            Gateway = "192.168.178.1";
+          };
+
+          vlan = [
+            "vlan10"
+            "vlan20"
+            "vlan30"
+          ];
+        };
+
+        "50-vlan20" = {
+          matchConfig.Name = "vlan20";
+          networkConfig = {
+            Address = "192.168.20.1/24";
+          };
+        };
+
+        "50-vlan30" = {
+          matchConfig.Name = "vlan30";
+          networkConfig = {
+            Address = "192.168.30.1/24";
+          };
+        };
+
+        "50-vlan10" = {
+          matchConfig.Name = "vlan10";
+          networkConfig.Bridge = "br1";
+          linkConfig.RequiredForOnline = "enslaved";
+        };
+
+        "60-br1" = {
+          matchConfig.Name = "br1";
+          networkConfig = {
+            Address = "192.168.10.1/24";
+          };
         };
       };
     };
