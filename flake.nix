@@ -338,6 +338,10 @@
               inherit pkgs;
               config = self.nixosConfigurations.inari.config;
             };
+            app-state-zfs = import ./tests/app-state-zfs.nix {
+              inherit pkgs;
+              config = self.nixosConfigurations.inari.config;
+            };
             dns-zones = dnsPackages.octodns-zones;
             dns-sync = dnsPackages.octodns-sync;
           };

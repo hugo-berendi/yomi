@@ -18,6 +18,7 @@ in {
       PGHOST = "/run/restic-offsite-restore";
       PGPORT = "55432";
       PGUSER = "yomi_restore_admin";
+      PAPERLESS_ORIGINALS = "${config.services.paperless.mediaDir}/documents/originals";
     };
     serviceConfig = {
       Type = "oneshot";
@@ -70,7 +71,7 @@ in {
 
       # Pin one snapshot so a concurrent backup cannot change 'latest' midway.
       snapshot=$(restic --retry-lock=30m snapshots --host inari --tag app-state-v1 --json | jq -er 'max_by(.time).id')
-      restic --retry-lock=30m ls --json "$snapshot" /raid5pool/media/documents/originals > "$work/files.jsonl"
+      restic --retry-lock=30m ls --json "$snapshot" "$PAPERLESS_ORIGINALS" > "$work/files.jsonl"
       document=$(jq -ser 'map(select(.type == "file" and .size > 0)) | first.path' "$work/files.jsonl")
       restic --retry-lock=30m dump "$snapshot" "$document" > "$work/document"
       test -s "$work/document"

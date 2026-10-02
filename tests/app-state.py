@@ -142,7 +142,7 @@ assert set(configured) >= {
 }
 sources = {}
 for name, app in configured.items():
-    assert "/.zfs/snapshot/yomi-app-state-backup/" in app["source"]
+    assert app["source"].startswith("/run/restic-app-state/")
     folder = root / "unit-snapshots" / name
     folder.mkdir(parents=True, mode=0o700)
     (folder / "state").write_text("synthetic state")
@@ -161,6 +161,8 @@ tools = root / "tools"
 tools.mkdir()
 markers = root / "held-snapshots"
 markers.mkdir()
+mounts = root / "held-mounts"
+mounts.mkdir()
 fake_zfs = tools / "zfs"
 fake_zfs.write_text(
     f"#!{sys.executable}\n"
@@ -179,21 +181,52 @@ if command == 'snapshot':
     assert not marker.exists(), 'Stale snapshot was not cleaned'
     marker.touch()
 elif command == 'destroy':
+    assert not any(p.read_text() == snapshot for p in Path(os.environ['YOMI_TEST_MOUNTS']).iterdir()), 'Snapshot destroyed while mounted'
     marker.unlink()
 else:
     raise AssertionError('Unexpected ZFS command')
 """
 )
 fake_zfs.chmod(0o755)
+fake_mount = tools / "mount"
+fake_mount.write_text(
+    f"#!{sys.executable}\n"
+    + """
+import os
+from pathlib import Path
+import sys
+command = Path(sys.argv[0]).name
+mounts = Path(os.environ['YOMI_TEST_MOUNTS'])
+marker = mounts / Path(sys.argv[-1]).name
+if command == 'mountpoint':
+    sys.exit(0 if marker.exists() else 1)
+if command == 'umount':
+    marker.unlink()
+else:
+    assert sys.argv[1:5] == ['-t', 'zfs', '-o', 'ro']
+    snapshot = sys.argv[-2]
+    held = Path(os.environ['YOMI_TEST_SNAPSHOTS']) / (snapshot.replace('/', '-') + '.held')
+    assert held.exists(), 'Mounted before taking a snapshot'
+    if os.environ.get('YOMI_TEST_FAIL_MOUNT') and list(mounts.iterdir()):
+        sys.exit(20)
+    marker.write_text(snapshot)
+"""
+)
+fake_mount.chmod(0o755)
+for name in ("umount", "mountpoint"):
+    (tools / name).symlink_to(fake_mount)
 env = os.environ | {
     "PATH": str(tools) + os.pathsep + os.environ["PATH"],
     "APP_STATE_SOURCES": str(manifest),
     "APP_STATE_DESTINATION": str(destination),
     "YOMI_TEST_SNAPSHOTS": str(markers),
+    "YOMI_TEST_MOUNTS": str(mounts),
+    "RUNTIME_DIRECTORY": str(root / "runtime"),
 }
 for _ in range(2):
     subprocess.run([unit], env=env, check=True)
     assert not list(markers.iterdir()), "Successful staging left snapshots held"
+    assert not list(mounts.iterdir()), "Successful staging left snapshots mounted"
     for name, app in configured.items():
         assert (destination / name / "state").read_text() == "synthetic state"
         for filename in app.get("sqlite", []):
@@ -206,11 +239,19 @@ failed = subprocess.run(
 )
 assert failed.returncode != 0
 assert not list(markers.iterdir()), "A partial snapshot failure leaked a snapshot"
+assert not list(mounts.iterdir()), "A partial snapshot failure leaked a mount"
+failed = subprocess.run(
+    [unit], env=env | {"YOMI_TEST_FAIL_MOUNT": "1"}, capture_output=True
+)
+assert failed.returncode != 0
+assert not list(markers.iterdir()), "A partial mount failure leaked a snapshot"
+assert not list(mounts.iterdir()), "A partial mount failure leaked a mount"
 required_db = Path(sources["paperless"]["source"]) / "db.sqlite3"
 required_db.rename(required_db.with_name("missing.sqlite"))
 failed = subprocess.run([unit], env=env, capture_output=True)
 assert failed.returncode != 0
 assert not list(markers.iterdir()), "A staging failure leaked snapshots"
+assert not list(mounts.iterdir()), "A staging failure leaked snapshot mounts"
 assert (destination / "paperless/db.sqlite3").exists(), (
     "Failed staging replaced the last backup"
 )

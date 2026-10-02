@@ -20,6 +20,7 @@ in
     export PGUSER=yomi_restore_admin
     export PGPORT=55432
     export PGHOST="$TMPDIR/restore-socket"
+    export PAPERLESS_ORIGINALS="$FIXTURE${restore.environment.PAPERLESS_ORIGINALS}"
     mkdir -p "$CREDENTIALS_DIRECTORY" "$CACHE_DIRECTORY" "$PGHOST" "$TMPDIR/source-socket"
     printf 'synthetic-test-password' > "$CREDENTIALS_DIRECTORY/password"
     printf '%s' "$TMPDIR/repository" > "$CREDENTIALS_DIRECTORY/repository"
@@ -27,10 +28,10 @@ in
     export RESTIC_REPOSITORY_FILE="$CREDENTIALS_DIRECTORY/repository"
     restic init
 
-    mkdir -p "$FIXTURE/raid5pool/media/documents/originals" \
+    mkdir -p "$FIXTURE/raid5pool/media/documents/documents/originals" \
       "$FIXTURE/persist/state/var/backup/postgresql" \
       "$FIXTURE/persist/state/var/backup/app-state/paperless"
-    printf 'synthetic original document' > "$FIXTURE/raid5pool/media/documents/originals/document.pdf"
+    printf 'synthetic original document' > "$FIXTURE/raid5pool/media/documents/documents/originals/document.pdf"
     sqlite3 "$FIXTURE/persist/state/var/backup/app-state/paperless/db.sqlite3" \
       'CREATE TABLE documents_document (id INTEGER PRIMARY KEY); INSERT INTO documents_document VALUES (1);'
     initdb -D "$TMPDIR/source-pg" -U postgres --auth=trust --no-locale > /dev/null

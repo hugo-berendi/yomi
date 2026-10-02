@@ -6,8 +6,9 @@
 }: let
   destination = "/persist/state/var/backup/app-state";
   snapshotName = "yomi-app-state-backup";
-  stateSnapshot = "/persist/state/.zfs/snapshot/${snapshotName}";
-  raidSnapshot = "/raid5pool/.zfs/snapshot/${snapshotName}";
+  snapshotMounts = "/run/restic-app-state";
+  stateSnapshot = "${snapshotMounts}/state";
+  raidSnapshot = "${snapshotMounts}/raid";
   state = path: {source = "${stateSnapshot}/${path}";};
   applications = {
     vaultwarden = (state "var/lib/bitwarden_rs") // {sqlite = ["db.sqlite3"];};
@@ -65,7 +66,7 @@ in {
       description = "Stage application state from frozen ZFS snapshots";
       unitConfig.RequiresMountsFor = ["/persist/state" "/raid5pool"];
       restartIfChanged = false;
-      path = [config.boot.zfs.package pkgs.coreutils pkgs.python3];
+      path = [config.boot.zfs.package pkgs.coreutils pkgs.python3 pkgs.util-linux];
       environment = {
         APP_STATE_SOURCES = toString manifest;
         APP_STATE_DESTINATION = destination;
@@ -75,14 +76,23 @@ in {
         TimeoutStartSec = "4h";
         UMask = "0077";
         PrivateTmp = true;
+        PrivateMounts = true;
         ProtectHome = true;
         NoNewPrivileges = true;
+        RuntimeDirectory = "restic-app-state";
+        RuntimeDirectoryMode = "0700";
       };
       script = ''
         set -euo pipefail
         snapshots=(${lib.escapeShellArgs (map (dataset: "${dataset}@${snapshotName}") datasets)})
+        mounts=("$RUNTIME_DIRECTORY/state" "$RUNTIME_DIRECTORY/raid")
         cleanup() {
           local failed=0
+          for mountpoint in "''${mounts[@]}"; do
+            if mountpoint -q "$mountpoint"; then
+              umount "$mountpoint" || failed=1
+            fi
+          done
           for snapshot in "''${snapshots[@]}"; do
             if zfs list -H -o name -t snapshot "$snapshot" >/dev/null 2>&1; then
               zfs destroy "$snapshot" || failed=1
@@ -94,8 +104,12 @@ in {
         # killed run, and release them on both success and failure.
         cleanup
         trap cleanup EXIT
-        for snapshot in "''${snapshots[@]}"; do
-          zfs snapshot "$snapshot"
+        # Explicit private mounts avoid relying on .zfs automount visibility
+        # across the host and this service's sandbox namespaces.
+        for index in "''${!snapshots[@]}"; do
+          zfs snapshot "''${snapshots[$index]}"
+          mkdir -p "''${mounts[$index]}"
+          mount -t zfs -o ro "''${snapshots[$index]}" "''${mounts[$index]}"
         done
         python3 ${helper} "$APP_STATE_SOURCES" "$APP_STATE_DESTINATION"
       '';
