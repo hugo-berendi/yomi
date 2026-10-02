@@ -3,8 +3,10 @@
 {
   pkgs ? (import ../nixpkgs.nix) {},
   upkgs ? pkgs,
+  disko ? pkgs.disko,
   ...
 }: {
+  yomi-recover = pkgs.callPackage ./yomi-recover {inherit disko;};
   vimclip = pkgs.callPackage ./vimclip.nix {};
   pelican-wings = pkgs.callPackage ./pelican-wings.nix {};
   chatgpt = pkgs.callPackage ./chatgpt.nix {};

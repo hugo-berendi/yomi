@@ -63,6 +63,20 @@ nixos-rebuild action="switch" host=hostname install_bootloader="0":
 build-iso:
   nix build .#nixosConfigurations.iso.config.system.build.isoImage --accept-flake-config
 
+[doc("Open the Yomi recovery wizard; uses sudo on an installed host")]
+[group("nix")]
+recover:
+  #!/usr/bin/env python3
+  import os
+  import subprocess
+  package = subprocess.check_output([
+    "nix", "build", "--no-link", "--print-out-paths", "--accept-flake-config", ".#yomi-recover",
+  ], text=True).strip()
+  command = [f"{package}/bin/yomi-recover"]
+  if os.geteuid() != 0:
+    command.insert(0, "/run/wrappers/bin/sudo")
+  subprocess.run(command, check=True)
+
 [doc("Bumps flake inputs that usually need to be as up to date as possible")]
 [group("nix")]
 bump-common:

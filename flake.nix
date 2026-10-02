@@ -251,7 +251,10 @@
         ...
       }: let
         upkgs = mkPkgs inputs.nixpkgs-unstable system;
-        myPkgs = import ./pkgs {inherit pkgs upkgs;};
+        myPkgs = import ./pkgs {
+          inherit pkgs upkgs;
+          disko = inputs.disko.packages.${system}.disko;
+        };
 
         specialArgs = {
           inherit inputs;
@@ -298,6 +301,15 @@
           // {
             diabetes = self.nixosConfigurations.inari.config.system.build.diabetes-tests;
             installer = import ./tests/installer.nix {inherit pkgs;};
+            recover-tool = import ./tests/recover-tool.nix {inherit pkgs;};
+            recover-disks = import ./tests/recover-disks.nix {
+              inherit pkgs;
+              package = myPkgs.yomi-recover;
+            };
+            recovery-options = import ./tests/recovery-options.nix {
+              inherit pkgs;
+              configuration = self.nixosConfigurations.inari;
+            };
             calendar-sync = import ./tests/calendar-sync.nix {
               inherit pkgs;
               package = self.nixosConfigurations.inari.config.services.vdirsyncer.package;
