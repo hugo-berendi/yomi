@@ -57,8 +57,6 @@ just dns-diff
 `just check` validates the active host configurations as well as the DNS
 outputs. Run a dry build before applying or committing system changes.
 
-See [the recovery installer guide](./docs/installation.md) for disk installation,
-key-device handling and the private flake input needed on a fresh ISO.
 The [calendar sync guide](./docs/calendar-sync.md) covers the live sync units and
 Google's recurring-event compatibility fix.
 
