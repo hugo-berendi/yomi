@@ -47,6 +47,23 @@ in
     test ! -e "$CACHE_DIRECTORY/work"
     ${restoreScript}
     test ! -e "$CACHE_DIRECTORY/work"
+    cp "$FIXTURE/persist/state/var/backup/postgresql/all.sql.zstd" "$TMPDIR/valid.sql.zstd"
+    zstd -dc "$TMPDIR/valid.sql.zstd" > "$TMPDIR/missing-extension.sql"
+    printf '\nCREATE EXTENSION definitely_missing_restore_fixture;\n' >> "$TMPDIR/missing-extension.sql"
+    zstd -c "$TMPDIR/missing-extension.sql" > "$FIXTURE/persist/state/var/backup/postgresql/all.sql.zstd"
+    restic backup --host inari --tag app-state-v1 "$FIXTURE"
+    if ${restoreScript}; then
+      echo 'Missing PostgreSQL extension counted as successful recovery' >&2
+      exit 1
+    fi
+    test ! -e "$CACHE_DIRECTORY/work"
+    test "$(stat -c %a "$CACHE_DIRECTORY/import-failure.log")" = 600
+    grep -F 'extension "definitely_missing_restore_fixture" is not available' "$CACHE_DIRECTORY/import-failure.log"
+    cp "$TMPDIR/valid.sql.zstd" "$FIXTURE/persist/state/var/backup/postgresql/all.sql.zstd"
+    restic backup --host inari --tag app-state-v1 "$FIXTURE"
+    ${restoreScript}
+    test ! -e "$CACHE_DIRECTORY/work"
+    test ! -e "$CACHE_DIRECTORY/import-failure.log"
     # Valid SQLite with the wrong application schema must not count as recovery.
     sqlite3 "$FIXTURE/persist/state/var/backup/app-state/paperless/db.sqlite3" 'DROP TABLE documents_document; CREATE TABLE unrelated (id int);'
     restic backup --host inari --tag app-state-v1 "$FIXTURE"

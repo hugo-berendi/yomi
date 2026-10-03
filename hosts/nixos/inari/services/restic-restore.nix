@@ -60,6 +60,7 @@ in {
       work="$CACHE_DIRECTORY/work"
       # CacheDirectory survives a killed run; discard its incomplete restore.
       rm -rf "$work"
+      rm -f "$CACHE_DIRECTORY/import-failure.log"
       mkdir -p "$work"
       cleanup() {
         if [ -f "$work/pgdata/postmaster.pid" ]; then
@@ -86,7 +87,9 @@ in {
       pg_ctl -D "$work/pgdata" -l "$work/postgres.log" \
         -o "-c listen_addresses= -k $PGHOST -p $PGPORT -c shared_preload_libraries=${lib.escapeShellArg config.services.postgresql.settings.shared_preload_libraries}" -w start
       zstd -dc "$work/all.sql.zstd" | psql -X --set=ON_ERROR_STOP=1 --dbname=postgres > "$work/import.log" 2>&1 || {
-        echo "PostgreSQL restore failed; inspect the dump in an isolated environment."
+        # SQL errors can contain application data, so keep the log private.
+        install -m 0600 "$work/import.log" "$CACHE_DIRECTORY/import-failure.log"
+        echo "PostgreSQL restore failed; inspect $CACHE_DIRECTORY/import-failure.log privately."
         exit 1
       }
       # An empty or truncated-but-valid SQL file must not count as recovery.
