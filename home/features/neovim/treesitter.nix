@@ -23,7 +23,12 @@ _: {
       csharp.enable = true;
       helm.enable = true;
       astro.enable = true;
-      svelte.enable = true;
+      svelte = {
+        enable = true;
+        # nvf's Prettier plugin pins vulnerable pnpm 10.34.0; Biome keeps
+        # Svelte formatting enabled without allowing the insecure package.
+        format.type = ["biome"];
+      };
     };
 
     treesitter = {
