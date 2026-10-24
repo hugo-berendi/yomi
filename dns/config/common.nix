@@ -62,58 +62,6 @@
       ttl = 600;
     }
   ];
-  # }}}
-  # {{{ Proton mail DNS setup
-  # Proton issues the verification token and the DKIM CNAME targets per
-  # domain (Settings -> Domain names), so they are passed in, not derived.
-  protonMail = at: verifyToken: dkimDomain: let
-    atPrefix = prefix:
-      if at == ""
-      then prefix
-      else "${prefix}.${at}";
-    dkim = selector: {
-      at = atPrefix "${selector}._domainkey";
-      type = "CNAME";
-      value = "${selector}.domainkey.${dkimDomain}.";
-      ttl = 600;
-    };
-  in [
-    {
-      inherit at;
-      ttl = 600;
-      type = "MX";
-      value = [
-        {
-          exchange = "mail.protonmail.ch.";
-          preference = 10;
-        }
-        {
-          exchange = "mailsec.protonmail.ch.";
-          preference = 20;
-        }
-      ];
-    }
-    {
-      inherit at;
-      ttl = 600;
-      type = "TXT";
-      value = [
-        "v=spf1 include:_spf.protonmail.ch ~all"
-        "protonmail-verification=${verifyToken}"
-      ];
-    }
-    {
-      at = atPrefix "_dmarc";
-      type = "TXT";
-      value = ''v=DMARC1\; p=quarantine\;'';
-      ttl = 600;
-    }
-    (dkim "protonmail")
-    (dkim "protonmail2")
-    (dkim "protonmail3")
-  ];
-  # }}}
-  # {{{ SimpleLogin mail DNS setup
   simpleLoginMail = at: let
     atPrefix = prefix:
       if at == ""
@@ -157,11 +105,7 @@ in
       # (ghPage "doffycup")
       # (ghPage "erratic-gate")
       # (ghPage "giftstogo")
-      # The bare domain moved to Proton; tengu keeps sending service mail
-      # through Migadu.
-      (protonMail ""
-        "6f73dfad8d8d3cf48a45fcefa7e487318cb3b396"
-        "dnnrdhxgtnisstbiamas5jw3hf4c32bkkcufe5i63vfslns6uazyq.domains.proton.ch")
+      (migaduMail "" "xmycngew")
       (migaduMail "tengu" "t5fehqan")
       (simpleLoginMail "yokai")
       [
