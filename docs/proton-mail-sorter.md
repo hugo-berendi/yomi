@@ -24,7 +24,9 @@ The relay and the sorter turn on together when `bridge-cert.pem` exists. Before 
 The server uses a 1Password service account that can read only the **Automation** vault. Service accounts cannot reach Personal, so the Windows entry `Personal / Proton Mail Bridge` is not used. Its values belong to the Windows Bridge anyway. Automation holds:
 
 1. `Proton Mail Bridge (inari)`, with fields `username` and `password`. These are the values Bridge on inari prints under `info`, not the Proton account password.
-2. `Proton Mail Sorter`, with field `api-token`: a random string of at least 32 characters.
+2. `Proton Mail Sorter`, an API credential whose `credential` field holds a random string of at least 32 characters.
+
+The module refers to both by item ID (`op://Automation/<id>/<field>`): `op read` rejects the parentheses in the first title, and IDs survive renames. Find them with `op item list --vault Automation`.
 
 The service-account token is in `proton-mail-sorter/secrets.yaml`, encrypted with sops. systemd hands it to the worker through `LoadCredential`, and the worker passes it only into the environment of the `op read` child process. Read values are cached in memory for 15 minutes. No value goes into the Nix store, workflow JSON, a command line or n8n execution data.
 

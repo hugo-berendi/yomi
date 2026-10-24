@@ -184,9 +184,13 @@ in {
     serviceAccountTokenFile = config.sops.secrets.op_service_account_token.path;
     # The service account sees only the Automation vault. These are the
     # inari Bridge's credentials, not the Windows Bridge's in Personal.
-    usernameRef = "op://Automation/Proton Mail Bridge (inari)/username";
-    passwordRef = "op://Automation/Proton Mail Bridge (inari)/password";
-    apiTokenRef = "op://Automation/Proton Mail Sorter/api-token";
+    # Item IDs, not titles: `op read` rejects the parentheses in
+    # "Proton Mail Bridge (inari)", and IDs survive a rename.
+    #   fjgnyfe4s4lrreazuvv2j7ouwe  Proton Mail Bridge (inari), Login
+    #   jyof6qc6syd5al5rw3uz2uqzvq  Proton Mail Sorter, API credential
+    usernameRef = "op://Automation/fjgnyfe4s4lrreazuvv2j7ouwe/username";
+    passwordRef = "op://Automation/fjgnyfe4s4lrreazuvv2j7ouwe/password";
+    apiTokenRef = "op://Automation/jyof6qc6syd5al5rw3uz2uqzvq/credential";
   };
   # }}}
   # {{{ Storage
