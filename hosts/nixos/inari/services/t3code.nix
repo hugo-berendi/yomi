@@ -9,7 +9,8 @@
   port = config.yomi.ports.t3code;
   agents = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
   codex = import ../../../../home/features/cli/ai/codex-package.nix {inherit inputs pkgs;};
-  package = agents.t3code.override {
+  # Use the pinned upstream release until llm-agents packages 0.1.2.
+  package = pkgs.callPackage ../../../../pkgs/t3code-release.nix {
     providerPackages = [codex agents.claude-code agents.opencode];
   };
 in {
