@@ -9,6 +9,7 @@
     ./opencode
     ./claude-code.nix
     ./codex.nix
+    ./efficient-agents.nix
     ./skills.nix
   ];
   # }}}
