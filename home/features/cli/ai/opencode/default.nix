@@ -101,7 +101,10 @@ in {
     package = opencodePackage;
 
     settings = {
-      model = "openai/gpt-5.3-codex";
+      model =
+        if useV2
+        then "github-copilot/auto"
+        else "openai/gpt-5.3-codex";
 
       # Keep V1's approval before reading outside a project.
       permission = lib.optionalAttrs useV2 {external_directory = "ask";};

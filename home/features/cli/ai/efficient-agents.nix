@@ -35,17 +35,18 @@ in
       ${policy}
       Review only the supplied scope; report concrete findings and evidence.
     '';
+    # Student exposes Auto only; fixed hidden models fail instead of saving usage.
     programs.opencode.settings.agent = {
       fast-task = {
-        description = "Cheap routine lookup, triage, mechanical change or targeted test.";
+        description = "Bounded routine work using the available Copilot Auto router.";
         mode = "subagent";
-        model = "github-copilot/claude-haiku-5.5";
+        model = "github-copilot/auto";
         prompt = policy + "\nComplete only the assigned task; do not delegate again.";
       };
       quick-review = {
-        description = "Bounded independent review requiring Sonnet-class reasoning.";
+        description = "Bounded independent review using the available Copilot Auto router.";
         mode = "subagent";
-        model = "github-copilot/claude-sonnet-5.5";
+        model = "github-copilot/auto";
         prompt = policy + "\nReview only the assigned scope; report concrete findings compactly.";
       };
     };

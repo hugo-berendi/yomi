@@ -1,0 +1,629 @@
+diff --git a/packages/core/src/github-copilot/auto.ts b/packages/core/src/github-copilot/auto.ts
+new file mode 100644
+index 000000000000..32f5681c9ae1
+--- /dev/null
++++ b/packages/core/src/github-copilot/auto.ts
+@@ -0,0 +1,42 @@
++export * as CopilotAuto from "./auto.js"
++
++import { Schema } from "effect"
++
++const Response = Schema.Struct({
++  session_token: Schema.String,
++  expires_at: Schema.Number,
++  selected_model: Schema.Struct({ id: Schema.String }),
++})
++const decodeResponse = Schema.decodeUnknownSync(Response)
++
++/** A Session's routed model. `token` unlocks auto-only models and the auto discount. */
++export interface Route {
++  readonly model: string
++  readonly token?: string
++  /** Epoch milliseconds after which the Session must be routed again. */
++  readonly until: number
++}
++
++// Copilot session tokens last 24 hours; route again before one can expire mid-request.
++const refreshMargin = 5 * 60 * 1000
++
++/** Asks Copilot's auto router which model should serve a prompt. */
++export async function route(
++  baseURL: string,
++  headers: Record<string, string>,
++  input: { readonly prompt: string; readonly image: boolean },
++): Promise<Route> {
++  const response = await fetch(`${baseURL}/auto`, {
++    method: "POST",
++    headers: { ...headers, "Content-Type": "application/json" },
++    body: JSON.stringify({ prompt: input.prompt, ...(input.image ? { has_image: true } : {}) }),
++    signal: AbortSignal.timeout(5_000),
++  })
++  if (!response.ok) throw new Error(`Copilot auto routing failed: ${response.status}`)
++  const body = decodeResponse(await response.json())
++  return {
++    model: body.selected_model.id,
++    token: body.session_token,
++    until: body.expires_at * 1000 - refreshMargin,
++  }
++}
+diff --git a/packages/core/src/github-copilot/models.ts b/packages/core/src/github-copilot/models.ts
+index 8af9fbf496f7..71a70ad1f647 100644
+--- a/packages/core/src/github-copilot/models.ts
++++ b/packages/core/src/github-copilot/models.ts
+@@ -7,6 +7,7 @@ import { Provider } from "../provider.js"
+ 
+ const RemoteModel = Schema.Struct({
+   model_picker_enabled: Schema.Boolean,
++  is_chat_fallback: Schema.optional(Schema.Boolean),
+   id: Schema.String,
+   name: Schema.String,
+   version: Schema.String,
+@@ -14,6 +15,8 @@ const RemoteModel = Schema.Struct({
+   policy: Schema.optional(Schema.Struct({ state: Schema.optional(Schema.String) })),
+   billing: Schema.optional(
+     Schema.Struct({
++      // Present on models that Copilot's auto router may select.
++      auto_discount: Schema.optional(Schema.Number),
+       token_prices: Schema.optional(
+         Schema.Struct({
+           batch_size: Schema.Number,
+@@ -114,9 +117,40 @@ export function derive(baseURL: string, remote: Snapshot, existing: readonly Mod
+     result.set(key, build(key, model, baseURL))
+   }
+ 
++  const candidates = Array.from(remote.values()).filter((model) => model.billing?.auto_discount !== undefined)
++  if (candidates.length > 0 && !remote.has(auto)) result.set(auto, router(baseURL, candidates))
++
+   return result
+ }
+ 
++/** Copilot's auto router. Plans limited to auto selection hide every other model from the picker. */
++export const auto = Model.ID.make("auto")
++
++// The router serves each Session with one of the candidates, so advertise only what all of them support.
++function router(baseURL: string, candidates: UsableModel[]) {
++  return Model.Info.make({
++    ...Model.Info.default(Provider.ID.githubCopilot, auto),
++    family: Model.Family.make("auto"),
++    name: "Auto",
++    package: Provider.aisdk("@ai-sdk/github-copilot"),
++    settings: { baseURL },
++    capabilities: {
++      tools: true,
++      input: candidates.some((model) => model.capabilities.supports.vision) ? ["text", "image"] : ["text"],
++      output: ["text"],
++    },
++    limit: {
++      context: Math.min(
++        ...candidates.map(
++          (model) => model.capabilities.limits.max_context_window_tokens ?? model.capabilities.limits.max_prompt_tokens,
++        ),
++      ),
++      input: Math.min(...candidates.map((model) => model.capabilities.limits.max_prompt_tokens)),
++      output: Math.min(...candidates.map((model) => model.capabilities.limits.max_output_tokens)),
++    },
++  })
++}
++
+ function usable(model: RemoteModel): model is UsableModel {
+   return (
+     model.policy?.state !== "disabled" &&
+diff --git a/packages/core/src/plugin/provider/github-copilot.ts b/packages/core/src/plugin/provider/github-copilot.ts
+index 19de498c5e81..abbb13f4e1cf 100644
+--- a/packages/core/src/plugin/provider/github-copilot.ts
++++ b/packages/core/src/plugin/provider/github-copilot.ts
+@@ -1,9 +1,11 @@
+ import type { IntegrationOAuthMethodRegistration } from "@opencode/plugin/effect/integration"
+ import type { SessionRequestKind, SessionTitle } from "@opencode/plugin/effect/session"
+-import { Effect, Option, Schema, Semaphore, Stream } from "effect"
++import type { Session } from "@opencode/schema/session"
++import { Clock, Effect, Option, Schema, Semaphore, Stream } from "effect"
+ import { IntegrationConnection } from "../../integration/connection.js"
+ import { Credential } from "../../credential.js"
+ import { Bus } from "../../bus.js"
++import { CopilotAuto } from "../../github-copilot/auto.js"
+ import { CopilotModels } from "../../github-copilot/models.js"
+ import { App } from "../../app.js"
+ import { Integration } from "../../integration.js"
+@@ -168,8 +170,12 @@ export const GithubCopilotPlugin = define({
+       models?: CopilotModels.Snapshot
+       connection?: Effect.Success<ReturnType<typeof ctx.integration.connection.active>>
+     } = {}
++    const routes = new Map<Session.ID, CopilotAuto.Route>()
++    // Routing misses are rare (once per Session per day), so one lock is simpler than per-Session locks.
++    const routing = Semaphore.makeUnsafe(1)
+ 
+     const load = Effect.fn("GithubCopilotPlugin.load")(function* () {
++      routes.clear()
+       const connection = yield* ctx.integration.connection.active("github-copilot")
+       const credential = connection
+         ? yield* ctx.integration.connection.resolve(connection).pipe(Effect.orElseSucceed(() => undefined))
+@@ -287,6 +293,69 @@ export const GithubCopilotPlugin = define({
+           evt.headers["X-Interaction-Type"] = interaction
+           evt.headers["X-Interaction-Id"] = session ? SessionAffinity.get(session) : evt.sessionID
+           if (interaction !== "conversation-agent") evt.headers["x-initiator"] = "agent"
++          const route = routes.get(evt.sessionID)
++          if (route?.token && route.model === evt.model.id) evt.headers["Copilot-Session-Token"] = route.token
++        }),
++      { providerID: Provider.ID.githubCopilot },
++    )
++    const current = (sessionID: Session.ID) =>
++      Clock.currentTimeMillis.pipe(
++        Effect.map((now) => {
++          const route = routes.get(sessionID)
++          return route && route.until > now ? route : undefined
++        }),
++      )
++    const route = Effect.fn("GithubCopilotPlugin.route")(function* (sessionID: Session.ID) {
++      const cached = yield* current(sessionID)
++      if (cached) return cached
++      const models = loaded.models
++      if (!loaded.baseURL || !loaded.token || !models) return
++      const user = yield* ctx.session.context({ sessionID }).pipe(
++        Effect.map((messages) => messages.findLast((message) => message.type === "user")),
++        Effect.orElseSucceed(() => undefined),
++      )
++      const provider = yield* providers.get(Provider.ID.githubCopilot)
++      const routed = yield* Effect.tryPromise(() =>
++        CopilotAuto.route(
++          loaded.baseURL ?? baseURL(),
++          {
++            ...provider?.headers,
++            Authorization: `Bearer ${loaded.token}`,
++            "User-Agent": App.useragent(ctx.app),
++            "X-GitHub-Api-Version": apiVersion,
++          },
++          {
++            prompt: user?.text ?? "",
++            image: user?.files?.some((file) => file.mime.startsWith("image/")) ?? false,
++          },
++        ),
++      ).pipe(
++        Effect.tapError((cause) => Effect.logWarning("Copilot auto routing failed", { cause })),
++        Effect.orElseSucceed(() => undefined),
++      )
++      // Retry routing shortly when the router fails or picks a model this client cannot serve.
++      const fallback = Array.from(models.values()).find((model) => model.is_chat_fallback)
++      const result =
++        routed && models.has(routed.model)
++          ? routed
++          : fallback && { model: fallback.id, until: (yield* Clock.currentTimeMillis) + 5 * 60 * 1000 }
++      if (!result) return
++      const oldest = routes.keys().next().value
++      if (routes.size >= 100 && oldest) routes.delete(oldest)
++      routes.set(sessionID, result)
++      return result
++    })
++    // Auto is a catalog model that Copilot's router resolves to a concrete model once per Session,
++    // like VS Code does, so every request after resolution takes that model's normal route.
++    yield* ctx.session.hook(
++      "model.resolve",
++      (evt) =>
++        Effect.gen(function* () {
++          if (evt.model.id !== CopilotModels.auto) return
++          // A Session's first prompt resolves its model for the title and the main request concurrently;
++          // both must share one route because its session token only unlocks the model it was issued for.
++          const selected = (yield* current(evt.sessionID)) ?? (yield* routing.withPermit(route(evt.sessionID)))
++          if (selected) evt.target = Model.ID.make(selected.model)
+         }),
+       { providerID: Provider.ID.githubCopilot },
+     )
+@@ -299,7 +368,9 @@ export const GithubCopilotPlugin = define({
+         Effect.gen(function* () {
+           if (evt.model.providerID !== Provider.ID.githubCopilot) return
+           if (!loaded.baseURL || !loaded.token || !loaded.models) return
+-          const agent = yield* ctx.agent.get({ agentID: Agent.ID.make("title") }).pipe(Effect.orElseSucceed(() => undefined))
++          const agent = yield* ctx.agent
++            .get({ agentID: Agent.ID.make("title") })
++            .pipe(Effect.orElseSucceed(() => undefined))
+           if (agent?.data.model) return
+           const model = utilityTitleModels.find((id) => loaded.models?.has(id))
+           if (!model) return
+diff --git a/packages/core/src/session/runner/model.ts b/packages/core/src/session/runner/model.ts
+index 79c8bcc4dd1a..8c44f17738c9 100644
+--- a/packages/core/src/session/runner/model.ts
++++ b/packages/core/src/session/runner/model.ts
+@@ -2,10 +2,11 @@ export * as SessionRunnerModel from "./model.js"
+ 
+ import { makeLocationNode } from "@opencode/util/effect/app-node"
+ import { LanguageModel } from "@opencode/ai"
+-import { Model } from "@opencode/schema/model"
+ import { Provider } from "@opencode/schema/provider"
+ import { Context, Effect, Layer, Schema } from "effect"
++import { Model } from "../../model.js"
+ import { ModelResolver } from "../../model-resolver.js"
++import { PluginHooks } from "../../plugin/hooks.js"
+ import { SessionSchema } from "../schema.js"
+ 
+ export class ModelNotSelectedError extends Schema.TaggedError<ModelNotSelectedError>()(
+@@ -71,26 +72,44 @@ const layer = Layer.effect(
+   Service,
+   Effect.gen(function* () {
+     const resolver = yield* ModelResolver.Service
++    const catalog = yield* Model.Service
++    const hooks = yield* PluginHooks.Service
++    const select = Effect.fn("SessionRunnerModel.select")(function* (
++      session: SessionSchema.Info,
++      available: () => Effect.Effect<ReadonlyArray<Model.Info>>,
++    ) {
++      // Location plugins populate and filter the catalog asynchronously during layer startup.
++      if (!session.model) {
++        const resolved = yield* resolver.resolve()
++        if (resolved) return resolved
++        return yield* new ModelNotSelectedError({ sessionID: session.id })
++      }
++      const selected = (yield* available()).find(
++        (model) => model.providerID === session.model?.providerID && model.id === session.model.id,
++      )
++      if (!selected)
++        return yield* new ModelUnavailableError({
++          providerID: session.model.providerID,
++          modelID: session.model.id,
++        })
++      return yield* resolver.resolveModel(selected, session.model.variant)
++    })
+     return Service.of({
+       resolve: Effect.fn("SessionRunnerModel.resolve")(function* (session, available) {
+-        // Location plugins populate and filter the catalog asynchronously during layer startup.
+-        if (!session.model) {
+-          const resolved = yield* resolver.resolve()
+-          if (resolved) return resolved
+-          return yield* new ModelNotSelectedError({ sessionID: session.id })
+-        }
+-        const selected = (yield* available()).find(
+-          (model) => model.providerID === session.model?.providerID && model.id === session.model.id,
+-        )
+-        if (!selected)
+-          return yield* new ModelUnavailableError({
+-            providerID: session.model.providerID,
+-            modelID: session.model.id,
+-          })
+-        return yield* resolver.resolveModel(selected, session.model.variant)
++        const selected = yield* select(session, available)
++        const event = yield* hooks.trigger("session", "model.resolve", { sessionID: session.id, model: selected.ref })
++        if (event.target === undefined || event.target === selected.ref.id) return selected
++        const target = yield* catalog.get(selected.ref.providerID, event.target)
++        if (!target)
++          return yield* new ModelUnavailableError({ providerID: selected.ref.providerID, modelID: event.target })
++        return yield* resolver.resolveModel(target)
+       }),
+     })
+   }),
+ )
+ 
+-export const node = makeLocationNode({ service: Service, layer, deps: [ModelResolver.node] })
++export const node = makeLocationNode({
++  service: Service,
++  layer,
++  deps: [ModelResolver.node, Model.node, PluginHooks.node],
++})
+diff --git a/packages/core/test/github-copilot/models.test.ts b/packages/core/test/github-copilot/models.test.ts
+index 0080cf0d9335..7498637f579a 100644
+--- a/packages/core/test/github-copilot/models.test.ts
++++ b/packages/core/test/github-copilot/models.test.ts
+@@ -148,10 +148,64 @@ test("prices cache reads from either token price spelling", async () => {
+ 
+   try {
+     const models = await CopilotModels.get(server.url.origin, {}, [])
+-    expect(models.get(Model.ID.make("renamed"))?.cost[0]).toMatchObject({ input: 2.5, output: 15, cache: { read: 0.25 } })
+-    expect(models.get(Model.ID.make("legacy"))?.cost[0]).toMatchObject({ input: 2.5, output: 15, cache: { read: 0.25 } })
++    expect(models.get(Model.ID.make("renamed"))?.cost[0]).toMatchObject({
++      input: 2.5,
++      output: 15,
++      cache: { read: 0.25 },
++    })
++    expect(models.get(Model.ID.make("legacy"))?.cost[0]).toMatchObject({
++      input: 2.5,
++      output: 15,
++      cache: { read: 0.25 },
++    })
+     expect(models.get(Model.ID.make("unpriced"))?.cost[0]).toMatchObject({ cache: { read: 0 } })
+   } finally {
+     await server.stop(true)
+   }
+ })
++
++test("advertises Copilot's auto router when it has candidates", async () => {
++  // Student and Free plans hide every model from the picker and route through auto instead.
++  const item = (id: string, limits: Record<string, number>, billing?: Record<string, unknown>, vision = false) => ({
++    model_picker_enabled: false,
++    id,
++    name: id,
++    version: `${id}-2026-08-01`,
++    supported_endpoints: ["/chat/completions"],
++    ...(billing ? { billing } : {}),
++    capabilities: { family: id, limits, supports: { tool_calls: true, vision } },
++  })
++  const server = Bun.serve({
++    port: 0,
++    fetch: (request) =>
++      Response.json({
++        data: [
++          item(
++            "large",
++            { max_context_window_tokens: 400_000, max_prompt_tokens: 272_000, max_output_tokens: 128_000 },
++            { auto_discount: 0.1 },
++            true,
++          ),
++          item("small", { max_prompt_tokens: 128_000, max_output_tokens: 64_000 }, { auto_discount: 0.1 }),
++          item("excluded", { max_prompt_tokens: 8_000, max_output_tokens: 1_000 }),
++        ].filter((model) => new URL(request.url).pathname === "/auto/models" || !model.billing),
++      }),
++  })
++
++  try {
++    const models = await CopilotModels.get(`${server.url.origin}/auto`, {}, [])
++    expect(models.get(CopilotModels.auto)).toMatchObject({
++      id: "auto",
++      modelID: "auto",
++      providerID: Provider.ID.githubCopilot,
++      name: "Auto",
++      enabled: true,
++      capabilities: { tools: true, input: ["text", "image"] },
++      limit: { context: 128_000, input: 128_000, output: 64_000 },
++    })
++    expect(models.get(Model.ID.make("large"))?.enabled).toBe(false)
++    expect((await CopilotModels.get(server.url.origin, {}, [])).has(CopilotModels.auto)).toBe(false)
++  } finally {
++    await server.stop(true)
++  }
++})
+diff --git a/packages/core/test/location-layer.test.ts b/packages/core/test/location-layer.test.ts
+index c9401a1f79eb..2b6c77d781b4 100644
+--- a/packages/core/test/location-layer.test.ts
++++ b/packages/core/test/location-layer.test.ts
+@@ -34,6 +34,7 @@ import { LocationWatcher } from "@opencode/core/filesystem/location-watcher"
+ import { Plugin } from "@opencode/core/plugin"
+ import { Model } from "@opencode/core/model"
+ import { Project } from "@opencode/core/project"
++import { PluginHooks } from "@opencode/core/plugin/hooks"
+ import { Provider } from "@opencode/core/provider"
+ import { AbsolutePath } from "@opencode/core/schema"
+ import { Session } from "@opencode/core/session"
+@@ -701,4 +702,55 @@ describe("LocationServiceMap", () => {
+       ),
+     ),
+   )
++
++  it.live("lets plugins route a selected model to a hidden catalog model", () =>
++    Effect.acquireRelease(
++      Effect.promise(() => tmpdir()),
++      (dir) => Effect.promise(() => dir[Symbol.asyncDispose]()),
++    ).pipe(
++      Effect.flatMap((dir) =>
++        Effect.gen(function* () {
++          const location = Location.Ref.make({ directory: AbsolutePath.make(dir.path) })
++          const resolved = yield* Effect.gen(function* () {
++            const providers = yield* Provider.Service
++            yield* providers.transform((editor) => {
++              editor.update(Provider.ID.make("router"), (provider) => {
++                provider.package = "@opencode/ai/providers/openai"
++              })
++              editor.models.update(Provider.ID.make("router"), Model.ID.make("auto"), () => {})
++              editor.models.update(Provider.ID.make("router"), Model.ID.make("hidden"), (model) => {
++                model.enabled = false
++              })
++            })
++            const hooks = yield* PluginHooks.Service
++            yield* hooks.register("session", "model.resolve", (event) =>
++              Effect.sync(() => {
++                if (event.model.id === "auto") event.target = Model.ID.make("hidden")
++              }),
++            )
++            const modelState = yield* Model.Service
++            const models = yield* SessionRunnerModel.Service
++            return yield* models.resolve(
++              Session.Info.make({
++                id: Session.ID.make("ses_routed_model"),
++                projectID: Project.ID.global,
++                title: "test",
++                model: { id: Model.ID.make("auto"), providerID: Provider.ID.make("router") },
++                cost: Money.USD.zero,
++                tokens: { input: 0, output: 0, reasoning: 0, cache: { read: 0, write: 0 } },
++                time: { created: DateTime.makeUnsafe(0), updated: DateTime.makeUnsafe(0) },
++                location,
++              }),
++              modelState.available,
++            )
++          }).pipe(Effect.scoped, Effect.provide(LocationServiceMap.Service.get(location)))
++
++          expect(resolved.ref).toEqual(
++            Model.Ref.make({ id: Model.ID.make("hidden"), providerID: Provider.ID.make("router") }),
++          )
++          expect(String(resolved.model.id)).toBe("hidden")
++        }),
++      ),
++    ),
++  )
+ })
+diff --git a/packages/core/test/plugin/provider-github-copilot.test.ts b/packages/core/test/plugin/provider-github-copilot.test.ts
+index 17f764b131e8..5279a2b2b030 100644
+--- a/packages/core/test/plugin/provider-github-copilot.test.ts
++++ b/packages/core/test/plugin/provider-github-copilot.test.ts
+@@ -19,6 +19,7 @@ import {
+ } from "@opencode/core/plugin/provider/github-copilot"
+ import { Message, SystemPart } from "@opencode/ai"
+ import { Provider } from "@opencode/core/provider"
++import { Credential } from "@opencode/core/credential"
+ import { Integration } from "@opencode/core/integration"
+ import type { SessionRequestKind } from "@opencode/plugin/effect/session"
+ import { fakeSelectorSdk } from "../fixture/selector"
+@@ -623,10 +624,9 @@ describe("GithubCopilotPlugin", () => {
+         editor.models.update(Provider.ID.githubCopilot, Model.ID.make("gpt-5-chat-latest"), () => {})
+       })
+       yield* addPlugin()
+-      expect(
+-        required(yield* models.get(Provider.ID.githubCopilot, Model.ID.make("gpt-5-chat-latest")))
+-          .enabled,
+-      ).toBe(false)
++      expect(required(yield* models.get(Provider.ID.githubCopilot, Model.ID.make("gpt-5-chat-latest"))).enabled).toBe(
++        false,
++      )
+     }),
+   )
+ 
+@@ -640,12 +640,102 @@ describe("GithubCopilotPlugin", () => {
+       })
+       yield* addPlugin()
+       expect(
+-        required(yield* models.get(Provider.ID.make("custom-copilot"), Model.ID.make("gpt-5-chat-latest")))
+-          .enabled,
++        required(yield* models.get(Provider.ID.make("custom-copilot"), Model.ID.make("gpt-5-chat-latest"))).enabled,
+       ).toBe(true)
+     }),
+   )
+ 
++  it.live("routes auto through Copilot's router once per Session", () =>
++    Effect.gen(function* () {
++      const routed: unknown[] = []
++      let available = true
++      const remote = (id: string, extra: Record<string, unknown>) => ({
++        model_picker_enabled: false,
++        id,
++        name: id,
++        version: `${id}-2026-08-01`,
++        supported_endpoints: ["/chat/completions"],
++        capabilities: {
++          family: id,
++          limits: { max_prompt_tokens: 128_000, max_output_tokens: 64_000 },
++          supports: { tool_calls: true },
++        },
++        ...extra,
++      })
++      const server = yield* Effect.acquireRelease(
++        Effect.sync(() =>
++          Bun.serve({
++            port: 0,
++            fetch: async (request) => {
++              if (new URL(request.url).pathname === "/models")
++                return Response.json({
++                  data: [
++                    remote("routed", { billing: { auto_discount: 0.1 } }),
++                    remote("fallback", { is_chat_fallback: true }),
++                  ],
++                })
++              expect(request.headers.get("authorization")).toBe("Bearer copilot-token")
++              routed.push(await request.json())
++              if (!available) return new Response(null, { status: 503 })
++              return Response.json({
++                session_token: "session-token",
++                expires_at: Date.now() / 1000 + 24 * 60 * 60,
++                selected_model: { id: "routed" },
++              })
++            },
++          }),
++        ),
++        (server) => Effect.sync(() => server.stop(true)),
++      )
++      const credentials = yield* Credential.Service
++      yield* credentials.create({
++        integrationID: Integration.ID.make("github-copilot"),
++        value: Credential.OAuth.make({
++          type: "oauth",
++          methodID: Integration.MethodID.make("device"),
++          access: "copilot-token",
++          refresh: "copilot-token",
++          expires: 0,
++          metadata: { apiEndpoint: server.url.origin },
++        }),
++      })
++      const providers = yield* Provider.Service
++      yield* providers.transform((editor) => editor.update(Provider.ID.githubCopilot, () => {}))
++      yield* addPlugin()
++      const models = yield* Model.Service
++      const deadline = Date.now() + 10_000
++      while (!(yield* models.get(Provider.ID.githubCopilot, Model.ID.make("auto"))) && Date.now() < deadline)
++        yield* Effect.sleep("10 millis")
++      expect((yield* models.available()).filter((model) => model.providerID === Provider.ID.githubCopilot)).toEqual([
++        expect.objectContaining({ id: "auto" }),
++      ])
++
++      const hooks = yield* PluginHooks.Service
++      const resolve = (sessionID: Session.ID) =>
++        hooks.trigger("session", "model.resolve", {
++          sessionID,
++          model: Model.Ref.make({ providerID: Provider.ID.githubCopilot, id: Model.ID.make("auto") }),
++        })
++      const ids = yield* sessions()
++      // The title and the main request resolve a new Session's model concurrently.
++      const concurrent = yield* Effect.all([resolve(ids.parent), resolve(ids.parent)], { concurrency: "unbounded" })
++      expect(concurrent.map((event) => event.target)).toEqual([Model.ID.make("routed"), Model.ID.make("routed")])
++      expect((yield* resolve(ids.parent)).target).toBe(Model.ID.make("routed"))
++      expect(routed).toEqual([{ prompt: "" }])
++      const request = yield* hooks.trigger("session", "model.request", {
++        sessionID: ids.parent,
++        agent: Agent.ID.make("build"),
++        model: Model.Ref.make({ providerID: Provider.ID.githubCopilot, id: Model.ID.make("routed") }),
++        kind: "primary",
++        headers: {},
++      })
++      expect(request.headers["Copilot-Session-Token"]).toBe("session-token")
++
++      available = false
++      expect((yield* resolve(ids.child)).target).toBe(Model.ID.make("fallback"))
++    }),
++  )
++
+   it.effect("ignores non-Copilot providers", () =>
+     Effect.gen(function* () {
+       const aisdk = yield* AISDK.Service
+diff --git a/packages/plugin/src/effect/session.ts b/packages/plugin/src/effect/session.ts
+index b9f19a6b7249..bfed9c497559 100644
+--- a/packages/plugin/src/effect/session.ts
++++ b/packages/plugin/src/effect/session.ts
+@@ -69,6 +69,17 @@ export interface SessionModelRequest {
+   headers: Record<string, string>
+ }
+ 
++/**
++ * Runs whenever a Session resolves its selected model. Set `target` to serve the request with
++ * another model from the same provider's catalog, including models hidden from selection; durable
++ * records then name the target. Lets router models such as "auto" pick a concrete model.
++ */
++export interface SessionModelResolve {
++  readonly sessionID: Session.ID
++  readonly model: Model.Ref
++  target?: Model.ID
++}
++
+ export interface SessionHttpRequest {
+   readonly sessionID: Session.ID
+   readonly agent: Agent.ID
+@@ -141,6 +152,7 @@ export interface SessionHooks {
+   readonly compaction: SessionCompaction
+   readonly generate: SessionGenerate
+   readonly title: SessionTitle
++  readonly "model.resolve": SessionModelResolve
+   readonly "model.request": SessionModelRequest
+   readonly "http.request": SessionHttpRequest
+   readonly "http.response": SessionHttpResponse
+diff --git a/packages/plugin/src/promise/session.ts b/packages/plugin/src/promise/session.ts
+index 9794147461d6..24e1a183b24a 100644
+--- a/packages/plugin/src/promise/session.ts
++++ b/packages/plugin/src/promise/session.ts
+@@ -69,6 +69,17 @@ export interface SessionModelRequest {
+   headers: Record<string, string>
+ }
+ 
++/**
++ * Runs whenever a Session resolves its selected model. Set `target` to serve the request with
++ * another model from the same provider's catalog, including models hidden from selection; durable
++ * records then name the target. Lets router models such as "auto" pick a concrete model.
++ */
++export interface SessionModelResolve {
++  readonly sessionID: Session.ID
++  readonly model: Model.Ref
++  target?: Model.ID
++}
++
+ export interface SessionHttpRequest {
+   readonly sessionID: Session.ID
+   readonly agent: Agent.ID
+@@ -141,6 +152,7 @@ export interface SessionHooks {
+   readonly compaction: SessionCompaction
+   readonly generate: SessionGenerate
+   readonly title: SessionTitle
++  readonly "model.resolve": SessionModelResolve
+   readonly "model.request": SessionModelRequest
+   readonly "http.request": SessionHttpRequest
+   readonly "http.response": SessionHttpResponse
