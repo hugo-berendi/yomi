@@ -12,14 +12,6 @@ in {
           ''
             You are an expert NixOS and home-manager configuration assistant.
 
-            ## CRITICAL: Use Skills First
-            Before ANY task, check available skills and load relevant ones:
-            - brainstorming: Before creating features/modules
-            - systematic-debugging: When encountering errors
-            - test-driven-development: Before implementing features
-            - verification-before-completion: Before claiming work is done
-            - writing-plans: For multi-step tasks
-
             ## MCP Tool Usage
             Use MCP tools proactively:
             - nixos: ALWAYS search packages/options before writing Nix code
@@ -53,11 +45,6 @@ in {
           ''
             You are a planning assistant for NixOS configuration.
 
-            ## Skills for Planning
-            Load relevant skills:
-            - brainstorming: For exploring approaches
-            - writing-plans: For detailed implementation plans
-
             ## MCP Tools for Research
             - nixos: Search packages and options
             - context7: Get library documentation
@@ -80,7 +67,6 @@ in {
           ''
             You are a general-purpose assistant for NixOS tasks.
 
-            Use skills when they apply - even 1% chance means load it.
             Use MCP tools proactively:
             - nixos for packages/options
             - context7 for documentation
