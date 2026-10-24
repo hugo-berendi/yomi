@@ -85,5 +85,6 @@
     cliproxyapi = lib.mkDefault 8502;
     diabetes = lib.mkDefault 8503;
     calsync = lib.mkDefault 8504;
+    proton-mail-sorter = lib.mkDefault 8505;
   };
 }

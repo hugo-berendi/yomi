@@ -1,0 +1,88 @@
+{
+  "active": false,
+  "connections": {
+    "Manual check": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Start private job",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Start private job": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Check previous run",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "id": "slxpm3JimJm7dMaC",
+  "name": "Proton Mail - mark categorized unread mail read (no AI)",
+  "nodeGroups": [],
+  "nodes": [
+    {
+      "id": "b4ca05a6-9d70-4f26-9ec1-25b630b4adba",
+      "name": "Manual check",
+      "parameters": {},
+      "position": [
+        0,
+        160
+      ],
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1
+    },
+    {
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CONFIGURE_PROTON_SORTER_ACCESS",
+          "name": "Proton sorter - Authorization"
+        }
+      },
+      "id": "598d2c82-c75e-4494-a53a-42250e8a4e02",
+      "name": "Start private job",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "method": "POST",
+        "options": {
+          "timeout": 30000
+        },
+        "url": "={{ $env.PROTON_SORTER_URL + \"/api/mark-read\" }}"
+      },
+      "position": [
+        300,
+        100
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "id": "09435950-e8c8-4d01-ac54-cae59769c180",
+      "name": "Check previous run",
+      "parameters": {
+        "jsCode": "// Responses contain counters and run IDs only, never mail content or credentials.\nconst result = $input.first().json;\nif (result.previous && result.previous.status === 'failed') {\n  throw new Error('Previous Proton sorter job failed. Check the private worker logs and /api/status; completed changes remain applied.');\n}\nreturn [{json: result}];"
+      },
+      "position": [
+        600,
+        100
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    }
+  ],
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "saveManualExecutions": false,
+    "timezone": "Europe/Berlin"
+  }
+}
