@@ -114,11 +114,21 @@
   ];
   # }}}
   # {{{ SimpleLogin mail DNS setup
-  simpleLoginMail = at: let
+  # Hosted SimpleLogin (app.simplelogin.io) forwarding aliases to Proton. Only
+  # the verification token is per account; the rest is SimpleLogin's own
+  # published setup (Domains -> <domain> -> DNS). The self-hosted instance
+  # this replaced pointed MX at the home IP and never received mail again.
+  simpleLoginMail = at: verifyToken: let
     atPrefix = prefix:
       if at == ""
       then prefix
       else "${prefix}.${at}";
+    dkim = selector: {
+      at = atPrefix "${selector}._domainkey";
+      type = "CNAME";
+      value = "${selector}._domainkey.simplelogin.co.";
+      ttl = 600;
+    };
   in [
     {
       inherit at;
@@ -126,8 +136,12 @@
       type = "MX";
       value = [
         {
-          exchange = "mx.hugo-berendi.de.";
+          exchange = "mx1.simplelogin.co.";
           preference = 10;
+        }
+        {
+          exchange = "mx2.simplelogin.co.";
+          preference = 20;
         }
       ];
     }
@@ -135,20 +149,20 @@
       inherit at;
       ttl = 600;
       type = "TXT";
-      value = "v=spf1 mx ~all";
+      value = [
+        "v=spf1 include:simplelogin.co ~all"
+        "sl-verification=${verifyToken}"
+      ];
     }
     {
       at = atPrefix "_dmarc";
       type = "TXT";
-      value = ''v=DMARC1\; p=quarantine\;'';
+      value = ''v=DMARC1\; p=quarantine\; pct=100\; adkim=s\; aspf=s'';
       ttl = 600;
     }
-    {
-      at = atPrefix "dkim._domainkey";
-      type = "TXT";
-      value = ''v=DKIM1\; k=rsa\; p=__SIMPLELOGIN_DKIM_PUBLIC_KEY__'';
-      ttl = 600;
-    }
+    (dkim "dkim")
+    (dkim "dkim02")
+    (dkim "dkim03")
   ];
 in
   # }}}
@@ -163,7 +177,7 @@ in
         "6f73dfad8d8d3cf48a45fcefa7e487318cb3b396"
         "dnnrdhxgtnisstbiamas5jw3hf4c32bkkcufe5i63vfslns6uazyq.domains.proton.ch")
       (migaduMail "tengu" "t5fehqan")
-      (simpleLoginMail "yokai")
+      (simpleLoginMail "yokai" "mzbzawhjhdnmpsszmdggjnlrfvdyeh")
       [
         {
           at = "classattack";

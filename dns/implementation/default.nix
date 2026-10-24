@@ -60,15 +60,6 @@ in
         export CLOUDFLARE_TOKEN="$cloudflare_token"
 
         zones_dir="${octodns-zones}"
-        dkim_public_key="$(${pkgs.sops}/bin/sops --decrypt --extract '["simplelogin_dkim_public_key"]' ./hosts/nixos/inari/secrets.yaml 2>/dev/null || true)"
-
-        if [ -n "''${dkim_public_key}" ]; then
-          zones_dir="$(mktemp -d)"
-          cp -R "${octodns-zones}/." "$zones_dir/"
-          export SIMPLELOGIN_DKIM_VALUE="v=DKIM1\\; k=rsa\\; p=''${dkim_public_key}"
-          ${pkgs.yq}/bin/yq -y -i '(.yokai[] | select(.type == "TXT" and .value == "v=DKIM1\\; k=rsa\\; p=__SIMPLELOGIN_DKIM_PUBLIC_KEY__") | .value) = strenv(SIMPLELOGIN_DKIM_VALUE)' "$zones_dir/hugo-berendi.de.yaml"
-        fi
-
         config_file="$(mktemp)"
         package_root="$(dirname "$(dirname "$(readlink -f "$0")")")"
         cp "$package_root/config.base.yaml" "$config_file"

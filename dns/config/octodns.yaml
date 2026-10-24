@@ -14,10 +14,6 @@ providers:
     class: octodns_ddns.DdnsSource
     types:
       - A
-  mx:
-    class: octodns_ddns.DdnsSource
-    types:
-      - A
   cloudflare:
     class: octodns_cloudflare.CloudflareProvider
     token: "env/CLOUDFLARE_TOKEN"
@@ -26,6 +22,5 @@ zones:
     sources:
       - zones
       - wan
-      - mx
     targets:
       - cloudflare
