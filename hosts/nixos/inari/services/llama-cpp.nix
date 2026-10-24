@@ -5,16 +5,46 @@
   ...
 }: let
   modelDir = "/var/lib/llama-cpp/models";
-  modelFiles = [
-    "qwen2.5-14b-instruct-q4_k_m-00001-of-00003.gguf"
-    "qwen2.5-14b-instruct-q4_k_m-00002-of-00003.gguf"
-    "qwen2.5-14b-instruct-q4_k_m-00003-of-00003.gguf"
-  ];
-  modelBaseUrl = "https://huggingface.co/Qwen/Qwen2.5-14B-Instruct-GGUF/resolve/main";
-  modelPath = "${modelDir}/${builtins.head modelFiles}";
+  # Pinned to a repository revision and checked against its LFS hash, so a
+  # re-upload under the same name cannot silently swap the weights.
+  modelRevision = "a483e9e6cbd595906af30beda3187c2663a1118c";
+  modelFile = "Qwen3.6-35B-A3B-UD-Q4_K_XL.gguf";
+  modelSha256 = "707a55a8a4397ecde44de0c499d3e68c1ad1d240d1da65826b4949d1043f4450";
+  modelUrl = "https://huggingface.co/unsloth/Qwen3.6-35B-A3B-GGUF/resolve/${modelRevision}/${modelFile}";
+  modelPath = "${modelDir}/${modelFile}";
+  modelAlias = "qwen3.6-35b-a3b";
+  contextSize = 65536;
   port = config.yomi.ports.llama-cpp;
+  pilot = config.yomi.pilot.name;
 in {
   # {{{ Service
+  # General-purpose local model, mainly the backend of the `local-task`
+  # OpenCode agent that Claude Code and Codex hand simple work to.
+  #
+  # Qwen3.6-35B-A3B is a mixture of experts with 3B parameters active per
+  # token, so it decodes about as fast as a 3B dense model while scoring 73.4
+  # on SWE-bench Verified. In October 2026 the newer Qwen3.8-Flash-Next and
+  # GLM-5.3-Flash need more than 90 GB even at 3-bit quantization, and
+  # Qwen3.8-27B is dense, so it would decode about nine times slower.
+  #
+  # It replaced a Qwen2.5-14B that nothing called: its journal had no request
+  # in the seven days before the switch.
+  #
+  # The weights live entirely on the Radeon 680M iGPU through Vulkan. Measured
+  # with llama-bench b9190 on this box (tokens per second):
+  #
+  #   CPU only, 8 threads             prompt  18   decode  8.4
+  #   Vulkan, experts left on the CPU prompt  53   decode  6.0
+  #   Vulkan, fully offloaded         prompt 172   decode 14.9
+  #
+  # An OpenCode request carries about 12k tokens of system prompt and tools,
+  # so on the CPU alone every call would spend eleven minutes before writing a
+  # word. Full offload also leaves the CPU cores to the other services. The
+  # cost is 22 GB of GTT, system RAM that the GPU driver holds and the kernel
+  # cannot reclaim while the service runs.
+  #
+  # Only 10 of the 40 layers use full attention, so a 64k context costs about
+  # 1.3 GB of KV cache on top of the weights.
   users.users.llama-cpp = {
     isSystemUser = true;
     group = "llama-cpp";
@@ -41,35 +71,82 @@ in {
       ExecStartPre = pkgs.writeShellScript "llama-cpp-fetch-model" ''
         set -euo pipefail
         mkdir -p "${modelDir}"
-        for model in ${lib.escapeShellArgs modelFiles}; do
-          if [ ! -f "${modelDir}/$model" ]; then
-            echo "Downloading $model..."
-            ${lib.getExe pkgs.curl} -fSL --retry 5 --retry-all-errors -C - -o "${modelDir}/$model.tmp" "${modelBaseUrl}/$model"
-            mv "${modelDir}/$model.tmp" "${modelDir}/$model"
-            chmod 644 "${modelDir}/$model"
-          fi
-        done
+        if [ ! -f "${modelPath}" ]; then
+          echo "Downloading ${modelFile}..."
+          ${lib.getExe pkgs.curl} -fSL --retry 5 --retry-all-errors -C - \
+            -o "${modelPath}.tmp" "${modelUrl}"
+          echo "${modelSha256}  ${modelPath}.tmp" | ${lib.getExe' pkgs.coreutils "sha256sum"} -c -
+          mv "${modelPath}.tmp" "${modelPath}"
+          chmod 644 "${modelPath}"
+        fi
+        # Drop the weights of models this file no longer names.
+        find "${modelDir}" -maxdepth 1 -name '*.gguf' ! -name ${lib.escapeShellArg modelFile} -delete
       '';
 
       ExecStart = lib.escapeShellArgs [
-        (lib.getExe' pkgs.llama-cpp "llama-server")
+        (lib.getExe' pkgs.llama-cpp-vulkan "llama-server")
         "--model"
         modelPath
+        "--alias"
+        modelAlias
         "--host"
         "127.0.0.1"
         "--port"
         (toString port)
+        # Tool calls need the model's own chat template.
+        "--jinja"
         "--ctx-size"
-        "32768"
-        "--n-predict"
-        "-1"
+        (toString contextSize)
+        # One agent at a time. Every extra slot splits the context and the
+        # GPU between concurrent requests.
+        "--parallel"
+        "1"
+        "--flash-attn"
+        "on"
+        "--n-gpu-layers"
+        "99"
+        # Read the weights straight into GPU memory. An mmap would also leave
+        # a second 22 GB copy in this unit's page cache.
+        "--no-mmap"
+        # The GPU does the math. The CPU only samples and schedules.
         "--threads"
-        "16"
+        "4"
+        # Qwen's recommended thinking-mode settings for precise coding.
+        "--temp"
+        "0.6"
+        "--top-p"
+        "0.95"
+        "--top-k"
+        "20"
+        "--min-p"
+        "0"
       ];
 
-      # Resource limits suitable for a 58GB server without dGPU
-      MemoryMax = "32G";
-      CPUQuota = "800%";
+      # The GTT buffers holding the weights are not charged to this cgroup, so
+      # the limit only covers the process heap and the load buffers.
+      MemoryMax = "4G";
+      CPUQuota = "400%";
+      # When the box is busy, every other service wins the CPU and the disk.
+      # An agent waiting a few seconds longer matters less.
+      CPUWeight = 20;
+      IOWeight = 20;
+      Nice = 10;
+    };
+  };
+  # }}}
+  # {{{ OpenCode provider
+  home-manager.users.${pilot}.programs.opencode.settings.provider.llama-cpp = {
+    npm = "@ai-sdk/openai-compatible";
+    name = "llama.cpp (local)";
+    options.baseURL = "http://127.0.0.1:${toString port}/v1";
+    models.${modelAlias} = {
+      name = "Qwen3.6 35B-A3B (local)";
+      tool_call = true;
+      reasoning = true;
+      limit = {
+        context = contextSize;
+        output = 16384;
+      };
     };
   };
   # }}}
@@ -84,10 +161,15 @@ in {
   # }}}
 
   # ExecStartPre downloads models into /var/lib/llama-cpp/models, which
-  # ProtectSystem=strict would otherwise make read-only.
+  # ProtectSystem=strict would otherwise make read-only. PrivateDevices would
+  # hide the render node, so the allow-list below names the one device Vulkan
+  # needs.
   systemd.services.llama-cpp.serviceConfig = {
     NoNewPrivileges = true;
-    PrivateDevices = true;
+    PrivateDevices = false;
+    DevicePolicy = "closed";
+    DeviceAllow = ["/dev/dri/renderD128 rw"];
+    SupplementaryGroups = ["render"];
     PrivateMounts = true;
     PrivateTmp = true;
     ProtectClock = true;

@@ -11,7 +11,7 @@
   port = config.yomi.ports.llama-cpp-classifier;
 in {
   # {{{ Service
-  # A second, much smaller llama.cpp than the 14B next door, dedicated to
+  # A second, much smaller llama.cpp than the general model next door, dedicated to
   # classifying mail for the n8n inbox organizer.
   #
   # The model was chosen by measurement, not by reputation. On this CPU-only,

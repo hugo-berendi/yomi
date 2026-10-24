@@ -229,9 +229,9 @@ in {
         N8N_BLOCK_ENV_ACCESS_IN_NODE = lib.boolToString false;
 
         # The inbox organizer classifies mail against the small dedicated
-        # llama.cpp, not the 14B on ${toString config.yomi.ports.llama-cpp}:
-        # the 14B answers correctly and takes some forty seconds per mail on
-        # this CPU-only box. Not a secret, so it belongs here rather than in
+        # llama.cpp, not the general model on ${toString config.yomi.ports.llama-cpp}:
+        # when that was a 14B it answered correctly and took some forty seconds
+        # per mail on this CPU-only box. Not a secret, so it belongs here rather than in
         # the EnvironmentFile.
         CLASSIFIER_URL = "http://127.0.0.1:${toString config.yomi.ports.llama-cpp-classifier}/v1/chat/completions";
         DIABETES_URL = "http://127.0.0.1:${toString config.yomi.ports.diabetes}";
