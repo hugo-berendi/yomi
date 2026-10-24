@@ -10,8 +10,9 @@
   agents = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
   codex = import ../../../../home/features/cli/ai/codex-package.nix {inherit inputs pkgs;};
   # Use the pinned upstream release until llm-agents packages 0.1.2.
+  opencode = import ../../../../home/features/cli/ai/opencode/package.nix {inherit inputs pkgs;};
   package = pkgs.callPackage ../../../../pkgs/t3code-release.nix {
-    providerPackages = [codex agents.claude-code agents.opencode];
+    providerPackages = [codex agents.claude-code opencode];
   };
 in {
   yomi.nginx.at.t3code.port = port;

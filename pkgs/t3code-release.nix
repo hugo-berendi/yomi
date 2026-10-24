@@ -3,6 +3,7 @@
   fetchurl,
   runCommand,
   buildFHSEnv,
+  writeShellScript,
   providerPackages ? [],
 }: let
   version = "0.1.2";
@@ -22,7 +23,10 @@ in
   (buildFHSEnv {
     name = "t3";
     targetPkgs = p: [p.glibc p.stdenv.cc.cc.lib p.openssl p.zlib] ++ providerPackages;
-    runScript = "${release}/t3";
+    runScript = writeShellScript "t3-with-providers" ''
+      export PATH=${lib.makeBinPath providerPackages}:$PATH
+      exec ${release}/t3 "$@"
+    '';
     meta = {
       description = "T3 Code official release with a NixOS runtime";
       homepage = "https://github.com/pingdotgg/t3code";

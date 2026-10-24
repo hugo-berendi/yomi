@@ -6,6 +6,15 @@
   osConfig ? null,
   ...
 }: let
+  useV2 = osConfig != null && osConfig.networking.hostName == "inari";
+  opencodePackage =
+    if useV2
+    then import ./package.nix {inherit inputs pkgs;}
+    else inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.opencode;
+  attachCommand =
+    if useV2
+    then "--server"
+    else "attach";
   cfg = config.yomi.ai.mcp;
   cfgRemote = config.yomi.ai.mcpRemote;
   opencodePort =
@@ -89,10 +98,13 @@ in {
   home.packages = formatterPackages;
   programs.opencode = {
     enable = true;
-    package = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.opencode;
+    package = opencodePackage;
 
     settings = {
       model = "openai/gpt-5.3-codex";
+
+      # Keep V1's approval before reading outside a project.
+      permission = lib.optionalAttrs useV2 {external_directory = "ask";};
 
       # {{{ MCP Servers
       mcp = mcpServers;
@@ -113,10 +125,18 @@ in {
       After = ["network.target"];
     };
     Service = {
+      # Share a private password with T3 without putting it in the Nix store.
+      # V2 prints its pairing password on stdout; keep that out of the journal.
+      StandardOutput = lib.mkIf useV2 "null";
+      EnvironmentFile = lib.optionals useV2 ["${config.home.homeDirectory}/.t3/opencode-server.env"];
       Environment = [
         "PATH=${opencodeRuntimePath}:${config.home.profileDirectory}/bin:/run/current-system/sw/bin:/run/wrappers/bin"
       ];
-      ExecStart = "${lib.getExe inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.opencode} web --hostname 127.0.0.1 --port ${toString opencodePort}";
+      ExecStart = "${lib.getExe opencodePackage} ${
+        if useV2
+        then "serve"
+        else "web"
+      } --hostname 127.0.0.1 --port ${toString opencodePort}";
       Restart = "always";
       RestartSec = 2;
     };
@@ -126,7 +146,7 @@ in {
   programs.bash.initExtra = ''
     opencode() {
       if [ "$#" -eq 0 ]; then
-        command opencode attach ${opencodeAttachUrl}
+        command opencode ${attachCommand} ${opencodeAttachUrl}
       else
         command opencode "$@"
       fi
@@ -136,7 +156,7 @@ in {
   programs.fish.interactiveShellInit = ''
     function opencode
       if test (count $argv) -eq 0
-        command opencode attach ${opencodeAttachUrl}
+        command opencode ${attachCommand} ${opencodeAttachUrl}
       else
         command opencode $argv
       end
