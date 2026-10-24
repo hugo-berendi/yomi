@@ -49,6 +49,13 @@
     pelican-node1 = lib.mkDefault 8448;
     pelican-panel = lib.mkDefault 8449;
     pocket-id = lib.mkDefault 8450;
+    # Bridge's own defaults. It keeps its ports in its vault, not on the
+    # command line, so moving these also needs `change port` in its CLI.
+    protonmail-bridge-imap = 1143;
+    protonmail-bridge-smtp = 1025;
+    # Loopback hand-off between nginx and the stunnel STARTTLS clients.
+    proton-imap-relay = lib.mkDefault 8506;
+    proton-smtp-relay = lib.mkDefault 8507;
     prometheus = lib.mkDefault 8451;
     prometheus-exportarr-bazarr = lib.mkDefault 8452;
     prometheus-exportarr-lidarr = lib.mkDefault 8453;
