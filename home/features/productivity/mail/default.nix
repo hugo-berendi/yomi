@@ -25,7 +25,7 @@
       aliases = ["git@hugo-berendi.de"];
 
       folders = {
-        inbox = "Inbox";
+        inbox = "INBOX";
         sent = "Sent";
         drafts = "Drafts";
         trash = "Trash";
@@ -43,13 +43,18 @@
       primary = true;
       # }}}
       # {{{ Imap / smtp configuration
+      # Proton Mail Bridge on inari, over the tailnet: nginx terminates TLS
+      # with a real certificate and hands off to Bridge through a pinned
+      # STARTTLS relay (hosts/nixos/inari/services/protonmail-bridge.nix).
+      # The password is the Bridge's own (its `info` command), not the
+      # Proton account password.
       imap = {
-        host = "imap.migadu.com";
+        host = "mail.hugo-berendi.de";
         port = 993;
       };
 
       smtp = {
-        host = "smtp.migadu.com";
+        host = "mail.hugo-berendi.de";
         port = 465;
       };
       # }}}
