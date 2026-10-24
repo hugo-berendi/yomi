@@ -109,6 +109,15 @@ class WorkerTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 worker.validate_config({**configuration(), **changes})
 
+    def test_pin_from_pem_matches_the_der_the_connection_checks(self):
+        import ssl
+        der = b"0\x03\x02\x01\x00"  # any bytes: the pin is a hash of DER, not a parse
+        with tempfile.TemporaryDirectory() as directory:
+            pem = Path(directory, "bridge.pem")
+            pem.write_text(ssl.DER_cert_to_PEM_cert(der), encoding="ascii")
+            config = worker.validate_config({**configuration(), "bridgeCertificateSha256": "0" * 64, "bridgeCertificateFile": str(pem)})
+        self.assertEqual(config["bridgeCertificateSha256"], hashlib.sha256(der).hexdigest())
+
     def run_sorter(self, box, state, apply=False, mark_read=False, verdict="Rechnungen", max_messages=50):
         config = {**configuration(apply), "maxMessages": max_messages}
         sorter = worker.Sorter(config, FakeSecrets(), Path(state), lambda *args, **kwargs: box)

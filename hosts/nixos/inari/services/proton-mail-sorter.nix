@@ -12,6 +12,10 @@
   };
   settings = pkgs.writeText "proton-mail-sorter.json" (builtins.toJSON {
     inherit (cfg) apply maxMessages maxReadMessages markExistingRead bridgeHost bridgePort bridgeCertificateSha256 ollamaUrl usernameRef passwordRef apiTokenRef;
+    bridgeCertificateFile =
+      if cfg.bridgeCertificateFile == null
+      then null
+      else "${cfg.bridgeCertificateFile}";
     opExecutable = lib.getExe pkgs._1password-cli;
   });
 in {
@@ -47,6 +51,11 @@ in {
       type = lib.types.port;
       default = 1143;
       description = "Bridge STARTTLS IMAP port, not the public Proton API.";
+    };
+    bridgeCertificateFile = lib.mkOption {
+      type = lib.types.nullOr lib.types.path;
+      default = null;
+      description = "Pinned public PEM of this Bridge instance; its SHA256 replaces bridgeCertificateSha256.";
     };
     bridgeCertificateSha256 = lib.mkOption {
       type = lib.types.str;
@@ -84,7 +93,7 @@ in {
   config = lib.mkIf cfg.enable {
     assertions = [
       {
-        assertion = builtins.match "[0-9a-fA-F]{64}" cfg.bridgeCertificateSha256 != null;
+        assertion = cfg.bridgeCertificateFile != null || builtins.match "[0-9a-fA-F]{64}" cfg.bridgeCertificateSha256 != null;
         message = "protonMailSorter requires the verified certificate fingerprint of its Bridge instance.";
       }
       {

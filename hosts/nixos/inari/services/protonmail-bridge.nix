@@ -168,6 +168,27 @@ in {
     }
   ];
   # }}}
+  # {{{ Sorter
+  # The sorter needs the same pin, so it switches on with the relay. It starts
+  # as a preview: apply stays false and its n8n workflows ship inactive, so
+  # nothing in the mailbox changes until that is flipped deliberately.
+  sops.secrets.op_service_account_token = lib.mkIf havePin {
+    sopsFile = ./proton-mail-sorter/secrets.yaml;
+  };
+
+  yomi.protonMailSorter = lib.mkIf havePin {
+    enable = true;
+    apply = false;
+    bridgePort = ports.protonmail-bridge-imap;
+    bridgeCertificateFile = bridgeCertificate;
+    serviceAccountTokenFile = config.sops.secrets.op_service_account_token.path;
+    # The service account sees only the Automation vault. These are the
+    # inari Bridge's credentials, not the Windows Bridge's in Personal.
+    usernameRef = "op://Automation/Proton Mail Bridge (inari)/username";
+    passwordRef = "op://Automation/Proton Mail Bridge (inari)/password";
+    apiTokenRef = "op://Automation/Proton Mail Sorter/api-token";
+  };
+  # }}}
   # {{{ Storage
   # Not in the app-state backup: the vault only holds the session and the
   # rest is a cache of the mailbox, so losing it costs a login and a resync.

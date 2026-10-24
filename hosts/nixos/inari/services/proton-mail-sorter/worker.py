@@ -41,6 +41,11 @@ def atomic_json(path, value):
 
 
 def validate_config(config):
+    # A pinned PEM, when given, is the one source for the fingerprint: the
+    # stunnel relay trusts the same file, so the two pins cannot drift apart.
+    if config.get("bridgeCertificateFile"):
+        der = ssl.PEM_cert_to_DER_cert(Path(config["bridgeCertificateFile"]).read_text(encoding="ascii"))
+        config["bridgeCertificateSha256"] = hashlib.sha256(der).hexdigest()
     if not re.fullmatch(r"[0-9a-fA-F]{64}", config["bridgeCertificateSha256"]):
         raise ValueError("A verified Bridge certificate fingerprint is required")
     for field in ("usernameRef", "passwordRef", "apiTokenRef"):
