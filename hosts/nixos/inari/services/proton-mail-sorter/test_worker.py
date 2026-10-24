@@ -140,6 +140,40 @@ class Mailbox:
 
 
 class WorkerTests(unittest.TestCase):
+    def test_stale_wichtig_is_asked_again_without_wichtig(self):
+        from email.message import EmailMessage
+
+        def mail(date):
+            obj = EmailMessage()
+            obj["From"] = "Shop <alt@example.org>"
+            obj["Date"] = date
+            return SimpleNamespace(
+                obj=obj,
+                text="Bitte bestaetigen Sie bis 03.02.2019.",
+                html="",
+                from_="alt@example.org",
+                subject="Ihre Frist laeuft ab",
+            )
+
+        old = mail("Mon, 28 Jan 2019 10:00:00 +0100")
+        with patch.object(
+            classifier, "ask", side_effect=["Wichtig", "Rechnungen"]
+        ) as ask:
+            self.assertEqual(classifier.classify(old), "Rechnungen")
+        self.assertNotIn("Wichtig", ask.call_args_list[1].args[1])
+        self.assertEqual(ask.call_args_list[1].args[2], classifier.STALE_NOTE)
+        # Recent mail and an unreadable date keep the first answer: one call.
+        from email.utils import format_datetime
+        from datetime import datetime as dt
+
+        for date in (format_datetime(dt.now(timezone.utc)), "not a date"):
+            with (
+                self.subTest(date=date),
+                patch.object(classifier, "ask", return_value="Wichtig") as ask,
+            ):
+                self.assertEqual(classifier.classify(mail(date)), "Wichtig")
+                self.assertEqual(ask.call_count, 1)
+
     def test_local_classifier_schema_and_twitch_boundary(self):
         msg = SimpleNamespace(
             text="Schau jetzt auf Twitch zu",

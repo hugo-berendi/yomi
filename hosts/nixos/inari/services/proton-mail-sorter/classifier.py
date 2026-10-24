@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from email.header import decode_header, make_header
-from email.utils import getaddresses
+from email.utils import getaddresses, parsedate_to_datetime
 from html.parser import HTMLParser
 import json
 import re
@@ -272,13 +272,30 @@ def is_twitch_live_notice(data):
     return bool(twitch_sender and live_subject)
 
 
-def classify(msg):
-    data = message_data(msg)
-    data["assessment_date"] = datetime.now(ZoneInfo("Europe/Berlin")).date().isoformat()
-    # Narrow deterministic rule: known platform's live alerts cannot become concerts,
-    # urgent actions or orders because of a streamer's freely chosen stream title.
-    if is_twitch_live_notice(data):
-        return "Werbung"
+# The prompt asks the model to discount long-expired deadlines, and it does
+# not reliably: a 2019 "confirm by 03.02.2019" came back Wichtig. Archive is
+# full of such mail, so the rule is enforced here rather than hoped for.
+STALE_FOR_WICHTIG_DAYS = 30
+STALE_NOTE = (
+    "Hinweis: Diese Nachricht ist aelter als "
+    + str(STALE_FOR_WICHTIG_DAYS)
+    + " Tage. Ihre Fristen gelten als abgelaufen; Wichtig ist ausgeschlossen."
+    " Ordne sie nach ihrem sonstigen Hauptzweck ein."
+)
+
+
+def message_age_days(data):
+    try:
+        sent = parsedate_to_datetime(data["date"])
+    except (TypeError, ValueError, IndexError):
+        return None
+    if sent.tzinfo is None:
+        sent = sent.replace(tzinfo=ZoneInfo("Europe/Berlin"))
+    return (datetime.now(ZoneInfo("Europe/Berlin")) - sent).days
+
+
+def ask(data, categories, note=None):
+    system = CLASSIFICATION_PROMPT + ("\n" + note if note else "")
     payload = {
         "model": MODEL,
         "stream": False,
@@ -286,12 +303,12 @@ def classify(msg):
         "options": {"temperature": 0, "num_ctx": 8192, "num_predict": 80},
         "format": {
             "type": "object",
-            "properties": {"folder": {"type": "string", "enum": CATEGORIES}},
+            "properties": {"folder": {"type": "string", "enum": categories}},
             "required": ["folder"],
             "additionalProperties": False,
         },
         "messages": [
-            {"role": "system", "content": CLASSIFICATION_PROMPT},
+            {"role": "system", "content": system},
             {"role": "user", "content": json.dumps(data, ensure_ascii=False)},
         ],
     }
@@ -305,6 +322,22 @@ def classify(msg):
     with opener.open(request, timeout=600) as response:
         result = json.load(response)
     category = json.loads(result["message"]["content"])["folder"]
-    if category not in CATEGORIES:
+    if category not in categories:
         raise ValueError("Ungueltige Kategorie vom Modell")
+    return category
+
+
+def classify(msg):
+    data = message_data(msg)
+    data["assessment_date"] = datetime.now(ZoneInfo("Europe/Berlin")).date().isoformat()
+    # Narrow deterministic rule: known platform's live alerts cannot become concerts,
+    # urgent actions or orders because of a streamer's freely chosen stream title.
+    if is_twitch_live_notice(data):
+        return "Werbung"
+    category = ask(data, CATEGORIES)
+    age = message_age_days(data)
+    if category == "Wichtig" and age is not None and age > STALE_FOR_WICHTIG_DAYS:
+        # Ask again without Wichtig rather than forcing Sonstiges, so an old
+        # real invoice still lands in Rechnungen. Costs a second call only here.
+        category = ask(data, [c for c in CATEGORIES if c != "Wichtig"], STALE_NOTE)
     return category
