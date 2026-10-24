@@ -15,6 +15,20 @@
     model_reasoning_effort = "low";
     developer_instructions = policy + "\nComplete only the bounded assignment; do not spawn more agents. Return compact evidence.";
   };
+  localModel = "llama-cpp/qwen3.6-35b-a3b";
+  # Runs without --auto, so a request the permission rules would ask about is
+  # rejected and the agent carries on without it.
+  localTask = pkgs.writeShellApplication {
+    name = "local-task";
+    runtimeInputs = [config.programs.opencode.package];
+    text = ''
+      if [ "$#" -eq 0 ]; then
+        echo "usage: local-task <task description>" >&2
+        exit 2
+      fi
+      exec opencode run --standalone --agent local-task --model ${localModel} --title "local-task" -- "$*"
+    '';
+  };
 in
   lib.mkIf enabled {
     home.file.".claude/agents/fast-task.md".text = ''
@@ -49,7 +63,25 @@ in
         model = "github-copilot/auto";
         prompt = policy + "\nReview only the assigned scope; report concrete findings compactly.";
       };
+      # "all" so `opencode run --agent local-task` can drive it directly, the
+      # way Claude Code and Codex call it through the wrapper below.
+      local-task = {
+        description = "Simple bounded task on the local Qwen3.6 model: free but slow.";
+        mode = "all";
+        model = localModel;
+        steps = 40;
+        permission.task = "deny";
+        prompt = ''
+          You are a local worker that another coding agent handed one bounded task.
+          Nobody can answer questions or approve requests during your run. Make
+          reasonable assumptions and state them. Stay inside the current directory.
+          Do only what was asked. Do not commit, push or start other agents.
+          Finish with a compact report: what you did, the files you changed, the
+          evidence (command output or file:line), and anything left unresolved.
+        '';
+      };
     };
+    home.packages = [localTask];
     home.activation.efficientAgentRouting = lib.hm.dag.entryAfter ["linkGeneration"] ''
       run ${python}/bin/python3 ${./install-agent-routing.py} ${lib.escapeShellArg config.home.homeDirectory} ${policyFile} ${codexRole}
     '';
