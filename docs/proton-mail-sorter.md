@@ -1,118 +1,75 @@
-# Proton Mail automatically sorted through n8n on inari
+# Proton Mail sorted on inari
 
-This adds a separate Proton workflow. The existing Migadu inbox organizer and mail-sorter timer are unchanged.
+Personal mail for `hugo-berendi.de` lives at Proton. Proton Mail Bridge on inari makes it available over IMAP. A worker on inari classifies new mail with `qwen3.5:9b` through a local Ollama and files it. n8n only triggers the worker. Service mail from `tengu.hugo-berendi.de` still goes out through Migadu. That is a separate account, and nothing here touches it.
 
-The worker classifies only `INBOX` and `Archive`, using `qwen3.5:9b` through the local Ollama endpoint. It preserves the twelve categories and reviewed rules of the Windows sorter, including concrete personal urgency, booked concerts, Phoenix with scout context, and the distinction between advertising and real orders. Twitch live notifications from actual Twitch domains bypass the model and go to Werbung.
+The worker classifies only `INBOX` and `Archive`. It files mail into thirteen folders, which Bridge shows as `Folders/<name>`: Wichtig, Konzerte, Pfadfinder, Diabetes, Schule, Entwicklung, Rechnungen, Bestellungen, Werbung, Newsletter, Konten-Sicherheit, Termine, Sonstiges. There is no `KI-` prefix. Twitch live notifications from real Twitch domains skip the model and go to Werbung. Wichtig keeps its read flag. Every other message is marked read and then moved with native IMAP MOVE. There is no copy/delete fallback and no EXPUNGE.
 
-The target folders are Wichtig, Konzerte, Pfadfinder, Schule, Entwicklung, Rechnungen, Bestellungen, Werbung, Newsletter, Konten-Sicherheit, Termine and Sonstiges. There is no `KI-` prefix. Wichtig keeps its current read flag. Every other classified message is marked read before a native IMAP MOVE. No copy/delete or blanket EXPUNGE fallback exists.
+Every ten minutes n8n starts one background job through an authenticated loopback endpoint. After sorting, the same job marks unread mail in the known category folders as read, without the model. It does this for the legacy `KI-…` folders too, and never for Wichtig, INBOX, Archive, unknown folders or subfolders. Each job handles up to 50 classifications and 1,000 read updates, and the next job continues with whatever is left. `markExistingRead = false` turns the second pass off. The manual workflow runs only that pass.
 
-Every ten minutes n8n starts one background job through an authenticated loopback HTTP endpoint. After sorting new mail, it also marks existing unread mail in the known category folders read, without AI. This includes legacy `KI-…` folders and excludes Wichtig, INBOX, Archive, unknown folders and category subfolders. Defaults are 50 classifications and 1,000 retroactive read updates per job; subsequent jobs continue from what remains. `markExistingRead = false` disables this second pass. The separate manual workflow runs just that pass.
+## Pieces
 
-## Files and prerequisites
+| File | Role |
+|------|------|
+| `hosts/nixos/inari/services/protonmail-bridge.nix` | Bridge as a system service, tailnet relay, sorter settings |
+| `hosts/nixos/inari/services/protonmail-bridge/bridge-cert.pem` | Bridge's public certificate, pinned. Absent until the first login (see below) |
+| `hosts/nixos/inari/services/proton-mail-sorter.nix` | Worker module and workflow registration |
+| `hosts/nixos/inari/services/proton-mail-sorter/` | Worker, classifier, tests, and the sops file with the 1Password token |
+| `hosts/nixos/inari/services/ollama.nix` | Ollama on loopback with only `qwen3.5:9b` |
+| `hosts/nixos/inari/services/n8n/workflows/proton-*.json` | Scheduled and manual triggers |
 
-- `hosts/nixos/inari/services/proton-mail-sorter.nix`: optional service and workflow registration.
-- `hosts/nixos/inari/services/proton-mail-sorter/`: worker, classifier and tests.
-- `hosts/nixos/inari/services/n8n/workflows/proton-mail-sorter.json`: scheduled/manual sorting.
-- `hosts/nixos/inari/services/n8n/workflows/proton-mark-read.json`: manual read-only pass without a model call.
+The relay and the sorter turn on together when `bridge-cert.pem` exists. Before that, a switch starts only Bridge and Ollama.
 
-Both Bridge and Ollama are expected on **inari**, not on the Windows PC. The defaults are STARTTLS IMAP at `127.0.0.1:1143` and Ollama at `127.0.0.1:8442`, using the existing port registry. Adjust to the actual local listeners if needed. Bridge must already be authenticated and keep its keyring/session across reboots. The Bridge username/password can differ from those of the Windows instance. Use the server instance's credentials.
+## Secrets
 
-The repository's existing `ollama.nix` currently has `enable = false`. If the server's running Ollama is not already enabled by another local module, align its NixOS configuration before rebuilding, for example:
+The server uses a 1Password service account that can read only the **Automation** vault. Service accounts cannot reach Personal, so the Windows entry `Personal / Proton Mail Bridge` is not used. Its values belong to the Windows Bridge anyway. Automation holds:
 
-```nix
-# Inside the inari host configuration, whose arguments already include lib.
-services.ollama = {
-  enable = lib.mkForce true;
-  host = lib.mkForce "127.0.0.1";
-  # Avoid loading every model in the currently disabled module's old list.
-  loadModels = lib.mkForce ["qwen3.5:9b"];
-};
-```
+1. `Proton Mail Bridge (inari)`, with fields `username` and `password`. These are the values Bridge on inari prints under `info`, not the Proton account password.
+2. `Proton Mail Sorter`, with field `api-token`: a random string of at least 32 characters.
 
-This worker does not silently replace the model with the existing llama.cpp classifier. A CPU-only server can be considerably slower than the Windows GPU. Jobs do not overlap; a busy response leaves the current job running. Ollama is a separate service, so size its CPU/RAM limits according to the host's actual resources. The worker's own memory cap does not cap model inference.
+The service-account token is in `proton-mail-sorter/secrets.yaml`, encrypted with sops. systemd hands it to the worker through `LoadCredential`, and the worker passes it only into the environment of the `op read` child process. Read values are cached in memory for 15 minutes. No value goes into the Nix store, workflow JSON, a command line or n8n execution data.
 
-Check locally on inari, without exposing either service publicly:
+## First deployment
 
-```sh
-curl -fsS http://127.0.0.1:8442/api/tags
-OLLAMA_HOST=http://127.0.0.1:8442 ollama pull qwen3.5:9b
-```
+1. **Switch**, done by a human. This starts Bridge and Ollama. `ollama-model-loader` pulls `qwen3.5:9b`, about 6.6 GB, onto the raid.
+2. **Log Bridge in**: `sudo protonmail-bridge-setup`, then `login` (Proton password and 2FA), then `info`. Leave IMAP and SMTP security at STARTTLS. The pins rely on it.
+3. **Put the Bridge credentials from `info`** and an API token into the Automation vault, as described above.
+4. **Pin the certificate.** Read it from the local listener:
 
-## 1Password on a headless server
+   ```sh
+   openssl s_client -starttls imap -connect 127.0.0.1:1143 </dev/null 2>/dev/null \
+     | openssl x509 -outform PEM > hosts/nixos/inari/services/protonmail-bridge/bridge-cert.pem
+   openssl s_client -starttls smtp -connect 127.0.0.1:1025 </dev/null 2>/dev/null \
+     | openssl x509 -noout -fingerprint -sha256
+   openssl x509 -in hosts/nixos/inari/services/protonmail-bridge/bridge-cert.pem -noout -fingerprint -sha256
+   ```
 
-Use a read-only 1Password service account, not an interactive desktop session or a cached Windows token. Service accounts cannot access built-in Personal, Private, Employee or default Shared vaults. The existing `Personal / Proton Mail Bridge` reference must therefore not be copied blindly into the server configuration. Create a dedicated vault, for example `Automation`, with:
+   Both fingerprints must match. Bridge uses one certificate for both listeners. Commit the PEM. stunnel and the worker both pin this file. A regenerated certificate then fails closed instead of being trusted on first use.
+5. **Switch again.** This starts the stunnel relay, nginx on 993/465 with an ACME certificate for `mail.hugo-berendi.de`, and the worker in preview mode (`apply = false`). n8n imports both workflows, inactive.
+6. **Attach the n8n credential.** Create an HTTP Header Auth credential with header `Authorization` and value `Bearer <api-token>`, and attach it to the **Start private job** node of both workflows. It stays in n8n's encrypted store.
+7. **Run a preview.** Run the sorting workflow manually. HTTP 202 only means the job started. `journalctl -u proton-mail-sorter` shows the counters. The plan, with subjects, is in `/var/lib/private/proton-mail-sorter/plan-*.jsonl`. Keep it private.
+8. **Go live after review.** Set `apply = true` in `protonmail-bridge.nix`, switch, and activate the scheduled workflow in n8n.
+9. **Pull the credential ID back.** Use `just n8n-export` as described in `services/n8n/AGENTS.md` to bring the real credential ID into the JSON. Only then consider `enforce = true`.
 
-1. `Proton Mail Bridge (inari)` containing the server's `username` and `password` fields.
-2. `Proton Mail Sorter` containing a random `api-token` field of at least 32 characters.
+Other devices use `mail.hugo-berendi.de`: IMAP on 993 and SMTP on 465, both SSL/TLS, with the inari Bridge credentials. The name resolves to inari's tailscale address, so it works only on the tailnet.
 
-Grant the service account only `read_items` for that dedicated vault. Keep its bootstrap token in the host's encrypted sops file. The worker receives it through systemd `LoadCredential` and supplies it only to the `op read` child process. Neither token nor Bridge fields go into the Nix store, workflow JSON, command-line arguments or n8n execution output. Values are cached in memory for 15 minutes to limit 1Password requests. Restart the worker after secret rotation if the change must take effect immediately.
+## What the worker guarantees
 
-Sources: [1Password service-account setup and vault restrictions](https://developer.1password.com/docs/service-accounts/get-started/), [reading secret references](https://developer.1password.com/docs/cli/reference/commands/read/).
+- It never takes destination names, endpoints, model names or `apply` from an HTTP body.
+- Mail content goes only to the local Ollama.
+- It checks UIDVALIDITY and a SHA256 of the message before every write. A missing or changed message is held and logged, never acted on through an old UID.
+- An unusable model answer (not JSON, unknown category) holds only that message. The failure is cached for the day.
+- An unreachable model, a login failure or a changed certificate stops the run before any change.
+- A failed read flag stops that message's move.
+- Changes that were already made stay applied and are logged in `actions-*.jsonl`. A restart during a job is reported as interrupted.
 
-## Configure inari
+## Validation
 
-Add the encrypted `proton_mail_sorter_op_token` key with `sops hosts/nixos/inari/secrets.yaml`. Do not put a token literal into Nix or the public repository. Then add host settings using the actual copied field references:
+The package was prepared on Windows (`tsukuyomi`) and checked on inari against the current tree:
 
-```nix
-sops.secrets.proton_mail_sorter_op_token.sopsFile = ./secrets.yaml;
+- The patch applied cleanly.
+- 17 Python tests pass against nixpkgs' `imap-tools` 1.13.0, and two workflow tests pass in a real Node `vm`.
+- `system.build.proton-mail-sorter-tests` builds.
+- `just lint` and `just nixos-rebuild dry-build inari` pass.
+- The generated `stunnel.cfg`, the nginx stream block and the worker's derived pin were inspected with a throwaway certificate.
 
-yomi.protonMailSorter = {
-  enable = true;
-  apply = false; # First inspect the private plans; change to true for automatic writes.
-  serviceAccountTokenFile = config.sops.secrets.proton_mail_sorter_op_token.path;
-  usernameRef = "op://Automation/Proton Mail Bridge (inari)/username";
-  passwordRef = "op://Automation/Proton Mail Bridge (inari)/password";
-  apiTokenRef = "op://Automation/Proton Mail Sorter/api-token";
-  bridgeCertificateSha256 = "REPLACE_WITH_64_HEX_CHARACTERS";
-};
-```
-
-The module is imported but **disabled by default**, so merely applying this patch does not modify a mailbox or require new secrets at activation. Invalid/missing references or fingerprint fail evaluation when enabled.
-
-Obtain the fingerprint from your own, verified Bridge process on inari. This reads its public certificate without an IMAP login:
-
-```sh
-openssl s_client -starttls imap -connect 127.0.0.1:1143 </dev/null 2>/dev/null \
-  | openssl x509 -outform DER | sha256sum
-```
-
-Use the 64 hexadecimal characters, without the trailing filename marker. A new Bridge instance may have a different certificate from Windows. Certificate changes fail closed; do not disable the pin check to make a job run.
-
-## Validate and deploy
-
-New files must be tracked for flake evaluation. On a Linux checkout with Nix:
-
-```sh
-git add hosts/nixos/inari/services/proton-mail-sorter* \
-  hosts/nixos/inari/services/n8n/workflows/proton-*.json \
-  hosts/nixos/inari/default.nix hosts/nixos/common/base/ports.nix \
-  docs/proton-mail-sorter.md
-nix develop -c just lint
-just nixos-rebuild dry-build inari
-nix build --no-link .#nixosConfigurations.inari.config.system.build.proton-mail-sorter-tests
-```
-
-The test derivation is present when `yomi.protonMailSorter.enable = true`. No test logs into a real mailbox or reads real 1Password fields. It exercises synthetic IMAP, a test loopback HTTP server, private plan/action logs and Code nodes in a real Node VM without `process`.
-
-After inspecting the evaluated units and choosing to switch, the changed services are the new worker and n8n's environment/startup imports. If applying the optional Ollama override above, Ollama is also affected. No firewall, nginx or tunnel change is needed.
-
-## Attach the n8n credential once
-
-The repo's normal importer seeds both workflows with `enforce = false`. They are initially inactive, so the placeholder credential cannot trigger repeated failing requests. After deployment:
-
-1. Open **Proton Mail - sort unsorted automatically**.
-2. Create an HTTP Header Auth credential, header name `Authorization`, value `Bearer <the api-token from 1Password>`.
-3. Attach the same credential to both workflows' **Start private job** node. Credentials remain in n8n's encrypted store, as required by this repo.
-4. Run the sorting workflow manually. HTTP 202 means the background job started; it does not mean all mail is already sorted. A busy response does not start another job.
-5. Inspect `journalctl -u proton-mail-sorter` for the completed counter-only status. Private previews and action logs are in the service's state directory, `/var/lib/private/proton-mail-sorter` with DynamicUser, also accessible through its `/var/lib/proton-mail-sorter` systemd link as appropriate. They contain subjects; do not publish them.
-6. To view status inside n8n, use the same credential with GET `={{ $env.PROTON_SORTER_URL + "/api/status" }}`. No message bodies or secret values are returned.
-7. After checking dry-run plans, set `apply = true`, dry-build and deploy. Activate/publish the scheduled workflow in n8n. It then handles new and existing categorized unread mail automatically every ten minutes.
-8. Later use `just n8n-export` as described in `services/n8n/AGENTS.md`, merge the real credential IDs into these two source JSON files and only then consider switching `enforce` to true. Do not commit unrelated exports or credentials.
-
-The worker never accepts destination names, endpoints, model names or `apply` overrides from HTTP bodies. Message data is sent only to the configured private Ollama endpoint. Folder names, UIDVALIDITY and message hashes are checked before writes. Unknown categories and inference failure preserve the mail. Missing or changed messages are held and recorded. A read-flag failure prevents that message's move. Partial earlier changes remain applied and recorded; subsequent jobs only process mail still in the unsorted folders. A restart during a job is reported as interrupted rather than silently successful.
-
-## Validation performed while preparing this patch
-
-The local environment was Windows `tsukuyomi`, not inari. The tests use the pinned `imap-tools` 1.15.0 version. n8n HTTP Request 4.2, Schedule Trigger 1.2 and relevant HTTP parameter names were checked against the upstream source for the pinned n8n 2.39.6 release. The two workflow graphs and their Code nodes were tested with Node VM. Nixpkgs package paths were checked at the repository's exact pinned revision.
-
-No Nix or WSL Linux distribution was available locally, so **Nix evaluation, `just lint`, the inari dry-build and a real n8n CLI import remain to run on inari**. The files have not been pushed, deployed or tested against the live server. No real mail was read, marked read or moved by these tests.
+Not tested yet: the model against synthetic mail, a real IMAP login, and a real n8n import. All three need the first switch.
