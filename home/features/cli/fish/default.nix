@@ -2,8 +2,10 @@
   pkgs,
   lib,
   config,
+  osConfig ? null,
   ...
 }: let
+  isInari = osConfig != null && osConfig.networking.hostName == "inari";
   repaint = "commandline -f repaint";
   fishKeybinds = {
     # C-x to clear screen
@@ -81,9 +83,19 @@ in {
         if status is-interactive
         and not set -q TMUX
         and not set -q NO_TMUX
-        # and not set -q SSH_CLIENT
-        # and not set -q SSH_TTY
+          ${
+          if isInari
+          then ''
+            # A tmux server preserves its creator's namespaces and privileges.
+            # Never let an FHS terminal create the server used by host SSH logins.
+            if not ${pkgs.gnugrep}/bin/grep -q '^NoNewPrivs:[[:space:]]*1$' /proc/self/status
+              exec tmux -L inari-host new-session -A -s default || echo "Could not start host tmux"
+            end
+          ''
+          else ''
             exec tmux new-session -A -s default || tmux || echo "Something went wrong trying to start tmux"
+          ''
+        }
         end
         # }}}
         source (starship init fish --print-full-init | psub)
