@@ -23,6 +23,10 @@ from imap_tools.utils import encode_folder
 import classifier
 
 
+# Cached for a message the model answered unusably; never a folder name.
+UNCLASSIFIED = ""
+
+
 class SorterError(RuntimeError):
     """A fixed, non-sensitive diagnostic safe for workflow/status output."""
 
@@ -167,16 +171,17 @@ class Sorter:
                 raise SorterError("No unsorted source folders recognized")
             classifier.OLLAMA_CHAT_URL = self.config["ollamaUrl"].rstrip("/") + "/api/chat"
             plan = []
+            unclassified = 0
             limit = self.config["maxReadMessages"] if mark_read else self.config["maxMessages"]
             plan_path = self.state / ("plan-" + run_id + ".jsonl")
             with plan_path.open("x", encoding="utf-8") as preview:
                 for folder in sources:
-                    if len(plan) >= limit:
+                    if len(plan) + unclassified >= limit:
                         break
                     box.folder.set(folder)
                     validity = box.folder.status(folder, ["UIDVALIDITY"])["UIDVALIDITY"]
                     for msg in box.fetch("UNSEEN" if mark_read else "ALL", mark_seen=False, headers_only=mark_read, bulk=False):
-                        if len(plan) >= limit:
+                        if len(plan) + unclassified >= limit:
                             break
                         if not re.fullmatch(r"[1-9][0-9]*", msg.uid):
                             raise SorterError("Invalid message UID")
@@ -189,11 +194,33 @@ class Sorter:
                             # assessment day, model or prompt revision unchanged.
                             cache_digest = hashlib.sha256((digest + time.strftime("%Y-%m-%d") + classifier.MODEL + classifier.CLASSIFICATION_PROMPT).encode()).hexdigest()
                             cached = database.execute("SELECT category FROM verdict WHERE source=? AND validity=? AND uid=? AND digest=?", (folder, validity, msg.uid, cache_digest)).fetchone()
-                            category = cached[0] if cached else classifier.classify(msg)
-                            if category not in classifier.CATEGORIES:
-                                raise SorterError("Unknown model category")
-                            database.execute("INSERT OR REPLACE INTO verdict VALUES (?,?,?,?,?)", (folder, validity, msg.uid, cache_digest, category))
-                            database.commit()
+                            if cached:
+                                category = cached[0]
+                            else:
+                                try:
+                                    category = classifier.classify(msg)
+                                    if category not in classifier.CATEGORIES:
+                                        raise ValueError("Unknown model category")
+                                except (ValueError, KeyError, TypeError):
+                                    # The model answered, but not with a usable
+                                    # verdict. Hold only this message: aborting
+                                    # here let one unreadable mail block every
+                                    # later run at the same position. Anything
+                                    # else (Ollama down, timeouts) still aborts
+                                    # the whole run before any change.
+                                    category = UNCLASSIFIED
+                                # Cached for the day like a verdict, so a held
+                                # message costs one model call per day rather
+                                # than one per ten-minute run.
+                                database.execute("INSERT OR REPLACE INTO verdict VALUES (?,?,?,?,?)", (folder, validity, msg.uid, cache_digest, category))
+                                database.commit()
+                            if category == UNCLASSIFIED:
+                                unclassified += 1
+                                preview.write(json.dumps({"source": folder, "uid": msg.uid, "uidvalidity": validity, "sha256": digest,
+                                                          "subject": msg.subject, "category": None, "action": "hold",
+                                                          "status": "model_answer_unusable"}, ensure_ascii=False) + "\n")
+                                preview.flush()
+                                continue
                             destination = targets[category]
                         row = {"source": folder, "uid": msg.uid, "uidvalidity": validity, "sha256": digest,
                                "subject": msg.subject, "category": category, "destination": destination}
@@ -201,7 +228,7 @@ class Sorter:
                         preview.flush()
                         plan.append(row)
                 os.fsync(preview.fileno())
-            counts = {"planned": len(plan), "moved": 0, "markedRead": 0, "held": 0, "dryRun": not self.config["apply"]}
+            counts = {"planned": len(plan), "moved": 0, "markedRead": 0, "held": 0, "unclassified": unclassified, "dryRun": not self.config["apply"]}
             if not self.config["apply"]:
                 return counts
             existing = {f.name for f in folders}

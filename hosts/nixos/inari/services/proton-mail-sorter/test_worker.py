@@ -176,14 +176,36 @@ class WorkerTests(unittest.TestCase):
                 self.assertFalse(box.commands)
                 self.assertTrue(box.logged_out)
 
-    def test_model_invalid_and_read_flag_failure(self):
-        for verdict, changes in (("invented", {}), ("Rechnungen", {"store_fail": True})):
-            with self.subTest(verdict=verdict), tempfile.TemporaryDirectory() as state:
-                box = Mailbox(**changes)
-                with self.assertRaises(RuntimeError):
-                    self.run_sorter(box, state, apply=True, verdict=verdict)
-                self.assertFalse(any(c[1][0] == "MOVE" for c in box.commands))
-                self.assertTrue(box.logged_out)
+    def test_read_flag_failure(self):
+        with tempfile.TemporaryDirectory() as state:
+            box = Mailbox(store_fail=True)
+            with self.assertRaises(RuntimeError):
+                self.run_sorter(box, state, apply=True)
+            self.assertFalse(any(c[1][0] == "MOVE" for c in box.commands))
+            self.assertTrue(box.logged_out)
+
+    def test_unusable_model_answer_holds_only_that_message(self):
+        # INBOX gets an invented label, Archive a valid one: the first stays
+        # untouched, the second is still filed, and the failure is cached.
+        for unusable in ("invented", ValueError("not JSON"), KeyError("message")):
+            with self.subTest(unusable=repr(unusable)), tempfile.TemporaryDirectory() as state:
+                box = Mailbox()
+                sorter = worker.Sorter(configuration(True), FakeSecrets(), Path(state), lambda *a, **kw: box)
+                with patch.object(classifier, "classify", side_effect=[unusable, "Rechnungen"]):
+                    result = sorter.run("partial")
+                self.assertEqual((result["unclassified"], result["moved"]), (1, 1))
+                self.assertEqual([c[0] for c in box.commands], ["Archive", "Archive"])
+                held = [json.loads(line) for line in Path(state, "plan-partial.jsonl").read_text().splitlines()]
+                self.assertEqual(held[0]["status"], "model_answer_unusable")
+                with patch.object(classifier, "classify") as again:
+                    sorter.run("partial-again")
+                self.assertEqual(again.call_count, 0)
+
+    def test_held_messages_count_against_the_budget(self):
+        with tempfile.TemporaryDirectory() as state:
+            box = Mailbox()
+            result, calls = self.run_sorter(box, state, verdict="invented", max_messages=1)
+            self.assertEqual((result["unclassified"], calls), (1, 1))
 
     def test_classifier_failure_preserves_mail(self):
         with tempfile.TemporaryDirectory() as state:
