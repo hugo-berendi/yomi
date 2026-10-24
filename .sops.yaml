@@ -46,6 +46,16 @@ creation_rules:
           - *shared_host_key
           - *pilot_yubikey
           - *recovery_offline
+  # A file of its own so the bootstrap token could be encrypted on inari,
+  # which can create a new file from public recipients but cannot decrypt
+  # inari/secrets.yaml to edit it unattended.
+  - path_regex: hosts/nixos/inari/services/proton-mail-sorter/secrets.yaml
+    key_groups:
+      - age:
+          - *pilot_user_key
+          - *shared_host_key
+          - *pilot_yubikey
+          - *recovery_offline
   - path_regex: hosts/nixos/amaterasu/secrets.yaml
     key_groups:
       - age:
