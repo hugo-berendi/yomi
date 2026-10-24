@@ -21,7 +21,7 @@ in
       ---
       name: fast-task
       description: Use for independent routine lookup, triage, mechanical changes and targeted tests.
-      model: haiku
+      model: claude-haiku-5-5
       ---
       ${policy}
       Complete only the assigned task. Do not delegate again.
@@ -30,7 +30,7 @@ in
       ---
       name: quick-review
       description: A bounded independent review needing more reasoning than the fast worker.
-      model: sonnet
+      model: claude-sonnet-5-5
       ---
       ${policy}
       Review only the supplied scope; report concrete findings and evidence.
