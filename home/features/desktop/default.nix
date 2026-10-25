@@ -6,6 +6,7 @@
   # {{{ Imports
   imports = [
     ./teams
+    ./1password.nix
     ./karere.nix
     ./foot.nix
     ./ghostty.nix

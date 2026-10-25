@@ -1,3 +1,3 @@
 {
-  imports = [./fish.nix];
+  imports = [./fish.nix ./1password.nix];
 }

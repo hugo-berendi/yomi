@@ -19,6 +19,7 @@
     ./cava.nix
     ./hyfetch.nix
     ./rbw.nix
+    ./1password.nix
     ./ai
     ./yomi-repo-sync.nix
   ];
