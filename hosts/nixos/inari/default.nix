@@ -17,7 +17,6 @@
 
       ../common/services/anubis.nix
 
-      ./services/ollama.nix
       ./services/llama-cpp.nix
       ./services/llama-cpp-classifier.nix
       ./services/karakeep.nix

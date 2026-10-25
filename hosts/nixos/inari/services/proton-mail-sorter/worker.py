@@ -65,7 +65,7 @@ def validate_config(config):
         raise ValueError("Invalid retroactive read settings")
     if type(config["bridgePort"]) is not int or not 1 <= config["bridgePort"] <= 65535:
         raise ValueError("Invalid Bridge port")
-    url = urlsplit(config["ollamaUrl"])
+    url = urlsplit(config["modelUrl"])
     if (
         url.scheme not in ("http", "https")
         or not url.hostname
@@ -74,9 +74,9 @@ def validate_config(config):
         or url.query
         or url.fragment
     ):
-        raise ValueError("Invalid private Ollama URL")
+        raise ValueError("Invalid private model URL")
     if url.path.rstrip("/"):
-        raise ValueError("Ollama URL must be a base URL, without /api/chat")
+        raise ValueError("Model URL must be a base URL, without /v1/chat/completions")
     return config
 
 
@@ -238,8 +238,8 @@ class Sorter:
             sources, targets = sources_for(folders, mark_read)
             if not sources and not mark_read:
                 raise SorterError("No unsorted source folders recognized")
-            classifier.OLLAMA_CHAT_URL = (
-                self.config["ollamaUrl"].rstrip("/") + "/api/chat"
+            classifier.MODEL_CHAT_URL = (
+                self.config["modelUrl"].rstrip("/") + "/api/chat"
             )
             plan = []
             unclassified = 0
@@ -301,7 +301,7 @@ class Sorter:
                                     # verdict. Hold only this message: aborting
                                     # here let one unreadable mail block every
                                     # later run at the same position. Anything
-                                    # else (Ollama down, timeouts) still aborts
+                                    # else (model server down, timeouts) still aborts
                                     # the whole run before any change.
                                     category = UNCLASSIFIED
                                 # Cached for the day like a verdict, so a held
@@ -489,7 +489,7 @@ class Application:
                 result["existingRead"] = self.sorter.run(running["id"] + "-read", True)
             status = {**running, **result, "status": "done"}
         except Exception as error:
-            # IMAP/Ollama/CLI exceptions can include message or credential data.
+            # IMAP/model/CLI exceptions can include message or credential data.
             # Keep the workflow and journal free of those provider diagnostics.
             diagnostic = (
                 str(error) if isinstance(error, SorterError) else type(error).__name__

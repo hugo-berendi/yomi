@@ -5,30 +5,30 @@
   ...
 }: let
   modelDir = "/var/lib/llama-cpp-classifier/models";
-  modelFile = "qwen2.5-3b-instruct-q4_k_m.gguf";
-  modelBaseUrl = "https://huggingface.co/Qwen/Qwen2.5-3B-Instruct-GGUF/resolve/main";
+  # Pinned to a repository revision and checked against its LFS hash, so a
+  # re-upload under the same name cannot silently swap the weights.
+  modelRevision = "3885219b6810b007914f3a7950a8d1b469d598a5";
+  modelFile = "Qwen3.5-9B-Q4_K_M.gguf";
+  modelSha256 = "03b74727a860a56338e042c4420bb3f04b2fec5734175f4cb9fa853daf52b7e8";
+  modelUrl = "https://huggingface.co/unsloth/Qwen3.5-9B-GGUF/resolve/${modelRevision}/${modelFile}";
   modelPath = "${modelDir}/${modelFile}";
   port = config.yomi.ports.llama-cpp-classifier;
 in {
   # {{{ Service
-  # A second, much smaller llama.cpp than the general model next door, dedicated to
-  # classifying mail for the n8n inbox organizer.
+  # A second llama.cpp beside the general model next door, for classification
+  # work: the Proton mail sorter and the diabetes app's weekly review.
   #
-  # The model was chosen by measurement, not by reputation. On this CPU-only,
-  # ten-core, already-loaded box, against a twelve-case labelled set of real
-  # German and English mail shapes (bank statement, price change, invitation,
-  # parcel, check-in, digest, scam, tax demand, receipt, appointment, order,
-  # social notification):
+  # Qwen3.5-9B replaced Qwen2.5-3B in October 2026, when the Proton sorter
+  # arrived with a prompt and thirteen categories tuned to it. Against twenty
+  # labelled synthetic mails it filed 19 correctly at ~31 s each on this CPU
+  # (the miss, an expired 2019 deadline filed as Wichtig, is now caught in the
+  # sorter's code). It briefly ran under Ollama; one runtime is enough, and
+  # Ollama is llama.cpp underneath anyway.
   #
-  #   Qwen2.5-14B-Instruct Q4_K_M   accurate, but ~40 s for a single mail
-  #   Qwen3-1.7B           Q4_K_M   67% correct,  6.7 s avg
-  #   Qwen2.5-3B-Instruct  Q4_K_M   92% correct, 11.3 s avg
-  #
-  # The 1.7B is not merely less accurate, it is wrong in the way that matters:
-  # it filed a doctor's appointment reminder as unsolicited bulk at importance
-  # 1. The 3B rated the same mail personal at importance 5. Four seconds per
-  # mail is not worth buying that back, and at a nightly batch of a few dozen
-  # the whole run is minutes either way.
+  # The 3B it replaced had been chosen by measurement for the old Migadu
+  # organizer: 92% on twelve mails at 11 s, against 67% for Qwen3-1.7B, which
+  # filed a doctor's appointment as unsolicited bulk. That trade no longer
+  # holds once the work runs in the background with minutes to spare.
   users.users.llama-cpp-classifier = {
     isSystemUser = true;
     group = "llama-cpp-classifier";
@@ -58,41 +58,55 @@ in {
         if [ ! -f "${modelPath}" ]; then
           echo "Downloading ${modelFile}..."
           ${lib.getExe pkgs.curl} -fSL --retry 5 --retry-all-errors -C - \
-            -o "${modelPath}.tmp" "${modelBaseUrl}/${modelFile}"
+            -o "${modelPath}.tmp" "${modelUrl}"
+          echo "${modelSha256}  ${modelPath}.tmp" | ${lib.getExe' pkgs.coreutils "sha256sum"} -c -
           mv "${modelPath}.tmp" "${modelPath}"
           chmod 644 "${modelPath}"
         fi
+        # Drop the weights of models this file no longer names.
+        find "${modelDir}" -maxdepth 1 -name '*.gguf' ! -name ${lib.escapeShellArg modelFile} -delete
       '';
 
       ExecStart = lib.escapeShellArgs [
         (lib.getExe' pkgs.llama-cpp "llama-server")
         "--model"
         modelPath
+        "--alias"
+        "qwen3.5-9b"
         "--host"
         "127.0.0.1"
         "--port"
         (toString port)
-        # A mail excerpt plus the bucket list is a few hundred tokens. The
-        # classifier truncates the body to 400 characters precisely so this
-        # can stay small: context costs resident memory whether used or not.
+        # The sorter's system prompt is about 3k tokens and a mail excerpt up
+        # to 2k more. One slot keeps the whole context for one request and
+        # lets the prompt cache reuse the system prompt between mails.
         "--ctx-size"
-        "4096"
+        "8192"
+        "--parallel"
+        "1"
+        # Qwen3.5 thinks by default. Classification wants a label, not an
+        # essay, and the thinking tokens would cost minutes per mail here.
+        "--jinja"
+        "--reasoning"
+        "off"
         "--threads"
-        "4"
+        "8"
       ];
 
-      # Four threads of ten, so a nightly classification run cannot starve the
-      # forty-odd services this box actually exists to run. The model is
-      # ~2 GB on disk; the cap leaves room for context and the allocator
-      # without letting a leak reach the rest of the machine.
-      MemoryMax = "6G";
-      CPUQuota = "400%";
+      # CPU only: the iGPU already holds the 35B next door. Eight threads,
+      # but the lowest weight, so the services this box exists to run win
+      # whenever they want the CPU. ~5.7 GB of weights plus the 8k context.
+      MemoryMax = "10G";
+      CPUQuota = "800%";
+      CPUWeight = 20;
+      IOWeight = 20;
+      Nice = 10;
     };
   };
   # }}}
 
   # {{{ Persistence
-  # The model is two gigabytes fetched over the network: worth keeping across
+  # The model is six gigabytes fetched over the network: worth keeping across
   # reboots, and it is regenerable, so it belongs beside the other caches
   # rather than in a backup set.
   yomi.persistence.at.state.apps.llama-cpp-classifier.directories = [

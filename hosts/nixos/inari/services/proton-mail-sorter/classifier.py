@@ -9,7 +9,7 @@ import re
 import urllib.request
 from zoneinfo import ZoneInfo
 
-OLLAMA_CHAT_URL = "http://127.0.0.1:8442/api/chat"
+MODEL_CHAT_URL = "http://127.0.0.1:8496/v1/chat/completions"
 
 CATEGORIES = [
     "Wichtig",
@@ -296,16 +296,26 @@ def message_age_days(data):
 
 def ask(data, categories, note=None):
     system = CLASSIFICATION_PROMPT + ("\n" + note if note else "")
+    # OpenAI-compatible request to the local llama.cpp server. The schema is
+    # enforced as a grammar while decoding, so the model cannot emit anything
+    # but one of the allowed folder names. Thinking is off server-side.
     payload = {
         "model": MODEL,
         "stream": False,
-        "think": False,
-        "options": {"temperature": 0, "num_ctx": 8192, "num_predict": 80},
-        "format": {
-            "type": "object",
-            "properties": {"folder": {"type": "string", "enum": categories}},
-            "required": ["folder"],
-            "additionalProperties": False,
+        "temperature": 0,
+        "max_tokens": 80,
+        "response_format": {
+            "type": "json_schema",
+            "json_schema": {
+                "name": "verdict",
+                "strict": True,
+                "schema": {
+                    "type": "object",
+                    "properties": {"folder": {"type": "string", "enum": categories}},
+                    "required": ["folder"],
+                    "additionalProperties": False,
+                },
+            },
         },
         "messages": [
             {"role": "system", "content": system},
@@ -313,7 +323,7 @@ def ask(data, categories, note=None):
         ],
     }
     request = urllib.request.Request(
-        OLLAMA_CHAT_URL,
+        MODEL_CHAT_URL,
         data=json.dumps(payload).encode(),
         headers={"Content-Type": "application/json"},
     )
@@ -321,7 +331,7 @@ def ask(data, categories, note=None):
     opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
     with opener.open(request, timeout=600) as response:
         result = json.load(response)
-    category = json.loads(result["message"]["content"])["folder"]
+    category = json.loads(result["choices"][0]["message"]["content"])["folder"]
     if category not in categories:
         raise ValueError("Ungueltige Kategorie vom Modell")
     return category

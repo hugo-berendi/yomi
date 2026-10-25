@@ -11,7 +11,7 @@
     name = "yomi-proton-mail-sorter";
   };
   settings = pkgs.writeText "proton-mail-sorter.json" (builtins.toJSON {
-    inherit (cfg) apply maxMessages maxReadMessages markExistingRead bridgeHost bridgePort bridgeCertificateSha256 ollamaUrl usernameRef passwordRef apiTokenRef;
+    inherit (cfg) apply maxMessages maxReadMessages markExistingRead bridgeHost bridgePort bridgeCertificateSha256 modelUrl usernameRef passwordRef apiTokenRef;
     bridgeCertificateFile =
       if cfg.bridgeCertificateFile == null
       then null
@@ -62,10 +62,10 @@ in {
       default = "";
       description = "Verified SHA256 fingerprint of this Bridge instance's TLS certificate.";
     };
-    ollamaUrl = lib.mkOption {
+    modelUrl = lib.mkOption {
       type = lib.types.str;
-      default = "http://127.0.0.1:${toString config.yomi.ports.ollama}";
-      description = "Private Ollama base URL serving qwen3.5:9b; no automatic model substitution.";
+      default = "http://127.0.0.1:${toString config.yomi.ports.llama-cpp-classifier}";
+      description = "Base URL of the local llama.cpp server running Qwen3.5-9B; no automatic model substitution.";
     };
     serviceAccountTokenFile = lib.mkOption {
       type = lib.types.str;
@@ -106,9 +106,8 @@ in {
       }
     ];
 
-    # Bridge is deliberately not installed/logged in by this module: its
-    # account/session and keyring need provisioning on the actual host.
-    # Ollama is disabled in inari today; leave its existing service policy alone.
+    # Bridge runs from protonmail-bridge.nix, which also sets this module up.
+    # The model runs in llama-cpp-classifier.nix; this unit only calls it.
     systemd.services.proton-mail-sorter = {
       description = "Private Proton mail worker for n8n";
       wantedBy = ["multi-user.target"];

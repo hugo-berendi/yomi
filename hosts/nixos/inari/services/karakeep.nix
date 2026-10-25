@@ -41,14 +41,10 @@
       DISABLE_SIGNUPS = "false";
       DISABLE_NEW_RELEASE_CHECK = "true";
 
-      # AI
-      OLLAMA_BASE_URL = "http://${config.services.ollama.host}:${toString config.services.ollama.port}";
-      OLLAMA_KEEP_ALIVE = "20m";
-      INFERENCE_IMAGE_MODEL = "gemma3:4b";
-      INFERENCE_TEXT_MODEL = "gemma3:4b";
-      EMBEDDING_TEXT_MODEL = "nomic-embed-text:latest";
-      INFERENCE_ENABLE_AUTO_SUMMARIZATION = "true";
-      INFERENCE_JOB_TIMEOUT_SEC = "600";
+      # No AI tagging or summaries. These pointed at an Ollama that was off
+      # for a long time and is gone now; llama.cpp is the one local runtime
+      # and its CPU belongs to the mail sorter. Without OLLAMA_BASE_URL or
+      # OPENAI_API_KEY karakeep simply skips inference.
 
       # OCR
       OCR_LANGS = "eng,deu";

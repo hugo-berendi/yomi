@@ -29,7 +29,7 @@ def configuration(apply=False):
         "bridgeHost": "127.0.0.1",
         "bridgePort": 1143,
         "bridgeCertificateSha256": hashlib.sha256(CERT).hexdigest(),
-        "ollamaUrl": "http://127.0.0.1:8442",
+        "modelUrl": "http://127.0.0.1:8496",
         "opExecutable": "/test/op",
         "usernameRef": "op://Automation/Bridge/username",
         "passwordRef": "op://Automation/Bridge/password",
@@ -197,7 +197,15 @@ class WorkerTests(unittest.TestCase):
             requests.append(json.loads(request.data))
             return io.BytesIO(
                 json.dumps(
-                    {"message": {"content": json.dumps({"folder": "Newsletter"})}}
+                    {
+                        "choices": [
+                            {
+                                "message": {
+                                    "content": json.dumps({"folder": "Newsletter"})
+                                }
+                            }
+                        ]
+                    }
                 ).encode()
             )
 
@@ -212,9 +220,16 @@ class WorkerTests(unittest.TestCase):
             self.assertEqual(classifier.classify(msg), "Newsletter")
         self.assertEqual(requests[0]["model"], "qwen3.5:9b")
         self.assertEqual(
-            requests[0]["format"]["properties"]["folder"]["enum"], classifier.CATEGORIES
+            requests[0]["response_format"]["json_schema"]["schema"]["properties"][
+                "folder"
+            ]["enum"],
+            classifier.CATEGORIES,
         )
-        self.assertFalse(requests[0]["format"]["additionalProperties"])
+        self.assertFalse(
+            requests[0]["response_format"]["json_schema"]["schema"][
+                "additionalProperties"
+            ]
+        )
 
     def test_config_and_schema(self):
         self.assertEqual(len(classifier.CATEGORIES), 13)
@@ -225,7 +240,7 @@ class WorkerTests(unittest.TestCase):
             {"passwordRef": "plaintext"},
             {"maxMessages": True},
             {"bridgePort": 0},
-            {"ollamaUrl": "https://user:secret@host"},
+            {"modelUrl": "https://user:secret@host"},
         ):
             with self.assertRaises(ValueError):
                 worker.validate_config({**configuration(), **changes})
