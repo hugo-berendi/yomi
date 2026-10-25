@@ -13,6 +13,17 @@
   modelUrl = "https://huggingface.co/unsloth/Qwen3.5-9B-GGUF/resolve/${modelRevision}/${modelFile}";
   modelPath = "${modelDir}/${modelFile}";
   port = config.yomi.ports.llama-cpp-classifier;
+  # nixpkgs builds llama.cpp for the x86-64 baseline (GGML_NATIVE off, as
+  # -march=native would make the build depend on the builder). That leaves
+  # out every vector instruction: Qwen3.5-9B processed prompts at 9 tokens/s
+  # and took ~56 s a mail, where Ollama, which ships CPU variants, took ~31 s.
+  # The features are named instead of detected, for inari's Ryzen 7 7735HS
+  # (Zen 3+): AVX2, FMA, F16C, BMI2, no AVX-512.
+  llamaCpp = pkgs.llama-cpp.overrideAttrs (old: {
+    cmakeFlags =
+      old.cmakeFlags
+      ++ map (feature: lib.cmakeBool "GGML_${feature}" true) ["AVX" "AVX2" "FMA" "F16C" "BMI2"];
+  });
 in {
   # {{{ Service
   # A second llama.cpp beside the general model next door, for classification
@@ -68,7 +79,7 @@ in {
       '';
 
       ExecStart = lib.escapeShellArgs [
-        (lib.getExe' pkgs.llama-cpp "llama-server")
+        (lib.getExe' llamaCpp "llama-server")
         "--model"
         modelPath
         "--alias"
