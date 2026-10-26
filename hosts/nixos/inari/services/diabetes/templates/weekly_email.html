@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Weekly diabetes review</title></head>
+<body style="margin:0;padding:0;background:#edece5;color:#183b3a">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#edece5"><tr><td align="center" style="padding:16px 0">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#f7f5ee;color:#183b3a;font:14px/1.5 Verdana,sans-serif">
+<tr><td style="padding:24px 24px 14px;border-top:5px solid #287d75;font:11px Verdana,sans-serif;letter-spacing:2px;color:#60716f">DIABETES / WEEKLY REVIEW</td></tr>
+<tr><td style="padding:0 24px;font:34px/1.15 Georgia,serif">Your week, at a glance.</td></tr>
+<tr><td style="padding:8px 24px 20px;color:#60716f;font-size:12px">{{ start }} to {{ end }} &middot; Europe/Berlin</td></tr>
+{% if sync_attention %}<tr><td style="padding:0 24px 16px"><table role="presentation" width="100%" cellpadding="12" style="background:#f4e4cf;border-left:4px solid #bd7a26"><tr><td style="color:#70461d;font-size:13px"><strong>Glooko sign-in needs attention.</strong><br>This report uses stored history. Reconnect through your private journal.</td></tr></table></td></tr>{% endif %}
+<tr><td style="padding:0 20px 16px"><table role="presentation" width="100%" cellpadding="0" cellspacing="4">
+{% for row in tiles|batch(2) %}<tr>{% for tile in row %}<td width="50%" valign="top" style="padding:14px 10px;background:{% if tile.tone == 'coral' %}#f3e4df{% else %}#e8ede5{% endif %};border-top:2px solid {% if tile.tone == 'coral' %}#c45353{% else %}#287d75{% endif %}">
+<table role="presentation" width="100%" cellpadding="0"><tr><td style="font-size:11px;color:#526663">{{ tile.label }}</td></tr><tr><td style="padding:5px 0;font:{% if tile.value == 'Unavailable' %}17{% else %}26{% endif %}px/1.2 Georgia,serif;color:{% if tile.tone == 'coral' %}#933e3e{% else %}#183b3a{% endif %}">{{ tile.value|replace(' mg/dL', '') }}{% if 'mg/dL' in tile.value %}<span style="font:11px Verdana,sans-serif"> mg/dL</span>{% endif %}</td></tr><tr><td style="font-size:10px;color:#526663">{{ tile.delta }}</td></tr></table>
+</td>{% endfor %}</tr>{% endfor %}</table></td></tr>
+<tr><td style="padding:0 24px 6px;font:23px Georgia,serif">What stands out</td></tr>
+{% for item in highlights %}<tr><td style="padding:10px 24px;border-bottom:1px solid #dedfd5;color:{% if item.tone == 'coral' %}#933e3e{% else %}#183b3a{% endif %};font-size:13px"><strong>{{ item.title }}</strong><br>{{ item.text }}</td></tr>{% endfor %}
+<tr><td style="padding:22px 24px 6px;font:23px Georgia,serif">Where the time went</td></tr>
+<tr><td style="padding:0 24px 8px;font-size:11px;color:#60716f">Observed glucose time only. Target range {{ low }} to {{ high }} mg/dL.</td></tr>
+<tr><td style="padding:0 12px"><img src="cid:range-comparison" width="576" alt="Stacked comparison of below, in and above range for the two completed weeks. Percentages refer to observed time only." style="display:block;width:100%;max-width:576px;height:auto;border:0"></td></tr>
+<tr><td style="padding:4px 24px 6px;font-size:11px;color:#60716f">Above range {{ above }}. Variability / CV {{ cv }}. Missing time is excluded from these percentages.</td></tr>
+<tr><td style="padding:18px 24px 4px;font:23px Georgia,serif">Day by day</td></tr>
+<tr><td style="padding:0 12px"><img src="cid:daily-range" width="576" alt="Daily bars show the share of observed time in range. Days without observations are marked as missing." style="display:block;width:100%;max-width:576px;height:auto;border:0"></td></tr>
+<tr><td style="padding:18px 24px 4px;font:23px Georgia,serif">When highs and lows appeared</td></tr>
+<tr><td style="padding:0 24px 4px;font-size:11px;color:#60716f">Each cell shows a two-hour Berlin window across the week. Gray means no observations.</td></tr>
+<tr><td style="padding:0 12px"><img src="cid:hourly-patterns" width="576" alt="Two-row hourly heatmap for time above and below range. Missing hours are gray; darker cells indicate a larger share of observed time outside range." style="display:block;width:100%;max-width:576px;height:auto;border:0"></td></tr>
+<tr><td style="padding:6px 24px 18px;font-size:11px;color:#60716f">Night is 00:00 to 06:00: {% if night.above_percent is not none %}{{ '%.1f'|format(night.above_percent) }}% above range over {{ '%.1f'|format(night.observed_hours) }} observed hours.{% else %}No observations.{% endif %} Uneven coverage can bias hourly patterns.</td></tr>
+<tr><td style="padding:18px 24px 8px;border-top:1px solid #dedfd5;font:23px Georgia,serif">The longer view</td></tr>
+{% if trends %}
+<tr><td style="padding:0 24px 10px;color:#60716f;font-size:11px">Latest four calendar weeks compared with the prior four. Each block needs at least three weeks with 70% coverage.</td></tr>
+<tr><td style="padding:0 24px"><table width="100%" cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-size:12px"><tr><th align="left" style="border-bottom:1px solid #dedfd5">Observed time</th><th align="right" style="border-bottom:1px solid #dedfd5">Prior 4</th><th align="right" style="border-bottom:1px solid #dedfd5">Latest 4</th><th align="right" style="border-bottom:1px solid #dedfd5">Change</th></tr>
+{% for row in trends %}<tr><td style="border-bottom:1px solid #dedfd5">{{ row.label }}</td><td align="right" style="border-bottom:1px solid #dedfd5">{{ row.prior }}</td><td align="right" style="border-bottom:1px solid #dedfd5">{{ row.recent }}</td><td align="right" style="border-bottom:1px solid #dedfd5">{{ row.delta }}</td></tr>{% endfor %}</table></td></tr>
+<tr><td style="padding:6px 24px;font-size:10px;color:#60716f">{{ trends[0].eligible }}. Changes use observed-time weighting.</td></tr>
+{% else %}<tr><td style="padding:0 24px 10px;font-size:12px;color:#60716f">Not enough covered history yet for a four-week comparison.</td></tr>{% endif %}
+<tr><td style="padding:8px 24px 18px;font-size:10px;color:#60716f">{{ memory.get('available_weeks', 0) }} weeks with observations in the last {{ memory.get('window_weeks', 26) }} completed weeks; {{ memory.get('eligible_weeks', 0) }} meet the weekly coverage gate. Missing weeks are unknown.</td></tr>
+<tr><td style="padding:18px 24px 8px;border-top:1px solid #dedfd5;font:23px Georgia,serif">Recorded insulin &amp; carbs</td></tr>
+<tr><td style="padding:0 24px"><table width="100%" cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-size:11px"><tr><th align="left">Supported records</th><th align="right">This week</th><th align="right">Prior week</th></tr>{% for row in sources[:2] %}<tr><td style="border-bottom:1px solid #dedfd5">{{ row.label }}</td><td align="right" style="border-bottom:1px solid #dedfd5">{{ row.current }}</td><td align="right" style="border-bottom:1px solid #dedfd5">{{ row.previous }}</td></tr>{% endfor %}</table></td></tr>
+<tr><td style="padding:8px 24px 18px;font-size:10px;color:#60716f">These totals cover recorded entries only. Actual automated basal delivery and total daily insulin are unavailable. Programmed basal settings are never treated as delivery. Missing entries do not prove zero delivery or intake; identical events without IDs may merge.</td></tr>
+{% if questions %}<tr><td style="padding:16px 24px 8px;background:#e8ede5;font:23px Georgia,serif">Bring to your next appointment</td></tr>{% for question in questions %}<tr><td style="padding:5px 24px 10px;background:#e8ede5;font-size:13px">{{ loop.index }}. {{ question }}</td></tr>{% endfor %}{% endif %}
+<tr><td style="padding:20px 24px 6px;font-size:12px"><strong>Data quality</strong></td></tr>
+{% for notice in notices %}<tr><td style="padding:3px 24px;font-size:10px;color:#526663">{{ notice }}</td></tr>{% endfor %}
+<tr><td style="padding:6px 24px;font-size:10px;color:#526663">Readings cover at most five minutes; gaps stay unfilled. Clock-change timestamps without a unique offset are excluded. Recurring observations do not establish their cause. pp = percentage points.</td></tr>
+{% if not ai_available %}<tr><td style="padding:3px 24px;font-size:10px;color:#526663">Local AI unavailable, disabled or insufficient coverage. Calculated findings shown.</td></tr>{% endif %}
+{% if url %}<tr><td style="padding:16px 24px"><a href="{{ url }}" style="color:#287d75;font-size:13px">Open your full private report &rarr;</a></td></tr>{% endif %}
+<tr><td style="padding:14px 24px 24px;border-top:1px solid #dedfd5;font-size:10px;color:#60716f">For retrospective discussion with your diabetes team.<br>No dosing recommendations or pump control.</td></tr>
+</table></td></tr></table></body></html>

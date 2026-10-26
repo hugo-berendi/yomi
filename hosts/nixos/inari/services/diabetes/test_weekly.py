@@ -9,6 +9,75 @@ from app import database, init_db
 
 
 class WeeklyTests(unittest.TestCase):
+    def test_brief_preserves_exclusion_counts_across_export_files(self):
+        from analysis import comparison
+        from report_email import presentation
+
+        report = comparison([], [], datetime(2026, 10, 26, 8, tzinfo=UTC))
+        notice = "Excluded 11 CGM entries with ambiguous local clock-change timestamps."
+        view = presentation(report, None, [notice, notice])
+        self.assertTrue(any("22 CGM" in item for item in view["notices"]))
+
+    def test_brief_does_not_turn_missing_previous_week_into_zero_episodes(self):
+        from analysis import comparison, week_bounds
+        from report_email import presentation
+
+        now = datetime(2026, 10, 26, 8, tzinfo=UTC)
+        start, _ = week_bounds(now)
+        report = comparison([(start + i * 300, 60) for i in range(4)], [], now)
+        view = presentation(report, None, [])
+        self.assertIn("unavailable", view["highlights"][0]["text"].lower())
+
+    def test_hour_chart_weights_two_hour_cells_and_keeps_gaps_unknown(self):
+        import math
+        from report_charts import hour_values
+
+        values = hour_values(
+            [
+                {"hour": 0, "observed_minutes": 30, "above_minutes": 30},
+                {"hour": 1, "observed_minutes": 90, "above_minutes": 0},
+                {"hour": 2, "observed_minutes": 60, "above_minutes": 0},
+            ],
+            "above",
+        )
+        self.assertEqual(values[0], 25)
+        self.assertEqual(values[1], 0)
+        self.assertTrue(math.isnan(values[2]))
+
+    def test_mail_is_a_brief_with_distinct_charts_and_no_repeated_facts(self):
+        from analysis import comparison
+        from weekly import render
+
+        now = datetime(2026, 10, 26, 8, tzinfo=UTC)
+        report = comparison([], [], now)
+        report["facts"] += [
+            {"id": f"synthetic_{i}", "text": "Repeated technical evidence " * 20}
+            for i in range(40)
+        ]
+        message = render(
+            report,
+            {
+                "sender": "report@example.invalid",
+                "recipient": "patient@example.invalid",
+            },
+            now,
+            quality=["CSV outside supported CGM/bolus schema"] * 10,
+        )
+        plain = message.get_body(preferencelist=("plain",)).get_content()
+        body = message.get_body(preferencelist=("html",)).get_content()
+        self.assertLess(len(plain), 4500)
+        self.assertNotIn("Repeated technical evidence", body)
+        self.assertNotIn("sudo", body)
+        self.assertIn("Data quality", body)
+        self.assertIn("Unavailable", plain)
+        images = [
+            part for part in message.walk() if part.get_content_type() == "image/png"
+        ]
+        self.assertEqual(len(images), 3)
+        for part in images:
+            self.assertTrue(part.get_payload(decode=True).startswith(b"\x89PNG"))
+            self.assertIn("cid:" + part["Content-ID"].strip("<>"), body)
+
     def test_low_patterns_and_supported_totals(self):
         summary = weekly_summary(
             [(0, 60), (300, 60), (600, 60)], [(100, 2, 20), (400, 1, None)], 0, 86400
