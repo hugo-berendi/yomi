@@ -74,11 +74,6 @@
     };
     # }}}
 
-    ghostty-pkg = {
-      url = "github:ghostty-org/ghostty";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     # {{{ Nix-related tooling
     nixarr = {
       url = "github:rasmus-kirk/nixarr";

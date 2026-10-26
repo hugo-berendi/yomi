@@ -1,6 +1,5 @@
 {
   config,
-  inputs,
   pkgs,
   ...
 }: {
@@ -9,7 +8,7 @@
     execCommand = "ghostty";
   };
   home.packages = [
-    inputs.ghostty-pkg.packages.${pkgs.stdenv.hostPlatform.system}.default
+    pkgs.ghostty
   ];
   xdg.configFile."ghostty/config".text = ''
     theme = Rose Pine Moon
