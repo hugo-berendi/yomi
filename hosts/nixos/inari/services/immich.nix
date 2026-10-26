@@ -3,7 +3,7 @@
   upkgs,
   ...
 }: let
-  # Immich's theme.customCss expects space-separated RGB triplets, not hex.
+  # Legacy Immich variables take RGB triplets; immich-ui variables take CSS colors.
   rgb = color: "${config.lib.stylix.colors."${color}-rgb-r"} ${config.lib.stylix.colors."${color}-rgb-g"} ${config.lib.stylix.colors."${color}-rgb-b"}";
 in {
   # {{{ Secrets
@@ -107,16 +107,34 @@ in {
       };
     };
 
+    # Legacy gray/bg tokens also supply contrasting text in dark components,
+    # including job counters, so their light and dark variants must stay distinct.
     settings.theme.customCss = ''
-      :root, .dark {
-        --immich-primary: ${rgb "base0D"};
+      :root, .light {
+        --immich-primary: ${rgb "base03"};
         --immich-dark-primary: ${rgb "base0D"};
-        --immich-bg: ${rgb "base00"};
+        --immich-bg: ${rgb "base05"};
         --immich-dark-bg: ${rgb "base00"};
-        --immich-fg: ${rgb "base05"};
+        --immich-fg: ${rgb "base00"};
         --immich-dark-fg: ${rgb "base05"};
-        --immich-gray: ${rgb "base02"};
+        --immich-gray: ${rgb "base06"};
         --immich-dark-gray: ${rgb "base02"};
+
+        --immich-ui-primary-500: rgb(${rgb "base03"});
+        --immich-ui-light: rgb(${rgb "base05"});
+        --immich-ui-dark: rgb(${rgb "base00"});
+        --immich-ui-gray: rgb(${rgb "base06"});
+        --immich-ui-muted: rgb(${rgb "base03"});
+        --immich-ui-default-border: rgb(${rgb "base04"});
+      }
+
+      .dark {
+        --immich-ui-primary-500: rgb(${rgb "base0D"});
+        --immich-ui-light: rgb(${rgb "base00"});
+        --immich-ui-dark: rgb(${rgb "base05"});
+        --immich-ui-gray: rgb(${rgb "base01"});
+        --immich-ui-muted: rgb(${rgb "base04"});
+        --immich-ui-default-border: rgb(${rgb "base02"});
       }
     '';
   };
