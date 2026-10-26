@@ -10,8 +10,9 @@
       };
 
       immich-machine-learning = {
-        MemoryMax = "4G";
-        MemoryHigh = "3G";
+        # SigLIP2 needs room alongside face recognition and OCR models.
+        MemoryMax = "6G";
+        MemoryHigh = "5G";
       };
 
       jellyfin = {

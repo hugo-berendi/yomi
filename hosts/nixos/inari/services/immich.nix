@@ -51,6 +51,17 @@ in {
 
     settings.backup.database.keepLastAmount = 60;
 
+    settings.machineLearning = {
+      enabled = true;
+      clip = {
+        enabled = true;
+        # SigLIP2 understands German and English without changing the UI language.
+        modelName = "ViT-SO400M-16-SigLIP2-256__webli";
+      };
+    };
+    # Keep full-library reindexing from competing with itself on this shared CPU.
+    settings.job.smartSearch.concurrency = 1;
+
     settings.oauth = {
       enabled = true;
       issuerUrl = config.yomi.cloudflared.at.pocket-id.url;
