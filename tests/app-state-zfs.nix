@@ -3,6 +3,8 @@
   config,
 }: let
   appState = config.systemd.services.restic-app-state;
+  root = config.yomi.inari.rootDataset;
+  stateDataset = config.fileSystems."/persist/state".device;
 in
   pkgs.testers.runNixOSTest {
     name = "inari-app-state-zfs";
@@ -32,9 +34,12 @@ in
       machine.wait_for_unit("multi-user.target")
       machine.succeed("printf 'synthetic-disk-key' > /run/disk.key")
       machine.succeed("zpool create -f -O mountpoint=/zfs-root -O encryption=aes-256-gcm -O keyformat=passphrase -O keylocation=file:///run/disk.key zroot /dev/vdb")
-      machine.succeed("zfs create -o mountpoint=/root zroot/root")
-      machine.succeed("zfs create -o mountpoint=/root/persist zroot/root/persist")
-      machine.succeed("zfs create -p -o mountpoint=/persist/state zroot/root/persist/state")
+      ${pkgs.lib.optionalString (root != "zroot") ''
+        machine.succeed("zfs create -o mountpoint=none ${root}")
+      ''}
+      machine.succeed("zfs create -o mountpoint=/root ${root}/root")
+      machine.succeed("zfs create -o mountpoint=/root/persist ${root}/root/persist")
+      machine.succeed("zfs create -p -o mountpoint=/persist/state ${stateDataset}")
       machine.succeed("zpool create -f -O mountpoint=/raid5pool raid5pool /dev/vdc")
       machine.succeed("mkdir -p /persist/state/var/backup")
       manifest = json.loads(machine.succeed("cat ${appState.environment.APP_STATE_SOURCES}"))
@@ -52,7 +57,7 @@ in
           machine.succeed("systemctl start restic-app-state.service", timeout=120)
           for name in manifest:
               machine.succeed("test -f /persist/state/var/backup/app-state/" + shlex.quote(name) + "/sentinel")
-          machine.fail("zfs list -t snapshot zroot/root/persist/state@yomi-app-state-backup")
+          machine.fail("zfs list -t snapshot ${stateDataset}@yomi-app-state-backup")
           machine.fail("zfs list -t snapshot raid5pool@yomi-app-state-backup")
           machine.fail("findmnt -rn -t zfs | grep /run/restic-app-state/")
 
@@ -66,7 +71,7 @@ in
       machine.succeed("mv /persist/state/var/lib/vdirsyncer /persist/state/var/lib/calendar-missing")
       machine.fail("systemctl start restic-app-state.service", timeout=120)
       machine.succeed("test -f /persist/state/var/backup/app-state/calendar-sync/sentinel")
-      machine.fail("zfs list -t snapshot zroot/root/persist/state@yomi-app-state-backup")
+      machine.fail("zfs list -t snapshot ${stateDataset}@yomi-app-state-backup")
       machine.fail("zfs list -t snapshot raid5pool@yomi-app-state-backup")
       machine.fail("findmnt -rn -t zfs | grep /run/restic-app-state/")
       machine.succeed("mv /persist/state/var/lib/calendar-missing /persist/state/var/lib/vdirsyncer")

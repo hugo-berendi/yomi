@@ -283,6 +283,11 @@
           # its configuration is kept dormant rather than built on every push.
           # It is still under nixosConfigurations and can be built by hand.
           hosts = ["amaterasu" "inari" "iso" "wsl"];
+          # Scenario tests must be able to select hardware and unlock options
+          # even when the recovery wizard's machine-specific overrides exist.
+          inariTestConfiguration = self.nixosConfigurations.inari.extendModules {
+            modules = [{disabledModules = [./hosts/nixos/inari/recovery-local.nix];}];
+          };
         in
           (builtins.listToAttrs (
             map (
@@ -303,7 +308,7 @@
             };
             recovery-options = import ./tests/recovery-options.nix {
               inherit pkgs;
-              configuration = self.nixosConfigurations.inari;
+              configuration = inariTestConfiguration;
             };
             calendar-sync = import ./tests/calendar-sync.nix {
               inherit pkgs;
@@ -315,7 +320,7 @@
             };
             inari-cpus = import ./tests/inari-cpus.nix {
               inherit pkgs;
-              config = self.nixosConfigurations.inari.config;
+              inherit (inariTestConfiguration) config;
             };
             n8n-import = import ./tests/n8n-import.nix {
               inherit pkgs;
