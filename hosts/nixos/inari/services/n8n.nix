@@ -272,8 +272,14 @@ in {
       # Leading `-` on purpose: a workflow that fails to import should leave a
       # complaint in the journal, not stop n8n from starting at all. The
       # assertion above already rejects the JSON shape that would fail here.
+      # The default 90s startup deadline killed slow imports under load and
+      # restarted the entire import sequence indefinitely. Bound each script
+      # instead. Kill the entire process group at the deadline: TERM can kill
+      # the shell first and leave its CLI child alive after timeout exits.
+      # A timeout follows the same non-fatal path as an import error.
+      serviceConfig.TimeoutStartSec = "infinity";
       serviceConfig.ExecStartPre =
-        lib.mapAttrsToList (name: workflow: "-${importScript name workflow}") cfg.workflows;
+        lib.mapAttrsToList (name: workflow: "-${pkgs.coreutils}/bin/timeout --signal=KILL 3m ${importScript name workflow}") cfg.workflows;
     };
 
     # {{{ Managed workflows
