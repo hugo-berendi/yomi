@@ -32,159 +32,167 @@ in {
     };
   };
   # }}}
-  config = lib.mkIf cfg.enable {
-    system.build.diabetes-tests = pkgs.runCommand "yomi-diabetes-tests" {} ''
-      export MPLCONFIGDIR="$TMPDIR/matplotlib"
-      export PYTHONDONTWRITEBYTECODE=1
-      ${python}/bin/python -m unittest discover -s ${source} -v
-      touch "$out"
-    '';
-    assertions = [
-      {
-        assertion = cfg.dexcomCredentialFile == null || !(lib.hasPrefix "/nix/store/" cfg.dexcomCredentialFile);
-        message = "Dexcom credentials must be a runtime secret, not a Nix store file.";
-      }
-    ];
-    # {{{ Private web service
-    yomi.nginx.at.diabetes = {
-      port = config.yomi.ports.diabetes;
-      clientMaxBodySize = "20m";
-    };
-    # The existing nginx endpoint resolves to inari's tailnet address. App
-    # authentication still protects health data from other tailnet clients.
-    services.nginx.virtualHosts.${config.yomi.nginx.at.diabetes.host}.locations."/".extraConfig = ''
-      proxy_read_timeout 240s;
-    '';
-    users.groups.diabetes = {};
-    users.users.diabetes = {
-      isSystemUser = true;
-      group = "diabetes";
-    };
-    systemd.services.diabetes = {
-      description = "Private diabetes journal";
-      wantedBy = ["multi-user.target"];
-      after = ["network-online.target" "sops-nix.service"];
-      wants = ["network-online.target"];
-      environment =
-        environment
-        // lib.optionalAttrs (cfg.dexcomCredentialFile != null) {
-          DEXCOM_CREDENTIAL_FILE = "%d/dexcom";
-        };
-      serviceConfig = {
-        User = "diabetes";
-        Group = "diabetes";
-        StateDirectory = "diabetes";
-        StateDirectoryMode = "0700";
-        UMask = "0077";
-        LoadCredential = credentials;
-        ExecStart = "${python}/bin/python ${source}/app.py serve --port ${toString config.yomi.ports.diabetes}";
-        Restart = "on-failure";
-        RestartSec = 5;
-        NoNewPrivileges = true;
-        PrivateTmp = true;
-        PrivateDevices = true;
-        ProtectSystem = "strict";
-        ProtectHome = true;
-        ProtectKernelTunables = true;
-        ProtectKernelModules = true;
-        ProtectControlGroups = true;
-        RestrictSUIDSGID = true;
-        RestrictAddressFamilies = ["AF_UNIX" "AF_INET" "AF_INET6"];
-        MemoryMax = "512M";
-      };
-    };
-    # Background work runs independently of n8n so reminders also survive an
-    # n8n credential/import outage. The optional workflow calls the same job
-    # under its process lock; both routes converge on the same notification IDs.
-    systemd.services.diabetes-jobs = {
-      description = "Update diabetes reports and due reminders";
-      requires = ["diabetes.service"];
-      after = ["diabetes.service"];
-      environment =
-        environment
-        // lib.optionalAttrs (cfg.dexcomCredentialFile != null) {
-          DEXCOM_CREDENTIAL_FILE = "%d/dexcom";
-        };
-      serviceConfig = {
-        Type = "oneshot";
-        User = "diabetes";
-        Group = "diabetes";
-        StateDirectory = "diabetes";
-        StateDirectoryMode = "0700";
-        UMask = "0077";
-        LoadCredential = credentials;
-        ExecStart = "${python}/bin/python ${source}/app.py tick";
-        TimeoutStartSec = 240;
-        NoNewPrivileges = true;
-        PrivateTmp = true;
-        PrivateDevices = true;
-        ProtectSystem = "strict";
-        ProtectHome = true;
-        MemoryMax = "512M";
-      };
-    };
-    systemd.timers.diabetes-jobs = {
-      wantedBy = ["timers.target"];
-      timerConfig = {
-        OnCalendar = "*:0/5";
-        Persistent = true;
-        RandomizedDelaySec = 10;
-      };
-    };
-    systemd.services.diabetes-glooko = {
-      description = "Import Glooko exports automatically";
-      after = ["network-online.target" "diabetes.service"];
-      wants = ["network-online.target"];
-      environment = {
-        GLOOKO_CHROMIUM = "${pkgs.chromium}/bin/chromium";
-        HOME = "/var/lib/diabetes";
-      };
-      serviceConfig = {
-        Type = "oneshot";
-        User = "diabetes";
-        Group = "diabetes";
-        StateDirectory = "diabetes";
-        StateDirectoryMode = "0700";
-        UMask = "0077";
-        ExecStart = "${python}/bin/python ${source}/app.py sync-glooko";
-        TimeoutStartSec = 300;
-        MemoryMax = "1G";
-        NoNewPrivileges = true;
-        PrivateTmp = true;
-        PrivateDevices = true;
-        ProtectSystem = "strict";
-        ProtectHome = true;
-        ProtectKernelTunables = true;
-        ProtectKernelModules = true;
-        ProtectControlGroups = true;
-        RestrictSUIDSGID = true;
-        RestrictAddressFamilies = ["AF_UNIX" "AF_INET" "AF_INET6"];
-      };
-    };
-    systemd.timers.diabetes-glooko = {
-      wantedBy = ["timers.target"];
-      timerConfig = {
-        # The application runs daily, with a six-hour backoff on failure.
-        # Frequent checks let a newly saved login start without a manual command.
-        OnCalendar = "*:0/5";
-        Persistent = true;
-        RandomizedDelaySec = 5;
-      };
-    };
-    # }}}
-    # {{{ Persistence and backups
-    yomi.persistence.at.state.apps.diabetes.directories = [
-      {
-        directory = "/var/lib/diabetes";
-        user = "diabetes";
+  config = lib.mkMerge [
+    {
+      # Keep the retired site's state mounted and backed up. Turning off the
+      # web service must not discard health history or reassign its owner.
+      users.groups.diabetes = {};
+      users.users.diabetes = {
+        isSystemUser = true;
         group = "diabetes";
-        mode = "0700";
-      }
-    ];
-    # The existing local restic state set already covers this path. Keep an
-    # off-site copy too: normalized health history cannot be reacquired forever.
-    yomi.restic.offsite.paths = ["/persist/state/var/lib/diabetes"];
-    # }}}
-    services.home-assistant.extraComponents = ["dexcom" "mobile_app"];
-  };
+      };
+      # Retiring the site must not remove any device integrations already
+      # configured in Home Assistant.
+      services.home-assistant.extraComponents = ["dexcom" "mobile_app"];
+      # {{{ Persistence and backups
+      yomi.persistence.at.state.apps.diabetes.directories = [
+        {
+          directory = "/var/lib/diabetes";
+          user = "diabetes";
+          group = "diabetes";
+          mode = "0700";
+        }
+      ];
+      # The existing local restic state set already covers this path. Keep an
+      # off-site copy too: normalized health history cannot be reacquired forever.
+      yomi.restic.offsite.paths = ["/persist/state/var/lib/diabetes"];
+      # }}}
+    }
+    (lib.mkIf cfg.enable {
+      system.build.diabetes-tests = pkgs.runCommand "yomi-diabetes-tests" {} ''
+        export MPLCONFIGDIR="$TMPDIR/matplotlib"
+        export PYTHONDONTWRITEBYTECODE=1
+        ${python}/bin/python -m unittest discover -s ${source} -v
+        touch "$out"
+      '';
+      assertions = [
+        {
+          assertion = cfg.dexcomCredentialFile == null || !(lib.hasPrefix "/nix/store/" cfg.dexcomCredentialFile);
+          message = "Dexcom credentials must be a runtime secret, not a Nix store file.";
+        }
+      ];
+      # {{{ Private web service
+      yomi.nginx.at.diabetes = {
+        port = config.yomi.ports.diabetes;
+        clientMaxBodySize = "20m";
+      };
+      # The existing nginx endpoint resolves to inari's tailnet address. App
+      # authentication still protects health data from other tailnet clients.
+      services.nginx.virtualHosts.${config.yomi.nginx.at.diabetes.host}.locations."/".extraConfig = ''
+        proxy_read_timeout 240s;
+      '';
+      systemd.services.diabetes = {
+        description = "Private diabetes journal";
+        wantedBy = ["multi-user.target"];
+        after = ["network-online.target" "sops-nix.service"];
+        wants = ["network-online.target"];
+        environment =
+          environment
+          // lib.optionalAttrs (cfg.dexcomCredentialFile != null) {
+            DEXCOM_CREDENTIAL_FILE = "%d/dexcom";
+          };
+        serviceConfig = {
+          User = "diabetes";
+          Group = "diabetes";
+          StateDirectory = "diabetes";
+          StateDirectoryMode = "0700";
+          UMask = "0077";
+          LoadCredential = credentials;
+          ExecStart = "${python}/bin/python ${source}/app.py serve --port ${toString config.yomi.ports.diabetes}";
+          Restart = "on-failure";
+          RestartSec = 5;
+          NoNewPrivileges = true;
+          PrivateTmp = true;
+          PrivateDevices = true;
+          ProtectSystem = "strict";
+          ProtectHome = true;
+          ProtectKernelTunables = true;
+          ProtectKernelModules = true;
+          ProtectControlGroups = true;
+          RestrictSUIDSGID = true;
+          RestrictAddressFamilies = ["AF_UNIX" "AF_INET" "AF_INET6"];
+          MemoryMax = "512M";
+        };
+      };
+      # Background work runs independently of n8n so reminders also survive an
+      # n8n credential/import outage. The optional workflow calls the same job
+      # under its process lock; both routes converge on the same notification IDs.
+      systemd.services.diabetes-jobs = {
+        description = "Update diabetes reports and due reminders";
+        requires = ["diabetes.service"];
+        after = ["diabetes.service"];
+        environment =
+          environment
+          // lib.optionalAttrs (cfg.dexcomCredentialFile != null) {
+            DEXCOM_CREDENTIAL_FILE = "%d/dexcom";
+          };
+        serviceConfig = {
+          Type = "oneshot";
+          User = "diabetes";
+          Group = "diabetes";
+          StateDirectory = "diabetes";
+          StateDirectoryMode = "0700";
+          UMask = "0077";
+          LoadCredential = credentials;
+          ExecStart = "${python}/bin/python ${source}/app.py tick";
+          TimeoutStartSec = 240;
+          NoNewPrivileges = true;
+          PrivateTmp = true;
+          PrivateDevices = true;
+          ProtectSystem = "strict";
+          ProtectHome = true;
+          MemoryMax = "512M";
+        };
+      };
+      systemd.timers.diabetes-jobs = {
+        wantedBy = ["timers.target"];
+        timerConfig = {
+          OnCalendar = "*:0/5";
+          Persistent = true;
+          RandomizedDelaySec = 10;
+        };
+      };
+      systemd.services.diabetes-glooko = {
+        description = "Import Glooko exports automatically";
+        after = ["network-online.target" "diabetes.service"];
+        wants = ["network-online.target"];
+        environment = {
+          GLOOKO_CHROMIUM = "${pkgs.chromium}/bin/chromium";
+          HOME = "/var/lib/diabetes";
+        };
+        serviceConfig = {
+          Type = "oneshot";
+          User = "diabetes";
+          Group = "diabetes";
+          StateDirectory = "diabetes";
+          StateDirectoryMode = "0700";
+          UMask = "0077";
+          ExecStart = "${python}/bin/python ${source}/app.py sync-glooko";
+          TimeoutStartSec = 300;
+          MemoryMax = "1G";
+          NoNewPrivileges = true;
+          PrivateTmp = true;
+          PrivateDevices = true;
+          ProtectSystem = "strict";
+          ProtectHome = true;
+          ProtectKernelTunables = true;
+          ProtectKernelModules = true;
+          ProtectControlGroups = true;
+          RestrictSUIDSGID = true;
+          RestrictAddressFamilies = ["AF_UNIX" "AF_INET" "AF_INET6"];
+        };
+      };
+      systemd.timers.diabetes-glooko = {
+        wantedBy = ["timers.target"];
+        timerConfig = {
+          # The application runs daily, with a six-hour backoff on failure.
+          # Frequent checks let a newly saved login start without a manual command.
+          OnCalendar = "*:0/5";
+          Persistent = true;
+          RandomizedDelaySec = 5;
+        };
+      };
+      # }}}
+    })
+  ];
 }

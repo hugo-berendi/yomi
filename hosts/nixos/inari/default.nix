@@ -81,7 +81,7 @@
   system.stateVersion = "24.05";
 
   yomi.pilot.name = "hugob";
-  yomi.diabetes.enable = true;
+  yomi.diabetes.enable = false;
   yomi.machine.interactible = true;
   yomi.containers.enable = true;
   yomi.postgres.enable = true;

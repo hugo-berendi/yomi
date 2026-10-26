@@ -306,7 +306,6 @@
             };
           }) ["amaterasu" "inari"]))
           // {
-            diabetes = self.nixosConfigurations.inari.config.system.build.diabetes-tests;
             installer = import ./tests/installer.nix {inherit pkgs;};
             recover-tool = import ./tests/recover-tool.nix {inherit pkgs;};
             recover-disks = import ./tests/recover-disks.nix {

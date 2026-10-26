@@ -1,6 +1,5 @@
 {
   config,
-  osConfig,
   lib,
   pkgs,
   ...
@@ -39,7 +38,6 @@ in {
       modules-center = ["clock"];
 
       modules-right = [
-        "custom/glucose"
         "mpris"
         "tray"
         "network"
@@ -56,14 +54,6 @@ in {
         format = "󰀻";
         tooltip = false;
         on-click = "${vicinae} toggle";
-      };
-
-      "custom/glucose" = {
-        exec = "${pkgs.python3}/bin/python ${./diabetes.py} ${config.xdg.configHome}/yomi-diabetes/config.json";
-        return-type = "json";
-        interval = 60;
-        escape = false;
-        on-click = "${lib.getExe' pkgs.xdg-utils "xdg-open"} https://diabetes.${osConfig.yomi.dns.domain}/live";
       };
 
       "hyprland/workspaces" = {

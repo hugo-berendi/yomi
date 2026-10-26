@@ -234,7 +234,6 @@ in {
         # per mail on this CPU-only box. Not a secret, so it belongs here rather than in
         # the EnvironmentFile.
         CLASSIFIER_URL = "http://127.0.0.1:${toString config.yomi.ports.llama-cpp-classifier}/v1/chat/completions";
-        DIABETES_URL = "http://127.0.0.1:${toString config.yomi.ports.diabetes}";
 
         # The alert spine publishes straight to ntfy on loopback rather than
         # through its public url: a notification about the tunnel being down
@@ -286,7 +285,7 @@ in {
     yomi.n8n.workflows.webuntis-radicale.source = ./n8n/workflows/webuntis-radicale.json;
     yomi.n8n.workflows.diabetes-weekly = {
       source = ./n8n/workflows/diabetes-weekly.json;
-      enforce = false; # Attach the runtime HTTP credential once in n8n.
+      enforce = true; # Unpublish any live copy when retiring the site.
     };
     yomi.n8n.workflows.health-monitor.source = ./n8n/workflows/health-monitor.json;
     yomi.n8n.workflows.backup-storage.source = ./n8n/workflows/backup-storage.json;
