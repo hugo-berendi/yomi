@@ -84,7 +84,9 @@ in {
 
   # Boot using systemd
   boot.initrd.systemd.enable = true;
-  boot.loader.systemd-boot.configurationLimit = lib.mkDefault 10;
+  # The deployed 512 MiB ESPs cannot hold ten distinct kernel/initrd pairs.
+  # Keep two rollback entries; boot-space flake checks reserve update headroom.
+  boot.loader.systemd-boot.configurationLimit = lib.mkDefault 3;
   # }}}
   # {{{ Sudo configuration
   security.sudo = {

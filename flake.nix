@@ -298,6 +298,13 @@
             )
             hosts
           ))
+          // (builtins.listToAttrs (map (hostname: {
+            name = "boot-space-${hostname}";
+            value = import ./tests/boot-space.nix {
+              inherit pkgs;
+              configuration = self.nixosConfigurations.${hostname};
+            };
+          }) ["amaterasu" "inari"]))
           // {
             diabetes = self.nixosConfigurations.inari.config.system.build.diabetes-tests;
             installer = import ./tests/installer.nix {inherit pkgs;};
