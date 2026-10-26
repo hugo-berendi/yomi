@@ -169,16 +169,17 @@ in {
   ];
   # }}}
   # {{{ Sorter
-  # The sorter needs the same pin, so it switches on with the relay. It starts
-  # as a preview: apply stays false and its n8n workflows ship inactive, so
-  # nothing in the mailbox changes until that is flipped deliberately.
+  # The sorter needs the same pin, so it switches on with the relay. It ran
+  # as a preview first (apply = false); the pilot reviewed a 50-mail plan on
+  # 2026-10-26 before it was turned on. Its n8n workflow still has to be
+  # published by hand to start the ten-minute schedule.
   sops.secrets.op_service_account_token = lib.mkIf havePin {
     sopsFile = ./proton-mail-sorter/secrets.yaml;
   };
 
   yomi.protonMailSorter = lib.mkIf havePin {
     enable = true;
-    apply = false;
+    apply = true;
     bridgePort = ports.protonmail-bridge-imap;
     bridgeCertificateFile = bridgeCertificate;
     serviceAccountTokenFile = config.sops.secrets.op_service_account_token.path;

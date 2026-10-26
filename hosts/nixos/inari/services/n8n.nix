@@ -286,6 +286,9 @@ in {
     yomi.n8n.workflows.backup-storage.source = ./n8n/workflows/backup-storage.json;
     yomi.n8n.workflows.media-arrivals.source = ./n8n/workflows/media-arrivals.json;
     yomi.n8n.workflows.forgejo-ci.source = ./n8n/workflows/forgejo-ci.json;
+    # Retired with the move to Proton: its IMAP trigger watched the Migadu
+    # mailbox, which gets no mail since the MX moved. Kept registered with
+    # active = false so the import unpublishes it; drop both once it is gone.
     yomi.n8n.workflows.inbox-organizer.source = ./n8n/workflows/inbox-organizer.json;
     yomi.n8n.workflows.immich-location-albums.source = ./n8n/workflows/immich-location-albums.json;
     yomi.n8n.workflows.immich-maintenance.source = ./n8n/workflows/immich-maintenance.json;
