@@ -58,6 +58,10 @@ in {
         # SigLIP2 understands German and English without changing the UI language.
         modelName = "ViT-SO400M-16-SigLIP2-256__webli";
       };
+      facialRecognition = {
+        enabled = true;
+        modelName = "buffalo_l";
+      };
     };
     # Keep full-library reindexing from competing with itself on this shared CPU.
     settings.job.smartSearch.concurrency = 1;
