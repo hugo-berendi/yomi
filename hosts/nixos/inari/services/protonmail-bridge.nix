@@ -112,7 +112,10 @@ in {
       ProtectKernelTunables = true;
       ProtectKernelModules = true;
       ProtectControlGroups = true;
-      RestrictAddressFamilies = ["AF_UNIX" "AF_INET" "AF_INET6"];
+      # AF_NETLINK: the hourly update check reads the routing table for its
+      # host report and logged "netlinkrib: address family not supported"
+      # every hour without it.
+      RestrictAddressFamilies = ["AF_UNIX" "AF_INET" "AF_INET6" "AF_NETLINK"];
       RestrictNamespaces = true;
       LockPersonality = true;
     };
