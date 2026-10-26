@@ -193,7 +193,7 @@ def render(report, config, now, selected=None, quality=None):
         "Coverage uses actual elapsed time, including daylight-saving changes. Each CGM reading covers at most the next five minutes. No gaps are filled. Recurring observations do not establish their cause.",
         "Local export timestamps in repeated or nonexistent clock-change hours are excluded unless an explicit UTC offset identifies the instant. These exclusions can leave glucose gaps and incomplete bolus/carbohydrate totals, including in long-term history.",
     ]
-    lines.extend(quality or [])
+    lines.extend(dict.fromkeys(quality or []))
     if selected:
         lines.append("Local Qwen review, selected from verified findings:")
         lines += [f["text"] for f in report["facts"] if f["id"] in selected["fact_ids"]]
