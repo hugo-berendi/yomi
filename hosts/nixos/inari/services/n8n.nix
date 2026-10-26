@@ -355,7 +355,7 @@ in {
     yomi.n8n.workflows.webuntis-radicale.source = ./n8n/workflows/webuntis-radicale.json;
     yomi.n8n.workflows.diabetes-weekly = {
       source = ./n8n/workflows/diabetes-weekly.json;
-      enforce = true; # Remains inactive until the human provisions its credential.
+      enforce = false; # Preserve the credential attached in the UI until exported.
     };
     yomi.n8n.workflows.health-monitor.source = ./n8n/workflows/health-monitor.json;
     yomi.n8n.workflows.backup-storage.source = ./n8n/workflows/backup-storage.json;

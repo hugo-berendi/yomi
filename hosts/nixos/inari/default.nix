@@ -82,8 +82,8 @@
 
   yomi.pilot.name = "hugob";
   yomi.diabetes.enable = true;
-  # Enable email only after the Glooko import has been checked against the account.
-  yomi.diabetes.weeklyEmailEnable = false;
+  # The imported weeks were checked against Glooko's CGM web summary.
+  yomi.diabetes.weeklyEmailEnable = true;
   yomi.machine.interactible = true;
   yomi.containers.enable = true;
   yomi.postgres.enable = true;
