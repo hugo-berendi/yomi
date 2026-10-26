@@ -22,7 +22,34 @@ in
   # The FHS runtime also supplies the libraries needed by bundled native modules.
   (buildFHSEnv {
     name = "t3";
-    targetPkgs = p: [p.glibc p.stdenv.cc.cc.lib p.openssl p.zlib] ++ providerPackages;
+    targetPkgs = p:
+      [
+        p.glibc
+        p.stdenv.cc.cc.lib
+        p.openssl
+        p.zlib
+        # T3 downloads Chromium itself; its shared libraries must be in this FHS runtime.
+        p.glib
+        p.nspr
+        p.nss
+        p.atk
+        p.at-spi2-atk
+        p.at-spi2-core
+        p.dbus
+        p.libx11
+        p.libxcomposite
+        p.libxdamage
+        p.libxext
+        p.libxfixes
+        p.libxrandr
+        p.libgbm
+        p.expat
+        p.libxcb
+        p.libxkbcommon
+        p.systemd
+        p.alsa-lib
+      ]
+      ++ providerPackages;
     runScript = writeShellScript "t3-with-providers" ''
       export PATH=${lib.makeBinPath providerPackages}:$PATH
       exec ${release}/t3 "$@"
