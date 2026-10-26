@@ -4,6 +4,15 @@ Personal mail for `hugo-berendi.de` lives at Proton. Proton Mail Bridge on inari
 
 The worker classifies only `INBOX` and `Archive`, plus whatever is left in the retired `Folders/Wichtig` and `Folders/KI-Wichtig`. It files mail into twelve folders, which Bridge shows as `Folders/<name>`: Konzerte, Pfadfinder, Diabetes, Schule, Entwicklung, Rechnungen, Bestellungen, Werbung, Newsletter, Konten-Sicherheit, Termine, Sonstiges. There is no `KI-` prefix. Twitch live notifications from real Twitch domains skip the model and go to Werbung. Every message is marked read and then moved with native IMAP MOVE, except mail labelled Action, which keeps its read state. There is no copy/delete fallback and no EXPUNGE.
 
+## Folder upkeep
+
+Each sorting job takes the retired `Folders/Wichtig` and `Folders/KI-Wichtig` first, so their mail gets its Action label before the INBOX and Archive backlog uses up the job's budget. It then tidies up, without the model:
+
+- **Merge:** the Windows sorter's `Folders/KI-<category>` are moved into `Folders/<category>`, up to `maxReadMessages` per job.
+- **Delete:** every folder under `Folders/` that is not one of the twelve categories, has no subfolders and is empty at that moment is deleted. That covers emptied imports, the retired Wichtig folders and merged `KI-` folders. Labels are never touched. Names in `keepFolders` (without the `Folders/` prefix) are kept even when empty.
+
+The job's status in the journal lists how many messages came from each folder, and which folders were merged or deleted. It logs folder names only.
+
 ## Labels
 
 A message sits in one folder but can carry several labels. The labels answer what cuts across folders. Bridge shows them as `Labels/<name>`, and the worker sets one with an IMAP COPY there, before the move.

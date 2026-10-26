@@ -11,7 +11,7 @@
     name = "yomi-proton-mail-sorter";
   };
   settings = pkgs.writeText "proton-mail-sorter.json" (builtins.toJSON {
-    inherit (cfg) apply maxMessages maxReadMessages markExistingRead labelExisting maxLabelMessages bridgeHost bridgePort bridgeCertificateSha256 modelUrl usernameRef passwordRef apiTokenRef;
+    inherit (cfg) apply maxMessages maxReadMessages markExistingRead labelExisting maxLabelMessages keepFolders bridgeHost bridgePort bridgeCertificateSha256 modelUrl usernameRef passwordRef apiTokenRef;
     bridgeCertificateFile =
       if cfg.bridgeCertificateFile == null
       then null
@@ -46,6 +46,12 @@ in {
       type = lib.types.ints.between 1 1000;
       default = 50;
       description = "Maximum already filed messages to label per job; most need one model call.";
+    };
+    keepFolders = lib.mkOption {
+      type = lib.types.listOf (lib.types.strMatching "[^/]+");
+      default = [];
+      example = ["Projekte"];
+      description = "Folder names under Folders/ never deleted when empty. Every other empty folder outside the categories is removed.";
     };
     markExistingRead = lib.mkOption {
       type = lib.types.bool;

@@ -1,6 +1,7 @@
 """Loopback-only worker for n8n; credentials stay outside workflow executions."""
 
 import argparse
+from collections import Counter
 from datetime import datetime, timezone
 import hashlib
 import hmac
@@ -67,6 +68,11 @@ def validate_config(config):
         type(config.get("maxLabelMessages")) is not int
         or not 1 <= config["maxLabelMessages"] <= 1000
         or type(config.get("labelExisting")) is not bool
+        or not isinstance(config.get("keepFolders"), list)
+        or not all(
+            isinstance(name, str) and name and "/" not in name
+            for name in config["keepFolders"]
+        )
     ):
         raise ValueError("Invalid label backfill settings")
     if type(config["bridgePort"]) is not int or not 1 <= config["bridgePort"] <= 65535:
@@ -176,6 +182,7 @@ class Layout:
         )
         if not delimiter or delimiter == "NIL":
             raise SorterError("Folder delimiter not recognized")
+        self.delimiter = delimiter
         self.folder_prefix = "Folders" + delimiter
         self.label_prefix = "Labels" + delimiter
         self.selectable = [f.name for f in folders if "\\Noselect" not in f.flags]
@@ -195,12 +202,15 @@ class Layout:
 
     def sources(self, mode):
         if mode == "sort":
-            legacy = {self.target(name) for name in LEGACY_SOURCES}
-            return [
-                name
-                for name in self.selectable
-                if name.upper() == "INBOX" or name == "Archive" or name in legacy
-            ]
+            # The retired Wichtig folders first: they are small, and what is
+            # in them needs its Action label before the INBOX and Archive
+            # backlog uses up every job's budget.
+            legacy = [self.target(name) for name in LEGACY_SOURCES]
+            return (
+                [name for name in legacy if name in self.selectable]
+                + [name for name in self.selectable if name.upper() == "INBOX"]
+                + [name for name in self.selectable if name == "Archive"]
+            )
         # read and labels: the category folders, current and KI- legacy, never
         # INBOX, Archive, Labels/* or folders nobody declared.
         return [name for name in self.selectable if self.category_of(name)]
@@ -304,6 +314,77 @@ class Sorter:
             message_id(msg)
             for msg in box.fetch("ALL", mark_seen=False, headers_only=True, bulk=False)
         } - {""}
+
+    def tidy(self, box, layout, note):
+        """Fold KI- folders into their category and drop empty unused folders.
+
+        note is None for a dry run, which only reports what would happen.
+        """
+        merged, deleted = 0, []
+        budget = self.config["maxReadMessages"]
+        # The Windows sorter's KI-<category> holds the same category; moving
+        # it needs no model and empties the folder for the step below.
+        for category in classifier.CATEGORIES:
+            legacy = layout.target("KI-" + category)
+            if legacy not in layout.selectable or merged >= budget:
+                continue
+            box.folder.set(legacy)
+            uids = [uid for uid in box.uids("ALL") if re.fullmatch(r"[1-9][0-9]*", uid)]
+            uids = uids[: budget - merged]
+            if not uids:
+                continue
+            merged += len(uids)
+            if note is None:
+                continue
+            target = layout.target(category)
+            if target not in layout.existing:
+                box.folder.create(target)
+                layout.existing.add(target)
+            entry = {
+                "action": "merge",
+                "source": legacy,
+                "destination": target,
+                "count": len(uids),
+            }
+            note({**entry, "status": "pending"})
+            # UIDs from this same selection a moment ago; no older UID is used.
+            if box.client.uid("MOVE", ",".join(uids), encode_folder(target))[0] != "OK":
+                raise SorterError(
+                    "Folder merge failed; previous actions remain applied"
+                )
+            note({**entry, "status": "done"})
+        # Then every folder under Folders/ that is not a category, has no
+        # subfolders and is empty right now. Labels are never touched, and
+        # keepFolders protects folders the pilot wants to keep empty.
+        keep = {layout.target(c) for c in classifier.CATEGORIES}
+        keep |= {layout.target(name) for name in self.config["keepFolders"]}
+        candidates = sorted(
+            (
+                name
+                for name in layout.selectable
+                if name.startswith(layout.folder_prefix) and name not in keep
+            ),
+            # Deepest first, so a parent can go once its children have.
+            key=lambda name: -name.count(layout.delimiter),
+        )
+        for name in candidates:
+            if any(
+                other.startswith(name + layout.delimiter) for other in layout.existing
+            ):
+                continue
+            if box.folder.status(name, ["MESSAGES"])["MESSAGES"] != 0:
+                continue
+            deleted.append(name)
+            if note is None:
+                continue
+            entry = {"action": "delete_folder", "folder": name}
+            note({**entry, "status": "pending"})
+            # Never delete the selected mailbox from under the session.
+            box.folder.set("INBOX")
+            box.folder.delete(name)
+            layout.existing.discard(name)
+            note({**entry, "status": "done"})
+        return {"merged": merged, "deletedFolders": deleted}
 
     def run(self, run_id, mark_read=False, labels=False):
         mode = "read" if mark_read else "labels" if labels else "sort"
@@ -464,8 +545,13 @@ class Sorter:
                 "held": 0,
                 "unclassified": unclassified,
                 "dryRun": not self.config["apply"],
+                # Folder names only, so the journal shows where a job's budget
+                # went without any message content.
+                "sources": dict(Counter(row["source"] for row in plan)),
             }
             if not self.config["apply"]:
+                if mode == "sort":
+                    counts["tidy"] = self.tidy(box, layout, None)
                 return counts
             needed = {layout.label(name) for row in plan for name in row["labels"]}
             needed |= {row["destination"] for row in plan if row["move"]}
@@ -555,6 +641,14 @@ class Sorter:
                             (row["source"], row["uidvalidity"], row["uid"]),
                         )
                         database.commit()
+
+                def note(entry):
+                    log.write(json.dumps(entry, ensure_ascii=False) + "\n")
+                    log.flush()
+                    os.fsync(log.fileno())
+
+                if mode == "sort":
+                    counts["tidy"] = self.tidy(box, layout, note)
             return counts
         finally:
             if database is not None:

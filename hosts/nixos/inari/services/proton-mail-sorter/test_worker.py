@@ -28,6 +28,7 @@ def configuration(apply=False):
         "markExistingRead": True,
         "labelExisting": True,
         "maxLabelMessages": 50,
+        "keepFolders": [],
         "bridgeHost": "127.0.0.1",
         "bridgePort": 1143,
         "bridgeCertificateSha256": hashlib.sha256(CERT).hexdigest(),
@@ -86,7 +87,11 @@ class Mailbox:
         store_fail=False,
         headers=None,
         extra_folders=(),
+        empty=(),
+        ki_messages=False,
     ):
+        self.empty, self.ki_messages = set(empty), ki_messages
+        self.deleted = []
         self.headers = HEADERS if headers is None else headers
         self.current = None
         self.queries = []
@@ -125,6 +130,7 @@ class Mailbox:
             set=self.select,
             status=self.status,
             create=self.created.append,
+            delete=self.deleted.append,
         )
         self.client = SimpleNamespace(
             socket=lambda: SimpleNamespace(getpeercert=lambda **kw: certificate),
@@ -135,7 +141,9 @@ class Mailbox:
     def select(self, name):
         self.current = name
 
-    def status(self, *args):
+    def status(self, folder, items):
+        if items == ["MESSAGES"]:
+            return {"MESSAGES": 0 if folder in self.empty else 1}
         self.status_calls += 1
         return {"UIDVALIDITY": 8 if self.invalid_uid and self.status_calls > 2 else 7}
 
@@ -170,6 +178,8 @@ class Mailbox:
 
     def uids(self, criteria):
         assert criteria == "ALL"
+        if self.current.startswith("Folders/KI-") and not self.ki_messages:
+            return []
         return ["1"]
 
     def uid(self, *args):
@@ -306,6 +316,8 @@ class WorkerTests(unittest.TestCase):
             {"modelUrl": "https://user:secret@host"},
             {"labelExisting": "yes"},
             {"maxLabelMessages": 0},
+            {"keepFolders": "Projekte"},
+            {"keepFolders": ["a/b"]},
         ):
             with self.assertRaises(ValueError):
                 worker.validate_config({**configuration(), **changes})
@@ -432,10 +444,64 @@ class WorkerTests(unittest.TestCase):
             box = Mailbox(extra_folders=("Folders/Wichtig", "Folders/KI-Wichtig"))
             result, _ = self.run_sorter(box, state)
             self.assertEqual(result["planned"], 4)
+            # Wichtig first, so its Action labels are not starved by a backlog.
             self.assertEqual(
-                {q[0] for q in box.queries},
-                {"INBOX", "Archive", "Folders/Wichtig", "Folders/KI-Wichtig"},
+                [q[0] for q in box.queries],
+                ["Folders/Wichtig", "Folders/KI-Wichtig", "INBOX", "Archive"],
             )
+
+    def test_tidy_merges_ki_folders_and_deletes_empty_unused_ones(self):
+        with tempfile.TemporaryDirectory() as state:
+            box = Mailbox(
+                ki_messages=True,
+                extra_folders=("Folders/Personal", "Folders/Projekte", "Labels/Leer"),
+                empty={
+                    "Folders/Personal",
+                    "Folders/Projekte",
+                    "Folders/Werbung/Sub",
+                    "Folders/Unknown",
+                    "Folders/Rechnungen",
+                    "Labels/Leer",
+                }
+                | {"Folders/KI-" + c for c in classifier.CATEGORIES},
+            )
+            config = {**configuration(True), "keepFolders": ["Projekte"]}
+            sorter = worker.Sorter(
+                config, FakeSecrets(), Path(state), lambda *a, **kw: box
+            )
+            with patch.object(classifier, "classify", return_value=V("Rechnungen")):
+                result = sorter.run("tidy")
+            merges = [c for c in box.commands if c[0].startswith("Folders/KI-")]
+            self.assertEqual(len(merges), len(classifier.CATEGORIES))
+            self.assertIn(
+                (
+                    "Folders/KI-Rechnungen",
+                    ("MOVE", "1", worker.encode_folder("Folders/Rechnungen")),
+                ),
+                merges,
+            )
+            # Empty and unused go; categories, kept names and labels stay.
+            self.assertEqual(
+                set(box.deleted),
+                {"Folders/Personal", "Folders/Werbung/Sub", "Folders/Unknown"}
+                | {"Folders/KI-" + c for c in classifier.CATEGORIES},
+            )
+            self.assertEqual(result["tidy"]["merged"], len(classifier.CATEGORIES))
+            self.assertEqual(result["sources"], {"INBOX": 1, "Archive": 1})
+            log = Path(state, "actions-tidy.jsonl").read_text()
+            self.assertIn('"delete_folder"', log)
+
+    def test_tidy_in_a_dry_run_only_reports(self):
+        with tempfile.TemporaryDirectory() as state:
+            box = Mailbox(
+                ki_messages=True,
+                extra_folders=("Folders/Personal",),
+                empty={"Folders/Personal"},
+            )
+            result, _ = self.run_sorter(box, state)
+            self.assertEqual(result["tidy"]["deletedFolders"], ["Folders/Personal"])
+            self.assertEqual(result["tidy"]["merged"], len(classifier.CATEGORIES))
+            self.assertFalse(box.deleted or box.commands or box.created)
 
     def test_read_pass_leaves_action_labelled_mail_unread(self):
         with tempfile.TemporaryDirectory() as state:
@@ -448,7 +514,7 @@ class WorkerTests(unittest.TestCase):
     def test_label_pass_labels_old_mail_once(self):
         alias = {**HEADERS, "X-SimpleLogin-Type": "Forward"}
         with tempfile.TemporaryDirectory() as state:
-            box = Mailbox(no_move=True, headers=alias)
+            box = Mailbox(no_move=True, headers=alias, ki_messages=True)
             result, calls = self.run_sorter(
                 box, state, apply=True, labels=True, verdict=V("Rechnungen", tax=True)
             )
@@ -469,7 +535,7 @@ class WorkerTests(unittest.TestCase):
             self.assertTrue(
                 all(q[1] == "UID 1" for q in box.queries if q[0].startswith("Folders/"))
             )
-            again = Mailbox(no_move=True, headers=alias)
+            again = Mailbox(no_move=True, headers=alias, ki_messages=True)
             result, calls = self.run_sorter(
                 again, state, apply=True, labels=True, run_id="again"
             )
@@ -478,9 +544,12 @@ class WorkerTests(unittest.TestCase):
 
     def test_label_pass_dry_run_records_nothing(self):
         with tempfile.TemporaryDirectory() as state:
-            self.run_sorter(Mailbox(no_move=True), state, labels=True)
+            self.run_sorter(Mailbox(no_move=True, ki_messages=True), state, labels=True)
             result, _ = self.run_sorter(
-                Mailbox(no_move=True), state, labels=True, run_id="again"
+                Mailbox(no_move=True, ki_messages=True),
+                state,
+                labels=True,
+                run_id="again",
             )
             self.assertEqual(result["planned"], 2 * len(classifier.CATEGORIES))
 
