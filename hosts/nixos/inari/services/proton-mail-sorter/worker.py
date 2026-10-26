@@ -239,7 +239,7 @@ class Sorter:
             if not sources and not mark_read:
                 raise SorterError("No unsorted source folders recognized")
             classifier.MODEL_CHAT_URL = (
-                self.config["modelUrl"].rstrip("/") + "/api/chat"
+                self.config["modelUrl"].rstrip("/") + "/v1/chat/completions"
             )
             plan = []
             unclassified = 0

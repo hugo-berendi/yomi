@@ -280,6 +280,24 @@ class WorkerTests(unittest.TestCase):
             result = sorter.run("test-run", mark_read)
         return result, classify.call_count
 
+    def test_run_calls_the_openai_compatible_endpoint(self):
+        # The worker, not the classifier default, decides the URL. It once
+        # kept Ollama's /api/chat after the move to llama.cpp, and every run
+        # failed with a 404 while the classifier tests stayed green.
+        seen = []
+        with tempfile.TemporaryDirectory() as state:
+            sorter = worker.Sorter(
+                configuration(), FakeSecrets(), Path(state), lambda *a, **kw: Mailbox()
+            )
+
+            def classify(_msg):
+                seen.append(classifier.MODEL_CHAT_URL)
+                return "Rechnungen"
+
+            with patch.object(classifier, "classify", side_effect=classify):
+                sorter.run("url")
+        self.assertEqual(set(seen), {"http://127.0.0.1:8496/v1/chat/completions"})
+
     def test_dry_run_only_inbox_archive_and_cache(self):
         with tempfile.TemporaryDirectory() as state:
             box = Mailbox()
