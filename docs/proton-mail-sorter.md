@@ -2,9 +2,23 @@
 
 Personal mail for `hugo-berendi.de` lives at Proton. Proton Mail Bridge on inari makes it available over IMAP. A worker on inari classifies new mail with Qwen3.5-9B on the local llama.cpp server and files it. n8n only triggers the worker. Service mail from `tengu.hugo-berendi.de` still goes out through Migadu. That is a separate account, and nothing here touches it.
 
-The worker classifies only `INBOX` and `Archive`. It files mail into thirteen folders, which Bridge shows as `Folders/<name>`: Wichtig, Konzerte, Pfadfinder, Diabetes, Schule, Entwicklung, Rechnungen, Bestellungen, Werbung, Newsletter, Konten-Sicherheit, Termine, Sonstiges. There is no `KI-` prefix. Twitch live notifications from real Twitch domains skip the model and go to Werbung. Wichtig keeps its read flag. Every other message is marked read and then moved with native IMAP MOVE. There is no copy/delete fallback and no EXPUNGE.
+The worker classifies only `INBOX` and `Archive`, plus whatever is left in the retired `Folders/Wichtig` and `Folders/KI-Wichtig`. It files mail into twelve folders, which Bridge shows as `Folders/<name>`: Konzerte, Pfadfinder, Diabetes, Schule, Entwicklung, Rechnungen, Bestellungen, Werbung, Newsletter, Konten-Sicherheit, Termine, Sonstiges. There is no `KI-` prefix. Twitch live notifications from real Twitch domains skip the model and go to Werbung. Every message is marked read and then moved with native IMAP MOVE, except mail labelled Action, which keeps its read state. There is no copy/delete fallback and no EXPUNGE.
 
-Every ten minutes n8n starts one background job through an authenticated loopback endpoint. After sorting, the same job marks unread mail in the known category folders as read, without the model. It does this for the legacy `KI-…` folders too, and never for Wichtig, INBOX, Archive, unknown folders or subfolders. Each job handles up to 50 classifications and 1,000 read updates, and the next job continues with whatever is left. `markExistingRead = false` turns the second pass off. The manual workflow runs only that pass.
+## Labels
+
+A message sits in one folder but can carry several labels. The labels answer what cuts across folders. Bridge shows them as `Labels/<name>`, and the worker sets one with an IMAP COPY there, before the move.
+
+| Label | Meaning | Set by |
+|---|---|---|
+| `Action` | You have to do something, with a real deadline or consequence. Replaces the old Wichtig folder, so an urgent prescription stays in Diabetes. | The model, in the same call as the folder |
+| `Steuer <year>` | A document worth keeping for a German income tax return: payslips, Lohnsteuerbescheinigung, work equipment, training and travel costs, health co-payments, insurance, donation receipts, Finanzamt mail. | The model; the year comes from the mail's `Date` header |
+| `Alias` | Arrived through a SimpleLogin alias | `X-SimpleLogin-*` headers or a `@yokai.hugo-berendi.de` recipient, no model |
+
+Rules in code override the model: no Action on Werbung, Newsletter or Konten-Sicherheit (mostly one-time codes, expired by the time a job files them), or on mail older than 30 days; no Steuer on Werbung, Newsletter or Konten-Sicherheit.
+
+Mail already in the category folders is labelled too, once each. That pass only runs in a job that found nothing new to sort, up to 50 messages per job (`maxLabelMessages`). Werbung, Newsletter and Konten-Sicherheit are labelled without the model. `labelExisting = false` turns it off.
+
+Every ten minutes n8n starts one background job through an authenticated loopback endpoint. After sorting, the same job marks unread mail in the known category folders as read, without the model. It does this for the legacy `KI-…` folders too, and never for INBOX, Archive, unknown folders, subfolders, or mail labelled Action. Each job handles up to 50 classifications and 1,000 read updates, and the next job continues with whatever is left. `markExistingRead = false` turns the second pass off. The manual workflow runs only that pass.
 
 ## Pieces
 

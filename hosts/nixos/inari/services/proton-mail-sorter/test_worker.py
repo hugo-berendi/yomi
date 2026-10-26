@@ -26,6 +26,8 @@ def configuration(apply=False):
         "maxMessages": 50,
         "maxReadMessages": 1000,
         "markExistingRead": True,
+        "labelExisting": True,
+        "maxLabelMessages": 50,
         "bridgeHost": "127.0.0.1",
         "bridgePort": 1143,
         "bridgeCertificateSha256": hashlib.sha256(CERT).hexdigest(),
@@ -35,6 +37,37 @@ def configuration(apply=False):
         "passwordRef": "op://Automation/Bridge/password",
         "apiTokenRef": "op://Automation/Sorter/api-token",
     }
+
+
+def V(folder, action=False, tax=False):
+    """A classifier verdict."""
+    return {"folder": folder, "action": action, "tax": tax}
+
+
+HEADERS = {
+    "Message-ID": "<synthetic@example.invalid>",
+    "Date": "Mon, 05 Oct 2026 10:00:00 +0200",
+}
+
+
+class FakeObj:
+    """Just enough of email.message.Message for fingerprints and headers."""
+
+    def __init__(self, data, headers):
+        self.data, self.headers = data, headers
+
+    def as_bytes(self):
+        return self.data
+
+    def get(self, name, default=None):
+        return self.headers.get(name, default)
+
+    def keys(self):
+        return list(self.headers)
+
+    def get_all(self, name):
+        value = self.headers.get(name)
+        return [value] if value else None
 
 
 class FakeSecrets:
@@ -51,7 +84,10 @@ class Mailbox:
         no_move=False,
         certificate=CERT,
         store_fail=False,
+        headers=None,
+        extra_folders=(),
     ):
+        self.headers = HEADERS if headers is None else headers
         self.current = None
         self.queries = []
         self.commands = []
@@ -75,6 +111,7 @@ class Mailbox:
             "Labels/Test",
             "Folders/Unknown",
             "Folders/Werbung/Sub",
+            *extra_folders,
         ]
         self.names += [
             "Folders/" + prefix + category
@@ -126,13 +163,17 @@ class Mailbox:
                     text="Synthetic body",
                     html="",
                     from_="sender@example.invalid",
-                    obj=SimpleNamespace(as_bytes=lambda: data),
+                    obj=FakeObj(data, self.headers),
                 )
             ]
         )
 
+    def uids(self, criteria):
+        assert criteria == "ALL"
+        return ["1"]
+
     def uid(self, *args):
-        assert args[0] in ("STORE", "MOVE")
+        assert args[0] in ("STORE", "MOVE", "COPY")
         if args[0] == "STORE":
             assert args[1:] == ("1", "+FLAGS.SILENT", "(\\Seen)")
         self.commands.append((self.current, args))
@@ -140,39 +181,69 @@ class Mailbox:
 
 
 class WorkerTests(unittest.TestCase):
-    def test_stale_wichtig_is_asked_again_without_wichtig(self):
-        from email.message import EmailMessage
-
-        def mail(date):
-            obj = EmailMessage()
-            obj["From"] = "Shop <alt@example.org>"
-            obj["Date"] = date
-            return SimpleNamespace(
-                obj=obj,
-                text="Bitte bestaetigen Sie bis 03.02.2019.",
-                html="",
-                from_="alt@example.org",
-                subject="Ihre Frist laeuft ab",
-            )
-
-        old = mail("Mon, 28 Jan 2019 10:00:00 +0100")
-        with patch.object(
-            classifier, "ask", side_effect=["Wichtig", "Rechnungen"]
-        ) as ask:
-            self.assertEqual(classifier.classify(old), "Rechnungen")
-        self.assertNotIn("Wichtig", ask.call_args_list[1].args[1])
-        self.assertEqual(ask.call_args_list[1].args[2], classifier.STALE_NOTE)
-        # Recent mail and an unreadable date keep the first answer: one call.
-        from email.utils import format_datetime
+    def test_enforced_rules_override_the_model(self):
         from datetime import datetime as dt
+        from email.utils import format_datetime
 
-        for date in (format_datetime(dt.now(timezone.utc)), "not a date"):
-            with (
-                self.subTest(date=date),
-                patch.object(classifier, "ask", return_value="Wichtig") as ask,
-            ):
-                self.assertEqual(classifier.classify(mail(date)), "Wichtig")
-                self.assertEqual(ask.call_count, 1)
+        recent = format_datetime(dt.now(timezone.utc))
+        old = "Mon, 28 Jan 2019 10:00:00 +0100"
+        cases = [
+            # A long-expired deadline is never Action; a 2019 "confirm by
+            # 03.02.2019" came back urgent from the model.
+            (V("Rechnungen", True, True), old, V("Rechnungen", False, True)),
+            (V("Rechnungen", True, True), recent, V("Rechnungen", True, True)),
+            # Without a readable date the model's Action stands.
+            (V("Termine", True), "not a date", V("Termine", True)),
+            (V("Werbung", True, True), recent, V("Werbung")),
+            (V("Newsletter", True, True), recent, V("Newsletter")),
+            (V("Konten-Sicherheit", True, True), recent, V("Konten-Sicherheit")),
+        ]
+        for answer, date, expected in cases:
+            with self.subTest(answer=answer, date=date):
+                msg = SimpleNamespace(
+                    obj=FakeObj(b"", {"Date": date}),
+                    text="",
+                    html="",
+                    from_="a@example.org",
+                    subject="s",
+                )
+                with patch.object(classifier, "ask", return_value=answer):
+                    self.assertEqual(classifier.classify(msg), expected)
+
+    def test_labels_from_verdict_mail_year_and_alias(self):
+        def msg(headers):
+            return SimpleNamespace(obj=FakeObj(b"", headers))
+
+        dated = {"Date": "Tue, 30 Dec 2025 22:00:00 +0100"}
+        self.assertEqual(
+            classifier.labels_for(msg(dated), V("Rechnungen", True, True)),
+            ["Action", "Steuer 2025"],
+        )
+        # The year follows the mail, not the day it is sorted.
+        self.assertEqual(
+            classifier.labels_for(
+                msg({"Date": "Thu, 01 Jan 2026 00:30:00 +0100"}),
+                V("Rechnungen", tax=True),
+            ),
+            ["Steuer 2026"],
+        )
+        # No date, no year to file it under.
+        self.assertEqual(classifier.labels_for(msg({}), V("Rechnungen", tax=True)), [])
+        for alias in (
+            {"X-SimpleLogin-Type": "Forward"},
+            {"To": "shop.x1@yokai.hugo-berendi.de"},
+            {"Delivered-To": "Name <a@YOKAI.hugo-berendi.de>"},
+        ):
+            with self.subTest(alias=alias):
+                self.assertEqual(
+                    classifier.labels_for(msg(alias), V("Werbung")), ["Alias"]
+                )
+        for plain in (
+            {"To": "personal@hugo-berendi.de"},
+            {"To": "x@yokai.example.org"},
+        ):
+            with self.subTest(plain=plain):
+                self.assertEqual(classifier.labels_for(msg(plain), V("Werbung")), [])
 
     def test_local_classifier_schema_and_twitch_boundary(self):
         msg = SimpleNamespace(
@@ -189,7 +260,7 @@ class WorkerTests(unittest.TestCase):
                 side_effect=AssertionError("Twitch must bypass the model"),
             ),
         ):
-            self.assertEqual(classifier.classify(msg), "Werbung")
+            self.assertEqual(classifier.classify(msg), V("Werbung"))
         msg.from_ = "no-reply@twitch.tv.attacker.invalid"
         requests = []
 
@@ -197,15 +268,7 @@ class WorkerTests(unittest.TestCase):
             requests.append(json.loads(request.data))
             return io.BytesIO(
                 json.dumps(
-                    {
-                        "choices": [
-                            {
-                                "message": {
-                                    "content": json.dumps({"folder": "Newsletter"})
-                                }
-                            }
-                        ]
-                    }
+                    {"choices": [{"message": {"content": json.dumps(V("Newsletter"))}}]}
                 ).encode()
             )
 
@@ -217,7 +280,7 @@ class WorkerTests(unittest.TestCase):
                 return_value=SimpleNamespace(open=open_request),
             ),
         ):
-            self.assertEqual(classifier.classify(msg), "Newsletter")
+            self.assertEqual(classifier.classify(msg), V("Newsletter"))
         self.assertEqual(requests[0]["model"], "qwen3.5:9b")
         self.assertEqual(
             requests[0]["response_format"]["json_schema"]["schema"]["properties"][
@@ -225,14 +288,14 @@ class WorkerTests(unittest.TestCase):
             ]["enum"],
             classifier.CATEGORIES,
         )
-        self.assertFalse(
-            requests[0]["response_format"]["json_schema"]["schema"][
-                "additionalProperties"
-            ]
-        )
+        schema = requests[0]["response_format"]["json_schema"]["schema"]
+        self.assertFalse(schema["additionalProperties"])
+        self.assertEqual(schema["required"], ["folder", "action", "tax"])
+        self.assertEqual(schema["properties"]["action"], {"type": "boolean"})
 
     def test_config_and_schema(self):
-        self.assertEqual(len(classifier.CATEGORIES), 13)
+        self.assertEqual(len(classifier.CATEGORIES), 12)
+        self.assertNotIn("Wichtig", classifier.CATEGORIES)
         self.assertEqual(classifier.MODEL, "qwen3.5:9b")
         worker.validate_config(configuration())
         for changes in (
@@ -241,6 +304,8 @@ class WorkerTests(unittest.TestCase):
             {"maxMessages": True},
             {"bridgePort": 0},
             {"modelUrl": "https://user:secret@host"},
+            {"labelExisting": "yes"},
+            {"maxLabelMessages": 0},
         ):
             with self.assertRaises(ValueError):
                 worker.validate_config({**configuration(), **changes})
@@ -271,13 +336,17 @@ class WorkerTests(unittest.TestCase):
         mark_read=False,
         verdict="Rechnungen",
         max_messages=50,
+        labels=False,
+        run_id="test-run",
     ):
         config = {**configuration(apply), "maxMessages": max_messages}
         sorter = worker.Sorter(
             config, FakeSecrets(), Path(state), lambda *args, **kwargs: box
         )
+        if isinstance(verdict, str) and verdict in classifier.CATEGORIES:
+            verdict = V(verdict)
         with patch.object(classifier, "classify", return_value=verdict) as classify:
-            result = sorter.run("test-run", mark_read)
+            result = sorter.run(run_id, mark_read, labels=labels)
         return result, classify.call_count
 
     def test_run_calls_the_openai_compatible_endpoint(self):
@@ -292,7 +361,7 @@ class WorkerTests(unittest.TestCase):
 
             def classify(_msg):
                 seen.append(classifier.MODEL_CHAT_URL)
-                return "Rechnungen"
+                return V("Rechnungen")
 
             with patch.object(classifier, "classify", side_effect=classify):
                 sorter.run("url")
@@ -334,22 +403,114 @@ class WorkerTests(unittest.TestCase):
             ]
             self.assertEqual([row["status"] for row in rows], ["pending", "done"] * 4)
 
-    def test_wichtig_preserves_flags_and_budget(self):
+    def test_action_label_keeps_unread_and_is_set_before_the_move(self):
         with tempfile.TemporaryDirectory() as state:
             box = Mailbox()
             result, calls = self.run_sorter(
-                box, state, apply=True, verdict="Wichtig", max_messages=1
+                box,
+                state,
+                apply=True,
+                verdict=V("Rechnungen", action=True, tax=True),
+                max_messages=1,
             )
-            self.assertEqual(result["moved"], 1)
-            self.assertEqual(calls, 1)
-            self.assertEqual([c[1][0] for c in box.commands], ["MOVE"])
+            self.assertEqual((result["moved"], result["labelled"], calls), (1, 2, 1))
+            self.assertEqual(result["markedRead"], 0)
+            self.assertEqual(
+                [c[1] for c in box.commands],
+                [
+                    ("COPY", "1", worker.encode_folder("Labels/Action")),
+                    ("COPY", "1", worker.encode_folder("Labels/Steuer 2026")),
+                    ("MOVE", "1", worker.encode_folder("Folders/Rechnungen")),
+                ],
+            )
+            self.assertEqual(
+                sorted(box.created), ["Labels/Action", "Labels/Steuer 2026"]
+            )
+
+    def test_legacy_wichtig_folders_are_sorted_again(self):
+        with tempfile.TemporaryDirectory() as state:
+            box = Mailbox(extra_folders=("Folders/Wichtig", "Folders/KI-Wichtig"))
+            result, _ = self.run_sorter(box, state)
+            self.assertEqual(result["planned"], 4)
+            self.assertEqual(
+                {q[0] for q in box.queries},
+                {"INBOX", "Archive", "Folders/Wichtig", "Folders/KI-Wichtig"},
+            )
+
+    def test_read_pass_leaves_action_labelled_mail_unread(self):
+        with tempfile.TemporaryDirectory() as state:
+            box = Mailbox(no_move=True, extra_folders=("Labels/Action",))
+            result, _ = self.run_sorter(box, state, apply=True, mark_read=True)
+            # Every fake message shares the Message-ID found under Action.
+            self.assertEqual(result["markedRead"], 0)
+            self.assertFalse(box.commands)
+
+    def test_label_pass_labels_old_mail_once(self):
+        alias = {**HEADERS, "X-SimpleLogin-Type": "Forward"}
+        with tempfile.TemporaryDirectory() as state:
+            box = Mailbox(no_move=True, headers=alias)
+            result, calls = self.run_sorter(
+                box, state, apply=True, labels=True, verdict=V("Rechnungen", tax=True)
+            )
+            folders = 2 * len(classifier.CATEGORIES)
+            # Werbung, Newsletter and Konten-Sicherheit, current and KI-, are
+            # labelled without the model.
+            self.assertEqual(calls, folders - 6)
+            self.assertEqual(result["planned"], folders)
+            self.assertEqual(result["moved"] + result["markedRead"], 0)
+            copies = [c[1][2] for c in box.commands]
+            self.assertEqual(
+                copies.count(worker.encode_folder("Labels/Alias")), folders
+            )
+            self.assertEqual(
+                copies.count(worker.encode_folder("Labels/Steuer 2026")), folders - 6
+            )
+            self.assertTrue(all(c[1][0] == "COPY" for c in box.commands))
+            self.assertTrue(
+                all(q[1] == "UID 1" for q in box.queries if q[0].startswith("Folders/"))
+            )
+            again = Mailbox(no_move=True, headers=alias)
+            result, calls = self.run_sorter(
+                again, state, apply=True, labels=True, run_id="again"
+            )
+            self.assertEqual((result["planned"], calls), (0, 0))
+            self.assertFalse(again.commands)
+
+    def test_label_pass_dry_run_records_nothing(self):
+        with tempfile.TemporaryDirectory() as state:
+            self.run_sorter(Mailbox(no_move=True), state, labels=True)
+            result, _ = self.run_sorter(
+                Mailbox(no_move=True), state, labels=True, run_id="again"
+            )
+            self.assertEqual(result["planned"], 2 * len(classifier.CATEGORIES))
+
+    def test_label_pass_runs_only_when_nothing_was_sorted(self):
+        for sorted_now, expected in ((0, True), (3, False)):
+            with (
+                self.subTest(sorted_now=sorted_now),
+                tempfile.TemporaryDirectory() as state,
+            ):
+                app = worker.Application(configuration(True), Path(state))
+                calls = []
+
+                def run(run_id, mark_read=False, labels=False):
+                    calls.append(
+                        ("read" if mark_read else "labels" if labels else "sort")
+                    )
+                    planned = sorted_now if not (mark_read or labels) else 0
+                    return {"planned": planned, "unclassified": 0}
+
+                app.sorter.run = run
+                app.lock.acquire()
+                app.finish({"id": "t", "status": "running"}, False)
+                self.assertEqual("labels" in calls, expected)
 
     def test_retroactive_reads_only_category_unseen_headers_without_ai(self):
         with tempfile.TemporaryDirectory() as state:
             box = Mailbox(no_move=True)
             result, calls = self.run_sorter(box, state, apply=True, mark_read=True)
             self.assertEqual(calls, 0)
-            self.assertEqual(result["markedRead"], 2 * (len(classifier.CATEGORIES) - 1))
+            self.assertEqual(result["markedRead"], 2 * len(classifier.CATEGORIES))
             self.assertEqual(result["moved"], 0)
             self.assertTrue(all(c[1][0] == "STORE" for c in box.commands))
             self.assertTrue(all(q[2]["headers_only"] for q in box.queries))
@@ -416,7 +577,7 @@ class WorkerTests(unittest.TestCase):
                     lambda *a, **kw: box,
                 )
                 with patch.object(
-                    classifier, "classify", side_effect=[unusable, "Rechnungen"]
+                    classifier, "classify", side_effect=[unusable, V("Rechnungen")]
                 ):
                     result = sorter.run("partial")
                 self.assertEqual((result["unclassified"], result["moved"]), (1, 1))
@@ -541,16 +702,21 @@ class WorkerTests(unittest.TestCase):
             app = worker.Application(configuration(), Path(state))
             calls = []
             app.sorter = SimpleNamespace(
-                run=lambda run_id, mark_read: (
-                    calls.append(mark_read) or {"planned": 0, "dryRun": True}
+                run=lambda run_id, mark_read=False, labels=False: (
+                    calls.append(
+                        "read" if mark_read else "labels" if labels else "sort"
+                    )
+                    or {"planned": 0, "unclassified": 0, "dryRun": True}
                 )
             )
             app.lock.acquire()
             with contextlib.redirect_stdout(io.StringIO()):
                 app.finish({"id": "scheduled", "status": "running"}, False)
-            self.assertEqual(calls, [False, True])
+            # Nothing new was sorted, so old mail also gets its labels.
+            self.assertEqual(calls, ["sort", "read", "labels"])
             self.assertEqual(app.previous["status"], "done")
             self.assertIn("existingRead", app.previous)
+            self.assertIn("existingLabels", app.previous)
             self.assertFalse(app.lock.locked())
 
 

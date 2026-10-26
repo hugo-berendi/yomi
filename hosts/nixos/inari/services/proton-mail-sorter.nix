@@ -11,7 +11,7 @@
     name = "yomi-proton-mail-sorter";
   };
   settings = pkgs.writeText "proton-mail-sorter.json" (builtins.toJSON {
-    inherit (cfg) apply maxMessages maxReadMessages markExistingRead bridgeHost bridgePort bridgeCertificateSha256 modelUrl usernameRef passwordRef apiTokenRef;
+    inherit (cfg) apply maxMessages maxReadMessages markExistingRead labelExisting maxLabelMessages bridgeHost bridgePort bridgeCertificateSha256 modelUrl usernameRef passwordRef apiTokenRef;
     bridgeCertificateFile =
       if cfg.bridgeCertificateFile == null
       then null
@@ -37,10 +37,20 @@ in {
       default = 1000;
       description = "Maximum already categorized unread messages to mark read per job, without AI.";
     };
+    labelExisting = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = "Label mail already in category folders (Action, Steuer <year>, Alias), once each, while there is nothing new to sort.";
+    };
+    maxLabelMessages = lib.mkOption {
+      type = lib.types.ints.between 1 1000;
+      default = 50;
+      description = "Maximum already filed messages to label per job; most need one model call.";
+    };
     markExistingRead = lib.mkOption {
       type = lib.types.bool;
       default = true;
-      description = "Also process categorized unread mail after each scheduled sorting job, excluding Wichtig.";
+      description = "Also process categorized unread mail after each scheduled sorting job, leaving mail labelled Action unread.";
     };
     bridgeHost = lib.mkOption {
       type = lib.types.str;
