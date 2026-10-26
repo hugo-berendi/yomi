@@ -12,6 +12,10 @@ from urllib.parse import urlsplit
 from analysis import MAX_BYTES, parse_export
 
 
+class AuthenticationRequired(Exception):
+    """Login rejected or interactive verification required; never retain page text."""
+
+
 @contextlib.contextmanager
 def sync_lock(root):
     with (root / "glooko.lock").open("a") as lock:
@@ -67,9 +71,21 @@ def download_export(credentials):
             page.locator('input[name="user[password]"]').fill(credentials["password"])
             # Do not record browser traces, screenshots, cookies or response bodies.
             page.locator("#sign-in-button").click()
-            page.get_by_text(
+            export = page.get_by_text(
                 re.compile(r"^(Als CSV exportieren|Export to CSV)$", re.I)
-            ).click()
+            )
+            try:
+                export.wait_for(state="visible", timeout=30000)
+            except Exception:
+                if (
+                    page.locator('input[name="user[password]"]').is_visible()
+                    or page.locator(
+                        'input[autocomplete="one-time-code"], iframe[src*="captcha"]'
+                    ).count()
+                ):
+                    raise AuthenticationRequired() from None
+                raise
+            export.click()
             dialog = page.get_by_role("dialog").filter(
                 has_text=re.compile(r"Als CSV exportieren|Export to CSV", re.I)
             )
@@ -95,7 +111,7 @@ def download_export(credentials):
             browser.close()
 
 
-def sync(root, fetch=download_export, now=None):
+def sync(root, fetch=download_export, now=None, refresh=False):
     # Imported here to avoid a module cycle when invoked from the web process.
     from app import database, import_records, build_report, get_state, put_state
 
@@ -107,7 +123,12 @@ def sync(root, fetch=download_export, now=None):
                 return "not configured"
             with database(root) as db:
                 state = get_state(db, "glooko", {})
-                if now < state.get("next_attempt", 0):
+                if now < state.get("next_attempt", 0) and not (
+                    refresh
+                    and state.get("success")
+                    and state.get("success") == state.get("attempt")
+                    and not state.get("error")
+                ):
                     return "not due"
                 # Persist a backoff before network work, including crashes/timeouts.
                 state.update(attempt=now, next_attempt=now + 6 * 3600, error=None)
@@ -131,10 +152,11 @@ def sync(root, fetch=download_export, now=None):
                         latest_cgm=max(row[1] for row in records if row[0] == "cgm"),
                         notices=notices,
                         error=None,
+                        error_code=None,
                     )
                     put_state(db, "glooko", state)
                 return "synced"
-            except Exception:
+            except Exception as error:
                 # Browser exceptions can include form values, page text and URLs.
                 # Retain only this fixed message; no exception or traceback logging.
                 with database(root) as db:
@@ -143,7 +165,19 @@ def sync(root, fetch=download_export, now=None):
                         "export timezone. A login challenge, website change or conflicting "
                         "export can also require attention. Existing data was kept."
                     )
+                    if isinstance(error, AuthenticationRequired):
+                        state["error_code"] = "authentication_required"
+                        state["error"] = (
+                            "Glooko login was rejected or needs interactive verification. Sign in to Glooko, complete any challenge, then update the saved login or request a retry. Existing history was kept."
+                        )
+                        state["next_attempt"] = now + 86400
+                    else:
+                        state["error_code"] = "sync_failed"
                     put_state(db, "glooko", state)
-                return "failed"
+                return (
+                    "authentication required"
+                    if isinstance(error, AuthenticationRequired)
+                    else "failed"
+                )
     except ValueError:
         return "already running"

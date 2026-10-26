@@ -201,6 +201,7 @@ in {
     services.n8n = {
       enable = true;
       environment = {
+        DIABETES_URL = "http://127.0.0.1:${toString config.yomi.ports.diabetes}";
         WEBHOOK_URL = config.yomi.nginx.at.n8n.url;
         N8N_PORT = toString config.yomi.nginx.at.n8n.port;
         N8N_HOST = "127.0.0.1";
@@ -354,7 +355,7 @@ in {
     yomi.n8n.workflows.webuntis-radicale.source = ./n8n/workflows/webuntis-radicale.json;
     yomi.n8n.workflows.diabetes-weekly = {
       source = ./n8n/workflows/diabetes-weekly.json;
-      enforce = true; # Unpublish any live copy when retiring the site.
+      enforce = true; # Remains inactive until the human provisions its credential.
     };
     yomi.n8n.workflows.health-monitor.source = ./n8n/workflows/health-monitor.json;
     yomi.n8n.workflows.backup-storage.source = ./n8n/workflows/backup-storage.json;

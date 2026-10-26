@@ -124,13 +124,17 @@ def put_state(db, key, value):
 
 def snapshot_database(root):
     """Publish a consistent SQLite backup for file-based restic snapshots."""
-    temporary = root / "backup.sqlite.tmp"
-    with (
-        database(root) as source,
-        contextlib.closing(sqlite3.connect(temporary)) as target,
-    ):
-        source.backup(target)
-    os.replace(temporary, root / "backup.sqlite")
+    # The weekly HTTP call and timer can overlap. Serialize publication so an
+    # older snapshot cannot overwrite the pre-SMTP outbox reservation.
+    with (root / "backup.lock").open("a") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        temporary = root / "backup.sqlite.tmp"
+        with (
+            database(root) as source,
+            contextlib.closing(sqlite3.connect(temporary)) as target,
+        ):
+            source.backup(target)
+        os.replace(temporary, root / "backup.sqlite")
 
 
 def import_records(db, records):
@@ -218,6 +222,8 @@ def ai_review(report, url):
     result = http_json(
         url,
         {
+            "model": "qwen3.5-9b",
+            "chat_template_kwargs": {"enable_thinking": False},
             "messages": [{"role": "user", "content": json.dumps(prompt)}],
             "temperature": 0,
             "max_tokens": 180,
@@ -527,6 +533,14 @@ def create_app(root=None, config=None):
                             put_state(db, "last_light", now)
                     except Exception:
                         errors.append("Optional light unavailable")
+            if os.environ.get("WEEKLY_EMAIL_ENABLED") == "true":
+                from weekly import run_weekly
+
+                result = run_weekly(root)
+                if result["status"] in {"uncertain", "rejected", "not configured"}:
+                    errors.append(
+                        "Weekly email requires attention: " + result["status"]
+                    )
             with database(root) as db:
                 put_state(db, "jobs", {"at": now, "errors": sorted(set(errors))})
             snapshot_database(root)
@@ -872,6 +886,14 @@ def create_app(root=None, config=None):
         figure.savefig(output, format="png", dpi=120)
         output.seek(0)
         return send_file(output, mimetype="image/png")
+
+    @app.post("/api/weekly-email")
+    def weekly_email():
+        from weekly import run_weekly
+
+        if os.environ.get("WEEKLY_EMAIL_ENABLED") != "true":
+            return jsonify({"status": "disabled"})
+        return jsonify(run_weekly(root))
 
     @app.post("/api/tick")
     def jobs():

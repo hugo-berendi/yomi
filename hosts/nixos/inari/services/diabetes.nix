@@ -12,12 +12,16 @@
   };
   credentials =
     ["home-assistant-token:${config.sops.secrets.n8n_home_assistant_api_token.path}"]
+    ++ lib.optional cfg.weeklyEmailEnable "weekly-smtp-password:${config.sops.secrets.no_reply_smtp_password.path}"
+    ++ lib.optional (cfg.weeklyEmailEnable && cfg.weeklyMailCredentialFile != null) "weekly-mail:${cfg.weeklyMailCredentialFile}"
     ++ lib.optional (cfg.dexcomCredentialFile != null) "dexcom:${cfg.dexcomCredentialFile}";
   environment = {
+    GLOOKO_CHROMIUM = "${pkgs.chromium}/bin/chromium";
+    HOME = "/var/lib/diabetes";
+    WEEKLY_EMAIL_ENABLED = lib.boolToString cfg.weeklyEmailEnable;
     MPLCONFIGDIR = "/var/lib/diabetes/matplotlib";
     HOME_ASSISTANT_URL = "http://127.0.0.1:${toString config.yomi.ports.home-assistant}";
-    # A synthetic JSON selection timed out at 180s on the 14B. The existing
-    # 3B classifier returned the minimal selection in 10s on this host.
+    # The running classifier serves Qwen3.5-9B through llama.cpp.
     AI_URL = "http://127.0.0.1:${toString config.yomi.ports.llama-cpp-classifier}/v1/chat/completions";
     PUBLIC_URL = config.yomi.nginx.at.diabetes.url;
   };
@@ -25,6 +29,12 @@ in {
   # {{{ Options
   options.yomi.diabetes = {
     enable = lib.mkEnableOption "private diabetes reports and reminders";
+    weeklyEmailEnable = lib.mkEnableOption "weekly email submission through the private n8n endpoint";
+    weeklyMailCredentialFile = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = "/var/lib/diabetes/weekly-mail.json";
+      description = "Runtime JSON with confirmed recipient and optional SMTP settings. Defaults reuse the existing Migadu no-reply account through LoadCredential. Use a runtime private file or sops secret path, never a store path.";
+    };
     dexcomCredentialFile = lib.mkOption {
       type = lib.types.nullOr lib.types.str;
       default = null;
@@ -34,6 +44,12 @@ in {
   # }}}
   config = lib.mkMerge [
     {
+      system.build.diabetes-tests = pkgs.runCommand "yomi-diabetes-tests" {} ''
+        export MPLCONFIGDIR="$TMPDIR/matplotlib"
+        export PYTHONDONTWRITEBYTECODE=1
+        ${python}/bin/python -m unittest discover -s ${source} -v
+        touch "$out"
+      '';
       # Keep the retired site's state mounted and backed up. Turning off the
       # web service must not discard health history or reassign its owner.
       users.groups.diabetes = {};
@@ -59,13 +75,15 @@ in {
       # }}}
     }
     (lib.mkIf cfg.enable {
-      system.build.diabetes-tests = pkgs.runCommand "yomi-diabetes-tests" {} ''
-        export MPLCONFIGDIR="$TMPDIR/matplotlib"
-        export PYTHONDONTWRITEBYTECODE=1
-        ${python}/bin/python -m unittest discover -s ${source} -v
-        touch "$out"
-      '';
       assertions = [
+        {
+          assertion = !cfg.weeklyEmailEnable || cfg.weeklyMailCredentialFile != null;
+          message = "Weekly diabetes email needs a runtime mail credential with a confirmed recipient.";
+        }
+        {
+          assertion = cfg.weeklyMailCredentialFile == null || !(lib.hasPrefix "/nix/store/" cfg.weeklyMailCredentialFile);
+          message = "Weekly mail credentials must be a runtime secret, not a Nix store file.";
+        }
         {
           assertion = cfg.dexcomCredentialFile == null || !(lib.hasPrefix "/nix/store/" cfg.dexcomCredentialFile);
           message = "Dexcom credentials must be a runtime secret, not a Nix store file.";
@@ -79,7 +97,7 @@ in {
       # The existing nginx endpoint resolves to inari's tailnet address. App
       # authentication still protects health data from other tailnet clients.
       services.nginx.virtualHosts.${config.yomi.nginx.at.diabetes.host}.locations."/".extraConfig = ''
-        proxy_read_timeout 240s;
+        proxy_read_timeout 910s;
       '';
       systemd.services.diabetes = {
         description = "Private diabetes journal";
@@ -111,7 +129,7 @@ in {
           ProtectControlGroups = true;
           RestrictSUIDSGID = true;
           RestrictAddressFamilies = ["AF_UNIX" "AF_INET" "AF_INET6"];
-          MemoryMax = "512M";
+          MemoryMax = "2G";
         };
       };
       # Background work runs independently of n8n so reminders also survive an
@@ -135,13 +153,13 @@ in {
           UMask = "0077";
           LoadCredential = credentials;
           ExecStart = "${python}/bin/python ${source}/app.py tick";
-          TimeoutStartSec = 240;
+          TimeoutStartSec = 900;
           NoNewPrivileges = true;
           PrivateTmp = true;
           PrivateDevices = true;
           ProtectSystem = "strict";
           ProtectHome = true;
-          MemoryMax = "512M";
+          MemoryMax = "2G";
         };
       };
       systemd.timers.diabetes-jobs = {

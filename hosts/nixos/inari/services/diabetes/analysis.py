@@ -216,6 +216,19 @@ def weekly_summary(readings, boluses, start, end, low=70, high=180):
     range_seconds = {"below": 0, "in": 0, "above": 0}
     daily = {}
     episodes = []
+    low_episodes = []
+    low_episode = None
+    hourly = [
+        {
+            "hour": h,
+            "observed_minutes": 0,
+            "above_minutes": 0,
+            "below_minutes": 0,
+            "high_dates": set(),
+            "low_dates": set(),
+        }
+        for h in range(24)
+    ]
     episode = None
     for i, (ts, val) in enumerate(readings):
         right = min(
@@ -233,6 +246,13 @@ def weekly_summary(readings, boluses, start, end, low=70, high=180):
             local = datetime.fromtimestamp(cursor, BERLIN)
             boundary = min(right, cursor + 3600 - local.minute * 60 - local.second)
             segment = boundary - cursor
+            hour = hourly[local.hour]
+            hour["observed_minutes"] += segment / 60
+            if category in {"above", "below"}:
+                hour[f"{category}_minutes"] += segment / 60
+                hour["high_dates" if category == "above" else "low_dates"].add(
+                    local.date().isoformat()
+                )
             period = "night" if local.hour < 6 else "day"
             periods[period][0] += segment
             periods[period][1] += segment if category == "above" else 0
@@ -240,6 +260,16 @@ def weekly_summary(readings, boluses, start, end, low=70, high=180):
             day[0] += segment
             day[1] += segment if category == "in" else 0
             cursor = boundary
+        if category == "below":
+            if low_episode and low_episode[1] == left:
+                low_episode[1] = right
+            else:
+                if low_episode:
+                    low_episodes.append(low_episode)
+                low_episode = [left, right]
+        elif low_episode:
+            low_episodes.append(low_episode)
+            low_episode = None
         if category == "above":
             if episode and episode[1] == left:
                 episode[1] = right
@@ -253,6 +283,12 @@ def weekly_summary(readings, boluses, start, end, low=70, high=180):
     if episode:
         episodes.append(episode)
     episodes = [e for e in episodes if e[1] - e[0] >= 900]
+    if low_episode:
+        low_episodes.append(low_episode)
+    low_episodes = [e for e in low_episodes if e[1] - e[0] >= 900]
+    for hour in hourly:
+        for key in ("high_dates", "low_dates"):
+            hour[key] = sorted(hour[key])
     observed = sum(w for _, w in weights)
     mean = sum(v * w for v, w in weights) / observed if observed else None
     sd = (
@@ -293,6 +329,17 @@ def weekly_summary(readings, boluses, start, end, low=70, high=180):
         },
         "high_hours": round(range_seconds["above"] / 3600, 2),
         "high_episodes": len(episodes),
+        "low_episodes": len(low_episodes),
+        "hourly": hourly,
+        "recorded_bolus_units": sum(b["units"] for b in selected_boluses)
+        if selected_boluses
+        else None,
+        "recorded_carbs_g": sum(
+            b["carbs"] for b in selected_boluses if b["carbs"] is not None
+        )
+        if any(b["carbs"] is not None for b in selected_boluses)
+        else None,
+        "boluses_with_carbs": sum(b["carbs"] is not None for b in selected_boluses),
         "longest_high_minutes": max(((b - a) / 60 for a, b in episodes), default=0)
         if observed
         else None,

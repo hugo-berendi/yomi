@@ -81,7 +81,9 @@
   system.stateVersion = "24.05";
 
   yomi.pilot.name = "hugob";
-  yomi.diabetes.enable = false;
+  yomi.diabetes.enable = true;
+  # Enable email only after the Glooko import has been checked against the account.
+  yomi.diabetes.weeklyEmailEnable = false;
   yomi.machine.interactible = true;
   yomi.containers.enable = true;
   yomi.postgres.enable = true;

@@ -46,7 +46,7 @@
         "rule": {
           "interval": [
             {
-              "expression": "0 8 * * 1",
+              "expression": "0 9 * * 1",
               "field": "cronExpression"
             }
           ]
@@ -73,9 +73,9 @@
         "genericAuthType": "httpHeaderAuth",
         "method": "POST",
         "options": {
-          "timeout": 240000
+          "timeout": 900000
         },
-        "url": "={{ $env.DIABETES_URL + \"/api/tick\" }}"
+        "url": "={{ $env.DIABETES_URL + \"/api/weekly-email\" }}"
       },
       "position": [
         300,
