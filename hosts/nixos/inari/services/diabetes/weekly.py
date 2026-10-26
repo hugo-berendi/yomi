@@ -191,6 +191,7 @@ def render(report, config, now, selected=None, quality=None):
         "Actual automated basal delivery and total daily insulin: unavailable. Programmed basal settings are never used as delivery.",
         "Bolus and carbohydrate totals describe supported records only; absent entries do not prove zero delivery or zero intake. Identical events without identifiers may collapse during deduplication.",
         "Coverage uses actual elapsed time, including daylight-saving changes. Each CGM reading covers at most the next five minutes. No gaps are filled. Recurring observations do not establish their cause.",
+        "Local export timestamps in repeated or nonexistent clock-change hours are excluded unless an explicit UTC offset identifies the instant. These exclusions can leave glucose gaps and incomplete bolus/carbohydrate totals, including in long-term history.",
     ]
     lines.extend(quality or [])
     if selected:

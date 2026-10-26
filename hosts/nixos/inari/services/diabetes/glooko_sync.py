@@ -2,10 +2,12 @@
 
 import contextlib
 import fcntl
+import hashlib
 import json
 import os
 from pathlib import Path
 import re
+import tempfile
 import time
 from urllib.parse import urlsplit
 
@@ -371,6 +373,21 @@ def sync(
                 )
                 if not any(row[0] == "cgm" for row in records):
                     raise ValueError("No CGM records")
+                if any("local clock-change timestamps" in n for n in notices):
+                    # Keep uncertain source events available for later review.
+                    # Content addressing makes overlapping retry exports idempotent.
+                    directory = root / "glooko-clock-change-exports"
+                    directory.mkdir(mode=0o700, exist_ok=True)
+                    target = directory / (hashlib.sha256(payload).hexdigest() + ".bin")
+                    if not target.exists():
+                        with tempfile.TemporaryDirectory(dir=directory) as pending:
+                            path = Path(pending) / "export.bin"
+                            with path.open("wb") as saved:
+                                os.chmod(path, 0o600)
+                                saved.write(payload)
+                                saved.flush()
+                                os.fsync(saved.fileno())
+                            os.replace(path, target)
                 with database(root) as db:
                     db.execute("BEGIN IMMEDIATE")
                     inserted = import_records(db, records)

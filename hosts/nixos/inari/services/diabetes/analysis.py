@@ -15,6 +15,10 @@ BERLIN = ZoneInfo("Europe/Berlin")
 MAX_BYTES = 20 * 1024 * 1024
 
 
+class UncertainLocalTime(ValueError):
+    """A naive clock-change timestamp cannot identify an instant."""
+
+
 def number(value):
     result = float(str(value).strip().replace(",", "."))
     if not math.isfinite(result):
@@ -48,7 +52,7 @@ def timestamp(value, zone="UTC", date_order="day-first"):
             result.replace(tzinfo=tz, fold=1),
         )
         if first.utcoffset() != second.utcoffset():
-            raise ValueError(
+            raise UncertainLocalTime(
                 "Ambiguous/nonexistent local time; export UTC or explicit offsets"
             )
         result = first
@@ -148,6 +152,7 @@ def parse_export(payload, zone="UTC", date_order="day-first"):
             skipped.append("CSV outside supported CGM/bolus schema")
             continue
         excluded_codes = 0
+        excluded_times = {"cgm": 0, "bolus": 0}
         for line_no, values in enumerate(rows[header_at + 1 :], header_at + 2):
             if not any(v.strip() for v in values):
                 continue
@@ -162,7 +167,13 @@ def parse_export(payload, zone="UTC", date_order="day-first"):
                 raise ValueError(
                     "Recognized event without an explicit glucose/delivered-insulin column"
                 )
-            ts = timestamp(row["timestamp"], zone, date_order)
+            try:
+                ts = timestamp(row["timestamp"], zone, date_order)
+            except UncertainLocalTime:
+                # A local CSV cannot distinguish the two fall-back hours.
+                # Preserve a gap rather than inventing glucose or insulin timing.
+                excluded_times[kind] += 1
+                continue
             val = number(row[column])
             # This export contains 2001 in the CGM column. Its meaning is
             # unknown; retain a coverage gap instead of inventing a glucose value.
@@ -189,6 +200,15 @@ def parse_export(payload, zone="UTC", date_order="day-first"):
                 f"Excluded {excluded_codes} CGM entries with unsupported code 2001; "
                 "these remain gaps in coverage, not measured glucose"
             )
+        for kind, count in excluded_times.items():
+            if count:
+                label = "CGM" if kind == "cgm" else "bolus"
+                skipped.append(
+                    f"Excluded {count} {label} entries with ambiguous or nonexistent "
+                    "local clock-change timestamps. No UTC offset was supplied; "
+                    "no time was guessed. Glucose coverage has gaps and recorded "
+                    "bolus/carbohydrate totals may be incomplete."
+                )
     if not records:
         raise ValueError(
             "No supported records. Export CGM/bolus CSVs or use the documented normalized schema."

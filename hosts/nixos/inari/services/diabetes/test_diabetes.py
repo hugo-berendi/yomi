@@ -56,6 +56,51 @@ class AnalysisTests(unittest.TestCase):
             timestamp("2026-10-25T02:30:00+02:00"), timestamp("2026-10-25T00:30:00Z")
         )
 
+    def test_clock_change_export_keeps_only_unambiguous_events(self):
+        output = io.BytesIO()
+        with zipfile.ZipFile(output, "w") as file:
+            file.writestr(
+                "cgm_data.csv",
+                "Timestamp,Glucose (mg/dL)\n"
+                "25.10.2026 01:55,100\n"
+                "25.10.2026 02:30,110\n"
+                "25.10.2026 02:30,120\n"
+                "25.10.2026 03:00,130\n"
+                "2026-10-25T02:35:00+02:00,140\n"
+                "2026-10-25T02:35:00+01:00,150\n"
+                "29.03.2026 02:30,160\n",
+            )
+            file.writestr(
+                "bolus_data.csv",
+                "Timestamp,Insulin delivered (U),Carbs (g)\n"
+                "25.10.2026 02:30,2,20\n"
+                "25.10.2026 03:00,1,10\n",
+            )
+        rows, notices = parse_export(output.getvalue(), "Europe/Berlin")
+        self.assertEqual([row[2] for row in rows], [100, 130, 140, 150, 1])
+        self.assertEqual(rows[3][1] - rows[2][1], 3600)
+        self.assertEqual(rows[-1][3], 10)
+        self.assertTrue(any("3 CGM" in notice for notice in notices))
+        self.assertTrue(any("1 bolus" in notice for notice in notices))
+        self.assertTrue(all("clock-change" in notice for notice in notices))
+
+    def test_clock_change_exclusion_does_not_hide_malformed_timestamps(self):
+        with self.assertRaisesRegex(ValueError, "Unrecognized timestamp"):
+            parse_export(
+                archive("cgm_data.csv", "Timestamp,Glucose (mg/dL)\ninvalid,100\n"),
+                "Europe/Berlin",
+            )
+
+    def test_only_ambiguous_export_cannot_erase_history(self):
+        with self.assertRaisesRegex(ValueError, "No supported records"):
+            parse_export(
+                archive(
+                    "cgm_data.csv",
+                    "Timestamp,Glucose (mg/dL)\n25.10.2026 02:30,100\n",
+                ),
+                "Europe/Berlin",
+            )
+
     def test_metadata_semicolon_mmol_and_utc(self):
         rows, skipped = parse_export(
             archive(
@@ -280,6 +325,35 @@ class AppTests(unittest.TestCase):
         self.assertEqual(
             sync(self.root, fetch=lambda _: payload, now=2000086500), "synced"
         )
+
+    def test_clock_change_sync_retains_private_source_and_deduplicates(self):
+        self.connect_glooko()
+        path = self.root / "glooko-credentials.json"
+        credentials = json.loads(path.read_text())
+        credentials["timezone"] = "Europe/Berlin"
+        path.write_text(json.dumps(credentials))
+        payload = archive(
+            "cgm_data.csv",
+            "Timestamp,Glucose (mg/dL)\n25.10.2026 02:30,100\n25.10.2026 03:00,110\n",
+        )
+        self.assertEqual(
+            sync(self.root, fetch=lambda _: payload, now=2000000000), "synced"
+        )
+        self.assertEqual(
+            sync(self.root, fetch=lambda _: payload, now=2000086400), "synced"
+        )
+        saved = list((self.root / "glooko-clock-change-exports").glob("*.bin"))
+        self.assertEqual(len(saved), 1)
+        self.assertEqual(saved[0].read_bytes(), payload)
+        self.assertEqual(saved[0].stat().st_mode & 0o777, 0o600)
+        self.assertEqual(saved[0].parent.stat().st_mode & 0o777, 0o700)
+        with database(self.root) as db:
+            self.assertEqual(
+                db.execute("SELECT count(*) FROM records").fetchone()[0], 1
+            )
+            self.assertTrue(
+                any("clock-change" in n for n in get_state(db, "glooko")["notices"])
+            )
 
     def test_glooko_failure_preserves_data_and_redacts_exception(self):
         self.connect_glooko()
