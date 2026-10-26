@@ -148,10 +148,77 @@ def run_case(
         browser.close()
 
 
+def run_export_case(chromium, kind):
+    browser = chromium.launch(
+        executable_path=sys.argv[1], headless=True, chromium_sandbox=False
+    )
+    try:
+        context = browser.new_context()
+        if kind in {"native", "native-missing"}:
+            control = '<select aria-label="Zeitraum"><option value="14">2\u00a0Wochen</option><option value="30">30\u00a0Tage</option></select>'
+            if kind == "native-missing":
+                control = '<select aria-label="Zeitraum"><option value="14">2 Wochen</option></select>'
+            script = "window.selectedDays=14; document.querySelector('select').onchange=e=>window.selectedDays=Number(e.target.value)"
+        else:
+            initial = {
+                "nbsp": "2\u00a0Wochen",
+                "split": "2<span>Wochen</span>",
+                "ninety": "90 days",
+                "already": "30 Tage",
+                "delayed": "2 Wochen",
+            }[kind]
+            role = 'role="combobox"' if kind != "split" else ""
+            control = f'<div id="range" {role}>{initial}</div><div id="options" role="listbox" hidden><div role="option" id="thirty">30<span>Tage</span></div></div>'
+            script = f"""window.selectedDays={30 if kind == "already" else 90 if kind == "ninety" else 14}; window.openCount=0;
+            document.querySelector('#range').onclick=()=>{{window.openCount++;document.querySelector('#options').hidden=false}};
+            document.querySelector('#thirty').onclick=()=>{{window.selectedDays=30;document.querySelector('#range').textContent='30 Tage';document.querySelector('#options').hidden=true}};
+            """
+        if kind == "delayed":
+            script = script.replace(
+                "document.querySelector('#options').hidden=false",
+                "setTimeout(()=>{document.querySelector('#options').hidden=false},100)",
+            )
+        html = f'<div role="dialog"><h2>Als CSV exportieren</h2>{control}<button>Exportieren</button></div><script>{script}</script>'
+        context.route(
+            "**/*",
+            lambda route: route.fulfill(
+                status=200, content_type="text/html; charset=utf-8", body=html
+            ),
+        )
+        page = context.new_page()
+        page.goto(SIGN_IN)
+        try:
+            glooko.select_export_range(page, page.get_by_role("dialog"))
+        except ValueError:
+            assert kind == "native-missing", "valid range control must work"
+            assert page.evaluate("window.selectedDays") == 14
+            return
+        assert kind != "native-missing", "missing 30-day choice must stop the export"
+        assert page.evaluate("window.selectedDays") == 30, (
+            "must select actual 30-day range"
+        )
+        if kind == "already":
+            assert page.evaluate("window.openCount") == 0, (
+                "already-selected 30 days must be accepted without toggling"
+            )
+    finally:
+        browser.close()
+
+
 def main():
     assert len(sys.argv) == 2, "usage: glooko-browser.py /path/to/chromium"
     with sync_playwright() as driver:
         chromium = driver.chromium
+        for kind in (
+            "nbsp",
+            "split",
+            "ninety",
+            "native",
+            "already",
+            "native-missing",
+            "delayed",
+        ):
+            run_export_case(chromium, kind)
         # Existing signed-in session: no password or callback should be needed.
         run_case(chromium, "export", expect_export=True)
         # Interactive login and OTP, both as one field and six one-character fields.

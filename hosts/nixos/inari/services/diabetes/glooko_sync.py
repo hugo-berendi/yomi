@@ -213,6 +213,60 @@ def authenticate_page(page, credentials, allow_login=False, code_prompt=None):
     return export.first
 
 
+THIRTY_DAYS = re.compile(r"^\s*30\s*(Tage|days)\s*$", re.I)
+EXPORT_PERIOD = re.compile(
+    r"^\s*(?:1\s*(?:Tag|day|Woche|week)|2\s*(?:Wochen|weeks)|30\s*(?:Tage|days)|90\s*(?:Tage|days)|Benutzerdefinierter\s*Zeitraum|Custom\s*Range)\s*$",
+    re.I,
+)
+
+
+def select_export_range(page, dialog):
+    """Choose and verify 30 days without assuming a previous range or ASCII spaces."""
+    from playwright.sync_api import expect
+
+    dialog.wait_for(state="visible")
+    native = dialog.locator("select").filter(visible=True)
+    if native.count() == 1:
+        choices = [
+            option
+            for option in native.locator("option").all()
+            if THIRTY_DAYS.fullmatch(option.inner_text())
+        ]
+        if len(choices) != 1:
+            raise ValueError("Glooko export has no unique 30-day choice")
+        native.select_option(label=choices[0].inner_text())
+        if not THIRTY_DAYS.fullmatch(native.locator("option:checked").inner_text()):
+            raise ValueError("Glooko export range was not confirmed")
+        return
+    control = dialog.get_by_role("combobox").filter(visible=True)
+    if not control.count():
+        control = dialog.get_by_role("button", name=EXPORT_PERIOD).filter(visible=True)
+    if not control.count():
+        # Some Glooko releases render this as a div, with the number and unit
+        # in separate spans or separated by a non-breaking space.
+        control = dialog.get_by_text(EXPORT_PERIOD).filter(visible=True)
+    if control.count() != 1:
+        raise ValueError("Glooko export range control is not unique")
+    is_input = control.evaluate("element => element.tagName === 'INPUT'")
+    current = control.input_value() if is_input else control.inner_text()
+    if THIRTY_DAYS.fullmatch(current):
+        return
+    control.click()
+    page.get_by_role("option", name=THIRTY_DAYS).or_(
+        page.get_by_text(THIRTY_DAYS)
+    ).filter(visible=True).first.wait_for(state="visible")
+    option = page.get_by_role("option", name=THIRTY_DAYS).filter(visible=True)
+    if not option.count():
+        option = page.get_by_text(THIRTY_DAYS).filter(visible=True)
+    if option.count() != 1:
+        raise ValueError("Glooko export has no unique visible 30-day choice")
+    option.click()
+    if is_input:
+        expect(control).to_have_value(THIRTY_DAYS)
+    else:
+        expect(control).to_have_text(THIRTY_DAYS)
+
+
 def download_export(credentials, root=None, allow_login=False, code_prompt=None):
     # Browser objects never escape this call; only private session state persists.
     from playwright.sync_api import sync_playwright
@@ -246,10 +300,8 @@ def download_export(credentials, root=None, allow_login=False, code_prompt=None)
             dialog = page.get_by_role("dialog").filter(
                 has_text=re.compile(r"Als CSV exportieren|Export to CSV", re.I)
             )
-            # The default two-week window may omit part of the comparison.
-            # Select 30 days explicitly; fail instead of accepting a shorter range.
-            dialog.get_by_text(re.compile(r"^(2 Wochen|2 weeks)$", re.I)).click()
-            page.get_by_text(re.compile(r"^30 (Tage|days)$", re.I)).click()
+            # Confirm the actual selected range before requesting any download.
+            select_export_range(page, dialog)
             with page.expect_download(timeout=150000) as pending:
                 dialog.get_by_role(
                     "button", name=re.compile(r"^(Export|Exportieren)$", re.I)
