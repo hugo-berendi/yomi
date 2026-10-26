@@ -1,6 +1,5 @@
 {lib, ...}: {
   yomi.inari.rootDataset = lib.mkForce "zroot/recovered";
-  yomi.inari.beelinkWorkarounds = lib.mkForce false;
   yomi.inari.tpmUnlock = lib.mkForce true;
   yomi.inari.lanInterface = lib.mkForce "eno1";
   yomi.inari.wifiInterface = lib.mkForce "wlp2s0";

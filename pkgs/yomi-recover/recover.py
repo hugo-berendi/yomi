@@ -890,7 +890,6 @@ def overrides(repo, info, root, args):
     )
     values = {
         "yomi.inari.rootDataset": root,
-        "yomi.inari.beelinkWorkarounds": args.beelink,
         "yomi.inari.tpmUnlock": args.tpm,
         "yomi.inari.lanInterface": args.lan,
         "yomi.inari.wifiInterface": args.wifi or None,
@@ -1514,11 +1513,6 @@ def parse(argv=None):
                 action="store_true",
                 help="Seal the recovered key to this PC's TPM",
             )
-            sub.add_argument(
-                "--beelink",
-                action="store_true",
-                help="Retain the old Beelink CPU workarounds",
-            )
             sub.add_argument("--mountpoint", default="/mnt")
         if name == "restore-zfs":
             sub.add_argument(
@@ -1755,15 +1749,6 @@ def wizard():
                     == 1
                 ):
                     options += ["--tpm"]
-                if (
-                    menu(
-                        screen,
-                        "Hardware profile",
-                        ["New PC", "Old Beelink rescue workarounds"],
-                    )
-                    == 1
-                ):
-                    options += ["--beelink"]
             return action, options
 
         try:

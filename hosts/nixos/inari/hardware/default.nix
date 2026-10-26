@@ -1,7 +1,6 @@
 {inputs, ...}: {
   imports = with inputs.nixos-hardware.nixosModules; [
     ./generated.nix
-    ./stability.nix
   ];
 
   # Do not suspend on lid closing
