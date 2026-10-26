@@ -44,6 +44,19 @@ def fixture_html(state="password", multi_otp=False):
         return """<form id="login">
           <input name="user[email]"><input name="user[password]" type="password">
           <button id="sign-in-button">Sign in</button></form>"""
+    if state == "patient-otp":
+        # Glooko Patient2FA public frontend: div, six unnamed cells, a disabled
+        # type=button with a stable testid, and a locale-dependent label.
+        fields = '<input type="text" maxlength="1">' * 6
+        return f"""<div id="patient-2fa-form">{fields}<input type="checkbox">
+          <button type="button" data-testid="patient-2fa-continue" disabled>Weiter</button></div>
+          <script>
+          const button=document.querySelector('button');
+          document.querySelectorAll('input[maxlength]').forEach(i=>i.oninput=()=>{{
+            setTimeout(()=>{{button.disabled=Array.from(document.querySelectorAll('input[maxlength]')).map(i=>i.value).join('').length!==6}},50)
+          }});
+          button.onclick=()=>{{if(Array.from(document.querySelectorAll('input[maxlength]')).map(i=>i.value).join('')==='123456') document.body.innerHTML='<button>Export to CSV</button>'}};
+          </script>"""
     if state in {"anonymous-otp", "anonymous-auto-otp"}:
         fields = '<input type="text" maxlength="1">' * 6
         auto = (
@@ -174,6 +187,13 @@ def main():
             expect_export=True,
         )
         run_case(chromium, "anonymous-otp", expect_auth=True)
+        run_case(
+            chromium,
+            "patient-otp",
+            allow_login=True,
+            code_prompt=lambda: OTP,
+            expect_export=True,
+        )
         # Unattended paths stop before submitting either password or OTP.
         run_case(chromium, "password", expect_auth=True)
         run_case(chromium, "otp", expect_auth=True)

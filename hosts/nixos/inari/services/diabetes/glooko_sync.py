@@ -178,22 +178,33 @@ def authenticate_page(page, credentials, allow_login=False, code_prompt=None):
     # Some six-cell controls submit when the last digit is entered. If the
     # fields disappear, wait for the result instead of clicking a second submit.
     if not export.count():
-        form = codes.first.locator("xpath=ancestor::form[1]")
-        submit = form.locator('button[type="submit"], input[type="submit"]').filter(
-            visible=True
+        # Patient2FA/Choose2FA render divs, not forms. Their stable test IDs
+        # identify the actual submit action across locales. click() waits for
+        # React to enable Continue after its six-character state update.
+        provider_submit = (
+            page.get_by_test_id("patient-2fa-continue")
+            .or_(page.get_by_test_id("choose-2fa-continue"))
+            .filter(visible=True)
         )
-        if submit.count() == 1 and submit.is_enabled():
-            submit.click()
+        if provider_submit.count() == 1:
+            provider_submit.click()
         else:
-            button = page.get_by_role(
-                "button",
-                name=re.compile(
-                    r"^(Verify( code)?|Confirm|Continue|Submit|Authenticate|Bestätigen|Überprüfen|Verifizieren|Fortfahren|Anmelden)$",
-                    re.I,
-                ),
-            ).filter(visible=True)
-            if button.count() == 1 and button.is_enabled():
-                button.click()
+            form = codes.first.locator("xpath=ancestor::form[1]")
+            submit = form.locator('button[type="submit"], input[type="submit"]').filter(
+                visible=True
+            )
+            if submit.count() == 1 and submit.is_enabled():
+                submit.click()
+            else:
+                button = page.get_by_role(
+                    "button",
+                    name=re.compile(
+                        r"^(Verify( code)?|Confirm|Continue|Submit|Authenticate|Bestätigen|Überprüfen|Verifizieren|Fortfahren|Anmelden)$",
+                        re.I,
+                    ),
+                ).filter(visible=True)
+                if button.count() == 1 and button.is_enabled():
+                    button.click()
     try:
         export.first.wait_for(state="visible", timeout=30000)
     except Exception:
