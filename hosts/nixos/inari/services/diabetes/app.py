@@ -5,6 +5,7 @@ from collections import defaultdict
 import contextlib
 import fcntl
 import hmac
+import hashlib
 import io
 import json
 import logging
@@ -30,7 +31,17 @@ from flask import (
     send_file,
 )
 
-from analysis import BERLIN, MAX_BYTES, comparison, number, parse_export, timestamp
+from analysis import (
+    BERLIN,
+    MAX_BYTES,
+    comparison,
+    number,
+    parse_export,
+    timestamp,
+    week_bounds,
+    weekly_history,
+)
+from memory import build_memory
 
 DEFAULTS = {
     "low": 70,
@@ -82,6 +93,9 @@ def init_db(root):
           PRIMARY KEY(kind, ts, event_index));
         CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT);
         CREATE TABLE IF NOT EXISTS reports (week TEXT PRIMARY KEY, payload TEXT, ai TEXT);
+        CREATE TABLE IF NOT EXISTS memory_cards (
+          id TEXT NOT NULL, revision TEXT NOT NULL, payload TEXT NOT NULL,
+          active INTEGER NOT NULL, PRIMARY KEY(id, revision));
         CREATE TABLE IF NOT EXISTS actions (id TEXT PRIMARY KEY);
         CREATE TABLE IF NOT EXISTS supplies (
           kind TEXT PRIMARY KEY, stock INTEGER, hours REAL, lead_days INTEGER,
@@ -176,18 +190,48 @@ def import_records(db, records):
 
 
 def build_report(db, now=None):
+    now = now or datetime.now(UTC)
     cfg = get_settings(db)
+    cutoff = week_bounds(now, 25)[0] - 300
     readings = [
         (r[0], r[1])
-        for r in db.execute("SELECT ts,value FROM records WHERE kind='cgm' ORDER BY ts")
+        for r in db.execute(
+            "SELECT ts,value FROM records WHERE kind='cgm' AND ts>=? ORDER BY ts",
+            (cutoff,),
+        )
     ]
     boluses = [
         tuple(r)
         for r in db.execute(
-            "SELECT ts,value,carbs FROM records WHERE kind='bolus' ORDER BY ts"
+            "SELECT ts,value,carbs FROM records WHERE kind='bolus' AND ts>=? ORDER BY ts",
+            (cutoff,),
         )
     ]
     report = comparison(readings, boluses, now, cfg["low"], cfg["high"])
+    memory = build_memory(
+        weekly_history(readings, boluses, now, cfg["low"], cfg["high"]),
+        cfg["low"],
+        cfg["high"],
+    )
+    report["memory"] = memory
+    retrieved = set(memory["retrieved_ids"])
+    report["facts"].extend(
+        {"id": card["id"], "text": card["text"]}
+        for card in memory["facts"]
+        if card["id"] in retrieved
+    )
+    # Retain immutable evidence versions for audit; only facts recomputed from
+    # current records and ranges remain eligible for retrieval after late uploads.
+    db.execute("UPDATE memory_cards SET active=0")
+    for card in memory["facts"]:
+        db.execute(
+            "INSERT INTO memory_cards VALUES (?,?,?,1) ON CONFLICT(id,revision) DO UPDATE SET active=1",
+            (card["id"], card["revision"], json.dumps(card, sort_keys=True)),
+        )
+    report.pop("revision", None)
+    report["revision"] = hashlib.sha256(
+        json.dumps(report, sort_keys=True).encode()
+    ).hexdigest()
     week = report["weeks"][0]["label"]
     old = db.execute("SELECT payload, ai FROM reports WHERE week=?", (week,)).fetchone()
     ai = (

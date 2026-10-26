@@ -178,6 +178,14 @@ def render(report, config, now, selected=None, quality=None):
                 lines.append(
                     f"Recurring {kind} observations at {hour['hour']:02d}:00–{hour['hour'] + 1:02d}:00 on {len(dates)} dates. Observed time in this hour: {hour['observed_minutes']:.0f} minutes. Uneven coverage can bias this pattern."
                 )
+    memory = report.get("memory")
+    if memory is not None:
+        lines.append(
+            f"Long-term memory: {memory['available_weeks']} weeks with glucose observations in the last {memory['window_weeks']} completed weeks; {memory['eligible_weeks']} meet the 70% weekly coverage gate. Earlier history remains stored. Missing weeks are unknown, not zero."
+        )
+        lines.append(
+            "Long-term trend cards need at least three covered weeks in each four-calendar-week block. Recurring-hour cards need at least 120 observed minutes in that hour per week, out-of-range readings on at least three dates totalling 45 minutes, and detection in at least three weeks. These are descriptive review thresholds, not clinical significance tests. Berlin clock-change hours use actual observed time."
+        )
     lines += [f["text"] for f in report["facts"]]
     lines += [
         "Actual automated basal delivery and total daily insulin: unavailable. Programmed basal settings are never used as delivery.",

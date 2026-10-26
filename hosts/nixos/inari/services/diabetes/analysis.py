@@ -7,6 +7,7 @@ import json
 import math
 import re
 import zipfile
+from bisect import bisect_left
 from datetime import UTC, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
@@ -363,11 +364,33 @@ def weekly_summary(readings, boluses, start, end, low=70, high=180):
     }
 
 
+def weekly_history(readings, boluses, now=None, low=70, high=180, count=26):
+    """Slice sorted history before analysis so retained years do not multiply work."""
+    now = now or datetime.now(UTC)
+    reading_times = [item[0] for item in readings]
+    bolus_times = [item[0] for item in boluses]
+    weeks = []
+    for offset in range(count):
+        start, end = week_bounds(now, offset)
+        left = bisect_left(reading_times, start - 300)
+        right = bisect_left(reading_times, end)
+        first_bolus = bisect_left(bolus_times, start)
+        last_bolus = bisect_left(bolus_times, end)
+        weeks.append(
+            weekly_summary(
+                readings[left:right],
+                boluses[first_bolus:last_bolus],
+                start,
+                end,
+                low,
+                high,
+            )
+        )
+    return weeks
+
+
 def comparison(readings, boluses, now=None, low=70, high=180):
-    weeks = [
-        weekly_summary(readings, boluses, *week_bounds(now, i), low, high)
-        for i in range(4)
-    ]
+    weeks = weekly_history(readings, boluses, now, low, high, count=4)
     current, previous = weeks[:2]
     deltas = {
         k: round(current[k] - previous[k], 2)
