@@ -344,7 +344,7 @@
       "id": "499b1d79-67af-4891-8f60-41bc3608fcdf",
       "name": "Build push",
       "parameters": {
-        "jsCode": "// The reminder mail covers the whole ladder -- 30, 14, 7, 3, 1 and 0 days. Only\n// the last three reach the phone: a month of notice is a thing to read, three\n// days is a thing to act on.\nconst PUSH_WITHIN_DAYS = 3;\nconst { unsent = [] } = $input.first().json;\n\nconst soon = unsent.filter((item) => item.days <= PUSH_WITHIN_DAYS);\nif (soon.length === 0) return [];\n\nconst when = (days) => (days === 0 ? \"heute fällig\" : days === 1 ? \"morgen fällig\" : `in ${days} Tagen fällig`);\n\nreturn soon.map((item) => ({\n  json: {\n    source: \"paperless\",\n    // Due today is worth a louder notification than due in three days, and\n    // nothing here is ever critical: a deadline is not an outage.\n    severity: item.days === 0 ? \"warning\" : \"info\",\n    title: `${item.title} — ${when(item.days)}`,\n    message: `Fällig am ${item.date}.`,\n    // The document, its date and the rung of the ladder: the same document at\n    // 3 days and at 0 days are different notifications, and neither should\n    // suppress the other.\n    fingerprint: `paperless:${item.id}:${item.date}:${item.days}`,\n  },\n}));"
+        "jsCode": "// The reminder mail covers the whole ladder -- 30, 14, 7, 3, 1 and 0 days. Only\n// the last three reach the phone: a month of notice is a thing to read, three\n// days is a thing to act on.\nconst PUSH_WITHIN_DAYS = 3;\nconst { unsent = [] } = $input.first().json;\n\nconst soon = unsent.filter((item) => item.days <= PUSH_WITHIN_DAYS);\nif (soon.length === 0) return [];\n\nconst when = (days) => (days === 0 ? \"heute fällig\" : days === 1 ? \"morgen fällig\" : `in ${days} Tagen fällig`);\n\nreturn soon.map((item) => ({\n  json: {\n    source: \"paperless\",\n    event: true,\n    // Due today is worth a louder notification than due in three days, and\n    // nothing here is ever critical: a deadline is not an outage.\n    severity: item.days === 0 ? \"warning\" : \"info\",\n    title: `${item.title} — ${when(item.days)}`,\n    message: `Fällig am ${item.date}.`,\n    // The document, its date and the rung of the ladder: the same document at\n    // 3 days and at 0 days are different notifications, and neither should\n    // suppress the other.\n    fingerprint: `paperless:${item.id}:${item.date}:${item.days}`,\n  },\n}));"
       },
       "position": [
         -150,
@@ -376,6 +376,7 @@
   "settings": {
     "availableInMCP": false,
     "binaryMode": "separate",
+    "errorWorkflow": "AutomationFail26",
     "executionOrder": "v1"
   },
   "tags": [],

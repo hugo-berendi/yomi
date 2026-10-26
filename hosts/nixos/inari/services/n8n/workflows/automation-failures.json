@@ -1,0 +1,86 @@
+{
+  "active": true,
+  "connections": {
+    "Build failure notice": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Send to alert spine",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Workflow failed": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Build failure notice",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "id": "AutomationFail26",
+  "name": "Inari Automations · Failure notifications",
+  "nodeGroups": [],
+  "nodes": [
+    {
+      "id": "76da8917-c8e6-4c4c-a3bd-b2d740b59268",
+      "name": "Workflow failed",
+      "parameters": {},
+      "position": [
+        0,
+        0
+      ],
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1
+    },
+    {
+      "id": "c639f2ad-36d8-48dc-9cb9-008dd86debae",
+      "name": "Build failure notice",
+      "parameters": {
+        "jsCode": "// Never forward exception text or execution data: mail and health workflows\n// can contain private content. The workflow name and a link are sufficient.\nreturn $input.all().map(({json}) => ({json: {\n  source: 'automation', severity: 'warning',\n  title: `Automation failed: ${json.workflow?.name ?? 'n8n workflow'}`,\n  message: 'Open the workflow in n8n and inspect the failed execution.',\n  fingerprint: `workflow:${json.workflow?.id ?? 'unknown'}`,\n  event: true,\n  url: json.workflow?.id ? `https://n8n.hugo-berendi.de/workflow/${encodeURIComponent(json.workflow.id)}` : null,\n}}));\n"
+      },
+      "position": [
+        220,
+        0
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "503af395-9579-4fd4-a60e-473095091d79",
+      "name": "Send to alert spine",
+      "parameters": {
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "specifyBody": "json",
+        "url": "={{ $env.ALERT_WEBHOOK_URL }}"
+      },
+      "position": [
+        704,
+        700
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3
+    }
+  ],
+  "pinData": {},
+  "settings": {
+    "availableInMCP": false,
+    "binaryMode": "separate",
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "saveManualExecutions": false,
+    "timezone": "Europe/Berlin"
+  },
+  "tags": [],
+  "versionId": "edc960ad-20f2-4277-afb5-370685546d69"
+}

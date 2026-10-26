@@ -1,0 +1,115 @@
+{
+  "active": true,
+  "connections": {
+    "Check service probes": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Send to alert spine",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Manual test": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Check service probes",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Schedule": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Check service probes",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "id": "ServiceStatus2026",
+  "name": "Inari Services · Outage and recovery",
+  "nodeGroups": [],
+  "nodes": [
+    {
+      "id": "1e64c7d5-f014-4f25-a355-45d1e1a1b8ed",
+      "name": "Manual test",
+      "parameters": {},
+      "position": [
+        -16,
+        400
+      ],
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1
+    },
+    {
+      "id": "78034860-9666-406c-9803-f791c9b2bb3d",
+      "name": "Schedule",
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 5
+            }
+          ]
+        }
+      },
+      "position": [
+        -16,
+        560
+      ],
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2
+    },
+    {
+      "id": "6bcd45ea-45b4-43cd-b391-3deeb4013d36",
+      "name": "Check service probes",
+      "parameters": {
+        "jsCode": "const endpoints = await this.helpers.httpRequest({method: 'GET',\n  url: 'http://127.0.0.1:8494/api/v1/endpoints/statuses', json: true, timeout: 20000});\nif (!Array.isArray(endpoints) || endpoints.length === 0) throw new Error('Gatus returned no service probes');\nconst out = [];\nfor (const endpoint of endpoints) {\n  const results = [...(endpoint.results ?? [])].sort((a,b) => String(a.timestamp ?? '').localeCompare(String(b.timestamp ?? '')));\n  const failures = results.slice(-3);\n  const successes = results.slice(-2);\n  const down = failures.length === 3 && failures.every(r => r.success === false);\n  const up = successes.length === 2 && successes.every(r => r.success === true);\n  if (!down && !up) continue;\n  out.push({json: {source: 'services', severity: ['n8n', 'ntfy', 'prometheus', 'grafana', 'adguard'].includes(endpoint.name) ? 'critical' : 'warning',\n    title: `${endpoint.name} ${down ? 'is down' : 'recovered'}`,\n    message: down ? 'Three consecutive probes failed. Check the service and the status page.' : 'The service is responding again.',\n    fingerprint: `service:${endpoint.key ?? endpoint.name}`, resolved: up,\n    url: 'https://status.hugo-berendi.de',\n  }});\n}\nreturn out;\n"
+      },
+      "position": [
+        224,
+        480
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "2c133470-cea2-4e4c-9308-bb6827365a56",
+      "name": "Send to alert spine",
+      "parameters": {
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "specifyBody": "json",
+        "url": "={{ $env.ALERT_WEBHOOK_URL }}"
+      },
+      "position": [
+        704,
+        700
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3
+    }
+  ],
+  "pinData": {},
+  "settings": {
+    "availableInMCP": false,
+    "binaryMode": "separate",
+    "errorWorkflow": "AutomationFail26",
+    "executionOrder": "v1",
+    "timezone": "Europe/Berlin"
+  },
+  "tags": [],
+  "versionId": "7bd30a0a-b01d-4ca0-b5b4-a291d69e9ef7"
+}

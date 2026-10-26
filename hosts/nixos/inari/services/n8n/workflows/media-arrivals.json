@@ -1,5 +1,5 @@
 {
-  "active": true,
+  "active": false,
   "connections": {
     "Collect arrivals from the *arr apps": {
       "main": [

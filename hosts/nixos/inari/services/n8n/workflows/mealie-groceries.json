@@ -73,6 +73,7 @@
   },
   "active": true,
   "settings": {
+    "errorWorkflow": "AutomationFail26",
     "executionOrder": "v1",
     "binaryMode": "separate",
     "availableInMCP": false

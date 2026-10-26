@@ -110,6 +110,7 @@
   ],
   "pinData": {},
   "settings": {
+    "errorWorkflow": "AutomationFail26",
     "availableInMCP": false,
     "binaryMode": "separate",
     "executionOrder": "v1"

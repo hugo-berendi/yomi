@@ -79,6 +79,7 @@
     }
   ],
   "settings": {
+    "errorWorkflow": "AutomationFail26",
     "executionOrder": "v1",
     "saveDataErrorExecution": "none",
     "saveDataSuccessExecution": "none",

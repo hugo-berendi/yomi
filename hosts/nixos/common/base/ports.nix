@@ -91,5 +91,6 @@
     diabetes = lib.mkDefault 8503;
     calsync = lib.mkDefault 8504;
     proton-mail-sorter = lib.mkDefault 8505;
+    n8n-alert-router = lib.mkDefault 8508;
   };
 }

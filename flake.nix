@@ -328,6 +328,7 @@
               inherit pkgs;
               configuration = self.nixosConfigurations.inari;
             };
+            n8n-notifications = import ./tests/n8n-notifications.nix {inherit pkgs;};
             custom-options = import ./tests/options.nix {
               inherit pkgs;
               configurations = self.nixosConfigurations;

@@ -133,6 +133,8 @@ in {
       LIDARR_API_KEY=${config.sops.placeholder.lidarr_api_key}
       READARR_API_KEY=${config.sops.placeholder.readarr_api_key}
     '';
+    sops.templates."n8n-alert-router.env".content =
+      lib.optionalString hasNtfyToken "NTFY_TOKEN=${config.sops.placeholder.n8n_ntfy_token}\n";
     # }}}
 
     # {{{ Assertions
@@ -245,10 +247,13 @@ in {
         # ntfy that way, and naming it here means a workflow never has to
         # hardcode the port it happens to listen on today.
         ALERT_WEBHOOK_URL = "http://127.0.0.1:${toString config.yomi.ports.n8n}/webhook/alert";
+        ALERT_ROUTER_URL = "http://127.0.0.1:${toString config.yomi.ports.n8n-alert-router}/alert";
       };
     };
 
     systemd.services.n8n = {
+      wants = ["n8n-alert-router.service"];
+      after = ["n8n-alert-router.service"];
       path = with pkgs; [
         nodejs
         git
@@ -281,6 +286,70 @@ in {
         lib.mapAttrsToList (name: workflow: "-${pkgs.coreutils}/bin/timeout --signal=KILL 3m ${importScript name workflow}") cfg.workflows;
     };
 
+    # Static workflow data is saved as whole snapshots, so overlapping n8n
+    # executions lose queued alerts. One local process serializes publication
+    # and persists receipts before acknowledging a webhook.
+    systemd.services.n8n-alert-router = {
+      description = "Durable notification queue and quiet hours";
+      wantedBy = ["multi-user.target"];
+      after = ["network.target" "sops-nix.service"];
+      environment = {
+        inherit (config.services.n8n.environment) NTFY_URL NTFY_TOPIC;
+        PORT = toString config.yomi.ports.n8n-alert-router;
+      };
+      serviceConfig = {
+        ExecStart = "${pkgs.nodejs}/bin/node ${./n8n/alert-router.cjs}";
+        EnvironmentFile = config.sops.templates."n8n-alert-router.env".path;
+        DynamicUser = true;
+        StateDirectory = "n8n-alert-router";
+        StateDirectoryMode = "0700";
+        UMask = "0077";
+        Restart = "on-failure";
+        RestartSec = 5;
+        ProtectSystem = "strict";
+        ProtectHome = true;
+        PrivateTmp = true;
+        PrivateDevices = true;
+        NoNewPrivileges = true;
+        RestrictAddressFamilies = ["AF_UNIX" "AF_INET" "AF_INET6"];
+      };
+    };
+
+    # A workflow cannot report that n8n itself is down. Share its dynamic
+    # account to read execution metadata, and send directly to ntfy when the
+    # router heartbeat fails. Neither execution payloads nor credentials are read.
+    systemd.services.n8n-execution-monitor = {
+      description = "Check n8n execution outcomes and notification delivery";
+      after = ["n8n.service"];
+      environment = {
+        inherit (config.services.n8n.environment) ALERT_WEBHOOK_URL NTFY_URL NTFY_TOPIC;
+      };
+      serviceConfig = {
+        Type = "oneshot";
+        User = "n8n";
+        DynamicUser = true;
+        StateDirectory = ["n8n" "n8n-monitor"];
+        StateDirectoryMode = "0700";
+        EnvironmentFile = config.sops.templates."n8n-alert-router.env".path;
+        ExecStart = "${pkgs.python3}/bin/python ${./n8n/execution-monitor.py} --database /var/lib/n8n/.n8n/database.sqlite --editor-url ${lib.escapeShellArg config.services.n8n.environment.N8N_EDITOR_BASE_URL} --state /var/lib/n8n-monitor/notification-state.json";
+        TimeoutStartSec = "2m";
+        ProtectSystem = "strict";
+        ProtectHome = true;
+        PrivateTmp = true;
+        PrivateDevices = true;
+        NoNewPrivileges = true;
+        ReadOnlyPaths = ["/var/lib/n8n"];
+        RestrictAddressFamilies = ["AF_UNIX" "AF_INET" "AF_INET6"];
+      };
+    };
+    systemd.timers.n8n-execution-monitor = {
+      wantedBy = ["timers.target"];
+      timerConfig = {
+        OnCalendar = "*:0/5";
+        Persistent = true;
+      };
+    };
+
     # {{{ Managed workflows
     yomi.n8n.workflows.webuntis-radicale.source = ./n8n/workflows/webuntis-radicale.json;
     yomi.n8n.workflows.diabetes-weekly = {
@@ -306,6 +375,8 @@ in {
     yomi.n8n.workflows.alert-router.source = ./n8n/workflows/alert-router.json;
     yomi.n8n.workflows.disk-health.source = ./n8n/workflows/disk-health.json;
     yomi.n8n.workflows.grafana-bridge.source = ./n8n/workflows/grafana-bridge.json;
+    yomi.n8n.workflows.service-status.source = ./n8n/workflows/service-status.json;
+    yomi.n8n.workflows.automation-failures.source = ./n8n/workflows/automation-failures.json;
     # }}}
   };
 }
