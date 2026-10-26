@@ -44,6 +44,22 @@ def fixture_html(state="password", multi_otp=False):
         return """<form id="login">
           <input name="user[email]"><input name="user[password]" type="password">
           <button id="sign-in-button">Sign in</button></form>"""
+    if state in {"anonymous-otp", "anonymous-auto-otp"}:
+        fields = '<input type="text" maxlength="1">' * 6
+        auto = (
+            "document.querySelectorAll('input[maxlength]').forEach(i=>i.oninput=verify);"
+            if state == "anonymous-auto-otp"
+            else ""
+        )
+        return f"""<form id="verification">{fields}<input type="checkbox"><button type="submit">Verify</button></form>
+          <script>
+          function verify() {{
+            const code = Array.from(document.querySelectorAll('input[maxlength]')).map(i=>i.value).join('');
+            if (code === '123456') document.body.innerHTML='<main><button>Export to CSV</button></main>';
+          }}
+          document.querySelector('form').onsubmit=e=>{{e.preventDefault();verify()}};
+          {auto}
+          </script>"""
     if multi_otp:
         fields = "".join(f'<input name="otp{i}" maxlength="1">' for i in range(6))
     else:
@@ -141,6 +157,23 @@ def main():
             multi_otp=True,
             expect_export=True,
         )
+        # Observed Glooko MFA layout: six inputs with no code name, id or
+        # autocomplete hint, plus an unrelated checkbox. Check both submit modes.
+        run_case(
+            chromium,
+            "anonymous-otp",
+            allow_login=True,
+            code_prompt=lambda: OTP,
+            expect_export=True,
+        )
+        run_case(
+            chromium,
+            "anonymous-auto-otp",
+            allow_login=True,
+            code_prompt=lambda: OTP,
+            expect_export=True,
+        )
+        run_case(chromium, "anonymous-otp", expect_auth=True)
         # Unattended paths stop before submitting either password or OTP.
         run_case(chromium, "password", expect_auth=True)
         run_case(chromium, "otp", expect_auth=True)

@@ -937,10 +937,16 @@ if __name__ == "__main__":
             raise SystemExit(1)
 
         def prompt_code():
-            return getpass.getpass(
+            code = getpass.getpass(
                 "Enter the NEW Glooko email verification code (hidden): "
             ).strip()
+            print("Checking the code and downloading the export...", flush=True)
+            return code
 
+        print(
+            "Opening Glooko and waiting for the login or verification page...",
+            flush=True,
+        )
         try:
             status = sync(
                 application.config["ROOT"], interactive=True, code_prompt=prompt_code

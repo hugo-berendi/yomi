@@ -108,11 +108,18 @@ def authenticate_page(page, credentials, allow_login=False, code_prompt=None):
     trusted_page(page)
     export = page.get_by_text(EXPORT_LABEL).filter(visible=True)
     password = page.locator('input[name="user[password]"]').filter(visible=True)
-    codes = (
+    named_codes = (
         page.locator(CODE_SELECTOR)
         .or_(page.get_by_label(CODE_LABEL))
         .filter(visible=True)
     )
+    # The live email challenge has six text inputs with maxlength=1 but no
+    # code-related name, id or autocomplete hint. Require the complete six-cell
+    # layout before asking for a code; a lone one-character field is insufficient.
+    single_digits = page.locator(
+        'input[maxlength="1"]:is([type="text"], [type="tel"], [type="number"], :not([type]))'
+    ).filter(visible=True)
+    codes = named_codes.or_(single_digits).filter(visible=True)
     ready = export.or_(password).or_(codes).filter(visible=True).first
     ready.wait_for(state="visible", timeout=30000)
     if export.count():
@@ -144,7 +151,15 @@ def authenticate_page(page, credentials, allow_login=False, code_prompt=None):
     trusted_page(page)
     if export.count():
         return export.first
-    if not codes.count() or code_prompt is None:
+    count = codes.count()
+    if code_prompt is None or not count:
+        raise AuthenticationRequired()
+    if count == 1:
+        if not named_codes.count():
+            raise AuthenticationRequired()
+    elif count != 6 or not all(
+        codes.nth(i).get_attribute("maxlength") == "1" for i in range(count)
+    ):
         raise AuthenticationRequired()
     code = code_prompt()
     if not isinstance(code, str) or not re.fullmatch(r"[A-Za-z0-9-]{4,12}", code):
@@ -160,23 +175,25 @@ def authenticate_page(page, credentials, allow_login=False, code_prompt=None):
             codes.nth(i).fill(character)
     else:
         raise AuthenticationRequired()
-    form = codes.first.locator("xpath=ancestor::form[1]")
-    submit = form.locator('button[type="submit"], input[type="submit"]').filter(
-        visible=True
-    )
-    if submit.count() == 1:
-        submit.click()
-    else:
-        button = page.get_by_role(
-            "button",
-            name=re.compile(
-                r"^(Verify( code)?|Confirm|Continue|Submit|Authenticate|Bestätigen|Überprüfen|Verifizieren|Fortfahren|Anmelden)$",
-                re.I,
-            ),
-        ).filter(visible=True)
-        if button.count() != 1:
-            raise AuthenticationRequired()
-        button.click()
+    # Some six-cell controls submit when the last digit is entered. If the
+    # fields disappear, wait for the result instead of clicking a second submit.
+    if not export.count():
+        form = codes.first.locator("xpath=ancestor::form[1]")
+        submit = form.locator('button[type="submit"], input[type="submit"]').filter(
+            visible=True
+        )
+        if submit.count() == 1 and submit.is_enabled():
+            submit.click()
+        else:
+            button = page.get_by_role(
+                "button",
+                name=re.compile(
+                    r"^(Verify( code)?|Confirm|Continue|Submit|Authenticate|Bestätigen|Überprüfen|Verifizieren|Fortfahren|Anmelden)$",
+                    re.I,
+                ),
+            ).filter(visible=True)
+            if button.count() == 1 and button.is_enabled():
+                button.click()
     try:
         export.first.wait_for(state="visible", timeout=30000)
     except Exception:
