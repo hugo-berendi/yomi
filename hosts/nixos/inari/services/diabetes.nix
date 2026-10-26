@@ -10,6 +10,17 @@
     path = ./diabetes;
     name = "yomi-diabetes";
   };
+  loginHelper = pkgs.writeShellApplication {
+    name = "diabetes-glooko-login";
+    text = ''
+      umask 077
+      export STATE_DIRECTORY=/var/lib/diabetes
+      export HOME=/var/lib/diabetes
+      export MPLCONFIGDIR=/var/lib/diabetes/matplotlib
+      export GLOOKO_CHROMIUM=${pkgs.chromium}/bin/chromium
+      exec ${python}/bin/python ${source}/app.py auth-glooko
+    '';
+  };
   credentials =
     ["home-assistant-token:${config.sops.secrets.n8n_home_assistant_api_token.path}"]
     ++ lib.optional cfg.weeklyEmailEnable "weekly-smtp-password:${config.sops.secrets.no_reply_smtp_password.path}"
@@ -44,6 +55,7 @@ in {
   # }}}
   config = lib.mkMerge [
     {
+      system.build.diabetes-glooko-login = loginHelper;
       system.build.diabetes-tests = pkgs.runCommand "yomi-diabetes-tests" {} ''
         export MPLCONFIGDIR="$TMPDIR/matplotlib"
         export PYTHONDONTWRITEBYTECODE=1
@@ -75,6 +87,7 @@ in {
       # }}}
     }
     (lib.mkIf cfg.enable {
+      environment.systemPackages = [loginHelper];
       assertions = [
         {
           assertion = !cfg.weeklyEmailEnable || cfg.weeklyMailCredentialFile != null;

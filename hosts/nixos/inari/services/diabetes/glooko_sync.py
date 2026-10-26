@@ -40,12 +40,162 @@ def save_credentials(root, email, password, zone):
         file.flush()
         os.fsync(file.fileno())
     os.replace(temporary, root / "glooko-credentials.json")
+    (root / "glooko-session.json").unlink(missing_ok=True)
 
 
-def download_export(credentials):
-    # Import lazily so the web process does not need a running browser.
+EXPORT_LABEL = re.compile(r"^\s*(Als CSV exportieren|Export to CSV)\s*$", re.I)
+CODE_LABEL = re.compile(
+    r"^(Verification code|Authentication code|Security code|Code|Bestätigungscode|Authentifizierungscode|Sicherheitscode|Verifizierungscode|Einmalcode)$",
+    re.I,
+)
+CODE_SELECTOR = 'input[autocomplete="one-time-code"], input[name*="otp" i], input[id*="otp" i], input[name*="verification_code" i], input[name*="authentication_code" i], input[name*="auth_code" i], input[name="code"], input[id="code"]'
+
+
+def glooko_host(host):
+    return host == "my.glooko.com" or (host or "").endswith(".my.glooko.com")
+
+
+def trusted_page(page):
+    url = urlsplit(page.url)
+    if url.scheme != "https" or not glooko_host(url.hostname):
+        raise AuthenticationRequired()
+
+
+def save_browser_state(root, state):
+    # Cookies are credentials. Retain only Glooko origins, never third parties.
+    state = {
+        "cookies": [
+            cookie
+            for cookie in state["cookies"]
+            if cookie.get("domain", "").lstrip(".") == "glooko.com"
+            or glooko_host(cookie.get("domain", "").lstrip("."))
+        ],
+        "origins": [
+            origin
+            for origin in state["origins"]
+            if urlsplit(origin.get("origin", "")).scheme == "https"
+            and glooko_host(urlsplit(origin.get("origin", "")).hostname)
+        ],
+    }
+    temporary = root / "glooko-session.tmp"
+    with temporary.open("w") as file:
+        os.chmod(temporary, 0o600)
+        json.dump(state, file)
+        file.flush()
+        os.fsync(file.fileno())
+    os.replace(temporary, root / "glooko-session.json")
+
+
+def load_browser_state(root):
+    path = root / "glooko-session.json"
+    if not path.exists():
+        return None
+    try:
+        if path.stat().st_size > 1024 * 1024:
+            raise ValueError()
+        state = json.loads(path.read_text())
+        if not isinstance(state, dict) or not all(
+            isinstance(state.get(key), list) for key in ("cookies", "origins")
+        ):
+            raise ValueError()
+        return state
+    except (ValueError, OSError):
+        raise AuthenticationRequired() from None
+
+
+def authenticate_page(page, credentials, allow_login=False, code_prompt=None):
+    """One login and at most one locally supplied code; never retry verification."""
+    trusted_page(page)
+    export = page.get_by_text(EXPORT_LABEL).filter(visible=True)
+    password = page.locator('input[name="user[password]"]').filter(visible=True)
+    codes = (
+        page.locator(CODE_SELECTOR)
+        .or_(page.get_by_label(CODE_LABEL))
+        .filter(visible=True)
+    )
+    ready = export.or_(password).or_(codes).filter(visible=True).first
+    ready.wait_for(state="visible", timeout=30000)
+    if export.count():
+        return export.first
+    if not allow_login:
+        raise AuthenticationRequired()
+    if password.count():
+        # OneTrust can appear after the initial document load. Wait briefly for
+        # it before submitting, rather than checking once during that race.
+        reject = page.locator("#onetrust-reject-all-handler")
+        try:
+            reject.wait_for(state="visible", timeout=3000)
+        except Exception:
+            pass
+        if reject.is_visible():
+            reject.click()
+        trusted_page(page)
+        page.locator('input[name="user[email]"]').fill(credentials["email"])
+        password.fill(credentials["password"])
+        page.locator("#sign-in-button").click()
+        try:
+            export.or_(codes).filter(visible=True).first.wait_for(
+                state="visible", timeout=30000
+            )
+        except Exception:
+            if password.count():
+                raise AuthenticationRequired() from None
+            raise
+    trusted_page(page)
+    if export.count():
+        return export.first
+    if not codes.count() or code_prompt is None:
+        raise AuthenticationRequired()
+    code = code_prompt()
+    if not isinstance(code, str) or not re.fullmatch(r"[A-Za-z0-9-]{4,12}", code):
+        raise AuthenticationRequired()
+    trusted_page(page)
+    count = codes.count()
+    if count == 1:
+        codes.first.fill(code)
+    elif count == len(code) and all(
+        codes.nth(i).get_attribute("maxlength") == "1" for i in range(count)
+    ):
+        for i, character in enumerate(code):
+            codes.nth(i).fill(character)
+    else:
+        raise AuthenticationRequired()
+    form = codes.first.locator("xpath=ancestor::form[1]")
+    submit = form.locator('button[type="submit"], input[type="submit"]').filter(
+        visible=True
+    )
+    if submit.count() == 1:
+        submit.click()
+    else:
+        button = page.get_by_role(
+            "button",
+            name=re.compile(
+                r"^(Verify( code)?|Confirm|Continue|Submit|Authenticate|Bestätigen|Überprüfen|Verifizieren|Fortfahren|Anmelden)$",
+                re.I,
+            ),
+        ).filter(visible=True)
+        if button.count() != 1:
+            raise AuthenticationRequired()
+        button.click()
+    try:
+        export.first.wait_for(state="visible", timeout=30000)
+    except Exception:
+        raise AuthenticationRequired() from None
+    trusted_page(page)
+    return export.first
+
+
+def download_export(credentials, root=None, allow_login=False, code_prompt=None):
+    # Browser objects never escape this call; only private session state persists.
     from playwright.sync_api import sync_playwright
 
+    state = None
+    if root is not None:
+        try:
+            state = load_browser_state(root)
+        except AuthenticationRequired:
+            if not allow_login:
+                raise
     with sync_playwright() as driver:
         browser = driver.chromium.launch(
             executable_path=os.environ.get("GLOOKO_CHROMIUM"),
@@ -53,38 +203,17 @@ def download_export(credentials):
             chromium_sandbox=True,
         )
         try:
-            context = browser.new_context(accept_downloads=True, locale="de-DE")
+            context = browser.new_context(
+                accept_downloads=True, locale="de-DE", storage_state=state
+            )
             page = context.new_page()
             page.set_default_timeout(30000)
             page.goto("https://my.glooko.com/users/sign_in?locale=de")
-            # Credentials must never follow a changed login destination.
-            url = urlsplit(page.url)
-            if url.scheme != "https" or not (
-                url.hostname == "my.glooko.com"
-                or (url.hostname or "").endswith(".my.glooko.com")
-            ):
-                raise ValueError("Unexpected Glooko login destination")
-            reject = page.locator("#onetrust-reject-all-handler")
-            if reject.is_visible():
-                reject.click()
-            page.locator('input[name="user[email]"]').fill(credentials["email"])
-            page.locator('input[name="user[password]"]').fill(credentials["password"])
-            # Do not record browser traces, screenshots, cookies or response bodies.
-            page.locator("#sign-in-button").click()
-            export = page.get_by_text(
-                re.compile(r"^(Als CSV exportieren|Export to CSV)$", re.I)
+            export = authenticate_page(
+                page, credentials, allow_login=allow_login, code_prompt=code_prompt
             )
-            try:
-                export.wait_for(state="visible", timeout=30000)
-            except Exception:
-                if (
-                    page.locator('input[name="user[password]"]').is_visible()
-                    or page.locator(
-                        'input[autocomplete="one-time-code"], iframe[src*="captcha"]'
-                    ).count()
-                ):
-                    raise AuthenticationRequired() from None
-                raise
+            if root is not None:
+                save_browser_state(root, context.storage_state())
             export.click()
             dialog = page.get_by_role("dialog").filter(
                 has_text=re.compile(r"Als CSV exportieren|Export to CSV", re.I)
@@ -111,7 +240,9 @@ def download_export(credentials):
             browser.close()
 
 
-def sync(root, fetch=download_export, now=None, refresh=False):
+def sync(
+    root, fetch=None, now=None, refresh=False, interactive=False, code_prompt=None
+):
     # Imported here to avoid a module cycle when invoked from the web process.
     from app import database, import_records, build_report, get_state, put_state
 
@@ -123,19 +254,37 @@ def sync(root, fetch=download_export, now=None, refresh=False):
                 return "not configured"
             with database(root) as db:
                 state = get_state(db, "glooko", {})
-                if now < state.get("next_attempt", 0) and not (
-                    refresh
-                    and state.get("success")
-                    and state.get("success") == state.get("attempt")
-                    and not state.get("error")
+                if (
+                    not interactive
+                    and now < state.get("next_attempt", 0)
+                    and not (
+                        refresh
+                        and state.get("success")
+                        and state.get("success") == state.get("attempt")
+                        and not state.get("error")
+                    )
                 ):
                     return "not due"
+                if (
+                    not interactive
+                    and state.get("error_code") == "authentication_required"
+                ):
+                    return "authentication required"
                 # Persist a backoff before network work, including crashes/timeouts.
                 state.update(attempt=now, next_attempt=now + 6 * 3600, error=None)
                 put_state(db, "glooko", state)
             try:
                 credentials = json.loads(path.read_text())
-                payload = fetch(credentials)
+                payload = (
+                    fetch(credentials)
+                    if fetch is not None
+                    else download_export(
+                        credentials,
+                        root=root,
+                        allow_login=interactive,
+                        code_prompt=code_prompt,
+                    )
+                )
                 records, notices = parse_export(
                     payload, credentials["timezone"], "day-first"
                 )
@@ -168,7 +317,7 @@ def sync(root, fetch=download_export, now=None, refresh=False):
                     if isinstance(error, AuthenticationRequired):
                         state["error_code"] = "authentication_required"
                         state["error"] = (
-                            "Glooko login was rejected or needs interactive verification. Sign in to Glooko, complete any challenge, then update the saved login or request a retry. Existing history was kept."
+                            "Glooko needs a local login or verification code. On Inari, run sudo -u diabetes /run/current-system/sw/bin/diabetes-glooko-login in a terminal. Automatic login attempts are paused until you complete this. Existing history was kept."
                         )
                         state["next_attempt"] = now + 86400
                     else:

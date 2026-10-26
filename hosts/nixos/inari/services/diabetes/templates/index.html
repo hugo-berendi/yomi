@@ -19,7 +19,7 @@
 <label>Glooko email<input type="email" name="email" autocomplete="username" required></label>
 <label>Glooko password<input type="password" name="password" autocomplete="current-password" required></label>
 <label>Timezone used in your Glooko exports<select name="timezone"><option>Europe/Berlin</option><option>UTC</option></select></label>
-<p class="muted">Your login is stored in a private file on Inari and included in its encrypted backups. This unofficial browser integration can need attention if Glooko changes its website or asks you to sign in again. It reads exports only. Keep your devices syncing with Glooko.</p>
+<p class="muted">Your login is stored in a private file on Inari and included in its encrypted backups. This unofficial browser integration can need attention if Glooko changes its website or asks you to sign in again. It reads exports only. For the first login or a verification challenge, run <code>sudo -u diabetes /run/current-system/sw/bin/diabetes-glooko-login</code> in an Inari terminal. Enter the email code there, never in chat. The private session is reused for later imports. Keep your devices syncing with Glooko.</p>
 <button>Save and start automatic sync</button></form></details></section>
 <section id="review">
 <div class="section-title"><h2>Weekly comparison</h2><a href="/report.json">Download latest JSON</a></div>

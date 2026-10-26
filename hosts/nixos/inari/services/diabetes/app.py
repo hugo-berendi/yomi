@@ -657,6 +657,7 @@ def create_app(root=None, config=None):
                 )
             elif action == "disconnect":
                 (root / "glooko-credentials.json").unlink(missing_ok=True)
+                (root / "glooko-session.json").unlink(missing_ok=True)
             elif action != "retry" or not (root / "glooko-credentials.json").exists():
                 raise ValueError("Choose a configured Glooko connection")
             with database(root) as db:
@@ -920,11 +921,36 @@ def create_app(root=None, config=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("command", choices=["serve", "tick", "sync-glooko"])
+    parser.add_argument(
+        "command", choices=["serve", "tick", "sync-glooko", "auth-glooko"]
+    )
     parser.add_argument("--port", type=int, default=8503)
     args = parser.parse_args()
     application = create_app()
-    if args.command == "sync-glooko":
+    if args.command == "auth-glooko":
+        import getpass
+        import sys
+        from glooko_sync import sync
+
+        if not sys.stdin.isatty():
+            print("Use an interactive terminal for Glooko verification.")
+            raise SystemExit(1)
+
+        def prompt_code():
+            return getpass.getpass(
+                "Enter the NEW Glooko email verification code (hidden): "
+            ).strip()
+
+        try:
+            status = sync(
+                application.config["ROOT"], interactive=True, code_prompt=prompt_code
+            )
+        except (EOFError, KeyboardInterrupt):
+            print("Glooko login cancelled.")
+            raise SystemExit(1) from None
+        print("Glooko: " + status)
+        raise SystemExit(0 if status == "synced" else 1)
+    elif args.command == "sync-glooko":
         from glooko_sync import sync
 
         print(sync(application.config["ROOT"]))
