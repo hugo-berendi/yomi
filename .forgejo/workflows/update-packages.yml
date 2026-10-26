@@ -3,6 +3,9 @@ on:
   schedule:
     - cron: "0 5 * * 1"
   workflow_dispatch:
+concurrency:
+  group: update-packages
+  cancel-in-progress: false
 jobs:
   update:
     runs-on: native
@@ -13,6 +16,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: https://data.forgejo.org/actions/checkout@v4
+        with:
+          ref: main
 
       - name: Update GitHub-release packages with nix-update
         run: |
@@ -101,11 +106,10 @@ jobs:
           GIT_COMMITTER_NAME: forgejo-actions
           GIT_COMMITTER_EMAIL: forgejo-actions@localhost
         run: |
-          branch="update-packages/$(date +%Y-%m-%d)"
-          git checkout -b "$branch"
+          set -euo pipefail
+          git checkout -B update-packages
           git add pkgs/ hosts/
           git commit -m "chore: update packages"
-          git push --force origin "$branch"
 
           summary=""
           for f in $(git diff --name-only main -- pkgs/ hosts/); do
@@ -119,20 +123,12 @@ jobs:
             fi
           done
 
-          diffSummary=$(git diff main -- pkgs/ hosts/ | head -c 60000)
+          diffSummary=$(git diff main -- pkgs/ hosts/ | head -c 60000 || true)
+          # Keep the Markdown code fences literal.
+          # shellcheck disable=SC2016
           body=$(printf '%s\n<details>\n<summary>Show diff</summary>\n\n```diff\n%s\n```\n\n</details>\n' "$summary" "$diffSummary")
 
-          prResponse=$(curl -fsSL -X POST \
-            -H "Authorization: token ${GITHUB_TOKEN}" \
-            -H "Content-Type: application/json" \
-            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/pulls" \
-            -d "$(nix run nixpkgs#jq -- -n --arg title "chore: update packages" --arg body "$body" --arg head "$branch" --arg base "main" \
-              '{title: $title, body: $body, head: $head, base: $base}')")
-
-          prNumber=$(printf '%s' "$prResponse" | nix run nixpkgs#jq -- -r '.number')
-
-          curl -fsSL -X POST \
-            -H "Authorization: token ${GITHUB_TOKEN}" \
-            -H "Content-Type: application/json" \
-            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/pulls/${prNumber}/requested_reviewers" \
-            -d '{"reviewers": ["hugo-berendi"]}'
+          bodyFile=$(mktemp)
+          trap 'rm -f "$bodyFile"' EXIT
+          printf '%s' "$body" > "$bodyFile"
+          nix develop -c python3 scripts/update-package-pr.py "$bodyFile"
