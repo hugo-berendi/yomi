@@ -238,13 +238,14 @@ def select_export_range(page, dialog):
         if not THIRTY_DAYS.fullmatch(native.locator("option:checked").inner_text()):
             raise ValueError("Glooko export range was not confirmed")
         return
-    control = dialog.get_by_role("combobox").filter(visible=True)
+    # react-select exposes an opacity-zero dummy INPUT as a combobox. The live
+    # export dialog's visible value DIV is the clickable target and also holds
+    # the selected range; the dummy input has neither a click point nor a value.
+    control = dialog.get_by_role("button", name=EXPORT_PERIOD).filter(visible=True)
     if not control.count():
-        control = dialog.get_by_role("button", name=EXPORT_PERIOD).filter(visible=True)
-    if not control.count():
-        # Some Glooko releases render this as a div, with the number and unit
-        # in separate spans or separated by a non-breaking space.
         control = dialog.get_by_text(EXPORT_PERIOD).filter(visible=True)
+    if not control.count():
+        control = dialog.get_by_role("combobox").filter(visible=True)
     if control.count() != 1:
         raise ValueError("Glooko export range control is not unique")
     is_input = control.evaluate("element => element.tagName === 'INPUT'")

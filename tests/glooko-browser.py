@@ -166,13 +166,16 @@ def run_export_case(chromium, kind):
                 "ninety": "90 days",
                 "already": "30 Tage",
                 "delayed": "2 Wochen",
+                "dummy-combobox": "2 Wochen",
             }[kind]
-            role = 'role="combobox"' if kind != "split" else ""
+            role = 'role="combobox"' if kind not in {"split", "dummy-combobox"} else ""
             control = f'<div id="range" {role}>{initial}</div><div id="options" role="listbox" hidden><div role="option" id="thirty">30<span>Tage</span></div></div>'
             script = f"""window.selectedDays={30 if kind == "already" else 90 if kind == "ninety" else 14}; window.openCount=0;
             document.querySelector('#range').onclick=()=>{{window.openCount++;document.querySelector('#options').hidden=false}};
             document.querySelector('#thirty').onclick=()=>{{window.selectedDays=30;document.querySelector('#range').textContent='30 Tage';document.querySelector('#options').hidden=true}};
             """
+        if kind == "dummy-combobox":
+            control += '<input role="combobox" aria-readonly="true" style="opacity:0;width:1px;height:18px;position:absolute;left:-100px;transform:scale(.01)">'
         if kind == "delayed":
             script = script.replace(
                 "document.querySelector('#options').hidden=false",
@@ -217,6 +220,7 @@ def main():
             "already",
             "native-missing",
             "delayed",
+            "dummy-combobox",
         ):
             run_export_case(chromium, kind)
         # Existing signed-in session: no password or callback should be needed.
