@@ -34,7 +34,6 @@
     ipp = lib.mkDefault 8421;
     jellyfin = lib.mkDefault 8422;
     jellyseerr = lib.mkDefault 8423;
-    jupyterhub = lib.mkDefault 8425;
     karakeep = lib.mkDefault 8426;
     karakeep-browser = lib.mkDefault 8427;
     lidarr = lib.mkDefault 8430;

@@ -101,7 +101,19 @@ in {
   # }}}
 
   config = {
-    yomi.nginx.at.n8n.port = config.yomi.ports.n8n;
+    yomi.nginx.at.n8n = {
+      port = config.yomi.ports.n8n;
+      # n8n listens on IPv4 loopback only (N8N_LISTEN_ADDRESS below), and
+      # "localhost" would have nginx try ::1 first on every request.
+      proxyAddress = "127.0.0.1";
+    };
+    # Webhooks have no authentication of their own, and every caller is on
+    # this host (Grafana, the workflows, the execution monitor) and talks to
+    # 127.0.0.1:8438 directly. The hostname, and the login-protected tunnel
+    # name that proxies to it, serve the editor only. Forms and MCP triggers
+    # are unauthenticated the same way. Case-insensitive on purpose: n8n's
+    # router matches /WEBHOOK/... too, and a plain prefix location would not.
+    services.nginx.virtualHosts.${config.yomi.nginx.at.n8n.host}.locations."~* ^/(webhook|webhook-test|webhook-waiting|form|form-test|form-waiting|mcp|mcp-test)(/|$)".return = "404";
 
     # {{{ Service API keys for workflows
     # The *arr values are the same secrets their services consume, so a
@@ -123,8 +135,10 @@ in {
       ++ lib.optional hasNtfyToken "n8n_ntfy_token"
     ) (_: {sopsFile = ../../secrets.yaml;});
 
+    # No NTFY_TOKEN here: only the alert router and the execution monitor
+    # publish to ntfy, and both read n8n-alert-router.env. Every Code node can
+    # read this file's values (see N8N_BLOCK_ENV_ACCESS_IN_NODE).
     sops.templates."n8n-services.env".content = ''
-      ${lib.optionalString hasNtfyToken "NTFY_TOKEN=${config.sops.placeholder.n8n_ntfy_token}"}
       IMMICH_API_KEY=${config.sops.placeholder.n8n_immich_api_key}
       PAPERLESS_API_TOKEN=${config.sops.placeholder.n8n_paperless_api_token}
       MEALIE_API_TOKEN=${config.sops.placeholder.n8n_mealie_api_token}
@@ -207,6 +221,11 @@ in {
         WEBHOOK_URL = config.yomi.nginx.at.n8n.url;
         N8N_PORT = toString config.yomi.nginx.at.n8n.port;
         N8N_HOST = "127.0.0.1";
+        # N8N_HOST only names the host in generated URLs; the listener binds
+        # to every address unless told otherwise. Tailscale and the docker
+        # bridges are accepted without a port filter, so anything they carry
+        # could otherwise post to the unauthenticated webhooks.
+        N8N_LISTEN_ADDRESS = "127.0.0.1";
         N8N_EDITOR_BASE_URL = config.yomi.nginx.at.n8n.url;
         N8N_TEMPLATES_ENABLED = toString true;
         N8N_AI_ENABLED = toString true;

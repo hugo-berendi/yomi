@@ -196,13 +196,6 @@ in {
             };
           }
           {
-            Jupyterhub = {
-              icon = "jupyter.svg";
-              href = "https://jupyter.hugo-berendi.de";
-              description = "Notebook collaboration suite";
-            };
-          }
-          {
             Paperless = {
               icon = "paperless.svg";
               href = "https://paperless.hugo-berendi.de";

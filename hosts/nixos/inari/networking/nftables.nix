@@ -7,11 +7,18 @@
   portsFor = protocol: map (entry: entry.port) (lib.filter (entry: lib.elem protocol entry.protocols) grants);
   lanTcpServicePorts = portsFor "tcp";
   lanUdpServicePorts = portsFor "udp";
+  # Only ports something on inari answers on. Samba (445), NFS (2049) and
+  # Syncthing (21027, 22000) were listed here with nothing behind them, so a
+  # service that later bound one would have been LAN-open without anyone
+  # deciding it. 1900 and 5353 are Home Assistant's SSDP and zeroconf
+  # discovery (ss -ulnpe, 2026-10-27).
+  baseTcpPorts = [22 53 80 443];
+  baseUdpPorts = [53 67 68 443 1900 5353];
   lanTcpPorts = lib.concatMapStringsSep ", " toString (
-    lib.unique ([22 53 80 443 445 2049 22000] ++ lanTcpServicePorts)
+    lib.unique (baseTcpPorts ++ lanTcpServicePorts)
   );
   lanUdpPorts = lib.concatMapStringsSep ", " toString (
-    lib.unique ([53 67 68 443 1900 5353 21027 22000] ++ lanUdpServicePorts)
+    lib.unique (baseUdpPorts ++ lanUdpServicePorts)
   );
 
   # networking.firewall is disabled below, so allowedTCPPorts and
@@ -25,8 +32,8 @@
   # the internet through the VPN namespace, not br0. So say so instead, and
   # let whoever adds a service put the port in lanTcpServicePorts on purpose.
   inertFirewallPorts =
-    lib.filter (p: !lib.elem p ([22 53 80 443 445 2049 22000] ++ lanTcpServicePorts)) config.networking.firewall.allowedTCPPorts
-    ++ lib.filter (p: !lib.elem p ([53 67 68 443 1900 5353 21027 22000] ++ lanUdpServicePorts)) config.networking.firewall.allowedUDPPorts;
+    lib.filter (p: !lib.elem p (baseTcpPorts ++ lanTcpServicePorts)) config.networking.firewall.allowedTCPPorts
+    ++ lib.filter (p: !lib.elem p (baseUdpPorts ++ lanUdpServicePorts)) config.networking.firewall.allowedUDPPorts;
   exitNodeForwardRule = lib.optionalString config.yomi.tailscale.exitNode ''
     # Allow Tailscale exit node traffic
     iifname "tailscale0" oifname "br0" accept

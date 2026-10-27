@@ -29,7 +29,6 @@
       ./services/homepage.nix
       ./services/msmtp.nix
       ./services/invidious.nix
-      ./services/jupyter.nix
       ./services/microbin.nix
       ./services/mealie.nix
       ./services/radicale
