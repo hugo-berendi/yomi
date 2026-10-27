@@ -130,6 +130,11 @@ in {
   };
   # }}}
   # {{{ sso
+  # Group claims are mirrored into Nextcloud on every login, both ways: a Pocket
+  # ID group called "admin" lands in Nextcloud's built-in admin group, every
+  # other group becomes a plain group. Removing someone from the Pocket ID
+  # group demotes them at their next login. Who may sign in at all is decided
+  # by the client's allowed groups in Pocket ID, not here.
   # The provider is registered from the secrets on every start so that rotating
   # the Pocket ID client needs no manual occ call. Redirect URI in Pocket ID:
   # ${cloud.url}/apps/user_oidc/code
@@ -149,11 +154,13 @@ in {
         --clientid="$(cat ${config.sops.secrets.nextcloud_oidc_client_id.path})" \
         --clientsecret="$(cat ${config.sops.secrets.nextcloud_oidc_client_secret.path})" \
         --discoveryuri="${pocketIdUrl}/.well-known/openid-configuration" \
-        --scope="openid email profile" \
+        --scope="openid email profile groups" \
         --unique-uid=0 \
         --mapping-uid=preferred_username \
         --mapping-display-name=name \
-        --mapping-email=email
+        --mapping-email=email \
+        --mapping-groups=groups \
+        --group-provisioning=1
       nextcloud-occ config:app:set --value=0 user_oidc allow_multiple_user_backends
     '';
   };
