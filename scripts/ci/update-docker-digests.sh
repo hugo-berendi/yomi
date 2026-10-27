@@ -11,16 +11,16 @@ cd "$repo_root"
 token_for() {
 	local registry="$1" repo="$2"
 	if [[ "$registry" == "ghcr.io" ]]; then
-		curl -fsSL "https://ghcr.io/token?service=ghcr.io&scope=repository:${repo}:pull" | jq -r '.token'
+		curl -fsSL --max-time 30 --retry 2 "https://ghcr.io/token?service=ghcr.io&scope=repository:${repo}:pull" | jq -r '.token'
 	else
-		curl -fsSL "https://auth.docker.io/token?service=registry.docker.io&scope=repository:${repo}:pull" | jq -r '.token'
+		curl -fsSL --max-time 30 --retry 2 "https://auth.docker.io/token?service=registry.docker.io&scope=repository:${repo}:pull" | jq -r '.token'
 	fi
 }
 
 digest_for() {
 	local registry="$1" repo="$2" tag="$3" token
 	token=$(token_for "$registry" "$repo")
-	curl -fsSL \
+	curl -fsSL --max-time 30 --retry 2 \
 		-H "Authorization: Bearer ${token}" \
 		-H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
 		-H "Accept: application/vnd.docker.distribution.manifest.list.v2+json" \
@@ -29,6 +29,26 @@ digest_for() {
 		-D - -o /dev/null \
 		"https://${registry}/v2/${repo}/manifests/${tag}" |
 		tr -d '\r' | awk -F': ' 'tolower($1)=="docker-content-digest"{print $2}'
+}
+
+# Literal replacement of one full reference (no regex, so . / : - need no
+# escaping); the same digest appearing elsewhere in the file is left alone.
+replace_ref() {
+	local file="$1" old="$2" new="$3" tmp
+	tmp=$(mktemp "${file}.XXXXXX")
+	OLD="$old" NEW="$new" awk '
+		BEGIN { old = ENVIRON["OLD"]; new = ENVIRON["NEW"]; n = length(old) }
+		{
+			out = ""
+			while ((i = index($0, old)) > 0) {
+				out = out substr($0, 1, i - 1) new
+				$0 = substr($0, i + n)
+			}
+			print out $0
+		}
+	' "$file" >"$tmp"
+	chmod --reference="$file" "$tmp"
+	mv -- "$tmp" "$file"
 }
 
 mapfile -t files < <(
@@ -74,7 +94,7 @@ for file in "${files[@]}"; do
 
 		if [[ "$newDigest" != "$oldDigest" ]]; then
 			echo "update: ${repo}:${tag}  ${oldDigest} -> ${newDigest}  (${file})"
-			sed -i "s|${oldDigest}|${newDigest}|" "$file"
+			replace_ref "$file" "${imageTag}@sha256:${oldDigest}" "${imageTag}@sha256:${newDigest}"
 			file_changed=1
 		fi
 	done

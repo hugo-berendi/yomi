@@ -4,12 +4,14 @@
 The n8n side cannot do this. Its IMAP node is a *trigger* whose default search
 is ``["UNSEEN"]``; pointing it at ``["ALL"]`` would re-emit the whole mailbox on
 every poll rather than walking it once. So the backlog gets its own tool:
-resumable, read-only, and cheap enough to finish this decade.
+resumable and cheap enough to finish this decade.
 
-Read-only is enforced twice: the mailbox is SELECTed with ``readonly=True`` and
-every fetch uses ``BODY.PEEK[...]``, which is the form that does not set
-``\\Seen``. Nothing is moved, flagged or deleted -- this only tells you what a
-sort *would* look like.
+Read-only by default: the mailbox is SELECTed with ``readonly=True`` and every
+fetch uses ``BODY.PEEK[...]``, which is the form that does not set ``\\Seen``.
+Without flags nothing is moved, flagged or deleted -- this only tells you what
+a sort *would* look like. ``--apply`` is the opt-in that moves messages into
+their buckets and records the Message-Ids it moved; ``--undo`` uses that record
+to move them back.
 
 The trick that makes a large mailbox affordable is the sender cache. A personal
 inbox is mostly a few hundred senders repeating, and the bucket for

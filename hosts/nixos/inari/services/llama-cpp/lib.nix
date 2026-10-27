@@ -54,7 +54,11 @@ in {
             echo "Downloading ${model.file}..."
             ${lib.getExe pkgs.curl} -fSL --retry 5 --retry-all-errors -C - \
               -o "${modelPath}.tmp" "${modelUrl}"
-            echo "${model.sha256}  ${modelPath}.tmp" | ${lib.getExe' pkgs.coreutils "sha256sum"} -c -
+            # A corrupt .tmp would be resumed by `curl -C -` on every restart; drop it.
+            if ! echo "${model.sha256}  ${modelPath}.tmp" | ${lib.getExe' pkgs.coreutils "sha256sum"} -c -; then
+              rm -f "${modelPath}.tmp"
+              exit 1
+            fi
             mv "${modelPath}.tmp" "${modelPath}"
             chmod 644 "${modelPath}"
           fi

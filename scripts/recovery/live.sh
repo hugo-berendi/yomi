@@ -92,16 +92,35 @@ if [ "$action" = "install" ]; then
 	# the flake's own nixConfig is the only source of the binary caches here.
 	nixos-install --flake ".#$host" --accept-flake-config
 
+	# Key material must not inherit the live ISO's umask: private keys 0600 and
+	# key directories 0700, owned by the user whose home they land in, or the
+	# user could not read their own key. nixos-install has just written
+	# /mnt/etc/passwd, which is where the uid comes from.
 	echo "🔑 Copying user ssh keys"
 	mkdir -p /mnt/persist/state/home/hugob
 	for dir in /mnt/persist/state/home/*; do
-		mkdir -p "$dir/ssh/.ssh"
-		cp "/kagutsuchi/secrets/$host"/id* "$dir/ssh/.ssh"
+		owner=$(awk -F: -v name="$(basename "$dir")" '$1 == name { print $3 ":" $4 }' /mnt/etc/passwd)
+		if [ -z "$owner" ]; then
+			echo "⚠️ no user $(basename "$dir") in /mnt/etc/passwd; copying keys owned by root" >&2
+			owner=0:0
+		fi
+		install -d -m 700 -o "${owner%:*}" -g "${owner#*:}" "$dir/ssh" "$dir/ssh/.ssh"
+		for key in "/kagutsuchi/secrets/$host"/id*; do
+			case "$key" in
+			*.pub) install -m 644 -o "${owner%:*}" -g "${owner#*:}" "$key" "$dir/ssh/.ssh/" ;;
+			*) install -m 600 -o "${owner%:*}" -g "${owner#*:}" "$key" "$dir/ssh/.ssh/" ;;
+			esac
+		done
 	done
 
 	echo "🔑 Copying host ssh keys"
-	mkdir -p /mnt/persist/state/etc/ssh/
-	cp "/kagutsuchi/secrets/$host"/ssh* /mnt/persist/state/etc/ssh/
+	install -d -m 755 /mnt/persist/state/etc /mnt/persist/state/etc/ssh
+	for key in "/kagutsuchi/secrets/$host"/ssh*; do
+		case "$key" in
+		*.pub) install -m 644 "$key" /mnt/persist/state/etc/ssh/ ;;
+		*) install -m 600 "$key" /mnt/persist/state/etc/ssh/ ;;
+		esac
+	done
 fi
 
 if [ "$action" = "enter" ]; then

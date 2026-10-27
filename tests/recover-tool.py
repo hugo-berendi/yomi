@@ -1,4 +1,7 @@
-"""Validate authenticated manifests and disk guards without privileged operations."""
+"""Validate encrypted manifests (age: confidentiality, no sender authentication) and disk guards.
+
+Nothing here needs privileged operations.
+"""
 
 import importlib.util
 import io
