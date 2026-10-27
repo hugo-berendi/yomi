@@ -107,11 +107,13 @@ partial.mkdir()
 manifest.write_text(json.dumps({"paperless": {"source": str(root / "missing")}}))
 run(success=False)
 assert count() == 2
+assert not partial.exists(), "A failed run must remove its staging copy"
 manifest.write_text(
     json.dumps({"paperless": {"source": str(source), "sqlite": ["missing.sqlite"]}})
 )
 run(success=False)
 assert count() == 2
+assert not partial.exists(), "A failed SQLite check must remove its staging copy"
 manifest.write_text(
     json.dumps({"paperless": {"source": str(source), "sqlite": ["db.sqlite3"]}})
 )
