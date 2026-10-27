@@ -18,6 +18,65 @@ class AuthenticationRequired(Exception):
     """Login rejected or interactive verification required; never retain page text."""
 
 
+SYNC_STAGES = {
+    "configuration": "reading the saved configuration",
+    "session": "loading the saved session",
+    "browser_start": "starting the browser",
+    "browser_context": "opening the browser session",
+    "navigation": "opening Glooko",
+    "authentication": "signing in",
+    "export_dialog": "opening the export dialog",
+    "export_range_control": "loading the export range control",
+    "export_range_option": "selecting the export period",
+    "export_range_verify": "confirming the export period",
+    "download": "downloading the export",
+    "parse": "validating the export",
+    "import": "importing the records",
+    "report": "calculating the report",
+}
+FAILURE_KINDS = {
+    "authentication_required",
+    "timeout",
+    "browser_closed",
+    "invalid_configuration",
+    "invalid_export",
+    "conflicting_records",
+    "storage_error",
+    "operation_failed",
+    "range_control_absent",
+    "range_control_ambiguous",
+    "range_click_timeout",
+    "range_option_missing",
+    "range_option_ambiguous",
+    "range_not_confirmed",
+}
+
+
+class ExportRangeError(ValueError):
+    def __init__(self, kind):
+        self.kind = kind
+        super().__init__("Glooko export period could not be confirmed")
+
+
+def failure_kind(error, stage):
+    if isinstance(error, ExportRangeError):
+        return error.kind if error.kind in FAILURE_KINDS else "operation_failed"
+    if isinstance(error, AuthenticationRequired):
+        return "authentication_required"
+    if type(error).__name__ == "TimeoutError":
+        return "timeout"
+    if type(error).__name__ == "TargetClosedError":
+        return "browser_closed"
+    if isinstance(error, ValueError):
+        if stage == "configuration":
+            return "invalid_configuration"
+        if stage == "parse":
+            return "invalid_export"
+        if stage == "import" and str(error).startswith("Conflicting records"):
+            return "conflicting_records"
+    return "storage_error" if isinstance(error, OSError) else "operation_failed"
+
+
 @contextlib.contextmanager
 def sync_lock(root):
     with (root / "glooko.lock").open("a") as lock:
@@ -222,58 +281,87 @@ EXPORT_PERIOD = re.compile(
 )
 
 
-def select_export_range(page, dialog):
+def select_export_range(page, dialog, progress=None):
     """Choose and verify 30 days without assuming a previous range or ASCII spaces."""
-    from playwright.sync_api import expect
+    from playwright.sync_api import expect, TimeoutError as BrowserTimeout
 
+    mark = progress or (lambda stage: None)
     dialog.wait_for(state="visible")
+    mark("export_range_control")
     native = dialog.locator("select").filter(visible=True)
+    button = dialog.get_by_role("button", name=EXPORT_PERIOD).filter(visible=True)
+    text = dialog.get_by_text(EXPORT_PERIOD).filter(visible=True)
+    # Dialog shells can mount before react-select's visible value. count() does
+    # not wait; choosing the already-mounted dummy INPUT makes click retry on
+    # an offscreen element forever. Wait for an actual visible range control.
+    try:
+        native.or_(button).or_(text).first.wait_for(state="visible")
+    except BrowserTimeout:
+        raise ExportRangeError("range_control_absent") from None
     if native.count() == 1:
+        mark("export_range_option")
         choices = [
             option
             for option in native.locator("option").all()
             if THIRTY_DAYS.fullmatch(option.inner_text())
         ]
         if len(choices) != 1:
-            raise ValueError("Glooko export has no unique 30-day choice")
+            raise ExportRangeError(
+                "range_option_missing" if not choices else "range_option_ambiguous"
+            )
         native.select_option(label=choices[0].inner_text())
         if not THIRTY_DAYS.fullmatch(native.locator("option:checked").inner_text()):
-            raise ValueError("Glooko export range was not confirmed")
+            raise ExportRangeError("range_not_confirmed")
         return
     # react-select exposes an opacity-zero dummy INPUT as a combobox. The live
     # export dialog's visible value DIV is the clickable target and also holds
     # the selected range; the dummy input has neither a click point nor a value.
-    control = dialog.get_by_role("button", name=EXPORT_PERIOD).filter(visible=True)
+    control = button
     if not control.count():
-        control = dialog.get_by_text(EXPORT_PERIOD).filter(visible=True)
-    if not control.count():
-        control = dialog.get_by_role("combobox").filter(visible=True)
+        control = text
     if control.count() != 1:
-        raise ValueError("Glooko export range control is not unique")
+        raise ExportRangeError("range_control_ambiguous")
     is_input = control.evaluate("element => element.tagName === 'INPUT'")
     current = control.input_value() if is_input else control.inner_text()
     if THIRTY_DAYS.fullmatch(current):
         return
-    control.click()
-    page.get_by_role("option", name=THIRTY_DAYS).or_(
-        page.get_by_text(THIRTY_DAYS)
-    ).filter(visible=True).first.wait_for(state="visible")
+    try:
+        control.click()
+    except BrowserTimeout:
+        raise ExportRangeError("range_click_timeout") from None
+    mark("export_range_option")
+    try:
+        page.get_by_role("option", name=THIRTY_DAYS).or_(
+            page.get_by_text(THIRTY_DAYS)
+        ).filter(visible=True).first.wait_for(state="visible")
+    except BrowserTimeout:
+        raise ExportRangeError("range_option_missing") from None
     option = page.get_by_role("option", name=THIRTY_DAYS).filter(visible=True)
     if not option.count():
         option = page.get_by_text(THIRTY_DAYS).filter(visible=True)
     if option.count() != 1:
-        raise ValueError("Glooko export has no unique visible 30-day choice")
+        raise ExportRangeError(
+            "range_option_missing" if not option.count() else "range_option_ambiguous"
+        )
     option.click()
-    if is_input:
-        expect(control).to_have_value(THIRTY_DAYS)
-    else:
-        expect(control).to_have_text(THIRTY_DAYS)
+    mark("export_range_verify")
+    try:
+        if is_input:
+            expect(control).to_have_value(THIRTY_DAYS)
+        else:
+            expect(control).to_have_text(THIRTY_DAYS)
+    except AssertionError:
+        raise ExportRangeError("range_not_confirmed") from None
 
 
-def download_export(credentials, root=None, allow_login=False, code_prompt=None):
+def download_export(
+    credentials, root=None, allow_login=False, code_prompt=None, progress=None
+):
     # Browser objects never escape this call; only private session state persists.
     from playwright.sync_api import sync_playwright
 
+    mark = progress or (lambda stage: None)
+    mark("session")
     state = None
     browser_environment = None
     if root is not None:
@@ -292,6 +380,7 @@ def download_export(credentials, root=None, allow_login=False, code_prompt=None)
         except AuthenticationRequired:
             if not allow_login:
                 raise
+    mark("browser_start")
     with sync_playwright() as driver:
         browser = driver.chromium.launch(
             executable_path=os.environ.get("GLOOKO_CHROMIUM"),
@@ -300,23 +389,28 @@ def download_export(credentials, root=None, allow_login=False, code_prompt=None)
             env=browser_environment,
         )
         try:
+            mark("browser_context")
             context = browser.new_context(
                 accept_downloads=True, locale="de-DE", storage_state=state
             )
             page = context.new_page()
             page.set_default_timeout(30000)
+            mark("navigation")
             page.goto("https://my.glooko.com/users/sign_in?locale=de")
+            mark("authentication")
             export = authenticate_page(
                 page, credentials, allow_login=allow_login, code_prompt=code_prompt
             )
             if root is not None:
                 save_browser_state(root, context.storage_state())
+            mark("export_dialog")
             export.click()
             dialog = page.get_by_role("dialog").filter(
                 has_text=re.compile(r"Als CSV exportieren|Export to CSV", re.I)
             )
             # Confirm the actual selected range before requesting any download.
-            select_export_range(page, dialog)
+            select_export_range(page, dialog, progress=mark)
+            mark("download")
             with page.expect_download(timeout=150000) as pending:
                 dialog.get_by_role(
                     "button", name=re.compile(r"^(Export|Exportieren)$", re.I)
@@ -342,6 +436,13 @@ def sync(
     from app import database, import_records, build_report, get_state, put_state
 
     now = int(time.time() if now is None else now)
+    stage = "configuration"
+
+    def progress(value):
+        nonlocal stage
+        if value in SYNC_STAGES:
+            stage = value
+
     try:
         with sync_lock(root):
             path = root / "glooko-credentials.json"
@@ -370,6 +471,7 @@ def sync(
                 put_state(db, "glooko", state)
             try:
                 credentials = json.loads(path.read_text())
+                progress("download")
                 payload = (
                     fetch(credentials)
                     if fetch is not None
@@ -381,8 +483,10 @@ def sync(
                         # attempts above until the human completes local login.
                         allow_login=True,
                         code_prompt=code_prompt,
+                        progress=progress,
                     )
                 )
+                progress("parse")
                 records, notices = parse_export(
                     payload, credentials["timezone"], "day-first"
                 )
@@ -403,9 +507,11 @@ def sync(
                                 saved.flush()
                                 os.fsync(saved.fileno())
                             os.replace(path, target)
+                progress("import")
                 with database(root) as db:
                     db.execute("BEGIN IMMEDIATE")
                     inserted = import_records(db, records)
+                    progress("report")
                     build_report(db)
                     state.update(
                         success=now,
@@ -415,6 +521,8 @@ def sync(
                         notices=notices,
                         error=None,
                         error_code=None,
+                        failure_stage=None,
+                        failure_kind=None,
                     )
                     put_state(db, "glooko", state)
                 return "synced"
@@ -423,10 +531,11 @@ def sync(
                 # Retain only this fixed message; no exception or traceback logging.
                 with database(root) as db:
                     state["error"] = (
-                        "Glooko sync did not finish. Check your login, device sync and "
-                        "export timezone. A login challenge, website change or conflicting "
-                        "export can also require attention. Existing data was kept."
+                        f"Glooko sync did not finish while {SYNC_STAGES[stage]}. "
+                        "Existing data was kept."
                     )
+                    state["failure_stage"] = stage
+                    state["failure_kind"] = failure_kind(error, stage)
                     if isinstance(error, AuthenticationRequired):
                         state["error_code"] = "authentication_required"
                         state["error"] = (

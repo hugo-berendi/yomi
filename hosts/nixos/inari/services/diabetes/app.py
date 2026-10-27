@@ -1001,9 +1001,20 @@ if __name__ == "__main__":
         print("Glooko: " + status)
         raise SystemExit(0 if status == "synced" else 1)
     elif args.command == "sync-glooko":
-        from glooko_sync import sync
+        from glooko_sync import sync, SYNC_STAGES, FAILURE_KINDS
 
-        print(sync(application.config["ROOT"]))
+        status = sync(application.config["ROOT"])
+        print(status)
+        if status == "failed":
+            with database(application.config["ROOT"]) as db:
+                state = get_state(db, "glooko", {})
+            stage, kind = state.get("failure_stage"), state.get("failure_kind")
+            print("stage=" + (stage if stage in SYNC_STAGES else "unknown"))
+            print(
+                "failure_kind="
+                + (kind if kind in FAILURE_KINDS else "operation_failed")
+            )
+            raise SystemExit(1)
     elif args.command == "tick":
         print(json.dumps(application.extensions["tick"]()))
     else:

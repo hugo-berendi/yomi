@@ -169,15 +169,26 @@ def run_export_case(chromium, kind):
                 "already": "30 Tage",
                 "delayed": "2 Wochen",
                 "dummy-combobox": "2 Wochen",
+                "delayed-control": "2 Wochen",
             }[kind]
-            role = 'role="combobox"' if kind not in {"split", "dummy-combobox"} else ""
+            role = (
+                'role="combobox"'
+                if kind not in {"split", "dummy-combobox", "delayed-control"}
+                else ""
+            )
             control = f'<div id="range" {role}>{initial}</div><div id="options" role="listbox" hidden><div role="option" id="thirty">30<span>Tage</span></div></div>'
             script = f"""window.selectedDays={30 if kind == "already" else 90 if kind == "ninety" else 14}; window.openCount=0;
             document.querySelector('#range').onclick=()=>{{window.openCount++;document.querySelector('#options').hidden=false}};
             document.querySelector('#thirty').onclick=()=>{{window.selectedDays=30;document.querySelector('#range').textContent='30 Tage';document.querySelector('#options').hidden=true}};
             """
-        if kind == "dummy-combobox":
+        if kind in {"dummy-combobox", "delayed-control"}:
             control += '<input role="combobox" aria-readonly="true" style="opacity:0;width:1px;height:18px;position:absolute;left:-100px;transform:scale(.01)">'
+        if kind == "delayed-control":
+            script = (
+                "document.querySelector('#range').hidden=true;"
+                + script
+                + "setTimeout(()=>document.querySelector('#range').hidden=false,300);"
+            )
         if kind == "delayed":
             script = script.replace(
                 "document.querySelector('#options').hidden=false",
@@ -192,6 +203,8 @@ def run_export_case(chromium, kind):
         )
         page = context.new_page()
         page.goto(SIGN_IN)
+        if kind == "delayed-control":
+            page.set_default_timeout(1500)
         try:
             glooko.select_export_range(page, page.get_by_role("dialog"))
         except ValueError:
@@ -223,6 +236,7 @@ def main():
             "native-missing",
             "delayed",
             "dummy-combobox",
+            "delayed-control",
         ):
             run_export_case(chromium, kind)
         # Existing signed-in session: no password or callback should be needed.

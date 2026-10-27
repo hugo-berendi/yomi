@@ -4,6 +4,8 @@ import io
 import json
 import os
 import sqlite3
+import subprocess
+import sys
 import tempfile
 import time
 import unittest
@@ -368,11 +370,27 @@ class AppTests(unittest.TestCase):
             state = get_state(db, "glooko")
             self.assertNotIn("secret-password", json.dumps(state))
             self.assertEqual(state["next_attempt"], 2000021600)
+            self.assertEqual(state.get("failure_stage"), "download")
+            self.assertEqual(state.get("failure_kind"), "operation_failed")
             self.assertNotIn("success", state)
             self.assertEqual(
                 db.execute("SELECT count(*) FROM records").fetchone()[0], 1
             )
         self.assertEqual(sync(self.root, fetch=failure, now=2000000300), "not due")
+
+    def test_sync_cli_reports_only_safe_phase_and_failure_exit(self):
+        (self.root / "glooko-credentials.json").write_text("synthetic-private-marker")
+        result = subprocess.run(
+            [sys.executable, str(Path(__file__).with_name("app.py")), "sync-glooko"],
+            env=os.environ | {"STATE_DIRECTORY": str(self.root)},
+            capture_output=True,
+            text=True,
+            timeout=20,
+        )
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("stage=configuration", result.stdout)
+        self.assertIn("failure_kind=invalid_configuration", result.stdout)
+        self.assertNotIn("synthetic-private-marker", result.stdout + result.stderr)
 
     def test_glooko_conflict_rolls_back_and_parallel_sync_is_skipped(self):
         self.connect_glooko()
