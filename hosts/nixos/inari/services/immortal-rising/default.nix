@@ -122,8 +122,13 @@ in {
       "androidboot.redroid_height=1280"
       "androidboot.redroid_dpi=320"
       "androidboot.redroid_gpu_mode=guest"
-      "ro.product.cpu.abilist=x86_64,arm64-v8a"
+      # abilist32 must stay non-empty: with only 64-bit entries zygote_secondary
+      # aborts ("Unable to determine ABI list") and Android boot-loops without
+      # ever starting system_server.
+      "ro.product.cpu.abilist=x86_64,x86,arm64-v8a,armeabi-v7a,armeabi"
+      "ro.product.cpu.abilist32=x86,armeabi-v7a,armeabi"
       "ro.product.cpu.abilist64=x86_64,arm64-v8a"
+      "ro.dalvik.vm.isa.arm=x86"
       "ro.dalvik.vm.isa.arm64=x86_64"
       "ro.enable.native.bridge.exec=1"
       "ro.dalvik.vm.native.bridge=libndk_translation.so"
