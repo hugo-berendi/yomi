@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Classify an existing mailbox the way the inbox-organizer workflow does.
+"""Classify an existing mailbox the way the retired inbox-organizer workflow did.
 
 The n8n side cannot do this. Its IMAP node is a *trigger* whose default search
 is ``["UNSEEN"]``; pointing it at ``["ALL"]`` would re-emit the whole mailbox on
@@ -46,10 +46,9 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 # {{{ Taxonomy
-# Deliberately the same buckets, rules and clamps as the Code node in
-# workflows/inbox-organizer.json. They are duplicated rather than shared
-# because n8n Code nodes cannot import anything -- if you change one, change
-# the other, and the digest and this report will disagree until you do.
+# The buckets, rules and clamps of the retired workflows/inbox-organizer.json
+# Code node (removed 2026-10-27 with the move to Proton; see git history). This
+# script is now their only copy.
 BUCKETS = {
     "personal": "a person wrote to you",
     "work": "employer, colleagues, work systems",

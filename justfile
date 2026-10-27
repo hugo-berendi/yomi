@@ -448,7 +448,7 @@ security-audit host=hostname services="":
   fi
 # }}}
 
-[doc("Classify the existing mailbox the way the inbox-organizer workflow does")]
+[doc("Classify the existing mailbox the way the retired inbox-organizer workflow did")]
 [group("nix")]
 n8n-backfill *args:
   #!/usr/bin/env bash

@@ -70,5 +70,5 @@ async function run(code, {input = [], state = {}, env = {}, http = async () => (
   await run(nodeCode('jellyseerr-tracker', 'Build push'), {input: [{json: {...newRequest, changes: [{id: '11', item: {requestStatus: 2, mediaStatus: 2}, text:'pending'}]}}], state});
   assert.ok(state.requests, 'state commits when there is no push');
 
-  for (const name of ['media-arrivals', 'forgejo-releases', 'inbox-organizer']) assert.equal(workflow(name).active, false, `${name} is disabled`);
+  for (const name of ['media-arrivals', 'forgejo-releases']) assert.equal(workflow(name).active, false, `${name} is disabled`);
 })().catch((error) => { console.error(error); process.exitCode = 1; });

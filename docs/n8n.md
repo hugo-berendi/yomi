@@ -195,7 +195,6 @@ What still differs per digest, and should:
 | Arrivals | `media-arrivals.json` | Cinema ticket: Georgia, rose marquee, poster art |
 | Build state | `forgejo-ci.json` | Blueprint: foam linework, revision log, title block |
 | Timetable sync | `webuntis-radicale.json` | Change ledger: `[ PUT ]` / `[ DEL ]` rows |
-| Your own post | `inbox-organizer.json` | Sorting office: iris bands, rubber stamps, torn stub |
 
 The palette object is copied into all six Code nodes because n8n Code nodes
 cannot import anything. Change one, change the rest.
@@ -310,7 +309,8 @@ Two guards exist now, because neither alone was enough:
 
 ## Workflows that call a model
 
-`inbox-organizer.json` classifies mail against the small llama.cpp defined in
+Mail classification (the retired `inbox-organizer` workflow, see git history, and
+`backfill.py`) uses the small llama.cpp defined in
 `hosts/nixos/inari/services/llama-cpp/classifier.nix`, reached through
 `CLASSIFIER_URL` in `services.n8n.environment`. If you add another
 model-using workflow, read that module's comment first: it records which

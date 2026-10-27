@@ -357,16 +357,12 @@ in {
     yomi.n8n.workflows.webuntis-radicale.source = ./workflows/webuntis-radicale.json;
     yomi.n8n.workflows.diabetes-weekly = {
       source = ./workflows/diabetes-weekly.json;
-      enforce = false; # Preserve the credential attached in the UI until exported.
+      enforce = true;
     };
     yomi.n8n.workflows.health-monitor.source = ./workflows/health-monitor.json;
     yomi.n8n.workflows.backup-storage.source = ./workflows/backup-storage.json;
     yomi.n8n.workflows.media-arrivals.source = ./workflows/media-arrivals.json;
     yomi.n8n.workflows.forgejo-ci.source = ./workflows/forgejo-ci.json;
-    # Retired with the move to Proton: its IMAP trigger watched the Migadu
-    # mailbox, which gets no mail since the MX moved. Kept registered with
-    # active = false so the import unpublishes it; drop both once it is gone.
-    yomi.n8n.workflows.inbox-organizer.source = ./workflows/inbox-organizer.json;
     yomi.n8n.workflows.immich-location-albums.source = ./workflows/immich-location-albums.json;
     yomi.n8n.workflows.immich-maintenance.source = ./workflows/immich-maintenance.json;
     yomi.n8n.workflows.immich-trip-albums.source = ./workflows/immich-trip-albums.json;

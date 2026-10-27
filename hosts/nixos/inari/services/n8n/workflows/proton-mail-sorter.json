@@ -1,5 +1,5 @@
 {
-  "active": false,
+  "active": true,
   "connections": {
     "Every ten minutes": {
       "main": [
@@ -73,8 +73,8 @@
     {
       "credentials": {
         "httpHeaderAuth": {
-          "id": "CONFIGURE_PROTON_SORTER_ACCESS",
-          "name": "Proton sorter - Authorization"
+          "id": "iYhHbzHUNDSLJ6H1",
+          "name": "Proton Mail Sorter"
         }
       },
       "id": "fcfb1a83-5b80-4ad0-ae16-0f9f126309bd",
@@ -89,8 +89,8 @@
         "url": "={{ $env.PROTON_SORTER_URL + \"/api/tick\" }}"
       },
       "position": [
-        300,
-        100
+        304,
+        112
       ],
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2
@@ -102,14 +102,15 @@
         "jsCode": "// Responses contain counters and run IDs only, never mail content or credentials.\nconst result = $input.first().json;\nif (result.previous && result.previous.status === 'failed') {\n  throw new Error('Previous Proton sorter job failed. Check the private worker logs and /api/status; completed changes remain applied.');\n}\nreturn [{json: result}];"
       },
       "position": [
-        600,
-        100
+        624,
+        224
       ],
       "type": "n8n-nodes-base.code",
       "typeVersion": 2
     }
   ],
   "settings": {
+    "binaryMode": "separate",
     "errorWorkflow": "AutomationFail26",
     "executionOrder": "v1",
     "saveDataErrorExecution": "none",

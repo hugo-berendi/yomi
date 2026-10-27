@@ -1,5 +1,5 @@
 {
-  "active": false,
+  "active": true,
   "connections": {
     "Manual review": {
       "main": [
@@ -62,7 +62,7 @@
     {
       "credentials": {
         "httpHeaderAuth": {
-          "id": "CONFIGURE_DIABETES_ACCESS",
+          "id": "MqsWhXFyRKlwIbi0",
           "name": "Diabetes service \u00b7 Authorization"
         }
       },
