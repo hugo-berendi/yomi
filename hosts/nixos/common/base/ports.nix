@@ -42,10 +42,6 @@
     llama-cpp = lib.mkDefault 8491;
     llama-cpp-classifier = lib.mkDefault 8496;
     changedetection = lib.mkDefault 8492;
-    # adb into the redroid container, published on loopback only.
-    redroid-adb = lib.mkDefault 8509;
-    # Browser remote for the redroid screen; only up while logging in by hand.
-    immortal-rising-view = lib.mkDefault 8510;
     paperless = lib.mkDefault 8445;
     paperless-ai = lib.mkDefault 8446;
     paperless-ai-rag = lib.mkDefault 8447;

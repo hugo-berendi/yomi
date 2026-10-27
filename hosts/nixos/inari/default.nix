@@ -62,7 +62,6 @@
       ./services/alloy.nix
       ./services/playit.nix
       ./services/windrose.nix
-      ./services/immortal-rising
       ./services/pelican
       ./services/nextcloud.nix
       ./services/stirling-pdf.nix
