@@ -5,6 +5,12 @@ imports on every service start (`yomi.n8n.workflows.<name>`). Read that file
 first — it has the up-to-date mechanics. This is the "how do I add or change
 one of these" guide the module comment doesn't have room for.
 
+Not every workflow is in that directory. `proton-mail-sorter` and
+`proton-mark-read` are registered from
+`hosts/nixos/inari/services/proton-mail-sorter/default.nix` (their JSON still
+lives in `services/n8n/workflows/`). Run
+`grep -rn "yomi.n8n.workflows" hosts modules` to see every registration.
+
 ## The model
 
 - n8n keeps workflows in its own sqlite database. The JSON in `services/n8n/workflows/`
@@ -37,10 +43,11 @@ one of these" guide the module comment doesn't have room for.
 
 ## Credentials never live in git
 
-Credentials (SMTP, HTTP basic auth, …) stay in n8n's own encrypted store, not
-in these JSON files or in sops — this repo is mirrored to a public forge. A
-workflow JSON only carries a `credentials` block with an `id` + `name`
-reference, e.g.:
+Node credentials (SMTP, HTTP basic auth, …) stay in n8n's own encrypted store,
+not in these JSON files — this repo is mirrored to a public forge. The service
+API keys are the exception: they reach the unit's environment from sops, see
+"Code nodes have no `process`" below. A workflow JSON only carries a
+`credentials` block with an `id` + `name` reference, e.g.:
 
 ```json
 "credentials": { "smtp": { "id": "<n8n's real id>", "name": "Migadu (no-reply)" } }
@@ -135,10 +142,10 @@ so n8n does not get all twenty.
 The rule that follows:
 
 - **Mail is for scheduled digests**, at most one per workflow per day.
-  Today that is health-monitor, inbox-organizer, paperless reminders and
-  the 05:10 webuntis ledger daily, plus backup-storage, forgejo-ci,
-  immich-maintenance and media-arrivals weekly: four a day, seven on a
-  Monday.
+  Today that is health-monitor, paperless reminders and the 05:10 webuntis
+  ledger daily, plus backup-storage, forgejo-ci and immich-maintenance
+  weekly: three a day, six on a Monday. `inbox-organizer` is retired and
+  `media-arrivals` is inactive, so neither counts.
 - **Events go to the alert spine** (`$env.ALERT_WEBHOOK_URL`, see
   `alert-router.json`), which pushes to ntfy and suppresses repeats. A
   workflow that polls every few minutes and mails "on change" is a mail per
@@ -192,7 +199,7 @@ What still differs per digest, and should:
 |------|----------|-------|
 | Ops / alarm | `health-monitor.json` | Console: monospace rows, iris headings, gauges |
 | Ops / ledger | `backup-storage.json` | Gold headings, backup sets as cards, capacity bars |
-| Arrivals | `media-arrivals.json` | Cinema ticket: Georgia, rose marquee, poster art |
+| Arrivals (inactive) | `media-arrivals.json` | Cinema ticket: Georgia, rose marquee, poster art |
 | Build state | `forgejo-ci.json` | Blueprint: foam linework, revision log, title block |
 | Timetable sync | `webuntis-radicale.json` | Change ledger: `[ PUT ]` / `[ DEL ]` rows |
 
@@ -261,10 +268,14 @@ with **`access to env vars denied`**. `n8n/default.nix` sets
 rather than `toString`, because `toString false` is `""` in Nix, which leaves
 access blocked while looking like it was turned off.
 
-That flag hands every Code node the unit's whole environment, secrets
-included. It is what these workflows need and what they had under
-`process.env`, but a Code node added through the web ui can read every
-secret the unit holds.
+That flag hands every Code node the unit's whole environment. The unit loads
+two sops-backed `EnvironmentFile`s (`n8n_webuntis_env` and the
+`n8n-services.env` template in `n8n/default.nix`), so that environment holds
+the WebUntis credentials, the ntfy token and the API keys for Immich,
+Paperless, Mealie, Home Assistant, Jellyseerr and the `*arr` services. Every
+Code node can read all of them through `$env`, including a Code node created
+in the web editor. Editor access to n8n therefore equals access to those keys.
+Anyone who can edit workflows should be treated as holding them.
 
 The absence is specific, not general. `getNativeVariables()` in the runner
 injects `Buffer`, `setTimeout`/`setInterval`/`setImmediate` and their

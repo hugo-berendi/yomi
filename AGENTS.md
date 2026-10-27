@@ -79,7 +79,7 @@ Things found this way that source-reading missed: an sshd that still accepted pa
 
 Forgejo Actions (`.forgejo/workflows/`):
 - `check-nixos-flake.yml`: push/PR — `just lint`, `just check`, builds amaterasu + inari + tsukuyomi + wsl-work
-- `update-flake-inputs.yml`: daily cron — `nix flake update`, builds hosts, auto-commits to main if checks pass
+- `update-flake-inputs.yml`: Monday and Thursday 04:00 cron — `nix flake update`, builds hosts, auto-commits to main if checks pass
 - `update-packages.yml`: weekly — `nix-update` for the `pkgs/` derivations
 
 `nix flake check` covers amaterasu, inari, iso, tsukuyomi and wsl-work, and evaluates **every** package output — so a broken `pkgs/` derivation fails CI even if no host uses it.

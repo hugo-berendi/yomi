@@ -278,9 +278,10 @@ The old shared login key (SHA256:mYs7VNSw…) may leave only when:
 
 Then remove it from:
 
-- `hosts/nixos/amaterasu/keys/id_ed25519.pub`, `hosts/nixos/tsukuyomi/keys/id_ed25519.pub`
-  and `hosts/nixos/inari/services/guacamole/ed25519.pub`. The guacamole
-  user-mapping does not contain the private key: its secret decrypts to 393
+- `hosts/nixos/amaterasu/keys/id_ed25519.pub`. The tsukuyomi copy and the
+  guacamole `ed25519.pub` were already removed from the repository, so there
+  is nothing to delete there. The guacamole user-mapping does not contain the
+  private key: its secret decrypts to 393
   bytes, and the private key alone is 464.
 - The `~/.ssh/id_ed25519` fallbacks in `yomi.pilot.sshIdentity` (`home/amaterasu.nix`,
   `home/inari.nix`) and the key files under `~/.ssh` on both hosts.

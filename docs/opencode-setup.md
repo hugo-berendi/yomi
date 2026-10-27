@@ -27,9 +27,9 @@ MCP servers use sops-nix for secret management. Add the following secrets to `ho
 
 #### Adding SEARXNG_URL Secret
 
-Edit `home/features/cli/secrets.yaml`:
+Edit `home/features/cli/ai/secrets.yaml`:
 ```bash
-sops home/features/cli/secrets.yaml
+sops home/features/cli/ai/secrets.yaml
 ```
 
 Add:
@@ -41,9 +41,9 @@ The secret will be automatically enabled if present in secrets.yaml.
 
 #### Adding EXA_API_KEY Secret
 
-Edit `home/features/cli/secrets.yaml`:
+Edit `home/features/cli/ai/secrets.yaml`:
 ```bash
-sops home/features/cli/secrets.yaml
+sops home/features/cli/ai/secrets.yaml
 ```
 
 Add:
@@ -67,11 +67,11 @@ The MCP servers will automatically be available in your OpenCode session.
 
 - MCP config: `~/.config/opencode/mcp-servers.json` (managed by Home Manager)
 - OpenCode data: `~/.local/share/opencode` (persisted via impermanence)
-- Secrets: `home/features/cli/secrets.yaml` (encrypted with sops)
+- Secrets: `home/features/cli/ai/secrets.yaml` (encrypted with sops)
 
 ## Customizing MCP Servers
 
-Edit `home/features/cli/opencode.nix` to:
+Edit `home/features/cli/ai/mcp.nix` to:
 - Add new MCP servers
 - Modify existing server configurations
 - Change filesystem paths or postgres connection strings
