@@ -275,7 +275,18 @@ def download_export(credentials, root=None, allow_login=False, code_prompt=None)
     from playwright.sync_api import sync_playwright
 
     state = None
+    browser_environment = None
     if root is not None:
+        root = Path(root).resolve()
+        # sudo may retain the operator's XDG paths, which the service user
+        # cannot access. Chromium's crash handler then exits before any login.
+        browser_environment = os.environ | {
+            "HOME": str(root),
+            "XDG_CONFIG_HOME": str(root / "browser-config"),
+            "XDG_CACHE_HOME": str(root / "browser-cache"),
+            "XDG_DATA_HOME": str(root / "browser-data"),
+            "XDG_STATE_HOME": str(root / "browser-state"),
+        }
         try:
             state = load_browser_state(root)
         except AuthenticationRequired:
@@ -286,6 +297,7 @@ def download_export(credentials, root=None, allow_login=False, code_prompt=None)
             executable_path=os.environ.get("GLOOKO_CHROMIUM"),
             headless=True,
             chromium_sandbox=True,
+            env=browser_environment,
         )
         try:
             context = browser.new_context(
@@ -364,7 +376,10 @@ def sync(
                     else download_export(
                         credentials,
                         root=root,
-                        allow_login=interactive,
+                        # Ordinary session expiry may use the saved login once.
+                        # MFA still requires code_prompt; a challenge pauses later
+                        # attempts above until the human completes local login.
+                        allow_login=True,
                         code_prompt=code_prompt,
                     )
                 )

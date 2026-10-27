@@ -127,7 +127,9 @@ def run_case(
                 original_wait_for = Locator.wait_for
 
                 def short_wait(locator, **kwargs):
-                    kwargs["timeout"] = min(kwargs.get("timeout", 100), 100)
+                    # The rejection stays fast without racing the first browser
+                    # IPC round-trip when Nix checks run concurrently.
+                    kwargs["timeout"] = min(kwargs.get("timeout", 1000), 1000)
                     return original_wait_for(locator, **kwargs)
 
                 with patch.object(Locator, "wait_for", short_wait):

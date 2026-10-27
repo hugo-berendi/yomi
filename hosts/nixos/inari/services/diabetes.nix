@@ -18,6 +18,8 @@
       export HOME=/var/lib/diabetes
       export MPLCONFIGDIR=/var/lib/diabetes/matplotlib
       export GLOOKO_CHROMIUM=${pkgs.chromium}/bin/chromium
+      # The operator's home can be inaccessible after sudo changes the user.
+      cd "$STATE_DIRECTORY"
       exec ${python}/bin/python ${source}/app.py auth-glooko
     '';
   };
