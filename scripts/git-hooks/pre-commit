@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Refuses dotenv files and secrets in the staged tree. Enabled with `just install-hooks`.
+# Why: a value committed here reaches the public forge mirror and survives a history
+# rewrite, so the check has to run before the commit exists, not in CI afterwards.
+set -euo pipefail
+
+fail=0
+while IFS= read -r -d '' path; do
+	base=${path##*/}
+	case "$base" in
+	*.example) ;;
+	.env | *.env)
+		echo "pre-commit: refusing to commit dotenv file: $path" >&2
+		fail=1
+		;;
+	esac
+done < <(git diff --cached --name-only --diff-filter=ACMR -z)
+if ((fail)); then
+	exit 1
+fi
+
+# Fail closed: a commit without a secret scan is worse than a blocked commit.
+if command -v gitleaks >/dev/null 2>&1; then
+	gitleaks=(gitleaks)
+elif command -v nix >/dev/null 2>&1; then
+	gitleaks=(nix run nixpkgs#gitleaks --)
+else
+	echo "pre-commit: neither gitleaks nor nix found; refusing to commit unscanned" >&2
+	exit 1
+fi
+
+exec "${gitleaks[@]}" git --staged --no-banner --redact

@@ -12,6 +12,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: https://data.forgejo.org/actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Scan for secrets
+        # Only the pushed tip. Older history still holds the retired Authentik
+        # .env (S-02), whose dead values would fail every run.
+        run: nix run nixpkgs#gitleaks -- git --no-banner --redact --log-opts=-1
       - name: Check formatting
         run: just lint
       - name: Test the update PR pipeline (publish, gate, LLM review)

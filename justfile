@@ -153,6 +153,11 @@ shell-check:
 [group("ci")]
 lint: format-check format-lua-check statix-check deadnix-check python-check shell-check
 
+[doc("Enable the tracked git hooks in scripts/git-hooks (dotenv and secret guard)")]
+[group("ci")]
+install-hooks:
+  git config core.hooksPath scripts/git-hooks
+
 [doc("Run synthetic diabetes importer, report and authentication tests")]
 [group("ci")]
 diabetes-test:
