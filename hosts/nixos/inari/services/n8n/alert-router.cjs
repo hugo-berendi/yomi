@@ -4,7 +4,11 @@ const fs = require('node:fs/promises');
 const http = require('node:http');
 const path = require('node:path');
 
-const DAY = 24 * 60 * 60 * 1000;
+const HOUR = 60 * 60 * 1000;
+const DAY = 24 * HOUR;
+// After this many failed publishes in a row an entry waits an hour between
+// attempts, so one message ntfy keeps rejecting does not retry every minute.
+const MAX_ATTEMPTS = 5;
 const SPEC = {
   critical: {priority: 5, tag: 'rotating_light', rank: 2},
   warning: {priority: 4, tag: 'warning', rank: 1},
@@ -76,7 +80,13 @@ function createRouter({statePath, env = process.env, httpRequest = defaultPublis
       };
     }
 
+    // Persist receipts before publishing anything: a failed publish must not
+    // lose the alerts that arrived with this call.
+    await save(alerts);
+    state.alerts = alerts;
+
     let sent = 0;
+    let failed = 0;
     for (const [fingerprint, entry] of Object.entries(alerts)) {
       if (!entry.alert) {
         if (timestamp - (entry.lastSent ?? 0) > 7 * DAY) delete alerts[fingerprint];
@@ -89,28 +99,42 @@ function createRouter({statePath, env = process.env, httpRequest = defaultPublis
         continue;
       }
       if (quiet && (alert.resolved || alert.severity !== 'critical')) continue;
+      if (entry.retryAt && timestamp < entry.retryAt) continue;
       const spec = SPEC[alert.severity];
       const prefix = alert.resolved ? '[OK]' : {critical: '[CRIT]', warning: '[WARN]', info: '[INFO]'}[alert.severity];
       const reminder = entry.lastSent && !entry.pending ? 'Still unresolved.\n\n' : '';
-      const response = await httpRequest({
-        method: 'POST', url: env.NTFY_URL,
-        headers: {Authorization: `Bearer ${env.NTFY_TOKEN}`},
-        body: {topic: env.NTFY_TOPIC,
-          title: `${prefix} ${alert.source} · ${alert.title}`,
-          message: reminder + (alert.message || alert.title),
-          priority: alert.resolved ? 3 : spec.priority,
-          tags: alert.resolved ? ['white_check_mark'] : [spec.tag, ...alert.tags],
-          ...(alert.url ? {click: alert.url} : {})},
-        json: true, timeout: 15000,
-      });
-      if (response?.status >= 400 || response?.ok === false) throw new Error('Publish failed');
+      try {
+        const response = await httpRequest({
+          method: 'POST', url: env.NTFY_URL,
+          headers: {Authorization: `Bearer ${env.NTFY_TOKEN}`},
+          body: {topic: env.NTFY_TOPIC,
+            title: `${prefix} ${alert.source} · ${alert.title}`,
+            message: reminder + (alert.message || alert.title),
+            priority: alert.resolved ? 3 : spec.priority,
+            tags: alert.resolved ? ['white_check_mark'] : [spec.tag, ...alert.tags],
+            ...(alert.url ? {click: alert.url} : {})},
+          json: true, timeout: 15000,
+        });
+        if (response?.status >= 400 || response?.ok === false) throw new Error(`Publish failed with status ${response.status}`);
+      } catch (error) {
+        // One entry ntfy rejects must not hold back the others behind it.
+        failed += 1;
+        entry.failures = (entry.failures ?? 0) + 1;
+        if (entry.failures >= MAX_ATTEMPTS) entry.retryAt = timestamp + HOUR;
+        console.error(`alert-router: publishing ${JSON.stringify(fingerprint)} failed (attempt ${entry.failures}${entry.retryAt ? ', deferred one hour' : ''}): ${error?.message ?? error}`);
+        continue;
+      }
       sent += 1;
       if (alert.resolved) delete alerts[fingerprint];
-      else { entry.lastSent = timestamp; entry.pending = false; }
+      else {
+        entry.lastSent = timestamp;
+        entry.pending = false;
+        delete entry.failures;
+        delete entry.retryAt;
+      }
     }
     await save(alerts);
-    state.alerts = alerts;
-    return {sent, queued: Object.values(alerts).filter((entry) => entry.pending).length};
+    return {sent, failed, queued: Object.values(alerts).filter((entry) => entry.pending).length};
   }
 
   function submit(alertArray) {
@@ -154,12 +178,13 @@ function startServer() {
       const alerts = Array.isArray(parsed) ? parsed : [parsed];
       const result = await router.submit(alerts);
       response.writeHead(200, {'content-type': 'application/json'}).end(JSON.stringify(result));
-    } catch {
+    } catch (error) {
+      console.error(`alert-router: request failed: ${error?.message ?? error}`);
       response.writeHead(503, {'content-type': 'application/json'}).end('{"error":"alert routing failed"}');
     }
   });
   server.listen(port, '127.0.0.1');
-  const drain = setInterval(() => router.submit([]).catch(() => {}), 60_000);
+  const drain = setInterval(() => router.submit([]).catch((error) => console.error(`alert-router: drain failed: ${error?.message ?? error}`)), 60_000);
   drain.unref();
   return {server, drain};
 }

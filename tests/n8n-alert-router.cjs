@@ -69,7 +69,7 @@ async function setup(now, options = {}) {
   assert.equal((await ctx.router.submit([])).sent, 0, 'one-off events never get reminders');
 
   ctx = await setup('2026-01-05T10:00:00Z', {fail:true});
-  await assert.rejects(ctx.router.submit([alert()]), /publish failed/);
+  assert.deepEqual(await ctx.router.submit([alert()]), {sent:0, failed:1, queued:1}, 'failed publish is reported, not thrown');
   ctx.router = createRouter({statePath:ctx.statePath,env:{NTFY_TOPIC:'test',NTFY_URL:'http://ntfy',NTFY_TOKEN:'fixture'},now:instant('2026-01-05T10:05:00Z'),httpRequest:async req=>{ctx.sent.push(req.body);return {};}});
   assert.equal((await ctx.router.submit([alert()])).sent, 1, 'failed publish does not suppress retry');
 
@@ -90,6 +90,39 @@ async function setup(now, options = {}) {
   assert.equal(beforeRestart.alerts.backup.pending, true, 'quiet-hour pending item is persisted across restart');
   ctx.router = createRouter({statePath:ctx.statePath,env:{NTFY_TOPIC:'test',NTFY_URL:'http://ntfy',NTFY_TOKEN:'fixture'},now:instant('2026-01-06T06:00:00Z'),httpRequest:async req=>{ctx.sent.push(req.body);return {};}});
   assert.equal((await ctx.router.submit([])).sent, 1, 'restarted router drains persisted morning item');
+
+  // A receipt is on disk before ntfy is asked: if the publish (or the whole
+  // process) dies, the alert is still there for the next drain.
+  ctx = await setup('2026-01-05T10:00:00Z');
+  ctx.router = createRouter({statePath:ctx.statePath,env:{NTFY_TOPIC:'test',NTFY_URL:'http://ntfy',NTFY_TOKEN:'fixture'},now:instant('2026-01-05T10:00:00Z'),httpRequest:async () => {
+    const onDisk = JSON.parse(await fs.readFile(ctx.statePath, 'utf8'));
+    assert.equal(onDisk.alerts.backup?.pending, true, 'alert persisted before publish');
+    throw new Error('ntfy down');
+  }});
+  await ctx.router.submit([alert()]);
+  ctx.router = createRouter({statePath:ctx.statePath,env:{NTFY_TOPIC:'test',NTFY_URL:'http://ntfy',NTFY_TOKEN:'fixture'},now:instant('2026-01-05T10:01:00Z'),httpRequest:async req=>{ctx.sent.push(req.body);return {};}});
+  assert.equal((await ctx.router.submit([])).sent, 1, 'alert that failed to publish survives a restart');
+
+  // One entry ntfy keeps rejecting does not hold back the others, and is
+  // deferred after repeated failures instead of retried every minute.
+  ctx = await setup('2026-01-05T10:00:00Z');
+  const attempts = {poison: 0, good: 0};
+  const rejecting = (iso) => createRouter({statePath:ctx.statePath,env:{NTFY_TOPIC:'test',NTFY_URL:'http://ntfy',NTFY_TOKEN:'fixture'},now:instant(iso),httpRequest:async req=>{
+    const key = req.body.title.includes('Poison') ? 'poison' : 'good';
+    attempts[key] += 1;
+    return key === 'poison' ? {status: 400} : {status: 200};
+  }});
+  ctx.router = rejecting('2026-01-05T10:00:00Z');
+  const mixed = await ctx.router.submit([alert({fingerprint:'poison',title:'Poison'}), alert({fingerprint:'good',title:'Good'})]);
+  assert.deepEqual([mixed.sent, mixed.failed], [1, 1], 'rejected entry does not block the next one');
+  for (let minute = 1; minute < 5; minute++) await ctx.router.submit([]);
+  assert.equal(attempts.poison, 5, 'retried until the attempt limit');
+  await ctx.router.submit([]);
+  assert.equal(attempts.poison, 5, 'deferred after the attempt limit');
+  ctx.router = rejecting('2026-01-05T11:01:00Z');
+  await ctx.router.submit([]);
+  assert.equal(attempts.poison, 6, 'retried again after the deferral');
+  assert.equal(attempts.good, 1, 'delivered entry is not repeated');
 
   console.log('alert router: durable serialized policy, DST, reminders, escalation, recovery and retries passed');
 })().catch(error => {console.error(error); process.exitCode = 1;});
