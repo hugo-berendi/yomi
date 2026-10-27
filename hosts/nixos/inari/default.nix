@@ -91,6 +91,8 @@
   # Keep systemd-oomd out of the memory-reclaim path while diagnosing the
   # recurring corruption. EFI-pstore later showed that oomd was merely the
   # current task in some crashes, not their common cause.
+  # Remove once the recurring corruption is resolved, and re-test after the
+  # hardware migration (docs/inari-migration.md), which may remove its cause.
   systemd.oomd.enable = lib.mkForce false;
 
   # The configured root dataset is rolled back to @blank on every boot. Ensure the

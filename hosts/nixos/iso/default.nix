@@ -49,6 +49,7 @@
   # }}}
 
   # {{{ Testing AMD SRSO mitigation workaround (srso_alias_safe_ret panic on AZW EQ/EQ)
+  # Remove once the srso_alias_safe_ret panic stops reproducing on the AZW EQ/EQ without these parameters.
   hardware.cpu.amd.updateMicrocode = true;
   specialisation.beelink-rescue.configuration = {
     system.nixos.tags = ["beelink-rescue"];

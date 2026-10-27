@@ -15,6 +15,7 @@
       trim = {
         # Temporarily disabled while investigating kernel panics observed during
         # ZFS I/O. Re-enable after the system is stable without rescue settings.
+        # Remove this override once a manual `zpool trim zroot` completes without a panic.
         enable = false;
       };
       autoScrub = {
