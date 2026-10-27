@@ -39,4 +39,7 @@ in
     tag = "13.0.0";
     fromImage = base;
     copyToRoot = layer;
+    # buildImage drops the base image's config, and without this entrypoint
+    # Docker would try to execute the first boot argument as a program.
+    config.Entrypoint = ["/init" "qemu=1" "androidboot.hardware=redroid"];
   }
