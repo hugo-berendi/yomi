@@ -206,6 +206,14 @@ in {
       OnUnitActiveSec = "2min";
     };
   };
+  # The module only creates config/ and data/ under datadir. A datadir left
+  # behind by ocis (owned by its deleted uid) makes tmpfiles refuse to touch
+  # them as an "unsafe path transition", so own the directory itself.
+  systemd.tmpfiles.settings."10-nextcloud-datadir".${cfg.datadir}.d = {
+    mode = "0750";
+    user = "nextcloud";
+    group = "nextcloud";
+  };
   # }}}
   # {{{ storage
   environment.persistence."/persist/state".directories = [
