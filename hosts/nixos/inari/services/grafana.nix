@@ -323,7 +323,7 @@ in {
                   execErrState = "Alerting";
                   for = "15m";
                   labels.severity = "warning";
-                  annotations.summary = "The latest {{ $labels.backup }} snapshot on {{ $labels.host }} covers less than half the bytes of the largest one this week. Check that its paths were mounted.";
+                  annotations.summary = "The latest {{ $labels.backup }} snapshot on {{ $labels.host }} covers less than half the bytes of its largest in eight days. Check that its paths were mounted.";
                 }
                 {
                   uid = "inari-target-down";

@@ -14,7 +14,9 @@ concurrency:
 jobs:
   update:
     runs-on: native
-    timeout-minutes: 180
+    # 180 for the updates and just check as before, plus up to 30 for the
+    # local model and the PR round trip.
+    timeout-minutes: 240
     permissions:
       contents: write
       pull-requests: write
@@ -36,6 +38,10 @@ jobs:
           cp scripts/ci/update-gate.py scripts/ci/update-llm-review.py scripts/ci/update-package-pr.py "$dir/"
           echo "dir=$dir" >> "$GITHUB_OUTPUT"
           echo "sums=$(cd "$dir" && sha256sum ./*.py | sha256sum | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          # Read the model's port from the registry now, while the lock is
+          # still main's: evaluating after the update would run new inputs.
+          port=$(nix eval --accept-flake-config --raw .#nixosConfigurations.inari.config.yomi.ports.llama-cpp --apply toString)
+          echo "llm=http://127.0.0.1:$port/v1/chat/completions" >> "$GITHUB_OUTPUT"
 
       - name: Update GitHub-release packages with nix-update
         run: |
@@ -146,7 +152,7 @@ jobs:
           DIR: ${{ steps.trusted.outputs.dir }}
         run: |
           git diff "${{ steps.commit.outputs.base }}" HEAD -- pkgs/ hosts/ > "$DIR/diff.txt"
-          if python3 "$DIR/update-llm-review.py" --diff "$DIR/diff.txt" > "$DIR/review.json"; then
+          if python3 "$DIR/update-llm-review.py" --diff "$DIR/diff.txt" --url "${{ steps.trusted.outputs.llm }}" > "$DIR/review.json"; then
             echo "safe=true" >> "$GITHUB_OUTPUT"
           else
             echo "safe=false" >> "$GITHUB_OUTPUT"
