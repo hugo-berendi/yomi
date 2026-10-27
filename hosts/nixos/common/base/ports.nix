@@ -35,7 +35,8 @@
     navidrome = lib.mkDefault 8439;
     ntfy = lib.mkDefault 8441;
     opencode = lib.mkDefault 8487;
-    owncloud = lib.mkDefault 8444;
+    nextcloud = lib.mkDefault 8444;
+    collabora = lib.mkDefault 9980;
     windrose-direct = lib.mkDefault 8489;
     windrose-rcon = lib.mkDefault 8490;
     llama-cpp = lib.mkDefault 8491;

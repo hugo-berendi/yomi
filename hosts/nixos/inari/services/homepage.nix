@@ -217,8 +217,8 @@ in {
             };
           }
           {
-            Owncloud = {
-              icon = "owncloud.svg";
+            Nextcloud = {
+              icon = "nextcloud.svg";
               href = "https://cloud.hugo-berendi.de";
               description = "Cloud storage";
             };

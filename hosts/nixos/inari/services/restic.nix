@@ -20,15 +20,15 @@
 
       # Roughly 96 GiB as of 2026-09. Everything else on raid5pool is
       # reacquirable: media/movies, media/tv and the 222 GiB of media/comics
-      # can all be fetched again, and /raid5pool/cloud holds 1.7 MiB because
-      # owncloud is effectively unused.
+      # can all be fetched again.
       paths = [
         "/raid5pool/media/photos" # immich library, 83 GiB, the whole point
         "/raid5pool/media/documents" # paperless documents
         "/raid5pool/data" # paperless index, navidrome
+        "/raid5pool/cloud" # nextcloud files (database is in the postgres dump below)
         "/persist/data" # calendars, contacts, game server worlds
 
-        # Immich's albums and users live in PostgreSQL. Paperless uses SQLite,
+        # Immich and Nextcloud keep albums, users and file metadata in PostgreSQL. Paperless uses SQLite,
         # covered by the app-state staging job alongside other critical state.
         # postgresqlBackup must complete before this unit may start.
         "/persist/state/var/backup/postgresql"

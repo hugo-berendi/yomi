@@ -63,7 +63,7 @@
       ./services/playit.nix
       ./services/windrose.nix
       ./services/pelican
-      ./services/owncloud.nix
+      ./services/nextcloud.nix
       ./services/stirling-pdf.nix
       ./services/vrising.nix
       ./services/octodns-ddns.nix

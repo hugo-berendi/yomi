@@ -134,7 +134,7 @@ do not force a whole preset over an upstream module. Lists still concatenate.
 
 Check the real unit name first. Defining `systemd.services.<name>` creates the name,
 so a typo can create an empty service. There is no `karakeep.service` or
-`owncloud.service`; inspect the evaluated configuration and generated units.
+`nextcloud.service`; inspect the evaluated configuration and generated units.
 
 `just hardening-report <host>` reports evaluated settings and definition sources
 without changing services. `--json` saves a baseline; `--baseline FILE` compares

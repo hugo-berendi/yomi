@@ -46,7 +46,7 @@ in {
     monitor.enable = true;
     monitor.name =
       {
-        cloud = "owncloud";
+        cloud = "nextcloud";
         media = "jellyfin";
         request-media = "jellyseerr";
         search = "searxng";
