@@ -276,6 +276,31 @@ in {
     };
   };
 
+  # Upstream sets no sandboxing for coolwsd, and it is public (office.*).
+  # It jails documents with unprivileged user and mount namespaces
+  # (mount_namespaces = true, upstream's default), not setcap'd helpers, so
+  # namespaces stay allowed: no RestrictNamespaces, no PrivateUsers. Its only
+  # writable state is StateDirectory /var/lib/cool. Not added, because each
+  # can break the kit processes: MemoryDenyWriteExecute (LibreOffice
+  # generates code), PrivateDevices and ProtectProc (the jails bind /dev and
+  # read /proc of their children). Unverified at runtime until the next switch.
+  systemd.services.coolwsd.serviceConfig = {
+    NoNewPrivileges = true;
+    ProtectSystem = "strict";
+    ProtectHome = true;
+    PrivateTmp = true;
+    ProtectKernelTunables = true;
+    ProtectKernelModules = true;
+    ProtectKernelLogs = true;
+    ProtectControlGroups = true;
+    ProtectClock = true;
+    RestrictRealtime = true;
+    RestrictSUIDSGID = true;
+    LockPersonality = true;
+    SystemCallArchitectures = "native";
+    RestrictAddressFamilies = ["AF_UNIX" "AF_INET" "AF_INET6" "AF_NETLINK"];
+  };
+
   systemd.services.nextcloud-richdocuments-config = {
     description = "Point Nextcloud Office at Collabora";
     after = ["nextcloud-setup.service" "coolwsd.service"];
