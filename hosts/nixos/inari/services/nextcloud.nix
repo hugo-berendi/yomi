@@ -204,6 +204,25 @@ in {
     };
   };
   # }}}
+  # {{{ bundled apps
+  # Photos ships enabled with Nextcloud. Immich owns the photo library, so the
+  # app would only duplicate it (and generate previews nobody looks at).
+  systemd.services.nextcloud-disable-apps = {
+    description = "Disable bundled Nextcloud apps that Immich replaces";
+    after = ["nextcloud-setup.service"];
+    requires = ["nextcloud-setup.service"];
+    wantedBy = ["multi-user.target"];
+    path = [cfg.occ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      User = "nextcloud";
+    };
+    script = ''
+      nextcloud-occ app:disable photos
+    '';
+  };
+  # }}}
   # {{{ theme
   # Mirrors the stylix palette the other services use (immich, forgejo). The
   # theming app takes the accent and login background; the dark surfaces need
