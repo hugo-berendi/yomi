@@ -151,10 +151,11 @@ in {
   # because Android writes continuously and the NVMe is near its endurance
   # rating. Losing it costs only the Facebook login; the account is online.
   #
-  # The image is a tag, not a digest, until a run has confirmed that the
-  # bundled libndk_translation plays the arm64-only game.
+  # The image is the stock redroid 13 plus houdini (see image.nix). The game is
+  # arm64-only, and the stock libndk_translation crashes its Unity runtime.
   virtualisation.oci-containers.containers.redroid = {
-    image = "redroid/redroid:13.0.0-latest";
+    image = "redroid-houdini:13.0.0";
+    imageFile = import ./image.nix {inherit pkgs;};
     autoStart = true;
     # Loopback only: an open adb port is a root shell on the container.
     ports = ["127.0.0.1:${toString adbPort}:5555"];
@@ -175,7 +176,8 @@ in {
       "ro.dalvik.vm.isa.arm=x86"
       "ro.dalvik.vm.isa.arm64=x86_64"
       "ro.enable.native.bridge.exec=1"
-      "ro.dalvik.vm.native.bridge=libndk_translation.so"
+      "ro.enable.native.bridge.exec64=1"
+      "ro.dalvik.vm.native.bridge=libhoudini.so"
     ];
     log-driver = "journald";
     # redroid needs --privileged for binder and its own mounts.
