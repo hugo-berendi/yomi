@@ -84,6 +84,58 @@
         ];
       }
       {
+        name = "A snapshot that covers far less than last week alerts; a new set does not";
+        interval = "1h";
+        input_series = [
+          {
+            series = ''yomi_restic_last_snapshot_bytes{host="inari",backup="data"}'';
+            values = "1000x30 400x5";
+          }
+          {
+            series = ''yomi_restic_last_snapshot_bytes{host="inari",backup="state"}'';
+            values = "_x30 1000x5";
+          }
+          {
+            series = ''yomi_restic_last_snapshot_bytes{host="amaterasu",backup="data"}'';
+            values = "1000x30 600x5";
+          }
+        ];
+        promql_expr_test = [
+          {
+            expr = query "backup-shrunk";
+            eval_time = "29h";
+            exp_samples = [
+              {
+                labels = ''{host="inari",backup="data"}'';
+                value = 0;
+              }
+              {
+                labels = ''{host="amaterasu",backup="data"}'';
+                value = 0;
+              }
+            ];
+          }
+          {
+            expr = query "backup-shrunk";
+            eval_time = "33h";
+            exp_samples = [
+              {
+                labels = ''{host="inari",backup="data"}'';
+                value = 1;
+              }
+              {
+                labels = ''{host="inari",backup="state"}'';
+                value = 0;
+              }
+              {
+                labels = ''{host="amaterasu",backup="data"}'';
+                value = 0;
+              }
+            ];
+          }
+        ];
+      }
+      {
         name = "An offline laptop gets seven days, then alerts";
         interval = "1h";
         input_series = [

@@ -193,6 +193,28 @@ in {
       # Keep the previous timestamp on failure, including across a reboot.
       systemd.services = lib.genAttrs (map (name: "restic-backups-${name}") backupNames) (unit: let
         name = lib.removePrefix "restic-backups-" unit;
+        set = config.services.restic.backups.${name};
+        labels = ''host="${config.networking.hostName}",backup="${name}"'';
+        # A run that succeeds while backing up an empty mount point stays
+        # "fresh" forever. The snapshot's own summary (restic >= 0.17) says
+        # how much it covered; Grafana compares that against the last week.
+        sizeMetrics = lib.optionalString (set.paths != [] || set.dynamicFilesFrom != null) ''
+          # Best effort: a failed lookup must not cost the success timestamp.
+          if summary=$(${lib.getExe set.package} ${lib.concatMapStringsSep " " (o: "-o ${lib.escapeShellArg o}") set.extraOptions} \
+              snapshots --latest 1 --host ${lib.escapeShellArg config.networking.hostName} --json \
+              | ${lib.getExe pkgs.jq} -er 'max_by(.time).summary | select(. != null)
+                  | "\(.total_bytes_processed) \(.data_added) \(.total_files_processed)"'); then
+            read -r bytes added files <<< "$summary"
+            printf '# HELP yomi_restic_last_snapshot_bytes Bytes the latest snapshot covered.\n# TYPE yomi_restic_last_snapshot_bytes gauge\n' >> "$tmp"
+            printf 'yomi_restic_last_snapshot_bytes{${labels}} %s\n' "$bytes" >> "$tmp"
+            printf '# HELP yomi_restic_last_snapshot_added_bytes Bytes the latest snapshot added to the repository.\n# TYPE yomi_restic_last_snapshot_added_bytes gauge\n' >> "$tmp"
+            printf 'yomi_restic_last_snapshot_added_bytes{${labels}} %s\n' "$added" >> "$tmp"
+            printf '# HELP yomi_restic_last_snapshot_files Files the latest snapshot covered.\n# TYPE yomi_restic_last_snapshot_files gauge\n' >> "$tmp"
+            printf 'yomi_restic_last_snapshot_files{${labels}} %s\n' "$files" >> "$tmp"
+          else
+            echo "restic snapshot summary unavailable; size metrics skipped" >&2
+          fi
+        '';
       in {
         requires = cfg.sets.${name}.requires;
         after = cfg.sets.${name}.requires;
@@ -202,9 +224,9 @@ in {
           tmp="$metric.tmp"
           trap 'rm -f "$tmp"' EXIT
           printf '# HELP yomi_restic_last_success_timestamp_seconds Unix timestamp of the last successful restic job.\n# TYPE yomi_restic_last_success_timestamp_seconds gauge\n' > "$tmp"
-          printf 'yomi_restic_last_success_timestamp_seconds{host="%s",backup="%s"} %s\n' \
-            ${lib.escapeShellArg config.networking.hostName} ${lib.escapeShellArg name} \
+          printf 'yomi_restic_last_success_timestamp_seconds{${labels}} %s\n' \
             "$(${pkgs.coreutils}/bin/date +%s)" >> "$tmp"
+          ${sizeMetrics}
           chmod 0644 "$tmp"
           mv -f "$tmp" "$metric"
         '';

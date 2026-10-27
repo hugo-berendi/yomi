@@ -279,6 +279,53 @@ in {
               ])
               ++ [
                 {
+                  # A backup of an empty or half-mounted path still succeeds,
+                  # so the age alerts above stay green. Compare each set's
+                  # latest snapshot with its own largest in eight days. A set
+                  # without history compares with itself and stays quiet, so
+                  # a new set or a fresh metric raises no false alarm.
+                  uid = "backup-shrunk";
+                  title = "Backup covers far less than last week";
+                  condition = "C";
+                  data = [
+                    {
+                      refId = "A";
+                      relativeTimeRange = {
+                        from = 600;
+                        to = 0;
+                      };
+                      datasourceUid = "prometheus";
+                      model = {
+                        expr = "(last_over_time(yomi_restic_last_snapshot_bytes[8d]) / max_over_time(yomi_restic_last_snapshot_bytes[8d])) < bool 0.5";
+                        instant = true;
+                        refId = "A";
+                      };
+                    }
+                    {
+                      refId = "C";
+                      datasourceUid = "__expr__";
+                      model = {
+                        type = "threshold";
+                        expression = "A";
+                        conditions = [
+                          {
+                            evaluator = {
+                              type = "gt";
+                              params = [0];
+                            };
+                          }
+                        ];
+                        refId = "C";
+                      };
+                    }
+                  ];
+                  noDataState = "OK";
+                  execErrState = "Alerting";
+                  for = "15m";
+                  labels.severity = "warning";
+                  annotations.summary = "The latest {{ $labels.backup }} snapshot on {{ $labels.host }} covers less than half the bytes of the largest one this week. Check that its paths were mounted.";
+                }
+                {
                   uid = "inari-target-down";
                   title = "Prometheus target down";
                   condition = "C";
