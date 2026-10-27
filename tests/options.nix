@@ -123,38 +123,46 @@
       }
     ];
   };
-  checks = [
-    (check "host override and matching DNS" (endpoint.yomi.nginx.at.fixture.host == "custom.example.org" && valid endpoint))
-    (check "disabled endpoints need no upstream and create no vhost" (!(endpoint.services.nginx.virtualHosts ? "disabled-fixture.hugo-berendi.de") && !(endpoint.services.cloudflared.tunnels.${endpoint.yomi.cloudflared.tunnel}.ingress ? "disabled-fixture.hugo-berendi.de")))
-    (check "iocaine is in the tunnel request path" (endpoint.services.cloudflared.tunnels.${endpoint.yomi.cloudflared.tunnel}.ingress."protected-fixture.hugo-berendi.de".service == "http://127.0.0.1:19601"))
-    (check "nginx forwards protected traffic through Anubis" (endpoint.services.nginx.virtualHosts.tunnel-protected-fixture.locations."/".proxyPass == "http://127.0.0.1:19401"))
-    (check "nginx disable removes endpoint DNS" (!(lib.any (r: r.at == "immich") disabled.yomi.dns.records)))
-    (check "hostname mismatch rejected" (!valid mismatch))
-    (check "duplicate hostname rejected" (!valid duplicate))
-    (check "derived port collision rejected" (!valid collision))
-    (check "derived port overflow rejected" (!(builtins.tryEval (builtins.deepSeq overflow.yomi.ports true)).success))
-    (check "DNS apex normalized" ((builtins.head apex).at == ""))
-    (check "CNAME coexistence rejected" (!(lib.all (a: a.assertion) dnsChecks)))
-    (check "custom backup prerequisites ordered" (lib.elem "fixture-dump.service" backups.systemd.services.restic-backups-fixture.after && lib.elem "fixture-dump.service" backups.systemd.services.restic-backups-fixture.requires))
-    (check "disabled backup omitted" (!(backups.services.restic.backups ? disabled-fixture)))
-    (check "disabled offsite does not leave an empty service" (!(disabledOffsite.systemd.services ? restic-backups-offsite)))
-    (check "unsupported exposure rejected" (!valid badExposure))
-    (check "persistence keeps ownership" ((builtins.head (lib.filter (d: d.directory == "/var/lib/fixture") backups.environment.persistence."/persist/state".directories)).user == "fixture"))
-    (check "backup selection explicit" (lib.elem "/var/lib/fixture" backups.services.restic.backups.fixture.paths))
-    (check "game server credentials stay runtime-only" (lib.elem "server-password:/run/secrets/fixture-password" games.systemd.services.windrose.serviceConfig.LoadCredential))
-    (check "disabled game server omitted" (!(games.systemd.services ? steam-game-server-disabled-fixture)))
-    (check "game server generates a command" (games.systemd.services.steam-game-server-fixture.serviceConfig ? ExecStart))
-    (check "postgres dumps precede both backup destinations" (lib.all (name: lib.elem "postgresqlBackup.service" base.config.systemd.services.${name}.requires) ["restic-backups-state" "restic-backups-offsite"]))
-    (check "offsite requires a fresh application state copy" (lib.elem "restic-app-state.service" base.config.systemd.services.restic-backups-offsite.requires && lib.elem "restic-app-state.service" base.config.systemd.services.restic-backups-offsite.after))
-    (check "offsite includes the staged application state" (lib.elem base.config.systemd.services.restic-app-state.environment.APP_STATE_DESTINATION base.config.services.restic.backups.offsite.paths))
-    (check "recovery snapshots have a format tag" (lib.elem "--tag app-state-v1" base.config.services.restic.backups.offsite.extraBackupArgs))
-    (check "Matrix bridge databases persist despite static service users" (lib.all (name: lib.any (d: d.directory == "/var/lib/${name}" && d.user == name && d.group == name) base.config.environment.persistence."/persist/state".directories) ["mautrix-discord" "mautrix-signal" "mautrix-whatsapp"]))
-    (check "immich retains filesystem sandbox" (base.config.systemd.services.immich-server.serviceConfig.ProtectSystem == "strict" && lib.elem base.config.services.immich.mediaLocation base.config.systemd.services.immich-server.serviceConfig.ReadWritePaths))
-    (check "locally sandboxed units have commands" (lib.all (name: (base.config.systemd.services.${name}.serviceConfig.ExecStart or "") != "") ["immich-server" "immich-machine-learning" "immich-public-proxy" "karakeep-init" "karakeep-web" "karakeep-workers" "llama-cpp" "llama-cpp-classifier" "proton-mail-sorter"]))
-    (check "collector retains disk access" (base.config.systemd.services.scrutiny-collector.serviceConfig.PrivateDevices == false))
-    (check "miniflux address families have one definition" (base.config.systemd.services.miniflux.serviceConfig.RestrictAddressFamilies == ["AF_INET" "AF_INET6" "AF_UNIX" "AF_NETLINK"]))
-    (check "installer and WSL do not run unused proxies" (lib.all (name: let c = configurations.${name}.config; in !c.services.nginx.enable && !c.yomi.iocaine.enable) ["iso" "tsukuyomi" "wsl-work"]))
-  ];
+  checks =
+    [
+      (check "host override and matching DNS" (endpoint.yomi.nginx.at.fixture.host == "custom.example.org" && valid endpoint))
+      (check "disabled endpoints need no upstream and create no vhost" (!(endpoint.services.nginx.virtualHosts ? "disabled-fixture.hugo-berendi.de") && !(endpoint.services.cloudflared.tunnels.${endpoint.yomi.cloudflared.tunnel}.ingress ? "disabled-fixture.hugo-berendi.de")))
+      (check "iocaine is in the tunnel request path" (endpoint.services.cloudflared.tunnels.${endpoint.yomi.cloudflared.tunnel}.ingress."protected-fixture.hugo-berendi.de".service == "http://127.0.0.1:19601"))
+      (check "nginx forwards protected traffic through Anubis" (endpoint.services.nginx.virtualHosts.tunnel-protected-fixture.locations."/".proxyPass == "http://127.0.0.1:19401"))
+      (check "nginx disable removes endpoint DNS" (!(lib.any (r: r.at == "immich") disabled.yomi.dns.records)))
+      (check "hostname mismatch rejected" (!valid mismatch))
+      (check "duplicate hostname rejected" (!valid duplicate))
+      (check "derived port collision rejected" (!valid collision))
+      (check "derived port overflow rejected" (!(builtins.tryEval (builtins.deepSeq overflow.yomi.ports true)).success))
+      (check "DNS apex normalized" ((builtins.head apex).at == ""))
+      (check "CNAME coexistence rejected" (!(lib.all (a: a.assertion) dnsChecks)))
+      (check "custom backup prerequisites ordered" (lib.elem "fixture-dump.service" backups.systemd.services.restic-backups-fixture.after && lib.elem "fixture-dump.service" backups.systemd.services.restic-backups-fixture.requires))
+      (check "disabled backup omitted" (!(backups.services.restic.backups ? disabled-fixture)))
+      (check "disabled offsite does not leave an empty service" (!(disabledOffsite.systemd.services ? restic-backups-offsite)))
+      (check "unsupported exposure rejected" (!valid badExposure))
+      (check "persistence keeps ownership" ((builtins.head (lib.filter (d: d.directory == "/var/lib/fixture") backups.environment.persistence."/persist/state".directories)).user == "fixture"))
+      (check "backup selection explicit" (lib.elem "/var/lib/fixture" backups.services.restic.backups.fixture.paths))
+      (check "game server credentials stay runtime-only" (lib.elem "server-password:/run/secrets/fixture-password" games.systemd.services.windrose.serviceConfig.LoadCredential))
+      (check "disabled game server omitted" (!(games.systemd.services ? steam-game-server-disabled-fixture)))
+      (check "game server generates a command" (games.systemd.services.steam-game-server-fixture.serviceConfig ? ExecStart))
+      (check "postgres dumps precede both backup destinations" (lib.all (name: lib.elem "postgresqlBackup.service" base.config.systemd.services.${name}.requires) ["restic-backups-state" "restic-backups-offsite"]))
+      (check "offsite requires a fresh application state copy" (lib.elem "restic-app-state.service" base.config.systemd.services.restic-backups-offsite.requires && lib.elem "restic-app-state.service" base.config.systemd.services.restic-backups-offsite.after))
+      (check "offsite includes the staged application state" (lib.elem base.config.systemd.services.restic-app-state.environment.APP_STATE_DESTINATION base.config.services.restic.backups.offsite.paths))
+      (check "recovery snapshots have a format tag" (lib.elem "--tag app-state-v1" base.config.services.restic.backups.offsite.extraBackupArgs))
+      (check "Matrix bridge databases persist despite static service users" (lib.all (name: lib.any (d: d.directory == "/var/lib/${name}" && d.user == name && d.group == name) base.config.environment.persistence."/persist/state".directories) ["mautrix-discord" "mautrix-signal" "mautrix-whatsapp"]))
+      (check "immich retains filesystem sandbox" (base.config.systemd.services.immich-server.serviceConfig.ProtectSystem == "strict" && lib.elem base.config.services.immich.mediaLocation base.config.systemd.services.immich-server.serviceConfig.ReadWritePaths))
+      (check "collector retains disk access" (base.config.systemd.services.scrutiny-collector.serviceConfig.PrivateDevices == false))
+      (check "miniflux address families have one definition" (base.config.systemd.services.miniflux.serviceConfig.RestrictAddressFamilies == ["AF_INET" "AF_INET6" "AF_UNIX" "AF_NETLINK"]))
+      (check "installer and WSL do not run unused proxies" (lib.all (name: let c = configurations.${name}.config; in !c.services.nginx.enable && !c.yomi.iocaine.enable) ["iso" "tsukuyomi" "wsl-work"]))
+    ]
+    # One check per unit so a failure names the unit, and a unit that does not
+    # exist (renamed, or never defined) is reported as missing instead of as an
+    # empty command. A single lib.all over the list failed CI with no unit name.
+    ++ map (name: let
+      unit = base.config.systemd.services.${name} or null;
+    in
+      check "systemd unit ${name} exists and has a command" (unit != null && (unit.serviceConfig.ExecStart or "") != ""))
+    ["immich-server" "immich-machine-learning" "immich-public-proxy" "karakeep-init" "karakeep-web" "karakeep-workers" "llama-cpp" "llama-cpp-classifier" "proton-mail-sorter"];
   failures = map (c: c.name) (lib.filter (c: !c.assertion) checks);
   proxyConfig = pkgs.writeText "endpoint-fixture.conf" ''
     daemon off;
