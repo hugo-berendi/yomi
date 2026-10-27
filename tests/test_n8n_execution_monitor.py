@@ -142,16 +142,8 @@ class ExecutionMonitorTests(unittest.TestCase):
         )
         self.assertEqual(monitor.main(args), 1)
 
-    def test_router_failure_sends_critical_ntfy_once_per_24_hours(self):
-        state = self.path.with_name("receipt.json")
-        env = {
-            "NTFY_URL": "https://ntfy.example",
-            "NTFY_TOPIC": "ops",
-            "NTFY_TOKEN": "secret-token",
-        }
-        sent = []
-        monitor.post_ntfy = lambda *args: sent.append(args)
-        args = [
+    def failing_args(self, state):
+        return [
             "--database",
             str(self.path.with_name("missing.db")),
             "--webhook",
@@ -161,8 +153,22 @@ class ExecutionMonitorTests(unittest.TestCase):
             "--state",
             str(state),
         ]
+
+    NTFY_ENV = {
+        "NTFY_URL": "https://ntfy.example",
+        "NTFY_TOPIC": "ops",
+        "NTFY_TOKEN": "secret-token",
+    }
+
+    def test_router_failure_alerts_on_third_consecutive_failure_once_per_24_hours(
+        self,
+    ):
+        state = self.path.with_name("receipt.json")
+        sent = []
+        monitor.post_ntfy = lambda *args: sent.append(args)
+        args = self.failing_args(state)
         with (
-            patch.dict("os.environ", env),
+            patch.dict("os.environ", self.NTFY_ENV),
             patch.object(
                 monitor,
                 "utcnow",
@@ -171,11 +177,51 @@ class ExecutionMonitorTests(unittest.TestCase):
         ):
             self.assertEqual(monitor.main(args), 1)
             self.assertEqual(monitor.main(args), 1)
+            self.assertEqual(
+                sent, [], "one or two failures (an n8n restart) stay quiet"
+            )
+            self.assertEqual(monitor.main(args), 1)
+            self.assertEqual(len(sent), 1)
+            self.assertEqual(monitor.main(args), 1)
         self.assertEqual(len(sent), 1)
         self.assertEqual(sent[0][3], "[CRIT] n8n monitoring unavailable")
         self.assertEqual(sent[0][5], 5)
         self.assertEqual(sent[0][2], "secret-token")
         self.assertTrue(state.exists())
+
+    def test_recovery_after_unnotified_outage_sends_nothing_and_resets_count(self):
+        state = self.path.with_name("receipt.json")
+        self.workflow("healthy", "Healthy workflow")
+        self.execution(1, "healthy", "success")
+        self.db.commit()
+        sent = []
+        monitor.post_event = lambda *_args: None
+        monitor.post_ntfy = lambda *args: sent.append(args)
+        now = patch.object(
+            monitor,
+            "utcnow",
+            return_value=datetime(2026, 10, 26, 10, tzinfo=timezone.utc),
+        )
+        good = [
+            "--database",
+            str(self.path),
+            "--webhook",
+            "http://router",
+            "--editor-url",
+            "https://n8n.example/",
+            "--state",
+            str(state),
+        ]
+        with patch.dict("os.environ", self.NTFY_ENV), now:
+            for _ in range(2):
+                self.assertEqual(monitor.main(self.failing_args(state)), 1)
+            self.assertEqual(monitor.main(good), 0)
+            self.assertFalse(state.exists())
+            self.assertEqual(monitor.main(self.failing_args(state)), 1)
+            self.assertEqual(monitor.main(self.failing_args(state)), 1)
+        self.assertEqual(
+            sent, [], "a recovered blip never notifies, and the streak restarts"
+        )
 
     def test_recovery_is_held_at_night_then_sent_and_receipt_cleared(self):
         state = self.path.with_name("receipt.json")

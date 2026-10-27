@@ -86,8 +86,9 @@
     }
   ],
   "settings": {
+    "errorWorkflow": "AutomationFail26",
     "executionOrder": "v1",
-    "saveDataErrorExecution": "none",
+    "saveDataErrorExecution": "all",
     "saveDataSuccessExecution": "none",
     "saveManualExecutions": false,
     "timezone": "Europe/Berlin"

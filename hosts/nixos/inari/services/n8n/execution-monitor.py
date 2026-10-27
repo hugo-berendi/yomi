@@ -112,25 +112,40 @@ def read_state(path):
         return {}
 
 
+# The timer fires every 5 minutes and an n8n restart (imports run in
+# ExecStartPre) takes several minutes, so a single failed run is routine.
+# Three in a row is a real outage.
+FAILURES_BEFORE_ALERT = 3
+
+
 def handle_unavailable(path, now):
     state = read_state(path)
+    failures = state.get("failures", 0) + 1
     last = state.get("last_failure_sent", 0)
-    if now.timestamp() - last >= 86400:
+    state = {
+        "failures": failures,
+        "unavailable": state.get("unavailable", False),
+        "last_failure_sent": last,
+    }
+    # Persist the count first so a failing ntfy send does not reset the streak.
+    atomic_json(path, state)
+    if failures >= FAILURES_BEFORE_ALERT and now.timestamp() - last >= 86400:
         send_ntfy(
             "[CRIT] n8n monitoring unavailable",
             "The n8n execution monitor could not reach its database or alert router.",
             5,
         )
-        state = {"unavailable": True, "last_failure_sent": now.timestamp()}
-        atomic_json(path, state)
-    elif not state.get("unavailable"):
-        state = {"unavailable": True, "last_failure_sent": last}
+        state["unavailable"] = True
+        state["last_failure_sent"] = now.timestamp()
         atomic_json(path, state)
 
 
 def handle_recovery(path, now):
     state = read_state(path)
     if not state.get("unavailable"):
+        # Outage never reached a notification, so there is nothing to retract.
+        if state:
+            Path(path).unlink(missing_ok=True)
         return
     local = now.astimezone(ZoneInfo("Europe/Berlin"))
     if local.hour < 7 or local.hour >= 22:

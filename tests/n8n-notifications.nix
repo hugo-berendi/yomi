@@ -7,6 +7,7 @@ in
     node ${./n8n-alert-router.cjs} ${../hosts/nixos/inari/services/n8n/alert-router.cjs}
     node ${./n8n-alert-router-http.cjs} ${../hosts/nixos/inari/services/n8n/alert-router.cjs}
     node ${./n8n-disk-recovery.cjs} ${workflows}/disk-health.json
+    node ${./n8n-paperless-reminders.cjs} ${workflows}/paperless-dates.json
     node ${./n8n-webuntis-write.cjs} ${workflows}/webuntis-radicale.json
     node ${./n8n-monitors.cjs} ${workflows}
     node ${./n8n-output-policy.cjs} ${workflows}

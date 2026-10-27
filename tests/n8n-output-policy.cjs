@@ -70,5 +70,21 @@ async function run(code, {input = [], state = {}, env = {}, http = async () => (
   await run(nodeCode('jellyseerr-tracker', 'Build push'), {input: [{json: {...newRequest, changes: [{id: '11', item: {requestStatus: 2, mediaStatus: 2}, text:'pending'}]}}], state});
   assert.ok(state.requests, 'state commits when there is no push');
 
+  // automation-failures only fires for workflows that name it, so an active
+  // workflow without errorWorkflow fails silently. AutomationFail26 is the error workflow itself.
+  const ERROR_WORKFLOW = 'AutomationFail26';
+  for (const file of fs.readdirSync(root).filter((f) => f.endsWith('.json'))) {
+    const wf = workflow(file.replace(/\.json$/, ''));
+    if (!wf.active) continue;
+    const label = `${file} (${wf.name})`;
+    if (wf.id === ERROR_WORKFLOW) assert.equal(wf.settings?.errorWorkflow, undefined, `${label} must not point at itself`);
+    // alert-router is the path the error workflow reports through; pointing it
+    // back at automation-failures would loop a broken spine into itself.
+    else if (file !== 'alert-router.json') assert.equal(wf.settings?.errorWorkflow, ERROR_WORKFLOW, `${label} has no errorWorkflow`);
+    // Mail workflows keep "none" on purpose (payloads are private) and rely on the error workflow; nothing
+    // watches the error workflow itself except the monitor, which needs its saved executions.
+    if (wf.id === ERROR_WORKFLOW) assert.equal(wf.settings?.saveDataErrorExecution, 'all', `${label} must save failures for the execution monitor`);
+  }
+
   for (const name of ['media-arrivals', 'forgejo-releases']) assert.equal(workflow(name).active, false, `${name} is disabled`);
 })().catch((error) => { console.error(error); process.exitCode = 1; });
