@@ -26,7 +26,6 @@
       ./services/protonmail-bridge.nix
       ./services/cloudflared.nix
       ./services/forgejo
-      ./services/guacamole
       ./services/paperless.nix
       ./services/paperless-ai.nix
       ./services/homepage.nix
@@ -37,12 +36,10 @@
       ./services/mealie.nix
       ./services/radicale.nix
       ./services/calsync.nix
-      ./services/redlib.nix
       ./services/restic.nix
       ./services/valheim.nix
       ./services/vaultwarden.nix
       ./services/immich.nix
-      ./services/music
       ./services/searxng
       ./services/zfs.nix
       ./services/adguard-home.nix

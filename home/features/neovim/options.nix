@@ -7,14 +7,6 @@
     globals = {
       mapleader = " ";
       maplocalleader = " ";
-      neovide_padding_top = 6;
-      neovide_padding_bottom = 6;
-      neovide_padding_right = 12;
-      neovide_padding_left = 12;
-      neovide_theme = "auto";
-      neovide_refresh_rate = 165;
-      neovide_refresh_rate_idle = 5;
-      neovide_fullscreen = false;
     };
 
     options = {

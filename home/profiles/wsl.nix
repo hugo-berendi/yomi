@@ -5,11 +5,8 @@
   ...
 }: {
   imports = [
-    ./global.nix
+    ../global.nix
   ];
-
-  yomi.toggles.isServer.enable = false;
-  yomi.dev.enable = true;
 
   home = {
     file = {};

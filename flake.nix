@@ -80,11 +80,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    jellarr = {
-      url = "github:venkyr77/jellarr";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     # {{{ Storage
     impermanence.url = "github:nix-community/impermanence";
     impermanence.inputs.nixpkgs.follows = "nixpkgs";
@@ -98,9 +93,6 @@
 
     sops-nix.url = "github:Mic92/sops-nix";
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
-
-    korora.url = "github:adisbladis/korora";
-    korora.inputs.nixpkgs.follows = "nixpkgs";
 
     # }}}
     # {{{ Standalone software
@@ -233,9 +225,9 @@
             system = "x86_64-linux";
             hostname = "iso";
           };
-          wsl = mkHost {
+          wsl-work = mkHost {
             system = "x86_64-linux";
-            hostname = "wsl";
+            hostname = "wsl-work";
           };
         };
       };
@@ -279,10 +271,7 @@
         );
 
         checks = let
-          # tsukuyomi is deliberately absent: that machine runs Windows now, so
-          # its configuration is kept dormant rather than built on every push.
-          # It is still under nixosConfigurations and can be built by hand.
-          hosts = ["amaterasu" "inari" "iso" "wsl"];
+          hosts = ["amaterasu" "inari" "iso" "tsukuyomi" "wsl-work"];
           # Scenario tests must be able to select network and unlock options
           # even when the recovery wizard's machine-specific overrides exist.
           inariTestConfiguration = self.nixosConfigurations.inari.extendModules {

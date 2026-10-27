@@ -19,7 +19,7 @@ nixos-rebuild action="switch" host=hostname install_bootloader="0":
     'amaterasu': 'hugob',
     'inari': 'hugob',
     'tsukuyomi': 'hugob',
-    'wsl': 'hugob',
+    'wsl-work': 'hugob',
   }
 
   args = [
@@ -161,11 +161,11 @@ fmt: format format-lua
 [group("ci")]
 pre-commit: fmt check
 
-[doc("Push wsl build to hugo-berendi cachix cache")]
+[doc("Push tsukuyomi (WSL) build to hugo-berendi cachix cache")]
 [group("ci")]
 push-wsl-cache:
-  nix build .#nixosConfigurations.wsl.config.system.build.toplevel --accept-flake-config
-  nix copy --to ssh://hugo-berendi.cachix.org .#nixosConfigurations.wsl.config.system.build.toplevel
+  nix build .#nixosConfigurations.tsukuyomi.config.system.build.toplevel --accept-flake-config
+  nix copy --to ssh://hugo-berendi.cachix.org .#nixosConfigurations.tsukuyomi.config.system.build.toplevel
 # }}}
 
 # {{{ Garbage collection

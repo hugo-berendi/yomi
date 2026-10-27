@@ -11,17 +11,14 @@
         Determines which backend should be used for WIFI connectivity.
       '';
 
+      default = "networkmanager";
       type = lib.types.enum [
-        "iwd"
         "networkmanager"
-        "wpa-supplicant"
       ];
     };
   };
 
   imports = [
-    ./iwd
     ./networkmanager.nix
-    ./wpa_supplicant.nix
   ];
 }

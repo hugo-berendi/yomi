@@ -12,7 +12,6 @@
     ./jellyfin.nix
     ./prowlarr.nix
     ./flaresolverr.nix
-    ./recyclarr.nix
   ];
   # }}}
   # {{{ Nixarr

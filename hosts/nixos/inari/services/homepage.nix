@@ -243,13 +243,6 @@ in {
             };
           }
           {
-            Guacamole = {
-              icon = "guacamole.svg";
-              href = "https://guacamole.hugo-berendi.de";
-              description = "Remote desktop gateway";
-            };
-          }
-          {
             Immich = {
               icon = "immich.svg";
               href = "https://immich.hugo-berendi.de";
@@ -298,20 +291,6 @@ in {
                 key = "{{HOMEPAGE_VAR_JELLYFIN_API_KEY}}";
                 enableBlocks = true;
                 enableNowPlaying = true;
-              };
-            };
-          }
-          {
-            Navidrome = {
-              icon = "navidrome.svg";
-              href = "https://navidrome.hugo-berendi.de";
-              description = "Music server";
-              widget = {
-                type = "navidrome";
-                url = "https://navidrome.hugo-berendi.de";
-                user = "{{HOMEPAGE_VAR_NAVIDROME_USER}}";
-                token = "{{HOMEPAGE_VAR_NAVIDROME_TOKEN}}";
-                salt = "{{HOMEPAGE_VAR_NAVIDROME_SALT}}";
               };
             };
           }
@@ -440,13 +419,6 @@ in {
               icon = "invidious.svg";
               href = "https://yt.hugo-berendi.de";
               description = "Youtube client";
-            };
-          }
-          {
-            Redlib = {
-              icon = "redlib.svg";
-              href = "https://redlib.hugo-berendi.de";
-              description = "Reddit client";
             };
           }
           {

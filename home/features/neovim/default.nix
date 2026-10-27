@@ -1,47 +1,10 @@
 {
   pkgs,
   config,
-  lib,
   ...
 }: let
   # nvf's mnw wrapper default; check with `grep NVIM_APPNAME $(which nvim)`.
   appName = "nvf";
-
-  # {{{ Client wrapper
-  wrapClient = {
-    base,
-    name,
-    binName ? name,
-    extraArgs ? "",
-    wrapFlags ? lib.id,
-  }: let
-    startupScript =
-      config.yomi.lib.lua.writeFile "." "startup"
-      ''
-        vim.g.nix_theme = ${config.yomi.colorscheme.lua}
-      '';
-
-    extraFlags = lib.escapeShellArg (wrapFlags ''--cmd "lua dofile('${startupScript}/startup.lua')"'');
-  in
-    pkgs.symlinkJoin {
-      inherit (base) name meta;
-      paths = [base];
-      nativeBuildInputs = [pkgs.makeWrapper];
-      postBuild = ''
-        wrapProgram $out/bin/${binName} \
-          --add-flags ${extraFlags} \
-          ${extraArgs}
-      '';
-    };
-  # }}}
-  # {{{ Neovide client
-  neovide = wrapClient {
-    base = pkgs.neovide;
-    name = "neovide";
-    extraArgs = "--set NEOVIDE_MULTIGRID true";
-    wrapFlags = flags: "-- ${flags}";
-  };
-  # }}}
 in {
   imports = [
     ./options.nix
@@ -63,39 +26,9 @@ in {
     defaultEditor = true;
   };
   # }}}
-  # {{{ Lua stylua config for this project
-  yomi.lua.styluaConfig = ../../../stylua.toml;
-  # }}}
   # {{{ Basic config
-  yomi.toggles.neovim.enable = true;
   home.sessionVariables.EDITOR = "nvim";
   home.packages = [pkgs.vimclip];
-
-  programs.neovide = {
-    enable = false;
-    package = neovide;
-    settings = {
-      fork = false;
-      frame = "full";
-      idle = true;
-      maximized = false;
-      no-multigrid = false;
-      srgb = false;
-      tabs = true;
-      theme = "auto";
-      title-hidden = true;
-      vsync = true;
-      wsl = false;
-
-      font = {
-        normal = ["${config.stylix.fonts.monospace.name}"];
-        bold = ["${config.stylix.fonts.monospace.name}"];
-        italic = ["${config.stylix.fonts.monospace.name}"];
-        bold_italic = ["${config.stylix.fonts.monospace.name}"];
-        size = config.stylix.fonts.sizes.terminal;
-      };
-    };
-  };
   # }}}
   # {{{ Persistence
   # The nvf wrapper exports NVIM_APPNAME=nvf, so undo, shada and plugin data

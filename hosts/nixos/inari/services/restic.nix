@@ -24,7 +24,7 @@
       paths = [
         "/raid5pool/media/photos" # immich library, 83 GiB, the whole point
         "/raid5pool/media/documents" # paperless documents
-        "/raid5pool/data" # paperless index, navidrome
+        "/raid5pool/data" # paperless index
         "/raid5pool/cloud" # nextcloud files (database is in the postgres dump below)
         "/persist/data" # calendars, contacts, game server worlds
 

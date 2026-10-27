@@ -39,6 +39,4 @@
   # The old shared key stays as a fallback until it is removed from the forges.
   yomi.pilot.sshIdentity = ["~/.ssh/id_ed25519_inari" "~/.ssh/id_ed25519"];
   # }}}
-
-  yomi.toggles.isServer.enable = true;
 }

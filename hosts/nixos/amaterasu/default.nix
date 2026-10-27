@@ -8,8 +8,6 @@
     {yomi.tailscale.enable = true;}
     ../common
 
-    ../common/desktop/steam.nix
-
     ./hardware
     ./filesystems
     ./services/restic.nix
@@ -24,7 +22,6 @@
   yomi.machine.gaming = true;
   yomi.machine.interactible = true;
   yomi.wireless.enable = true;
-  yomi.wireless.backend = "networkmanager";
 
   # udev rules so the pilot can use the YubiKey as a FIDO2 SSH authenticator
   # (ssh-keygen -t ed25519-sk) without root. libfido2 ships its own rules;

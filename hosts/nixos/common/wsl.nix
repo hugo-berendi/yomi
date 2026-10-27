@@ -8,7 +8,7 @@
   # {{{ Imports
   imports = [
     inputs.nixos-wsl.nixosModules.default
-    ../common
+    ./default.nix
   ];
   # }}}
 
@@ -29,7 +29,7 @@
 
   # {{{ WSL configuration
   wsl.enable = true;
-  wsl.defaultUser = "hugob";
+  wsl.defaultUser = config.yomi.pilot.name;
   wsl.startMenuLaunchers = true;
   wsl.useWindowsDriver = true;
 
@@ -76,11 +76,6 @@
       icu
     ];
   };
-  # }}}
-
-  # {{{ Machine ids
-  networking.hostName = "wsl";
-  environment.etc.machine-id.text = "08357db3540c4cd2b76d4bb7f825ec89";
   # }}}
 
   # {{{ Sops configuration for WSL (no persistence)

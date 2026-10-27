@@ -7,7 +7,6 @@
     flaresolverr = lib.mkDefault 8408;
     forgejo = lib.mkDefault 8409;
     grafana = lib.mkDefault 8412;
-    guacamole = lib.mkDefault 8413;
     home-assistant = 8123;
     homepage = lib.mkDefault 8415;
     immich = lib.mkDefault 8416;
@@ -32,7 +31,6 @@
     valheim-query = 2457;
     mqtt = lib.mkDefault 8437;
     n8n = lib.mkDefault 8438;
-    navidrome = lib.mkDefault 8439;
     ntfy = lib.mkDefault 8441;
     opencode = lib.mkDefault 8487;
     nextcloud = lib.mkDefault 8444;
@@ -72,7 +70,6 @@
     radarr = lib.mkDefault 8467;
     radicale = lib.mkDefault 8468;
     readarr = lib.mkDefault 8469;
-    redlib = lib.mkDefault 8470;
     sable = lib.mkDefault 8472;
     searxng = lib.mkDefault 8473;
     sonarr = 8989;

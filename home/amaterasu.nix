@@ -52,7 +52,6 @@ in {
       upkgs.fluffychat
       # }}}
       qbittorrent
-      # upkgs.unityhub
       # upkgs.nerdfetch # for displaying pc/laptop stats
       upkgs.nh
       upkgs.nix-output-monitor
@@ -74,8 +73,6 @@ in {
       # }}}
 
       # {{{ java development
-      # jetbrains.idea-ultimate
-      # jetbrains.jdk
       # }}}
     ];
   };
@@ -204,11 +201,7 @@ in {
   };
   # }}}
 
-  yomi.toggles.isServer.enable = false;
   yomi = {
-    # Symlink some commonly modified dotfiles outside the nix store
-    dev.enable = true;
-
     monitors = [
       {
         name = "DP-2";

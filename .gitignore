@@ -23,3 +23,5 @@ log.txt
 
 # local secrets / host-specific symlinks (sops-decrypted, never commit)
 .wakatime.cfg
+__pycache__/
+*.pyc
