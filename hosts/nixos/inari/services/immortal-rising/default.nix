@@ -6,6 +6,9 @@
 }: let
   package = "com.badbeans.DarkIdle";
   dataDir = "/persist/state/var/lib/immortal-rising";
+  # Android's /data lives on ext4 inside an image on the HDD pool: see the
+  # Storage section for why it can be neither ZFS nor the NVMe.
+  imageDir = "/raid5pool/immortal-rising";
   adbPort = config.yomi.ports.redroid-adb;
   serial = "127.0.0.1:${toString adbPort}";
   alertUrl = "http://127.0.0.1:${toString config.yomi.ports.n8n-alert-router}/alert";
@@ -14,15 +17,15 @@
 
   immortal-rising = pkgs.writeShellApplication {
     name = "immortal-rising";
-    runtimeInputs = with pkgs; [android-tools apkeep coreutils curl docker gnugrep gnused jq systemd unzip];
+    runtimeInputs = with pkgs; [android-tools apkeep coreutils curl docker gnugrep gnused jq systemd unzip util-linux];
     text = ''
       export ANDROID_USER_HOME=${dataDir}/android
       serial=${serial}
       workdir=${dataDir}/agent
 
-      alert() { # severity title message resolved
-        jq -n --arg s "$1" --arg t "$2" --arg m "$3" --argjson r "$4" \
-          '{source: "immortal-rising", severity: $s, title: $t, message: $m, resolved: $r, fingerprint: "immortal-rising"}' \
+      alert() { # severity title message resolved fingerprint
+        jq -n --arg s "$1" --arg t "$2" --arg m "$3" --argjson r "$4" --arg f "immortal-rising-$5" \
+          '{source: "immortal-rising", severity: $s, title: $t, message: $m, resolved: $r, fingerprint: $f}' \
           | curl -sf --max-time 15 -X POST -H 'content-type: application/json' -d @- ${alertUrl} >/dev/null || true
       }
 
@@ -37,9 +40,11 @@
         return 1
       }
 
-      down() {
-        adb disconnect "$serial" >/dev/null 2>&1 || true
-        systemctl stop docker-redroid.service
+      # The game runs around the clock, so the screen must never sleep. The
+      # settings persist in /data, but reapplying them is cheap.
+      awake() {
+        adb -s "$serial" shell svc power stayon true
+        adb -s "$serial" shell input keyevent KEYCODE_WAKEUP
       }
 
       # APKPure serves the same builds as Google Play but needs no account.
@@ -65,30 +70,62 @@
       }
 
       agent() {
-        ${python}/bin/python -I ${./agent.py} "$1" --serial "$serial" --package ${package} --workdir "$workdir"
+        ${python}/bin/python -I ${./agent.py} "$1" --serial "$serial" --package ${package} --workdir "$workdir" "''${@:2}"
       }
 
       case "''${1:-}" in
-        up) up ;;
-        down) down ;;
-        shot) agent shot ;;
-        update) update ;;
-        run)
-          trap down EXIT
+        up) up; awake ;;
+        view)
           up
-          update
+          awake
+          systemctl start immortal-rising-view.service
+          echo "open http://$(hostname):${toString config.yomi.ports.immortal-rising-view}/ over Tailscale"
+          ;;
+        down) adb disconnect "$serial" >/dev/null 2>&1 || true; systemctl stop docker-redroid.service ;;
+        shot) agent shot ;;
+        update) up; update ;;
+        run)
+          routine=''${2:?usage: immortal-rising run <daily|periodic>}
+          # One routine at a time: two of them tapping the same screen would
+          # undo each other.
+          exec 9>${dataDir}/lock
+          flock -w 1500 9
+          up
+          awake
+          [ "$routine" = daily ] && update
           status=0
-          agent run || status=$?
+          agent run --routine "$routine" || status=$?
           case $status in
-            0) alert info "Daily tasks done" "" true ;;
-            3) alert info "Not configured yet" "Capture templates with immortal-rising shot and write ${dataDir}/agent/flow.json." false ;;
-            *) alert warning "Daily tasks failed" "See journalctl -u immortal-rising and ${dataDir}/agent/last-failure.png." false ;;
+            0) alert info "$routine tasks done" "" true "$routine" ;;
+            3) alert info "Not configured yet" "Capture templates with immortal-rising shot and write ${dataDir}/agent/flow.json." false "$routine" ;;
+            # Another device holds the account. That is a choice, not a fault.
+            4) status=0 ;;
+            *) alert warning "$routine tasks failed" "See journalctl -u immortal-rising-$routine and ${dataDir}/agent/last-failure.png." false "$routine" ;;
           esac
           exit $status
           ;;
-        *) echo "usage: immortal-rising up|down|shot|update|run" >&2; exit 2 ;;
+        *) echo "usage: immortal-rising up|view|down|shot|update|run <routine>" >&2; exit 2 ;;
       esac
     '';
+  };
+
+  routineService = routine: description: {
+    inherit description;
+    after = ["docker.service" "network-online.target"];
+    requires = ["docker.service"];
+    wants = ["network-online.target"];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${lib.getExe immortal-rising} run ${routine}";
+      # Waiting for the other routine's lock, a possible 600 MB update, then
+      # the flow itself.
+      TimeoutStartSec = "45min";
+      ProtectSystem = "strict";
+      ProtectHome = true;
+      PrivateTmp = true;
+      NoNewPrivileges = true;
+      ReadWritePaths = [dataDir];
+    };
   };
 in {
   environment.systemPackages = [immortal-rising];
@@ -101,19 +138,24 @@ in {
     "d ${dataDir}/agent 0700 0 0 - -"
     "d ${dataDir}/agent/templates 0700 0 0 - -"
     "d ${dataDir}/agent/shots 0700 0 0 - -"
+    "d ${imageDir} 0700 0 0 - -"
   ];
   # }}}
   # {{{ Container
-  # Started by the daily unit, not at boot: Android idles at a few GB of RAM
-  # and the game is only played for a few minutes a day. /data is kept, so the
-  # Facebook session that a human logged in once survives each stop.
+  # Runs all the time: the game farms while nobody is looking.
   #
-  # The image is a tag, not a digest, until the first test run has confirmed
-  # that its libndk_translation runs the arm64-only game (the build has no x86
-  # libraries). If it does not, build an image with ayasa520/redroid-script.
+  # /data is an ext4 loop image, not a directory on ZFS. On ZFS Android cannot
+  # create its app directories (`ls /data/user_de/0` fails with EINVAL, every
+  # system app then crashes on "Directory .../databases doesn't exist", and
+  # RescueParty restarts the framework forever). The image is on raid5pool
+  # because Android writes continuously and the NVMe is near its endurance
+  # rating. Losing it costs only the Facebook login; the account is online.
+  #
+  # The image is a tag, not a digest, until a run has confirmed that the
+  # bundled libndk_translation plays the arm64-only game.
   virtualisation.oci-containers.containers.redroid = {
     image = "redroid/redroid:13.0.0-latest";
-    autoStart = false;
+    autoStart = true;
     # Loopback only: an open adb port is a root shell on the container.
     ports = ["127.0.0.1:${toString adbPort}:5555"];
     volumes = ["${dataDir}/data:/data"];
@@ -121,7 +163,9 @@ in {
       "androidboot.redroid_width=720"
       "androidboot.redroid_height=1280"
       "androidboot.redroid_dpi=320"
+      # Rendering is on the CPU; a low frame rate keeps 24/7 cost down.
       "androidboot.redroid_gpu_mode=guest"
+      "androidboot.redroid_fps=20"
       # abilist32 must stay non-empty: with only 64-bit entries zygote_secondary
       # aborts ("Unable to determine ABI list") and Android boot-loops without
       # ever starting system_server.
@@ -135,35 +179,69 @@ in {
     ];
     log-driver = "journald";
     # redroid needs --privileged for binder and its own mounts.
-    extraOptions = ["--privileged" "--memory=6g" "--stop-timeout=30"];
+    extraOptions = ["--privileged" "--memory=6g" "--cpus=4" "--stop-timeout=30"];
+  };
+
+  systemd.services.docker-redroid = {
+    path = with pkgs; [e2fsprogs util-linux coreutils];
+    preStart = ''
+      # Without the mount Android would write into the ZFS directory and
+      # boot-loop, so a failure here must stop the unit.
+      if [ ! -e ${imageDir}/data.img ]; then
+        truncate -s 24G ${imageDir}/data.img
+        mkfs.ext4 -q -L redroid-data ${imageDir}/data.img
+      fi
+      mountpoint -q ${dataDir}/data \
+        || mount -o loop,noatime,commit=120 ${imageDir}/data.img ${dataDir}/data
+    '';
+    postStop = "umount ${dataDir}/data || true";
+    after = ["zfs-mount.service"];
+    unitConfig.RequiresMountsFor = [imageDir];
   };
   # }}}
-  # {{{ Daily run
-  systemd.services.immortal-rising = {
-    description = "Update Immortal Rising and play the daily tasks";
-    after = ["docker.service" "network-online.target"];
-    requires = ["docker.service"];
-    wants = ["network-online.target"];
+  # {{{ Browser remote
+  # For logging in to Facebook from a device that cannot run scrcpy. Control of
+  # the screen is control of the account, so it is not started at boot, stops
+  # with the container, and its port is only reachable through the tailscale0
+  # rule in the input chain: no LAN exposure grant is declared for it.
+  systemd.services.immortal-rising-view = {
+    description = "Browser remote for the Immortal Rising emulator";
+    bindsTo = ["docker-redroid.service"];
+    after = ["docker-redroid.service"];
+    path = [pkgs.android-tools];
+    environment.ANDROID_USER_HOME = "/var/lib/immortal-rising-view";
     serviceConfig = {
-      Type = "oneshot";
-      ExecStart = "${lib.getExe immortal-rising} run";
-      # Cold Android boot, a possible 600 MB update download, then the flow.
-      TimeoutStartSec = "45min";
+      ExecStart = "${pkgs.python3}/bin/python -I ${./view.py} --serial ${serial} --port ${toString config.yomi.ports.immortal-rising-view}";
+      DynamicUser = true;
+      StateDirectory = "immortal-rising-view";
+      Restart = "on-failure";
       ProtectSystem = "strict";
       ProtectHome = true;
       PrivateTmp = true;
       NoNewPrivileges = true;
-      ReadWritePaths = [dataDir];
     };
   };
+  # }}}
+  # {{{ Routines
+  # daily: update, quests, quick battles, shop. periodic: bosses, upgrades,
+  # dungeons, and otherwise just keeping the session alive. Both are defined by
+  # flow.json, which is written once templates have been captured.
+  systemd.services.immortal-rising-daily = routineService "daily" "Update Immortal Rising and play the daily tasks";
+  systemd.services.immortal-rising-periodic = routineService "periodic" "Keep Immortal Rising farming";
 
-  # The phone is signed out whenever the emulator logs in again, so this runs
-  # once a day at a time the owner is not playing.
-  systemd.timers.immortal-rising = {
+  systemd.timers.immortal-rising-daily = {
     wantedBy = ["timers.target"];
     timerConfig = {
       OnCalendar = "*-*-* 17:30:00";
       Persistent = true;
+    };
+  };
+
+  systemd.timers.immortal-rising-periodic = {
+    wantedBy = ["timers.target"];
+    timerConfig = {
+      OnBootSec = "10min";
+      OnUnitInactiveSec = "15min";
     };
   };
   # }}}

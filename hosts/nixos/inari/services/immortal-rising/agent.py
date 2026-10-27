@@ -4,7 +4,25 @@ The game renders to a canvas, so there is no UI tree to query. Templates are
 cropped from `immortal-rising shot` captures at the container's fixed
 resolution, which is why matches stay stable between runs.
 
-Exit codes: 0 done, 1 flow failed, 3 flow.json missing or incomplete.
+flow.json, next to a templates/ directory of PNGs:
+
+    {
+      "home": "home.png",                  # visible only on the main screen
+      "login": ["fb_continue.png"],        # buttons that sign back in
+      "dismiss": ["close.png"],            # pop-ups to tap away
+      "kicked": "logged_out.png",          # shown when another device signed in
+      "reloginGraceMinutes": 180,
+      "routines": {
+        "daily":    [{"image": "quest.png"}, {"image": "claim.png", "optional": true, "repeat": 3}],
+        "periodic": []                     # missing or empty only keeps the session alive
+      }
+    }
+
+A step accepts timeout (s, default 15), wait (s after the tap, default 1.5),
+optional and repeat.
+
+Exit codes: 0 done, 1 flow failed, 3 flow.json missing or incomplete, 4 deferred
+(the account is signed in elsewhere and the grace period has not elapsed).
 """
 
 import argparse
@@ -18,6 +36,10 @@ import cv2
 import numpy as np
 
 THRESHOLD = 0.88
+
+
+class Deferred(Exception):
+    pass
 
 
 class Agent:
@@ -56,18 +78,38 @@ class Agent:
     def tap(self, point):
         self.adb("shell", "input", "tap", str(point[0]), str(point[1]))
 
+    def in_foreground(self):
+        focus = self.adb("shell", "dumpsys", "window").decode(errors="replace")
+        return any(self.package in line for line in focus.splitlines() if "mCurrentFocus" in line)
+
     def launch(self):
         self.adb("shell", "monkey", "-p", self.package, "-c", "android.intent.category.LAUNCHER", "1")
 
+    def kicked_since(self, flow, screen):
+        """Seconds the account has been signed in elsewhere, or None."""
+        marker = self.workdir / "kicked-since"
+        if not flow.get("kicked") or not self.find(screen, flow["kicked"]):
+            return None
+        if not marker.exists():
+            marker.write_text(str(time.time()))
+        return time.time() - float(marker.read_text())
+
     def ensure_home(self, flow, timeout):
         """Reach the main screen, tapping through pop-ups and a kicked session."""
+        grace = flow.get("reloginGraceMinutes", 180) * 60
         deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
             screen = self.screen()
             if self.find(screen, flow["home"]):
+                (self.workdir / "kicked-since").unlink(missing_ok=True)
                 return
-            # Login before dismiss: after another device signs in, the "logged
-            # out" dialog and the login button can be on screen together.
+            elapsed = self.kicked_since(flow, screen)
+            # Signing in again signs the owner's phone out, so wait out a grace
+            # period after another device took the session.
+            if elapsed is not None and elapsed < grace:
+                raise Deferred(f"signed in elsewhere for {int(elapsed // 60)} min")
+            # Login before dismiss: the "logged out" dialog and the login
+            # button can be on screen together.
             for name in flow.get("login", []) + flow.get("dismiss", []):
                 point = self.find(screen, name)
                 if point:
@@ -81,8 +123,9 @@ class Agent:
         while time.monotonic() < deadline:
             point = self.find(self.screen(), step["image"])
             if point:
-                self.tap(point)
-                time.sleep(step.get("wait", 1.5))
+                for _ in range(step.get("repeat", 1)):
+                    self.tap(point)
+                    time.sleep(step.get("wait", 1.5))
                 return
             time.sleep(1)
         if not step.get("optional"):
@@ -90,6 +133,7 @@ class Agent:
 
     def save_screen(self, name):
         path = self.workdir / name
+        path.parent.mkdir(exist_ok=True)
         cv2.imwrite(str(path), self.screen())
         return path
 
@@ -100,6 +144,7 @@ def main():
     parser.add_argument("--serial", required=True)
     parser.add_argument("--package", required=True)
     parser.add_argument("--workdir", required=True)
+    parser.add_argument("--routine", default="periodic")
     args = parser.parse_args()
     agent = Agent(args.serial, args.package, args.workdir)
 
@@ -115,12 +160,16 @@ def main():
         return 3
 
     try:
-        agent.launch()
+        if not agent.in_foreground():
+            agent.launch()
         agent.ensure_home(flow, flow.get("loginTimeout", 240))
-        for step in flow.get("routine", []):
+        for step in flow.get("routines", {}).get(args.routine, []):
             agent.step(step)
             # A reward can open a pop-up that covers the next button.
             agent.ensure_home(flow, 60)
+    except Deferred as reason:
+        print(f"deferred: {reason}")
+        return 4
     except (TimeoutError, FileNotFoundError, subprocess.CalledProcessError) as error:
         print(f"flow failed: {error}", file=sys.stderr)
         agent.save_screen("last-failure.png")
