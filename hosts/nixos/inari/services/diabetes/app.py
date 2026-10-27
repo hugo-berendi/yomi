@@ -14,6 +14,7 @@ from pathlib import Path
 import re
 import secrets
 import sqlite3
+import tempfile
 import threading
 import time
 from datetime import UTC, datetime, timedelta
@@ -67,13 +68,28 @@ QUESTIONS = {
 
 def read_secret(path):
     if not path.exists():
+        # Publish a complete file atomically: serve and tick race here, and a
+        # reader of a half-written file would see an empty token.
+        descriptor, name = tempfile.mkstemp(dir=path.parent, prefix=path.name + ".")
+        temporary = Path(name)
         try:
-            with path.open("x") as file:
-                os.chmod(path, 0o600)
+            os.fchmod(descriptor, 0o600)
+            with os.fdopen(descriptor, "w") as file:
                 file.write(secrets.token_urlsafe(40))
-        except FileExistsError:
-            pass
-    return path.read_text().strip()
+                file.flush()
+                os.fsync(file.fileno())
+            # link() refuses to overwrite, so a token another process just
+            # published wins; os.replace would clobber it.
+            try:
+                os.link(temporary, path)
+            except FileExistsError:
+                pass
+        finally:
+            temporary.unlink(missing_ok=True)
+    value = path.read_text().strip()
+    if not value:
+        raise RuntimeError(f"Secret file {path.name} is empty")
+    return value
 
 
 @contextlib.contextmanager
@@ -617,10 +633,11 @@ def create_app(root=None, config=None):
     def authenticate():
         session.setdefault("csrf", secrets.token_urlsafe(32))
         token = request.headers.get("Authorization", "").removeprefix("Bearer ")
-        full_access = hmac.compare_digest(token, access_token)
+        full_access = bool(token) and hmac.compare_digest(token, access_token)
         read_access = (
             request.method == "GET"
             and request.path == "/api/glucose"
+            and bool(token)
             and hmac.compare_digest(token, read_token)
         )
         if request.path.startswith("/static/"):
@@ -656,7 +673,8 @@ def create_app(root=None, config=None):
     def login():
         error = None
         if request.method == "POST":
-            if hmac.compare_digest(request.form.get("token", ""), access_token):
+            submitted = request.form.get("token", "")
+            if submitted and hmac.compare_digest(submitted, access_token):
                 session.clear()
                 session.update(authenticated=True, csrf=secrets.token_urlsafe(32))
                 session.permanent = True

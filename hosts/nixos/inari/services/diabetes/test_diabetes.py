@@ -16,6 +16,7 @@ import zipfile
 
 from analysis import comparison, parse_export, timestamp, week_bounds, weekly_summary
 from app import (
+    read_secret,
     DexcomReader,
     ai_review,
     build_report,
@@ -522,6 +523,56 @@ class AppTests(unittest.TestCase):
                 ).status_code,
                 400,
             )
+
+    def test_empty_secret_file_fails_closed(self):
+        path = self.root / "partial-token"
+        path.touch()
+        with self.assertRaises(RuntimeError):
+            read_secret(path)
+
+    def test_new_secret_is_private_stable_and_leaves_no_temporaries(self):
+        path = self.root / "fresh-token"
+        first = read_secret(path)
+        self.assertTrue(first)
+        self.assertEqual(path.stat().st_mode & 0o777, 0o600)
+        self.assertEqual(read_secret(path), first)
+        self.assertEqual(list(self.root.glob("fresh-token.*")), [])
+
+    def test_existing_secret_is_not_overwritten_by_racing_publisher(self):
+        path = self.root / "raced-token"
+        real_link = os.link
+
+        def lose_race(source, target):
+            Path(target).write_text("winner")
+            return real_link(source, target)
+
+        with patch("app.os.link", side_effect=lose_race):
+            self.assertEqual(read_secret(path), "winner")
+
+    def test_empty_tokens_never_authenticate(self):
+        def secret(path):
+            return "" if path.name.endswith("-token") else read_secret(path)
+
+        with patch("app.read_secret", side_effect=secret):
+            app = create_app(
+                self.root / "empty", {"TESTING": True, "SESSION_COOKIE_SECURE": False}
+            )
+        client = app.test_client()
+        self.assertEqual(client.get("/api/glucose").status_code, 401)
+        self.assertEqual(
+            client.get(
+                "/api/glucose", headers={"Authorization": "Bearer "}
+            ).status_code,
+            401,
+        )
+        client.post("/login", data={"token": ""})
+        self.assertEqual(client.get("/").status_code, 302)
+
+    def test_corrupt_glooko_state_is_failure_not_already_running(self):
+        self.connect_glooko()
+        with database(self.root) as db:
+            db.execute("INSERT OR REPLACE INTO state VALUES ('glooko', '{broken')")
+        self.assertEqual(sync(self.root), "failed")
 
     def test_private_routes_and_read_token_scope(self):
         self.assertEqual(self.client.get("/").status_code, 302)

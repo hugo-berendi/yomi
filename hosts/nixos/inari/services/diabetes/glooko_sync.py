@@ -61,6 +61,13 @@ class ExportRangeError(ValueError):
         super().__init__("Glooko export period could not be confirmed")
 
 
+class SyncBusy(ValueError):
+    """Another process holds the Glooko sync lock.
+
+    A ValueError subclass so the web route still answers 400 via its handler.
+    """
+
+
 def failure_kind(error, stage):
     if isinstance(error, ExportRangeError):
         return error.kind if error.kind in FAILURE_KINDS else "operation_failed"
@@ -106,7 +113,7 @@ def sync_lock(root):
         try:
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
-            raise ValueError(
+            raise SyncBusy(
                 "Glooko sync is running. Try again when it finishes."
             ) from None
         yield
@@ -479,7 +486,11 @@ def sync(
             if not path.exists():
                 return "not configured"
             with database(root) as db:
-                state = get_state(db, "glooko", {})
+                try:
+                    state = get_state(db, "glooko", {})
+                except ValueError:
+                    # Corrupt stored state is a failure, not a concurrent run.
+                    return "failed"
                 if (
                     not interactive
                     and now < state.get("next_attempt", 0)
@@ -584,5 +595,5 @@ def sync(
                     if isinstance(error, AuthenticationRequired)
                     else "failed"
                 )
-    except ValueError:
+    except SyncBusy:
         return "already running"

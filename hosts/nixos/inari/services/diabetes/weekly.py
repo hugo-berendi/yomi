@@ -6,6 +6,7 @@ import os
 import re
 import smtplib
 import ssl
+import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -151,8 +152,12 @@ def run_weekly(root, config=None, now=None, submit=smtp_submit, review=ai_review
                         "AI_URL", "http://127.0.0.1:8496/v1/chat/completions"
                     ),
                 )
-            except Exception:
-                pass
+            except Exception as error:
+                # Type and message only: no traceback, which could echo report data.
+                print(
+                    f"AI review failed: {type(error).__name__}: {error}",
+                    file=sys.stderr,
+                )
         message = render(report, config, now, selected, quality)
         with database(root) as db:
             db.execute(

@@ -109,6 +109,47 @@ class WeeklyTests(unittest.TestCase):
         self.assertIsNone(summary.get("recorded_bolus_units"))
         self.assertIsNone(summary.get("recorded_carbs_g"))
 
+    def test_ai_review_failure_is_logged_and_report_continues(self):
+        import io
+        from contextlib import redirect_stderr
+        from analysis import comparison
+        from weekly import run_weekly
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            init_db(root)
+            config = dict(
+                recipient="patient@example.invalid",
+                sender="report@example.invalid",
+                host="localhost",
+                port=587,
+            )
+            now = datetime(2026, 10, 26, 8, tzinfo=UTC)
+            report = comparison([], [], now) | {"comparable": True}
+
+            def review(report, url):
+                raise TimeoutError("model offline")
+
+            submitted = []
+            stderr = io.StringIO()
+            with (
+                patch("weekly.sync", return_value="not configured"),
+                patch("weekly.build_report", return_value=report),
+                redirect_stderr(stderr),
+            ):
+                result = run_weekly(
+                    root,
+                    config,
+                    now,
+                    submit=lambda message, cfg: submitted.append(message),
+                    review=review,
+                )
+            self.assertEqual(result["status"], "submitted")
+            self.assertEqual(len(submitted), 1)
+            self.assertIn(
+                "AI review failed: TimeoutError: model offline", stderr.getvalue()
+            )
+
     def test_mail_is_multipart_and_uncertain_is_never_retried(self):
         from weekly import run_weekly
 
