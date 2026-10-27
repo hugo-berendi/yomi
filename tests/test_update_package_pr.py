@@ -47,6 +47,8 @@ class Forgejo:
             ]
             self.pulls.append(result)
             return result.copy()
+        if method == "DELETE":
+            return None
         if method == "PATCH":
             number = int(path.rsplit("/", 1)[1])
             result = next(p for p in self.pulls if p["number"] == number)
@@ -150,6 +152,84 @@ class PublishTests(unittest.TestCase):
             self.publish(api)
         self.assertFalse(any(e[0] == "push" for e in api.events))
         self.assertEqual(api.pulls[0]["state"], "open")
+
+
+class DecideTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        spec.loader.exec_module(publisher)
+
+    def decide(self, **overrides):
+        api = Forgejo()
+        alerts = []
+        pr = {
+            "number": 7,
+            "title": "chore: update flake inputs",
+            "html_url": "https://git/pr/7",
+        }
+        verdict = dict(
+            ci_ok=True, gate_ok=True, review_ok=True, reasons=[], can_merge=True
+        )
+        verdict.update(overrides)
+        result = publisher.decide(api, pr, "a" * 40, notify=alerts.append, **verdict)
+        merges = [e for e in api.events if e[0] == "POST" and e[1].endswith("/merge")]
+        return result, merges, alerts
+
+    def test_merges_only_when_all_three_agree(self):
+        result, merges, alerts = self.decide()
+        self.assertEqual(result, "merged")
+        self.assertEqual(merges[0][2]["head_commit_id"], "a" * 40)
+        self.assertTrue(merges[0][2]["merge_when_checks_succeed"])
+        self.assertEqual(alerts, [])
+
+    def test_any_single_no_notifies_instead_of_merging(self):
+        for failing in ("ci_ok", "gate_ok", "review_ok", "can_merge"):
+            with self.subTest(failing=failing):
+                result, merges, alerts = self.decide(
+                    **{failing: False}, reasons=["why"]
+                )
+                self.assertEqual(result, "notified")
+                self.assertEqual(merges, [])
+                self.assertEqual(alerts[0]["url"], "https://git/pr/7")
+                self.assertIn("why", alerts[0]["message"])
+
+    def test_notify_cancels_a_merge_scheduled_by_an_earlier_run(self):
+        api = Forgejo()
+        pr = {"number": 7, "title": "t", "html_url": "u"}
+        publisher.decide(
+            api,
+            pr,
+            "b" * 40,
+            ci_ok=True,
+            gate_ok=False,
+            review_ok=True,
+            reasons=[],
+            can_merge=True,
+            notify=lambda event: None,
+        )
+        self.assertIn(("DELETE", "/pulls/7/merge", None), api.events)
+
+    def test_push_cancels_a_scheduled_merge_first(self):
+        api = Forgejo([pull(1, "update-packages")])
+        publisher.publish(api, "body", lambda: api.events.append(("push",)))
+        cancel = api.events.index(("DELETE", "/pulls/1/merge", None))
+        self.assertLess(cancel, api.events.index(("push",)))
+
+    def test_unreadable_or_partial_verdicts_count_as_no(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "verdict.json"
+            self.assertFalse(publisher.read_verdict(path, "ok")[0])
+            for content in (
+                "not json",
+                "[]",
+                '{"ok": "true"}',
+                '{"ok": 1}',
+                '{"safe": true}',
+            ):
+                path.write_text(content)
+                self.assertFalse(publisher.read_verdict(path, "ok")[0], content)
+            path.write_text('{"ok": true, "reasons": []}')
+            self.assertTrue(publisher.read_verdict(path, "ok")[0])
 
 
 if __name__ == "__main__":

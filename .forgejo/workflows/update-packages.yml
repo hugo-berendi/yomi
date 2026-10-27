@@ -6,6 +6,11 @@ on:
 concurrency:
   group: update-packages
   cancel-in-progress: false
+# Updates land as a PR that merges on its own only when the job's checks,
+# the deterministic gate and the local model all say yes; otherwise the
+# alert router pushes the PR link to a human. The same trust boundary as in
+# update-flake-inputs.yml: no credentials in the checkout, gate and review
+# from copies taken before the update, token only in the last step.
 jobs:
   update:
     runs-on: native
@@ -13,11 +18,24 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+    defaults:
+      run:
+        # Explicit bash adds pipefail, so `| tee` cannot hide a failure.
+        shell: bash
     steps:
       - name: Checkout repository
-        uses: https://data.forgejo.org/actions/checkout@v4
+        uses: https://data.forgejo.org/actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: main
+          persist-credentials: false
+
+      - name: Keep trusted copies of the pipeline scripts
+        id: trusted
+        run: |
+          dir=$(mktemp -d "$RUNNER_TEMP/update.XXXXXX")
+          cp scripts/ci/update-gate.py scripts/ci/update-llm-review.py scripts/ci/update-package-pr.py "$dir/"
+          echo "dir=$dir" >> "$GITHUB_OUTPUT"
+          echo "sums=$(cd "$dir" && sha256sum ./*.py | sha256sum | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
 
       - name: Update GitHub-release packages with nix-update
         run: |
@@ -88,33 +106,78 @@ jobs:
           nix develop -c bash scripts/ci/update-docker-digests.sh
           echo "::endgroup::"
 
-      - name: Check for changes
-        id: check-changes
-        run: |
-          if git diff --quiet -- pkgs/ hosts/; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Open pull request with package updates
-        if: steps.check-changes.outputs.changed == 'true'
+      - name: Commit to the update branch
+        id: commit
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GIT_AUTHOR_NAME: forgejo-actions
           GIT_AUTHOR_EMAIL: forgejo-actions@localhost
           GIT_COMMITTER_NAME: forgejo-actions
           GIT_COMMITTER_EMAIL: forgejo-actions@localhost
         run: |
-          set -euo pipefail
+          if git diff --quiet -- pkgs/ hosts/; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "base=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           git checkout -B update-packages
           git add pkgs/ hosts/
           git commit -m "chore: update packages"
+          echo "head=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
 
+      - name: Deterministic gate
+        id: gate
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          DIR: ${{ steps.trusted.outputs.dir }}
+        run: |
+          if python3 "$DIR/update-gate.py" --base "${{ steps.commit.outputs.base }}" > "$DIR/gate.json"; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          fi
+          cat "$DIR/gate.json"
+
+      - name: Review by the local model
+        id: review
+        if: steps.gate.outputs.ok == 'true'
+        timeout-minutes: 30
+        env:
+          DIR: ${{ steps.trusted.outputs.dir }}
+        run: |
+          git diff "${{ steps.commit.outputs.base }}" HEAD -- pkgs/ hosts/ > "$DIR/diff.txt"
+          if python3 "$DIR/update-llm-review.py" --diff "$DIR/diff.txt" > "$DIR/review.json"; then
+            echo "safe=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "safe=false" >> "$GITHUB_OUTPUT"
+          fi
+          cat "$DIR/review.json"
+
+      - name: Lint and flake checks
+        id: ci
+        if: steps.commit.outputs.changed == 'true'
+        continue-on-error: true
+        run: just lint && just check
+
+      - name: Open the PR and merge or notify
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          DIR: ${{ steps.trusted.outputs.dir }}
+          SUMS: ${{ steps.trusted.outputs.sums }}
+          HEAD_SHA: ${{ steps.commit.outputs.head }}
+          BASE: ${{ steps.commit.outputs.base }}
+          GITHUB_TOKEN: ${{ secrets.UPDATE_BOT_TOKEN || secrets.GITHUB_TOKEN }}
+          UPDATE_BOT_TOKEN: ${{ secrets.UPDATE_BOT_TOKEN }}
+        run: |
+          set -euo pipefail
+          # Steps before this one ran upstream code; refuse to act on a
+          # changed script or a moved branch.
+          test "$(cd "$DIR" && sha256sum ./update-gate.py ./update-llm-review.py ./update-package-pr.py | sha256sum | cut -d' ' -f1)" = "$SUMS"
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
           summary=""
-          for f in $(git diff --name-only main -- pkgs/ hosts/); do
+          for f in $(git diff --name-only "$BASE" HEAD -- pkgs/ hosts/); do
             pkg=$(basename "$f" .nix)
-            old=$(git show "main:$f" 2>/dev/null | sed -n 's/.*version = "\([^"]*\)".*/\1/p' | head -1)
+            old=$(git show "$BASE:$f" 2>/dev/null | sed -n 's/.*version = "\([^"]*\)".*/\1/p' | head -1)
             new=$(sed -n 's/.*version = "\([^"]*\)".*/\1/p' "$f" | head -1)
             if [[ -n "$old" && -n "$new" ]]; then
               summary="${summary}- **${pkg}**: \`${old}\` -> \`${new}\`"$'\n'
@@ -123,12 +186,18 @@ jobs:
             fi
           done
 
-          diffSummary=$(git diff main -- pkgs/ hosts/ | head -c 60000 || true)
+          diffSummary=$(git diff "$BASE" HEAD -- pkgs/ hosts/ | head -c 60000 || true)
+          checks="- CI: ${{ steps.ci.outcome }}"$'\n'"- Gate: ${{ steps.gate.outputs.ok || 'did not run' }}"$'\n'"- LLM review: ${{ steps.review.outputs.safe || 'skipped' }}"
           # Keep the Markdown code fences literal.
           # shellcheck disable=SC2016
-          body=$(printf '%s\n<details>\n<summary>Show diff</summary>\n\n```diff\n%s\n```\n\n</details>\n' "$summary" "$diffSummary")
+          body=$(printf '%s\n\n%s\n<details>\n<summary>Show diff</summary>\n\n```diff\n%s\n```\n\n</details>\n' "$checks" "$summary" "$diffSummary")
+          printf '%s' "$body" > "$DIR/body.md"
 
-          bodyFile=$(mktemp)
-          trap 'rm -f "$bodyFile"' EXIT
-          printf '%s' "$body" > "$bodyFile"
-          nix develop -c python3 scripts/ci/update-package-pr.py "$bodyFile"
+          # Pushes made with the automatic token start no workflow, so the
+          # PR's own CI run needs UPDATE_BOT_TOKEN. Without it nothing merges.
+          auth=$(printf 'x-access-token:%s' "$GITHUB_TOKEN" | base64 -w0)
+          export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=http.extraHeader GIT_CONFIG_VALUE_0="Authorization: basic $auth"
+          python3 "$DIR/update-package-pr.py" "$DIR/body.md" \
+            --ci-outcome "${{ steps.ci.outcome }}" \
+            --gate "$DIR/gate.json" --gate-ok "${{ steps.gate.outputs.ok }}" \
+            --review "$DIR/review.json" --review-ok "${{ steps.review.outputs.safe }}"

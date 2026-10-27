@@ -1,10 +1,19 @@
-"""Publish one rolling package-update PR and retire superseded dated PRs."""
+"""Publish one rolling update PR, then merge it or ask a human.
 
+Used by both update workflows: update-packages and update-flake-inputs.
+The merge decision needs three independent yeses: the job's own CI run,
+scripts/ci/update-gate.py (deterministic) and scripts/ci/update-llm-review.py
+(the local model, never the only gate). Anything else sends a notification
+through the local alert router with the PR link and leaves the PR open.
+"""
+
+import argparse
 import json
 import os
 from pathlib import Path
 import subprocess
 import sys
+from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 
@@ -37,7 +46,7 @@ def protected(pr):
     return any(user["login"] == "welles" for user in pr.get("assignees") or [])
 
 
-def publish(api, body, push):
+def publish(api, body, push, branch=BRANCH, title=TITLE):
     # Collect every page before closing anything: changing the open set while
     # paginating would shift later pages and silently skip old PRs.
     candidates = []
@@ -52,20 +61,24 @@ def publish(api, body, push):
             if pr["base"]["ref"] == "main"
             and (pr["head"].get("repo") or {}).get("full_name") == api.repository
             and (
-                pr["head"]["ref"] == BRANCH
-                or (pr["title"] == TITLE and pr["head"]["ref"].startswith(BRANCH + "/"))
+                pr["head"]["ref"] == branch
+                or (pr["title"] == title and pr["head"]["ref"].startswith(branch + "/"))
             )
         )
         page += 1
 
-    current = [pr for pr in candidates if pr["head"]["ref"] == BRANCH]
+    current = [pr for pr in candidates if pr["head"]["ref"] == branch]
     if any(protected(pr) for pr in current):
         raise RuntimeError(
-            "The rolling package PR is assigned to welles; leaving it unchanged"
+            f"The rolling {branch} PR is assigned to welles; leaving it unchanged"
         )
 
+    # A merge scheduled by an earlier run would otherwise apply to whatever
+    # this push puts on the branch, without this run's checks.
+    for pr in current:
+        cancel_auto_merge(api, pr["number"])
     push()
-    payload = {"title": TITLE, "body": body}
+    payload = {"title": title, "body": body}
     if current:
         pr = min(current, key=lambda item: item["number"])
         assignees = {user["login"] for user in pr.get("assignees") or []}
@@ -75,7 +88,7 @@ def publish(api, body, push):
         pr = api.request(
             "POST",
             "/pulls",
-            {**payload, "head": BRANCH, "base": "main", "assignees": ["hugo-berendi"]},
+            {**payload, "head": branch, "base": "main", "assignees": ["hugo-berendi"]},
         )
         api.request(
             "POST",
@@ -86,11 +99,12 @@ def publish(api, body, push):
     for old in candidates:
         if old["number"] != pr["number"] and not protected(old):
             api.request("PATCH", f"/pulls/{old['number']}", {"state": "closed"})
-    print(f"Package updates published in PR #{pr['number']}")
+    print(f"Updates published in PR #{pr['number']}", file=sys.stderr)
+    return pr
 
 
-def push_branch():
-    ref = f"refs/heads/{BRANCH}"
+def push_branch(branch=BRANCH):
+    ref = f"refs/heads/{branch}"
     remote = subprocess.check_output(["git", "ls-remote", "origin", ref], text=True)
     previous = remote.split()[0] if remote.strip() else ""
     subprocess.run(
@@ -105,5 +119,139 @@ def push_branch():
     )
 
 
+def cancel_auto_merge(api, number):
+    try:
+        api.request("DELETE", f"/pulls/{number}/merge")
+    except HTTPError as error:
+        if error.code != 404:  # 404: nothing was scheduled
+            raise
+
+
+def read_verdict(path, key):
+    """Read one gate's JSON output; anything unreadable counts as a no."""
+    try:
+        data = json.loads(Path(path).read_text())
+    except (OSError, ValueError) as error:
+        return False, [f"{path} unreadable: {error}"]
+    if not isinstance(data, dict) or data.get(key) is not True:
+        reasons = data.get("reasons") if isinstance(data, dict) else None
+        reason = data.get("reason") if isinstance(data, dict) else None
+        return False, [str(r) for r in reasons or [reason or f"{key} is not true"]]
+    return True, []
+
+
+def decide(api, pr, head, *, ci_ok, gate_ok, review_ok, reasons, can_merge, notify):
+    """Merge only when every check said yes; otherwise hand the PR to a human."""
+    if ci_ok and gate_ok and review_ok and can_merge:
+        # head_commit_id pins the merge to the commit the checks looked at;
+        # Forgejo refuses if the branch moved. merge_when_checks_succeed
+        # additionally waits for the PR's own CI run and branch protection.
+        api.request(
+            "POST",
+            f"/pulls/{pr['number']}/merge",
+            {
+                "Do": "merge",
+                "head_commit_id": head,
+                "merge_when_checks_succeed": True,
+                "delete_branch_after_merge": True,
+            },
+        )
+        return "merged"
+    cancel_auto_merge(api, pr["number"])
+    failed = [
+        name
+        for name, ok in (("CI", ci_ok), ("gate", gate_ok), ("LLM review", review_ok))
+        if not ok
+    ]
+    if not failed and not can_merge:
+        reasons = [*reasons, "auto-merge is off: UPDATE_BOT_TOKEN is not set"]
+    notify(
+        {
+            "source": "updates",
+            "severity": "warning",
+            "event": True,
+            "title": f"{pr.get('title', 'update')} needs review",
+            "message": (
+                (f"Not auto-merged: {', '.join(failed)} said no.\n\n" if failed else "")
+                + "\n".join(f"- {r}" for r in reasons)[:1500]
+            ),
+            "url": pr.get("html_url"),
+            "fingerprint": f"update-pr:{pr['number']}:{head[:12]}",
+        }
+    )
+    return "notified"
+
+
+def post_alert(event):
+    url = os.environ.get("ALERT_ROUTER_URL", "http://127.0.0.1:8508/alert")
+    request = Request(
+        url,
+        data=json.dumps([event]).encode(),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    with urlopen(request, timeout=30) as response:
+        response.read()
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("body", help="file with the PR description")
+    parser.add_argument("--branch", default=BRANCH)
+    parser.add_argument("--title", default=TITLE)
+    parser.add_argument(
+        "--ci-outcome", help="outcome of the job's own lint and check steps"
+    )
+    parser.add_argument("--gate", help="JSON written by update-gate.py")
+    parser.add_argument("--review", help="JSON written by update-llm-review.py")
+    # The verdicts as recorded in step outputs right after each check ran.
+    # The JSON files sit in a directory later steps could write to, so they
+    # only supply the reasons; a merge needs both sources to say yes.
+    parser.add_argument("--gate-ok", default="false")
+    parser.add_argument("--review-ok", default="false")
+    args = parser.parse_args(argv)
+
+    api = Forgejo()
+    pr = publish(
+        api,
+        Path(args.body).read_text(),
+        lambda: push_branch(args.branch),
+        branch=args.branch,
+        title=args.title,
+    )
+    if args.ci_outcome is None:
+        return 0
+    head = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+    ci_ok = args.ci_outcome == "success"
+    gate_ok, gate_reasons = (
+        read_verdict(args.gate, "ok") if args.gate else (False, ["gate did not run"])
+    )
+    review_ok, review_reasons = (
+        read_verdict(args.review, "safe")
+        if args.review
+        else (False, ["LLM review did not run"])
+    )
+    gate_ok = gate_ok and args.gate_ok == "true"
+    review_ok = review_ok and args.review_ok == "true"
+    reasons = (
+        ([] if ci_ok else [f"CI outcome: {args.ci_outcome}"])
+        + gate_reasons
+        + review_reasons
+    )
+    result = decide(
+        api,
+        pr,
+        head,
+        ci_ok=ci_ok,
+        gate_ok=gate_ok,
+        review_ok=review_ok,
+        reasons=reasons,
+        can_merge=bool(os.environ.get("UPDATE_BOT_TOKEN")),
+        notify=post_alert,
+    )
+    print(f"PR #{pr['number']}: {result}", file=sys.stderr)
+    return 0
+
+
 if __name__ == "__main__":
-    publish(Forgejo(), Path(sys.argv[1]).read_text(), push_branch)
+    raise SystemExit(main())
