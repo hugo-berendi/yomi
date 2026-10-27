@@ -32,14 +32,19 @@ and a self-hosted homelab. It is based on
 
 | Location                       | Purpose                                         |
 | ------------------------------ | ----------------------------------------------- |
-| [`common`](./common)           | Shared NixOS and Home Manager configuration     |
+| [`common`](./common)           | Themes, fonts, browser data, caches shared by NixOS and HM |
 | [`dns`](./dns)                 | Declarative DNS records and OctoDNS integration |
 | [`home`](./home)               | Home Manager configurations and features        |
 | [`hosts/nixos`](./hosts/nixos) | Host-specific NixOS configurations              |
 | [`modules`](./modules)         | Reusable Yomi modules and options               |
 | [`overlays`](./overlays)       | Nixpkgs overlays                                |
 | [`pkgs`](./pkgs)               | Custom packages                                 |
-| [`scripts`](./scripts)         | Installation and recovery helpers               |
+| [`scripts`](./scripts)         | `ci/`, `ops/` and `recovery/` helpers           |
+| [`checks`](./checks)           | Flake checks (hosts and scenario tests)         |
+| [`tests`](./tests)             | Test fixtures and scripts used by the checks    |
+| [`lib`](./lib)                 | Flake helpers (`mk-host.nix`)                   |
+| [`devshells`](./devshells)     | Development shells                              |
+| [`docs`](./docs)               | Guides and plans, indexed in `docs/README.md`   |
 
 ## Common commands
 
@@ -75,7 +80,7 @@ Google's recurring-event compatibility fix.
 ## Conventions
 
 Custom options live under `yomi.*`. Service ports are allocated in
-[`hosts/nixos/common/base/ports.nix`](./hosts/nixos/common/base/ports.nix),
+[`modules/nixos/ports.nix`](./modules/nixos/ports.nix),
 secrets remain encrypted in `secrets.yaml` files, and host-specific state is
 persisted explicitly. See [`AGENTS.md`](./AGENTS.md) for architecture details
 and contributor rules.

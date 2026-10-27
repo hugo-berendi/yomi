@@ -22,16 +22,20 @@ in {
   # The crossplay join code is regenerated on every server restart and is only
   # ever printed to the container log, so make looking it up a one-liner.
   environment.systemPackages = [
-    (pkgs.writeShellScriptBin "valheim-join-code" ''
-      ${config.virtualisation.docker.package}/bin/docker logs valheim 2>&1 \
-        | grep -oE 'join code [0-9]+' \
-        | tail -1 \
-        | grep -oE '[0-9]+'
-    '')
+    (pkgs.writeShellApplication {
+      name = "valheim-join-code";
+      runtimeInputs = [config.virtualisation.docker.package pkgs.gnugrep pkgs.coreutils];
+      text = ''
+        docker logs valheim 2>&1 \
+          | grep -oE 'join code [0-9]+' \
+          | tail -1 \
+          | grep -oE '[0-9]+'
+      '';
+    })
   ];
 
   virtualisation.oci-containers.containers.valheim = {
-    image = "ghcr.io/lloesche/valheim-server@sha256:c885aa902faf885ceb8f69a34663b90519e65aa65fbd9f893451f0640e218a4f";
+    image = (import ../images.nix).valheim;
     autoStart = true;
 
     # Valheim speaks UDP only, and claims the query port right above the game

@@ -21,83 +21,87 @@
   # }}}
   # {{{ Packages
   home.packages = let
-    _ = lib.getExe;
-
-    wl-copy = "${pkgs.wl-clipboard}/bin/wl-copy";
-    wl-paste = "${pkgs.wl-clipboard}/bin/wl-paste";
-
-    wl-ocr = pkgs.writeShellScriptBin "wl-ocr" ''
-      ${_ pkgs.grim} -g "$(${_ pkgs.slurp})" -t ppm - \
-        | ${_ pkgs.tesseract5} - - \
-        | ${wl-copy}
-      ${_ pkgs.libnotify} "Run ocr on area with output \"$(${wl-paste})\""
-    '';
-
-    wl-qr = pkgs.writeShellScriptBin "wl-qr" ''
-      ${_ pkgs.grim} -g "$(${_ pkgs.slurp})" -t ppm - \
-        | ${pkgs.zbar}/bin/zbarimg --quiet - \
-        | awk '{sub(/^QR-Code:/, "", $1); print $1}' \
-        | ${wl-copy}
-      ${
-        _ pkgs.libnotify
-      } "Scanned qr code on area with output \"$(${wl-paste})\""
-    '';
-
     immichApiKeyPath =
       if config.sops.secrets ? "IMMICH_API_KEY"
       then config.sops.secrets.IMMICH_API_KEY.path
       else null;
 
-    wl-immich = pkgs.writeShellScriptBin "wl-immich" ''
-      set -euo pipefail
+    wl-ocr = pkgs.writeShellApplication {
+      name = "wl-ocr";
+      runtimeInputs = with pkgs; [grim slurp tesseract5 wl-clipboard libnotify];
+      # `|| true`: the plain script carried on after a cancelled selection.
+      text = ''
+        grim -g "$(slurp)" -t ppm - \
+          | tesseract - - \
+          | wl-copy || true
+        notify-send "Run ocr on area with output \"$(wl-paste)\""
+      '';
+    };
 
-      API_KEY_PATH="${lib.optionalString (immichApiKeyPath != null) immichApiKeyPath}"
-      IMMICH_URL="https://immich.hugo-berendi.de"
-      IPP_URL="https://share.immich.hugo-berendi.de"
+    wl-qr = pkgs.writeShellApplication {
+      name = "wl-qr";
+      runtimeInputs = with pkgs; [grim slurp zbar gawk wl-clipboard libnotify];
+      text = ''
+        grim -g "$(slurp)" -t ppm - \
+          | zbarimg --quiet - \
+          | awk '{sub(/^QR-Code:/, "", $1); print $1}' \
+          | wl-copy || true
+        notify-send "Scanned qr code on area with output \"$(wl-paste)\""
+      '';
+    };
 
-      if [ -z "$API_KEY_PATH" ] || [ ! -f "$API_KEY_PATH" ]; then
-        ${_ pkgs.libnotify} -u critical "Immich upload failed" "API key not configured"
-        exit 1
-      fi
+    wl-immich = pkgs.writeShellApplication {
+      name = "wl-immich";
+      runtimeInputs = with pkgs; [coreutils gnugrep libnotify grimblast immich-go curl jq wl-clipboard];
+      text = ''
+        API_KEY_PATH="${lib.optionalString (immichApiKeyPath != null) immichApiKeyPath}"
+        IMMICH_URL="https://immich.hugo-berendi.de"
+        IPP_URL="https://share.immich.hugo-berendi.de"
 
-      API_KEY=$(cat "$API_KEY_PATH")
+        if [ -z "$API_KEY_PATH" ] || [ ! -f "$API_KEY_PATH" ]; then
+          notify-send -u critical "Immich upload failed" "API key not configured"
+          exit 1
+        fi
 
-      SCREENSHOT_FILE=$(mktemp --suffix=.png)
-      trap 'rm -f "$SCREENSHOT_FILE"' EXIT
+        API_KEY=$(cat "$API_KEY_PATH")
 
-      ${_ pkgs.grimblast} save area "$SCREENSHOT_FILE"
+        SCREENSHOT_FILE=$(mktemp --suffix=.png)
+        trap 'rm -f "$SCREENSHOT_FILE"' EXIT
 
-      if [ ! -s "$SCREENSHOT_FILE" ]; then
-        ${_ pkgs.libnotify} -u critical "Immich upload failed" "Screenshot was empty or cancelled"
-        exit 1
-      fi
+        grimblast save area "$SCREENSHOT_FILE"
 
-      UPLOAD_RESPONSE=$(${_ pkgs.immich-go} -server="$IMMICH_URL" -key="$API_KEY" upload "$SCREENSHOT_FILE" 2>&1)
+        if [ ! -s "$SCREENSHOT_FILE" ]; then
+          notify-send -u critical "Immich upload failed" "Screenshot was empty or cancelled"
+          exit 1
+        fi
 
-      ASSET_ID=$(echo "$UPLOAD_RESPONSE" | ${pkgs.gnugrep}/bin/grep -oP 'AssetID:\K[a-f0-9-]+' | head -1)
+        UPLOAD_RESPONSE=$(immich-go -server="$IMMICH_URL" -key="$API_KEY" upload "$SCREENSHOT_FILE" 2>&1)
 
-      if [ -z "$ASSET_ID" ]; then
-        ${_ pkgs.libnotify} -u critical "Immich upload failed" "Could not extract asset ID"
-        exit 1
-      fi
+        ASSET_ID=$(echo "$UPLOAD_RESPONSE" | grep -oP 'AssetID:\K[a-f0-9-]+' | head -1)
 
-      SHARE_RESPONSE=$(${_ pkgs.curl} -s -X POST "$IMMICH_URL/api/shared-links" \
-        -H "x-api-key: $API_KEY" \
-        -H "Content-Type: application/json" \
-        -d "{\"assetIds\": [\"$ASSET_ID\"], \"type\": \"INDIVIDUAL\"}")
+        if [ -z "$ASSET_ID" ]; then
+          notify-send -u critical "Immich upload failed" "Could not extract asset ID"
+          exit 1
+        fi
 
-      SHARE_KEY=$(echo "$SHARE_RESPONSE" | ${_ pkgs.jq} -r '.key // empty')
+        SHARE_RESPONSE=$(curl -s -X POST "$IMMICH_URL/api/shared-links" \
+          -H "x-api-key: $API_KEY" \
+          -H "Content-Type: application/json" \
+          -d "{\"assetIds\": [\"$ASSET_ID\"], \"type\": \"INDIVIDUAL\"}")
 
-      if [ -z "$SHARE_KEY" ]; then
-        ${_ pkgs.libnotify} -u critical "Immich upload failed" "Could not create share link"
-        exit 1
-      fi
+        SHARE_KEY=$(echo "$SHARE_RESPONSE" | jq -r '.key // empty')
 
-      IPP_LINK="$IPP_URL/share/$SHARE_KEY"
-      echo -n "$IPP_LINK" | ${wl-copy}
+        if [ -z "$SHARE_KEY" ]; then
+          notify-send -u critical "Immich upload failed" "Could not create share link"
+          exit 1
+        fi
 
-      ${_ pkgs.libnotify} "Screenshot uploaded" "IPP link copied to clipboard"
-    '';
+        IPP_LINK="$IPP_URL/share/$SHARE_KEY"
+        echo -n "$IPP_LINK" | wl-copy
+
+        notify-send "Screenshot uploaded" "IPP link copied to clipboard"
+      '';
+    };
   in
     with pkgs; [
       libnotify

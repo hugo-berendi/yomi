@@ -162,74 +162,9 @@
         homeModules = import ./modules/home-manager // import ./modules/common;
 
         nixosConfigurations = let
-          inherit (inputs.nixpkgs) lib;
-
-          specialArgs = system: {
-            inherit inputs;
-            outputs = self;
-            upkgs = mkPkgs inputs.nixpkgs-unstable system;
-          };
-
-          mkHost = {
-            system,
-            hostname,
-          }:
-            lib.nixosSystem {
-              inherit system;
-              specialArgs = specialArgs system;
-
-              modules = [
-                (
-                  {
-                    lib,
-                    config,
-                    ...
-                  }: {
-                    imports = lib.lists.optionals (builtins.pathExists ./home/${hostname}.nix) [
-                      inputs.home-manager.nixosModules.home-manager
-                      {
-                        home-manager.users.${config.yomi.pilot.name} = ./home/${hostname}.nix;
-                        home-manager.extraSpecialArgs =
-                          specialArgs system
-                          // {
-                            inherit hostname;
-                          };
-                        home-manager.useUserPackages = true;
-                        home-manager.backupFileExtension = "backy";
-
-                        stylix.homeManagerIntegration.followSystem = false;
-                        stylix.homeManagerIntegration.autoImport = false;
-                        stylix.enableReleaseChecks = false;
-                      }
-                    ];
-                  }
-                )
-
-                ./hosts/nixos/${hostname}
-              ];
-            };
-        in {
-          amaterasu = mkHost {
-            system = "x86_64-linux";
-            hostname = "amaterasu";
-          };
-          tsukuyomi = mkHost {
-            system = "x86_64-linux";
-            hostname = "tsukuyomi";
-          };
-          inari = mkHost {
-            system = "x86_64-linux";
-            hostname = "inari";
-          };
-          iso = mkHost {
-            system = "x86_64-linux";
-            hostname = "iso";
-          };
-          wsl-work = mkHost {
-            system = "x86_64-linux";
-            hostname = "wsl-work";
-          };
-        };
+          mkHost = import ./lib/mk-host.nix {inherit inputs self mkPkgs;};
+        in
+          inputs.nixpkgs.lib.genAttrs ["amaterasu" "tsukuyomi" "inari" "iso" "wsl-work"] (hostname: mkHost {inherit hostname;});
       };
 
       perSystem = {
@@ -270,73 +205,7 @@
           // specialArgs
         );
 
-        checks = let
-          hosts = ["amaterasu" "inari" "iso" "tsukuyomi" "wsl-work"];
-          # Scenario tests must be able to select network and unlock options
-          # even when the recovery wizard's machine-specific overrides exist.
-          inariTestConfiguration = self.nixosConfigurations.inari.extendModules {
-            modules = [{disabledModules = [./hosts/nixos/inari/recovery-local.nix];}];
-          };
-        in
-          (builtins.listToAttrs (
-            map (
-              hostname: {
-                name = "nixos-${hostname}";
-                value = self.nixosConfigurations.${hostname}.config.system.build.toplevel;
-              }
-            )
-            hosts
-          ))
-          // (builtins.listToAttrs (map (hostname: {
-            name = "boot-space-${hostname}";
-            value = import ./tests/boot-space.nix {
-              inherit pkgs;
-              configuration = self.nixosConfigurations.${hostname};
-            };
-          }) ["amaterasu" "inari"]))
-          // {
-            installer = import ./tests/installer.nix {inherit pkgs;};
-            recover-tool = import ./tests/recover-tool.nix {inherit pkgs;};
-            recover-disks = import ./tests/recover-disks.nix {
-              inherit pkgs;
-              package = myPkgs.yomi-recover;
-            };
-            recovery-options = import ./tests/recovery-options.nix {
-              inherit pkgs;
-              configuration = inariTestConfiguration;
-            };
-            calendar-sync = import ./tests/calendar-sync.nix {
-              inherit pkgs;
-              package = self.nixosConfigurations.inari.config.services.vdirsyncer.package;
-            };
-            persistence = import ./tests/persistence.nix {
-              inherit pkgs;
-              configurations = self.nixosConfigurations;
-            };
-            n8n-import = import ./tests/n8n-import.nix {
-              inherit pkgs;
-              configuration = self.nixosConfigurations.inari;
-            };
-            n8n-notifications = import ./tests/n8n-notifications.nix {inherit pkgs;};
-            custom-options = import ./tests/options.nix {
-              inherit pkgs;
-              configurations = self.nixosConfigurations;
-            };
-            backup-monitoring = import ./tests/backup-monitoring.nix {
-              inherit pkgs;
-              rules = self.nixosConfigurations.inari.config.services.grafana.provision.alerting.rules.settings;
-            };
-            recovery = import ./tests/recovery.nix {
-              inherit pkgs;
-              config = self.nixosConfigurations.inari.config;
-            };
-            app-state-zfs = import ./tests/app-state-zfs.nix {
-              inherit pkgs;
-              config = self.nixosConfigurations.inari.config;
-            };
-            dns-zones = dnsPackages.octodns-zones;
-            dns-sync = dnsPackages.octodns-sync;
-          };
+        checks = import ./checks {inherit self pkgs myPkgs dnsPackages;};
 
         formatter = pkgs.alejandra;
       };

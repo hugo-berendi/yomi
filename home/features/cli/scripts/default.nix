@@ -1,38 +1,30 @@
+# Sources live in ../script-src, outside the directory that cli/default.nix
+# symlinks to ~/.config/scripts and puts on PATH, so each of these names comes
+# from exactly one place: the package below, with its dependencies declared.
 {pkgs, ...}: let
-  uptimes = pkgs.writeShellScriptBin "uptimes" (builtins.readFile ./uptimes.sh);
+  uptimes = pkgs.writeShellApplication {
+    name = "uptimes";
+    runtimeInputs = with pkgs; [coreutils openssh gawk util-linux];
+    text = builtins.readFile ../script-src/uptimes.sh;
+  };
 
-  volume = pkgs.writeShellScriptBin "volume" (builtins.readFile ./volume.sh);
+  volume = pkgs.writeShellApplication {
+    name = "volume";
+    runtimeInputs = with pkgs; [wireplumber playerctl gawk];
+    text = builtins.readFile ../script-src/volume.sh;
+  };
 
-  backlight = pkgs.writeShellScriptBin "backlight" (builtins.readFile ./backlight.sh);
+  backlight = pkgs.writeShellApplication {
+    name = "backlight";
+    runtimeInputs = with pkgs; [brightnessctl gawk];
+    text = builtins.readFile ../script-src/backlight.sh;
+  };
 
-  rplc =
-    pkgs.writeShellScriptBin "rplc"
-    /*
-    bash
-    */
-    ''
-      #!/usr/bin/env bash
-
-      # Check if enough arguments are passed
-      if [ "$#" -lt 2 ]; then
-        echo "Usage: $0 <search-pattern> <replace-pattern> [directory]"
-        exit 1
-      fi
-
-      # Assign arguments to variables
-      search=$1
-      replace=$2
-
-      # Manually set the directory or use current directory
-      if [ -z "$3" ]; then
-        dir="."
-      else
-        dir=$3
-      fi
-
-      # Use fd and sd to replace text
-      fd -t f "$dir" -x sd "$search" "$replace" {}
-    '';
+  rplc = pkgs.writeShellApplication {
+    name = "rplc";
+    runtimeInputs = with pkgs; [fd sd];
+    text = builtins.readFile ../script-src/rplc.sh;
+  };
 in {
   home.packages = [uptimes rplc volume backlight];
 }

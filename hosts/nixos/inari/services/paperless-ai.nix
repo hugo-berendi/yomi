@@ -9,7 +9,7 @@
   # }}}
   # {{{ Service
   virtualisation.oci-containers.containers."paperless-ai" = {
-    image = "clusterzx/paperless-ai@sha256:2b65888163fd59716f1c8285b31c5bd0b30c9c3c192c42b516688e3887d4ba60";
+    image = (import ../images.nix).paperless-ai;
     environment = {
       PUID = "1000";
       PGID = "1000";
@@ -33,7 +33,7 @@
   };
 
   virtualisation.oci-containers.containers."paperless-ai-rag" = {
-    image = "clusterzx/paperless-ai@sha256:2b65888163fd59716f1c8285b31c5bd0b30c9c3c192c42b516688e3887d4ba60";
+    image = (import ../images.nix).paperless-ai;
     environment = {
       PUID = "1000";
       PGID = "1000";

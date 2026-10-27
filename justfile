@@ -102,6 +102,11 @@ rebuild:
 check:
   nix flake check --show-trace --keep-going
 
+[doc("Run only the cheap regression checks (a minute, no host builds); run before every push")]
+[group("ci")]
+check-quick:
+  nix build --no-link --accept-flake-config --show-trace .#checks.x86_64-linux.custom-options .#checks.x86_64-linux.persistence
+
 [doc("Check Nix code formatting")]
 [group("ci")]
 format-check:

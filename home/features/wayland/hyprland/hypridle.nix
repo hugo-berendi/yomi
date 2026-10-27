@@ -12,12 +12,16 @@
   # hosts/nixos/amaterasu/yubikey.nix). 1050 is Yubico's USB vendor id.
   # Only the lock is skipped -- dimming, screen-off and suspend still run,
   # and suspending still locks through before_sleep_cmd.
-  lockUnlessYubikey = pkgs.writeShellScript "lock-unless-yubikey" ''
-    if ${lib.getExe pkgs.gnugrep} -qsx 1050 /sys/bus/usb/devices/*/idVendor; then
-      exit 0
-    fi
-    exec ${lib.getExe' pkgs.systemd "loginctl"} lock-session
-  '';
+  lockUnlessYubikey = lib.getExe (pkgs.writeShellApplication {
+    name = "lock-unless-yubikey";
+    runtimeInputs = [pkgs.gnugrep pkgs.systemd];
+    text = ''
+      if grep -qsx 1050 /sys/bus/usb/devices/*/idVendor; then
+        exit 0
+      fi
+      exec loginctl lock-session
+    '';
+  });
 in {
   services.hypridle = {
     enable = true;
@@ -37,7 +41,7 @@ in {
         }
         {
           timeout = 600;
-          on-timeout = "${lockUnlessYubikey}";
+          on-timeout = lockUnlessYubikey;
         }
         {
           timeout = 660;

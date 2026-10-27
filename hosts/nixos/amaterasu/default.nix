@@ -5,7 +5,6 @@
 }: {
   # {{{ Imports
   imports = [
-    {yomi.tailscale.enable = true;}
     ../common
 
     ./hardware
@@ -17,6 +16,7 @@
 
   system.stateVersion = "24.05";
 
+  yomi.tailscale.enable = true;
   yomi.pilot.name = "hugob";
   yomi.machine.graphical = true;
   yomi.machine.gaming = true;

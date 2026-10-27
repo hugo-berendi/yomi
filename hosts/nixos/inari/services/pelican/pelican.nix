@@ -33,7 +33,7 @@ in {
     # moved to ghcr.io/pelican -- the old pelican-dev path no longer serves
     # even a pull token, so the previously pinned beta25 had become
     # unfetchable too.
-    image = "ghcr.io/pelican/panel:v1.0.0-beta38@sha256:46f356f3fda423b1d43f0dc3c71efc056cd8b9bec365d1d7817306a17ee5694a";
+    image = (import ../../images.nix).pelican-panel;
     environment = {
       "ADMIN_EMAIL" = "pelican@hugo-berendi.de";
       "APP_URL" = config.yomi.cloudflared.at.pelican.url;

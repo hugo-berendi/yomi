@@ -63,10 +63,14 @@
   # }}}
 
   environment.systemPackages = let
-    cloneConfig = pkgs.writeShellScriptBin "liftoff" ''
-      git clone https://github.com/hugo-berendi/yomi.git
-      cd yomi
-    '';
+    cloneConfig = pkgs.writeShellApplication {
+      name = "liftoff";
+      runtimeInputs = [pkgs.git];
+      text = ''
+        git clone https://github.com/hugo-berendi/yomi.git
+        cd yomi
+      '';
+    };
   in
     with pkgs; [
       git

@@ -40,6 +40,7 @@ just nixos-rebuild dry-build <host> # Quick eval check
 just lint                           # alejandra + stylua + statix + deadnix + ruff + shellcheck/shfmt
 just fmt                            # Format everything
 just check                          # nix flake check --show-trace --keep-going
+just check-quick                    # custom-options + persistence regression checks, run before pushing
 just import-host-key <host>         # Pin a host's real sshd key for knownHosts
 just sops-rekey                     # Rekey every secrets file
 ```
@@ -91,7 +92,7 @@ Forgejo Actions (`.forgejo/workflows/`):
 |-------|------|-----------|---------|
 | Common | `modules/common/` | Both NixOS + HM | Options usable from both sides (`yomi.pilot`, `yomi.theming`, `yomi.location`) |
 | NixOS | `modules/nixos/` | NixOS only | System modules (`yomi.cloudflared`, `yomi.restic`, `yomi.ports`) |
-| HM | `modules/home-manager/` | Home-manager only | User modules (`yomi.monitors`, `yomi.persistence`, `yomi.dev`) |
+| HM | `modules/home-manager/` | Home-manager only | User modules (`yomi.monitors`, `yomi.persistence`) |
 | Shared host | `hosts/nixos/common/` | All hosts | Base: users, networking, boot, persistence; `wsl.nix` is the shared WSL profile |
 | Per-host | `hosts/nixos/<host>/` | Single host | Hardware, partitions, services |
 | Home features | `home/features/` | Per-host HM | cli, desktop, neovim, productivity, wayland |
@@ -99,7 +100,7 @@ Forgejo Actions (`.forgejo/workflows/`):
 
 ### Flake structure
 
-- `mkHost` (`flake.nix:186`) wires each host: imports `hosts/nixos/<hostname>/`, plus `home/<hostname>.nix` if it exists
+- `mkHost` (in `flake.nix`) wires each host: imports `hosts/nixos/<hostname>/`, plus `home/<hostname>.nix` if it exists
 - `specialArgs` passes `inputs`, `outputs`, `upkgs` (unstable nixpkgs) to all modules
 - `home-manager.extraSpecialArgs` also passes `hostname`
 - `nixosModules` = `modules/nixos // modules/common`; `homeModules` = `modules/home-manager // modules/common`
@@ -110,7 +111,7 @@ Forgejo Actions (`.forgejo/workflows/`):
 
 - `yomi.pilot.*` — user settings (name, email, gitEmail, githubUser, gpgKey, sshIdentity)
 - `yomi.machine.*` — host capabilities (graphical, interactible, gaming)
-- `yomi.ports.*` — port registry, source of truth at `hosts/nixos/common/base/ports.nix`
+- `yomi.ports.*` — port registry, source of truth at `modules/nixos/ports.nix`
 - `yomi.cloudflared.at.<name>` — tunnel ingress (port, host, enableAnubis, enableIocaine)
 - `yomi.nginx.at.<name>` — nginx vhost shorthand
 - `yomi.dns.records` — octodns records, also feeding `/etc/hosts`

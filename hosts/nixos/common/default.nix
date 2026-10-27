@@ -17,7 +17,6 @@
 
     ../../../common
 
-    ./base/ports.nix
     ./cli/fish.nix
     ./cli/1password.nix
     ./nix.nix

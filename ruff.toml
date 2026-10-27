@@ -1,0 +1,2 @@
+# Notebooks under docs/plans are scratch output, not maintained code.
+extend-exclude = ["*.ipynb"]

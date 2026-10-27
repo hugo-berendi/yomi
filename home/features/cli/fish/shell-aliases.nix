@@ -25,6 +25,6 @@
 
     yolo = "fd --type f --hidden --exclude .git | fzf-tmux -p --reverse | xargs nvim";
 
-    upd = "$PROJECTS/yomi/scripts/rebuild.sh";
+    upd = "just --justfile $PROJECTS/yomi/justfile --working-directory $PROJECTS/yomi nixos-rebuild switch";
   };
 }

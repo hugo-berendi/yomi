@@ -91,7 +91,7 @@ workflow:
   metric names (`node_zfs_*` vs `zfs_*`, which labels exist, which values
   mean "healthy") and iterating on collisions in a real response — not by
   recalling what a generic node-exporter setup usually looks like. Port
-  numbers are in `hosts/nixos/common/base/ports.nix`.
+  numbers are in `modules/nixos/ports.nix`.
 - **Test Code node JavaScript with plain `node` before pasting it into the
   workflow JSON.** Mock `this.helpers.httpRequest` and `$input`/
   `$getWorkflowStaticData` with realistic sample data, run it, and read the

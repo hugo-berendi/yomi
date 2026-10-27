@@ -1,5 +1,6 @@
 {
   config,
+  lib,
   pkgs,
   ...
 }: let
@@ -11,12 +12,16 @@
   # and an `op read` on every run would ask the app for approval every time.
   bridgePasswordFile = "\$XDG_RUNTIME_DIR/bridge-mail-password";
   op = "/run/wrappers/bin/op";
-  readBridgePassword = pkgs.writeShellScript "bridge-mail-password" ''
-    if [ -s "${bridgePasswordFile}" ]; then
-      exec cat "${bridgePasswordFile}"
-    fi
-    exec ${op} read --no-newline ${bridgePasswordRef}
-  '';
+  readBridgePassword = pkgs.writeShellApplication {
+    name = "bridge-mail-password";
+    runtimeInputs = [pkgs.coreutils];
+    text = ''
+      if [ -s "${bridgePasswordFile}" ]; then
+        exec cat "${bridgePasswordFile}"
+      fi
+      exec ${op} read --no-newline ${bridgePasswordRef}
+    '';
+  };
 in {
   imports = [
     ./msmtp.nix
@@ -57,7 +62,7 @@ in {
         signByDefault = true;
       };
 
-      passwordCommand = "${readBridgePassword}";
+      passwordCommand = lib.getExe readBridgePassword;
       primary = true;
       # }}}
       # {{{ Imap / smtp configuration
@@ -95,12 +100,15 @@ in {
       Type = "oneshot";
       RemainAfterExit = true;
       UMask = "0077";
-      ExecStart = pkgs.writeShellScript "fetch-bridge-mail-password" ''
-        set -euo pipefail
-        file="$XDG_RUNTIME_DIR/bridge-mail-password"
-        ${op} read --no-newline ${bridgePasswordRef} > "$file.tmp"
-        mv "$file.tmp" "$file"
-      '';
+      ExecStart = lib.getExe (pkgs.writeShellApplication {
+        name = "fetch-bridge-mail-password";
+        runtimeInputs = [pkgs.coreutils];
+        text = ''
+          file="$XDG_RUNTIME_DIR/bridge-mail-password"
+          ${op} read --no-newline ${bridgePasswordRef} > "$file.tmp"
+          mv "$file.tmp" "$file"
+        '';
+      });
       ExecStop = "${pkgs.coreutils}/bin/rm -f %t/bridge-mail-password";
       # The app may still be starting or locked when the session comes up.
       Restart = "on-failure";

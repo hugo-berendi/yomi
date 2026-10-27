@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Refreshes `image = "repo:tag@sha256:...";` pins in oci-containers definitions
+# Refreshes `repo:tag@sha256:...` pins (hosts/nixos/inari/images.nix, plus any inline `image =`)
 # to whatever digest the registry currently serves for that tag. Digests are
 # pinned (not the bare tag) for reproducibility/security, so nothing moves
 # until this runs; there is no runtime auto-update.
@@ -31,7 +31,12 @@ digest_for() {
 		tr -d '\r' | awk -F': ' 'tolower($1)=="docker-content-digest"{print $2}'
 }
 
-mapfile -t files < <(grep -rlE 'image = "[^"]+@sha256:[a-f0-9]{64}"' --include='*.nix' hosts modules)
+mapfile -t files < <(
+	{
+		grep -rlE 'image = "[^"]+@sha256:[a-f0-9]{64}"' --include='*.nix' hosts modules
+		echo hosts/nixos/inari/images.nix
+	} | sort -u
+)
 
 any_changed=0
 for file in "${files[@]}"; do
