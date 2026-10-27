@@ -109,6 +109,10 @@
     calsync = lib.mkDefault 8504;
     proton-mail-sorter = lib.mkDefault 8505;
     n8n-alert-router = lib.mkDefault 8508;
+    # Loopback only: nginx's login-protected tunnel vhosts, and the
+    # oauth2-proxy they ask.
+    remote-access = lib.mkDefault 8509;
+    oauth2-proxy = lib.mkDefault 8510;
   };
   # }}}
 }

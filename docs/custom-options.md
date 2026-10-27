@@ -37,6 +37,18 @@ nginx starts by default only when it has enabled endpoints. iocaine starts when 
 
 DNS apex records use `at = ""`; `null` is normalized to the same representation. TTLs must be positive. Identical records are deduplicated across hosts; conflicting records are rejected when generating zones. Use a value list for multiple records of the same type.
 
+### Remote access without Tailscale
+
+`yomi.remoteAccess.endpoints` lists `yomi.nginx.at` names that also get a hostname on the Cloudflare tunnel, `<name>-<suffix>.<domain>` (suffix `remote` by default). Every request on those names must pass oauth2-proxy against Pocket ID (`issuerUrl`). Only accounts in `allowedEmails` (default: `yomi.pilot.email`) are admitted. nginx then forwards the request to the service's normal internal vhost under its internal name, and rewrites redirects and `Origin` between the two names. The login is enforced on inari, not in the Cloudflare dashboard. `tests/options.nix` runs the generated server blocks under nginx and checks the redirect to the login, the forwarding, and the closed connection for an unlisted name.
+
+Inari lists Homepage (`lab`), Grafana, Gatus (`status`), T3 Code, n8n and opencode (`code`) for the work laptop, but `enable` is false until the secrets exist. Before setting it to true:
+
+1. Create an OIDC client in Pocket ID with PKCE. Its callback URLs are `https://<name>-remote.hugo-berendi.de/oauth2/callback` for each endpoint. Allow only your own account or group.
+2. Add `remote_access_client_id`, `remote_access_client_secret` and `remote_access_cookie_secret` to `hosts/nixos/inari/secrets.yaml`. Generate the cookie secret with `openssl rand -base64 32 | tr -- '+/' '-_'`. sops-nix fails activation on a missing key, so this comes first.
+3. Set `enable = true` in `hosts/nixos/inari/services/remote-access.nix`, switch, then push DNS (`just dns-push`).
+
+The cookie is host-only and expires after 12 hours. A browser on a managed device can be subject to TLS inspection, so a session there can be visible to whoever runs that device. T3 Code and opencode give shell access to inari.
+
 ## Network exposure
 
 `yomi.ports` allocates numbers. `yomi.network.exposure` grants reachability separately:

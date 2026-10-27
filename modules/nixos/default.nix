@@ -17,6 +17,7 @@
   ports = import ./ports.nix;
   pounce = import ./pounce.nix;
   protonvpn = import ./protonvpn.nix;
+  remote-access = import ./remote-access.nix;
   steam-game-server = import ./steam-game-server.nix;
   vrising = import ./vrising;
   tailscale = import ./tailscale.nix;

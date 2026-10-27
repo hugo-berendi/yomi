@@ -123,8 +123,19 @@
       }
     ];
   };
+  remote = extend ({lib, ...}: {
+    yomi.remoteAccess = {
+      enable = lib.mkForce true;
+      upstream = "http://127.0.0.1:19704";
+    };
+    yomi.ports.remote-access = 19702;
+    yomi.ports.oauth2-proxy = 19703;
+  });
+  remoteVhosts = lib.filterAttrs (name: _: lib.hasPrefix "remote-" name && name != "remote-default") remote.services.nginx.virtualHosts;
   checks =
     [
+      (check "remote access vhosts all demand a login" (remoteVhosts != {} && lib.all (v: lib.hasPrefix "auth_request /oauth2/auth;" v.extraConfig) (lib.attrValues remoteVhosts) && valid remote))
+      (check "remote access admits listed accounts only" (remote.services.oauth2-proxy.email.domains == [] && remote.services.oauth2-proxy.email.addresses != null))
       (check "host override and matching DNS" (endpoint.yomi.nginx.at.fixture.host == "custom.example.org" && valid endpoint))
       (check "disabled endpoints need no upstream and create no vhost" (!(endpoint.services.nginx.virtualHosts ? "disabled-fixture.hugo-berendi.de") && !(endpoint.services.cloudflared.tunnels.${endpoint.yomi.cloudflared.tunnel}.ingress ? "disabled-fixture.hugo-berendi.de")))
       (check "iocaine is in the tunnel request path" (endpoint.services.cloudflared.tunnels.${endpoint.yomi.cloudflared.tunnel}.ingress."protected-fixture.hugo-berendi.de".service == "http://127.0.0.1:19601"))
@@ -185,6 +196,32 @@
       }
       server { listen 127.0.0.1:19401; location / { return 200 "anubis upstream"; } }
       server { listen 127.0.0.1:${toString endpoint.yomi.iocaine.port}; location / { return 200 "iocaine trap"; } }
+
+      # Remote access: the generated server bodies, a stand-in oauth2-proxy
+      # that accepts one cookie, and a stand-in internal vhost.
+      map $http_upgrade $connection_upgrade { default upgrade; "" close; }
+      server {
+        listen 127.0.0.1:19702 default_server;
+        ${remote.services.nginx.virtualHosts.remote-default.extraConfig}
+      }
+      server {
+        listen 127.0.0.1:19702;
+        server_name ${remote.services.nginx.virtualHosts.remote-grafana.serverName};
+        ${remote.services.nginx.virtualHosts.remote-grafana.extraConfig}
+      }
+      server {
+        listen 127.0.0.1:19703;
+        location = /oauth2/auth {
+          if ($http_cookie ~ "_oauth2_proxy=valid") { return 202; }
+          return 401;
+        }
+        location /oauth2/ { return 200 "oauth2 $http_x_forwarded_host"; }
+      }
+      server {
+        listen 127.0.0.1:19704;
+        location = /redirect { return 302 https://grafana.hugo-berendi.de/login; }
+        location / { return 200 "upstream $host $http_origin"; }
+      }
     }
   '';
 in
@@ -208,5 +245,19 @@ in
       test "$(cat "$TMPDIR/response")" = 'anubis upstream'
       test "$(curl --fail -s -A GPTBot http://127.0.0.1:19601/test)" = 'iocaine trap'
       test "$(curl --fail -s -A GPTBot http://127.0.0.1:19601/.well-known/@iocaine/test)" = 'iocaine trap'
+
+      # Remote access: no session is sent to the login, never to the service.
+      remote() { curl -s -H 'Host: grafana-remote.hugo-berendi.de' "$@"; }
+      test "$(remote -o /dev/null -w '%{http_code} %{redirect_url}' http://127.0.0.1:19702/d/x)" = '307 https://grafana-remote.hugo-berendi.de/oauth2/start?rd=/d/x'
+      test "$(remote http://127.0.0.1:19702/oauth2/start)" = 'oauth2 grafana-remote.hugo-berendi.de'
+      test "$(remote -b '_oauth2_proxy=valid' http://127.0.0.1:19702/d/x)" = 'upstream grafana.hugo-berendi.de '
+      test "$(remote -b '_oauth2_proxy=valid' -H 'Origin: https://grafana-remote.hugo-berendi.de' http://127.0.0.1:19702/)" = 'upstream grafana.hugo-berendi.de https://grafana.hugo-berendi.de'
+      test "$(remote -b '_oauth2_proxy=valid' -o /dev/null -w '%{redirect_url}' http://127.0.0.1:19702/redirect)" = 'https://grafana-remote.hugo-berendi.de/login'
+      # A name that is not a listed endpoint gets the connection closed.
+      # (`! cmd` would not trip set -e, so test the status explicitly.)
+      if curl -s -H 'Host: anything.hugo-berendi.de' -b '_oauth2_proxy=valid' http://127.0.0.1:19702/; then
+        echo "unlisted host was answered" >&2
+        exit 1
+      fi
       echo ${lib.escapeShellArg ("Passed " + toString (builtins.length checks) + " option regression checks")} > $out
     ''
