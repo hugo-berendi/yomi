@@ -12,6 +12,7 @@ import time
 from urllib.parse import urlsplit
 
 from analysis import MAX_BYTES, parse_export
+from quarantine import partition_records
 
 
 class AuthenticationRequired(Exception):
@@ -31,6 +32,7 @@ SYNC_STAGES = {
     "export_range_verify": "confirming the export period",
     "download": "downloading the export",
     "parse": "validating the export",
+    "quarantine": "checking source timestamps",
     "import": "importing the records",
     "report": "calculating the report",
 }
@@ -43,6 +45,7 @@ FAILURE_KINDS = {
     "conflicting_records",
     "storage_error",
     "operation_failed",
+    "future_timestamps",
     "range_control_absent",
     "range_control_ambiguous",
     "range_click_timeout",
@@ -68,6 +71,10 @@ def failure_kind(error, stage):
     if type(error).__name__ == "TargetClosedError":
         return "browser_closed"
     if isinstance(error, ValueError):
+        if str(error).startswith(
+            ("Export contains future records", "No timestamp-verified CGM records")
+        ):
+            return "future_timestamps"
         if stage == "configuration":
             return "invalid_configuration"
         if stage == "parse":
@@ -75,6 +82,22 @@ def failure_kind(error, stage):
         if stage == "import" and str(error).startswith("Conflicting records"):
             return "conflicting_records"
     return "storage_error" if isinstance(error, OSError) else "operation_failed"
+
+
+def retain_export(root, payload, name):
+    directory = root / name
+    directory.mkdir(mode=0o700, exist_ok=True)
+    directory.chmod(0o700)
+    target = directory / (hashlib.sha256(payload).hexdigest() + ".bin")
+    if not target.exists():
+        with tempfile.TemporaryDirectory(dir=directory) as pending:
+            path = Path(pending) / "export.bin"
+            with path.open("wb") as saved:
+                os.chmod(path, 0o600)
+                saved.write(payload)
+                saved.flush()
+                os.fsync(saved.fileno())
+            os.replace(path, target)
 
 
 @contextlib.contextmanager
@@ -433,7 +456,14 @@ def sync(
     root, fetch=None, now=None, refresh=False, interactive=False, code_prompt=None
 ):
     # Imported here to avoid a module cycle when invoked from the web process.
-    from app import database, import_records, build_report, get_state, put_state
+    from app import (
+        database,
+        import_records,
+        build_report,
+        get_state,
+        put_state,
+        VERIFIED_RECORDS,
+    )
 
     now = int(time.time() if now is None else now)
     stage = "configuration"
@@ -492,21 +522,23 @@ def sync(
                 )
                 if not any(row[0] == "cgm" for row in records):
                     raise ValueError("No CGM records")
+                progress("quarantine")
+                # Preserve uncertain groups before validating the remainder. A
+                # later import conflict must not lose their immutable evidence.
+                with database(root) as db:
+                    records, held_notices = partition_records(
+                        db, records, int(time.time())
+                    )
+                notices += held_notices
+                state["notices"] = notices
+                # Commit the ledger before archiving. An archive failure must
+                # not let a later retry silently admit the same source times.
                 if any("local clock-change timestamps" in n for n in notices):
-                    # Keep uncertain source events available for later review.
-                    # Content addressing makes overlapping retry exports idempotent.
-                    directory = root / "glooko-clock-change-exports"
-                    directory.mkdir(mode=0o700, exist_ok=True)
-                    target = directory / (hashlib.sha256(payload).hexdigest() + ".bin")
-                    if not target.exists():
-                        with tempfile.TemporaryDirectory(dir=directory) as pending:
-                            path = Path(pending) / "export.bin"
-                            with path.open("wb") as saved:
-                                os.chmod(path, 0o600)
-                                saved.write(payload)
-                                saved.flush()
-                                os.fsync(saved.fileno())
-                            os.replace(path, target)
+                    retain_export(root, payload, "glooko-clock-change-exports")
+                if held_notices:
+                    retain_export(root, payload, "glooko-quarantine-exports")
+                if not any(row[0] == "cgm" for row in records):
+                    raise ValueError("No timestamp-verified CGM records")
                 progress("import")
                 with database(root) as db:
                     db.execute("BEGIN IMMEDIATE")
@@ -517,7 +549,9 @@ def sync(
                         success=now,
                         next_attempt=now + 86400,
                         added=inserted,
-                        latest_cgm=max(row[1] for row in records if row[0] == "cgm"),
+                        latest_cgm=db.execute(
+                            f"SELECT max(ts) FROM records WHERE kind='cgm' AND {VERIFIED_RECORDS}"
+                        ).fetchone()[0],
                         notices=notices,
                         error=None,
                         error_code=None,

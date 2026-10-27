@@ -126,6 +126,16 @@ def presentation(report, selected, quality):
     notices = [
         f"Coverage {number(current['coverage'], '%')}: {number(current['observed_hours'], ' hours')} observed out of {(current['end'] - current['start']) / 3600:.0f} hours. Missing time is not filled."
     ]
+    timing = report.get("data_quality", {})
+    held_cgm, held_bolus = (
+        timing.get("quarantined_cgm_groups", 0),
+        timing.get("quarantined_bolus_groups", 0),
+    )
+    timestamp_attention = bool(held_cgm or held_bolus)
+    if timestamp_attention:
+        notices.append(
+            f"Timestamp verification pending: {held_cgm} CGM timestamp groups and {held_bolus} bolus timestamp groups remain excluded across stored history. Original entries are retained privately; time passing does not release them."
+        )
     if not report.get("comparable"):
         notices.append(
             "Limited comparison: at least one week has less than 70% glucose coverage."
@@ -172,6 +182,8 @@ def presentation(report, selected, quality):
     question_ids = (
         selected.get("question_ids", []) if selected else ["patterns", "lows"]
     )
+    if timestamp_attention:
+        question_ids = ["timestamps"] + question_ids
     questions = [
         QUESTIONS[key] for key in dict.fromkeys(question_ids) if key in QUESTIONS
     ][:2]
@@ -196,6 +208,7 @@ def presentation(report, selected, quality):
         sources=sources,
         questions=questions,
         sync_attention=sync_attention,
+        timestamp_attention=timestamp_attention,
         ai_available=bool(selected),
         url=public_url,
         low=report["low"],
@@ -215,6 +228,10 @@ def render(report, config, now, selected=None, quality=None):
     if view["sync_attention"]:
         lines.append(
             "Glooko sign-in needs attention. This report uses stored history; reconnect through your private journal."
+        )
+    elif view["timestamp_attention"]:
+        lines.append(
+            "Some source timestamps need verification. Flagged entries are excluded; valid history is included."
         )
     lines += [
         f"{tile['label']}: {tile['value']}. {tile['delta']}." for tile in view["tiles"]

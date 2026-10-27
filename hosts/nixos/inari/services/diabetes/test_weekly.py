@@ -9,6 +9,22 @@ from app import database, init_db
 
 
 class WeeklyTests(unittest.TestCase):
+    def test_timestamp_warning_persists_without_latest_import_notices(self):
+        from analysis import comparison
+        from report_email import presentation
+
+        report = comparison([], [], datetime(2026, 10, 26, 8, tzinfo=UTC))
+        report["data_quality"] = {
+            "quarantined_cgm_groups": 2,
+            "quarantined_bolus_groups": 0,
+        }
+        view = presentation(report, None, [])
+        self.assertTrue(view["timestamp_attention"])
+        self.assertTrue(any("2 CGM" in n for n in view["notices"]))
+        self.assertTrue(
+            any("verify the CGM timestamps" in q for q in view["questions"])
+        )
+
     def test_brief_preserves_exclusion_counts_across_export_files(self):
         from analysis import comparison
         from report_email import presentation

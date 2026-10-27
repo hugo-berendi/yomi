@@ -328,6 +328,116 @@ class AppTests(unittest.TestCase):
             sync(self.root, fetch=lambda _: payload, now=2000086500), "synced"
         )
 
+    def test_future_cgm_is_held_while_valid_history_imports(self):
+        self.connect_glooko()
+        payload = b"Timestamp,Type,Glucose (mg/dL),Insulin delivered (U),Carbs (g)\n1970-01-01T00:16:40Z,cgm,100,,\n2033-05-18T03:53:20Z,cgm,140,,\n1970-01-01T00:16:40Z,bolus,,1.5,20\n"
+        with patch("app.time.time", return_value=2000000000):
+            self.assertEqual(
+                sync(self.root, fetch=lambda _: payload, now=2000000000), "synced"
+            )
+        with database(self.root) as db:
+            self.assertEqual(
+                db.execute("SELECT count(*) FROM records").fetchone()[0], 2
+            )
+            self.assertEqual(
+                db.execute("SELECT count(*) FROM quarantined_records").fetchone()[0], 1
+            )
+            state = get_state(db, "glooko")
+            self.assertEqual(state["latest_cgm"], 1000)
+            self.assertTrue(
+                any(n.startswith("Withheld 1 CGM") for n in state["notices"])
+            )
+        with patch("app.time.time", return_value=2000086400):
+            self.assertEqual(
+                sync(self.root, fetch=lambda _: payload, now=2000086400), "synced"
+            )
+        with database(self.root) as db:
+            self.assertEqual(
+                db.execute("SELECT count(*) FROM records").fetchone()[0], 2
+            )
+            self.assertEqual(
+                db.execute("SELECT count(*) FROM quarantined_records").fetchone()[0], 1
+            )
+            self.assertEqual(get_state(db, "glooko")["added"], 0)
+        saved = list((self.root / "glooko-quarantine-exports").glob("*.bin"))
+        self.assertEqual(len(saved), 1)
+        self.assertEqual(saved[0].read_bytes(), payload)
+        self.assertEqual(saved[0].stat().st_mode & 0o777, 0o600)
+
+    def test_report_excludes_known_quarantined_history(self):
+        from quarantine import partition_records
+        from analysis import week_bounds
+
+        now = datetime(2026, 10, 26, 12, tzinfo=UTC)
+        start, _ = week_bounds(now)
+        with database(self.root) as db:
+            import_records(db, [("cgm", start, 100, None)])
+            partition_records(db, [("cgm", start, 100, None)], start - 600)
+            report = build_report(db, now)
+            self.assertEqual(report["weeks"][0]["coverage"], 0)
+            self.assertIsNone(report["weeks"][0]["mean"])
+            self.assertEqual(report["data_quality"]["quarantined_cgm_groups"], 1)
+            self.assertEqual(
+                db.execute("SELECT count(*) FROM records").fetchone()[0], 1
+            )
+
+    def test_entirely_future_cgm_stays_failed_but_is_retained(self):
+        self.connect_glooko()
+        payload = b"Timestamp,Type,Glucose (mg/dL)\n2033-05-18T03:53:20Z,cgm,140\n"
+        with patch("app.time.time", return_value=2000000000):
+            self.assertEqual(
+                sync(self.root, fetch=lambda _: payload, now=2000000000), "failed"
+            )
+        with database(self.root) as db:
+            self.assertEqual(
+                db.execute("SELECT count(*) FROM records").fetchone()[0], 0
+            )
+            self.assertEqual(
+                db.execute("SELECT count(*) FROM quarantined_records").fetchone()[0], 1
+            )
+            state = get_state(db, "glooko")
+            self.assertNotIn("success", state)
+            self.assertEqual(state["failure_kind"], "future_timestamps")
+            self.assertTrue(
+                any(n.startswith("Withheld 1 CGM") for n in state["notices"])
+            )
+
+    def test_archive_failure_cannot_undo_timestamp_quarantine(self):
+        self.connect_glooko()
+        credentials = self.root / "glooko-credentials.json"
+        config = json.loads(credentials.read_text())
+        config["timezone"] = "Europe/Berlin"
+        credentials.write_text(json.dumps(config))
+        payload = archive(
+            "cgm_data.csv",
+            "Timestamp,Glucose (mg/dL)\n1970-01-01T00:16:40Z,100\n2033-05-18T03:53:20Z,140\n25.10.2026 02:30,120\n",
+        )
+        with (
+            patch("app.time.time", return_value=2000000000),
+            patch(
+                "glooko_sync.retain_export",
+                side_effect=OSError("synthetic private marker"),
+            ),
+        ):
+            self.assertEqual(
+                sync(self.root, fetch=lambda _: payload, now=2000000000), "failed"
+            )
+        with database(self.root) as db:
+            self.assertEqual(
+                db.execute("SELECT count(*) FROM quarantined_records").fetchone()[0], 1
+            )
+            self.assertEqual(
+                db.execute("SELECT count(*) FROM records").fetchone()[0], 0
+            )
+        with patch("app.time.time", return_value=2000086400):
+            self.assertEqual(
+                sync(self.root, fetch=lambda _: payload, now=2000086400), "synced"
+            )
+        with database(self.root) as db:
+            self.assertEqual(
+                db.execute("SELECT count(*) FROM records").fetchone()[0], 1
+            )
+
     def test_clock_change_sync_retains_private_source_and_deduplicates(self):
         self.connect_glooko()
         path = self.root / "glooko-credentials.json"

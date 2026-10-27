@@ -42,6 +42,9 @@ from analysis import (
     weekly_history,
 )
 from memory import build_memory
+from quarantine import init_quarantine
+
+VERIFIED_RECORDS = "NOT EXISTS (SELECT 1 FROM quarantined_records q WHERE q.kind=records.kind AND q.ts=records.ts)"
 
 DEFAULTS = {
     "low": 70,
@@ -55,6 +58,7 @@ DEFAULTS = {
     "ai_enabled": True,
 }
 QUESTIONS = {
+    "timestamps": "Can we verify the CGM timestamps before interpreting hourly patterns?",
     "late": "What should my personal plan be when I remember a meal bolus during or after eating?",
     "patterns": "Do the highlighted high-glucose periods suggest a routine we should review together?",
     "lows": "Were there low-glucose periods alongside the highs that we should review?",
@@ -107,6 +111,7 @@ def init_db(root):
         CREATE TABLE IF NOT EXISTS sent (key TEXT PRIMARY KEY, ts INTEGER);
         CREATE TABLE IF NOT EXISTS state (key TEXT PRIMARY KEY, value TEXT);
         """)
+        init_quarantine(db)
         db.execute("BEGIN IMMEDIATE")
         if "event_index" not in {
             row["name"] for row in db.execute("PRAGMA table_info(records)")
@@ -196,18 +201,34 @@ def build_report(db, now=None):
     readings = [
         (r[0], r[1])
         for r in db.execute(
-            "SELECT ts,value FROM records WHERE kind='cgm' AND ts>=? ORDER BY ts",
+            f"SELECT ts,value FROM records WHERE kind='cgm' AND ts>=? AND {VERIFIED_RECORDS} ORDER BY ts",
             (cutoff,),
         )
     ]
     boluses = [
         tuple(r)
         for r in db.execute(
-            "SELECT ts,value,carbs FROM records WHERE kind='bolus' AND ts>=? ORDER BY ts",
+            f"SELECT ts,value,carbs FROM records WHERE kind='bolus' AND ts>=? AND {VERIFIED_RECORDS} ORDER BY ts",
             (cutoff,),
         )
     ]
     report = comparison(readings, boluses, now, cfg["low"], cfg["high"])
+    held = dict(
+        db.execute(
+            "SELECT kind,count(*) FROM (SELECT DISTINCT kind,ts FROM quarantined_records) GROUP BY kind"
+        )
+    )
+    report["data_quality"] = {
+        "quarantined_cgm_groups": held.get("cgm", 0),
+        "quarantined_bolus_groups": held.get("bolus", 0),
+    }
+    if held:
+        report["facts"].append(
+            {
+                "id": "timestamps",
+                "text": f"Timestamp verification pending: {held.get('cgm', 0)} CGM timestamp groups and {held.get('bolus', 0)} bolus timestamp groups remain excluded from analysis across stored history. Original entries are retained privately.",
+            }
+        )
     memory = build_memory(
         weekly_history(readings, boluses, now, cfg["low"], cfg["high"]),
         cfg["low"],
@@ -895,7 +916,7 @@ def create_app(root=None, config=None):
             weeks = report["weeks"][:2]
             data = [
                 db.execute(
-                    "SELECT ts,value FROM records WHERE kind='cgm' AND ts>=? AND ts<? ORDER BY ts",
+                    f"SELECT ts,value FROM records WHERE kind='cgm' AND ts>=? AND ts<? AND {VERIFIED_RECORDS} ORDER BY ts",
                     (w["start"], w["end"]),
                 ).fetchall()
                 for w in weeks
