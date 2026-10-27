@@ -1,26 +1,11 @@
+# Keymap order is the import order, so each file holds a run of the old
+# per-topic files in their original sequence.
 {
   imports = [
-    ./wrapped-lines.nix
-    ./window-resize.nix
-    ./move-lines.nix
-    ./undo-breakpoints.nix
-    ./save-quit.nix
-    ./search.nix
-    ./diagnostics.nix
-    ./inspect.nix
-    ./terminal.nix
-    ./window.nix
-    ./tabs.nix
-    ./snacks-pickers.nix
-    ./snacks-notifications.nix
-    ./snacks-buffers.nix
-    ./snacks-git.nix
-    ./snacks-terminal.nix
-    ./snacks-words.nix
-    ./snacks-rename.nix
-    ./yazi.nix
+    ./basics.nix
+    ./navigation.nix
+    ./snacks.nix
     ./tools.nix
-    ./lsp.nix
     ./editing.nix
   ];
 }

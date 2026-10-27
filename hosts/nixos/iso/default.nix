@@ -15,7 +15,7 @@
   # }}}
 
   # kagutsuchi, the key stick, is LUKS-encrypted and has no automount here:
-  # scripts/live.sh unlocks it through scripts/kagutsuchi.sh, which asks for
+  # scripts/recovery/live.sh unlocks it through scripts/recovery/kagutsuchi.sh, which asks for
   # its passphrase. cryptsetup and e2fsprogs come with the installer profile.
 
   users.users.root = {
@@ -93,4 +93,5 @@
   environment.defaultPackages = [];
 
   yomi.wireless.enable = false;
+  yomi.filesystems.persistPaths = []; # no impermanence layout to mark neededForBoot
 }

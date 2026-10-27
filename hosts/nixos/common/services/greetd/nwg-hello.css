@@ -1,0 +1,66 @@
+* {
+  font-family: "@font@";
+  color: @base05@;
+}
+
+window {
+  background-image: linear-gradient(rgba(@base00Rgb@, 0.28), rgba(@base00Rgb@, 0.5)), url("@image@");
+  background-size: cover;
+  background-position: center;
+}
+
+#form-wrapper {
+  background-color: rgba(@base00Rgb@, 0.7);
+  border: 2px solid rgba(@base0DRgb@, 0.72);
+  border-radius: 24px;
+  padding: 28px;
+  box-shadow: 0 12px 36px rgba(@base00Rgb@, 0.58);
+}
+
+entry,
+button,
+combobox button {
+  background: rgba(@base01Rgb@, 0.76);
+  border: 1px solid rgba(@base0DRgb@, 0.58);
+  border-radius: 14px;
+  padding: 12px 16px;
+}
+
+entry:focus,
+button:hover,
+combobox button:hover {
+  background: rgba(@base02Rgb@, 0.9);
+  border-color: @base0D@;
+}
+
+#login-button {
+  color: @base00@;
+  background: @base0D@;
+  font-weight: 700;
+}
+
+#power-button {
+  background: transparent;
+  border: none;
+}
+
+#power-button:hover {
+  background: rgba(@base02Rgb@, 0.72);
+}
+
+#welcome-label {
+  color: @base06@;
+  font-size: 42px;
+  font-weight: 700;
+}
+
+#clock-label {
+  color: @base06@;
+  font-size: 34px;
+  font-weight: 700;
+}
+
+#date-label {
+  color: @base04@;
+  font-size: 16px;
+}

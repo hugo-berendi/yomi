@@ -19,7 +19,7 @@ in {
   };
   # }}}
   # {{{ Storage
-  environment.persistence."/persist/state".directories = [
+  yomi.persistence.at.state.apps.audiobookshelf.directories = [
     {
       directory = "/var/lib/audiobookshelf";
       mode = "u=rwx,g=,o=";

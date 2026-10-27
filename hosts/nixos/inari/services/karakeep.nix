@@ -57,7 +57,7 @@
   };
   # }}}
   # {{{ Storage
-  environment.persistence."/persist/state".directories = [
+  yomi.persistence.at.state.apps.karakeep.directories = [
     {
       directory = "/var/lib/karakeep";
       mode = "u=rwx,g=,o=";

@@ -3,7 +3,7 @@
   lib,
   ...
 }: let
-  engines = lib.importTOML ../../../../home/features/desktop/browser/engines.toml;
+  engines = lib.importTOML ../../../../common/browser/engines.toml;
   siteSearch = lib.concatMap (
     name:
       map (shortcut: {
@@ -17,7 +17,7 @@
       engines.${name}.aliases
   ) (builtins.attrNames engines);
   extensionUpdateUrl = "https://services.helium.imput.net/ext/";
-  extensions = import ../../../../home/features/desktop/browser/extensions.nix;
+  extensions = import ../../../../common/browser/extensions.nix;
   initialPreferences.extensions.theme.system_theme = 0;
   policies = {
     AlwaysOpenPdfExternally = true;

@@ -1,11 +1,14 @@
-{stdenv}: let
+{
+  stdenv,
+  fetchurl,
+}: let
   emailHash = "b46df8890e0fa6b50a85b2ce5eabb492ddd71a03f4c33045a8fecdb090cb25e2";
 in
   stdenv.mkDerivation {
     name = "avatar";
-    src = builtins.fetchurl {
+    src = fetchurl {
       url = "https://gravatar.com/avatar/${emailHash}.png?size=500";
-      sha256 = "090pkfq2rdby4ryzk0nw7m3mwj0dw2wziyplifw708v0ig4xjqm8";
+      hash = "sha256-qGLZyYtgI3C4i/T6+LngDUheRz3cgvl9Jn61LLCbFyQ=";
     };
     unpackPhase = "true";
 

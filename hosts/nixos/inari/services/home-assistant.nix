@@ -206,7 +206,7 @@
   };
   # }}}
   # {{{ Persistence
-  environment.persistence."/persist/state".directories = [
+  yomi.persistence.at.state.apps.home-assistant.directories = [
     {
       directory = "/var/lib/hass";
       user = "hass";

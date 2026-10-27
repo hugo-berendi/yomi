@@ -192,7 +192,7 @@
     };
   });
 in {
-  imports = [./options.nix];
+  imports = [./options];
 
   config = lib.mkIf cfg.enable {
     sops.secrets.vrising_rcon_password = {

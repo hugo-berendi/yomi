@@ -33,11 +33,11 @@ Every ten minutes n8n starts one background job through an authenticated loopbac
 
 | File | Role |
 |------|------|
-| `hosts/nixos/inari/services/protonmail-bridge.nix` | Bridge as a system service, tailnet relay, sorter settings |
+| `hosts/nixos/inari/services/protonmail-bridge/default.nix` | Bridge as a system service, tailnet relay, sorter settings |
 | `hosts/nixos/inari/services/protonmail-bridge/bridge-cert.pem` | Bridge's public certificate, pinned. Absent until the first login (see below) |
-| `hosts/nixos/inari/services/proton-mail-sorter.nix` | Worker module and workflow registration |
+| `hosts/nixos/inari/services/proton-mail-sorter/default.nix` | Worker module and workflow registration |
 | `hosts/nixos/inari/services/proton-mail-sorter/` | Worker, classifier, tests, and the sops file with the 1Password token |
-| `hosts/nixos/inari/services/llama-cpp-classifier.nix` | llama.cpp on loopback serving Qwen3.5-9B, thinking off |
+| `hosts/nixos/inari/services/llama-cpp/classifier.nix` | llama.cpp on loopback serving Qwen3.5-9B, thinking off |
 | `hosts/nixos/inari/services/n8n/workflows/proton-*.json` | Scheduled and manual triggers |
 
 The relay and the sorter turn on together when `bridge-cert.pem` exists. Before that, a switch starts only Bridge.
@@ -72,8 +72,8 @@ The service-account token is in `proton-mail-sorter/secrets.yaml`, encrypted wit
 5. **Switch again.** This starts the stunnel relay, nginx on 993/465 with an ACME certificate for `mail.hugo-berendi.de`, and the worker in preview mode (`apply = false`). n8n imports both workflows, inactive.
 6. **Attach the n8n credential.** Create an HTTP Header Auth credential with header `Authorization` and value `Bearer <api-token>`, and attach it to the **Start private job** node of both workflows. It stays in n8n's encrypted store.
 7. **Run a preview.** Run the sorting workflow manually. HTTP 202 only means the job started. `journalctl -u proton-mail-sorter` shows the counters. The plan, with subjects, is in `/var/lib/private/proton-mail-sorter/plan-*.jsonl`. Keep it private.
-8. **Go live after review.** Set `apply = true` in `protonmail-bridge.nix`, switch, and activate the scheduled workflow in n8n.
-9. **Pull the credential ID back.** Use `just n8n-export` as described in `services/n8n/AGENTS.md` to bring the real credential ID into the JSON. Only then consider `enforce = true`.
+8. **Go live after review.** Set `apply = true` in `protonmail-bridge/default.nix`, switch, and activate the scheduled workflow in n8n.
+9. **Pull the credential ID back.** Use `just n8n-export` as described in `docs/n8n.md` to bring the real credential ID into the JSON. Only then consider `enforce = true`.
 
 Other devices use `mail.hugo-berendi.de`: IMAP on 993 and SMTP on 465, both SSL/TLS, with the inari Bridge credentials. The name resolves to inari's tailscale address, so it works only on the tailnet.
 

@@ -63,7 +63,7 @@ in {
       # {{{ Imap / smtp configuration
       # Proton Mail Bridge on inari, over the tailnet: nginx terminates TLS
       # with a real certificate and hands off to Bridge through a pinned
-      # STARTTLS relay (hosts/nixos/inari/services/protonmail-bridge.nix).
+      # STARTTLS relay (hosts/nixos/inari/services/protonmail-bridge/default.nix).
       # The password is the Bridge's own (its `info` command), not the
       # Proton account password.
       imap = {

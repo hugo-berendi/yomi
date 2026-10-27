@@ -1,6 +1,6 @@
 {config, ...}: {
   # Backups of /persist/data and /persist/state, pushed over sftp to a
-  # dedicated, chrooted account on inari (see hosts/nixos/inari/services/restic.nix).
+  # dedicated, chrooted account on inari (see hosts/nixos/inari/services/restic/default.nix).
   #
   # Unlike inari's own local set, this is real redundancy: a different disk in
   # a different box, not another dataset on the same one. It is also only

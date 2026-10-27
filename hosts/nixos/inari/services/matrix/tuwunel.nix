@@ -185,7 +185,7 @@ in {
   # {{{ Persistence
   # HACK: https://github.com/nix-community/impermanence/issues/254
   systemd.services.tuwunel.serviceConfig.DynamicUser = lib.mkForce false;
-  environment.persistence."/persist/state".directories = [
+  yomi.persistence.at.state.apps.tuwunel.directories = [
     {
       directory = "/var/lib/${config.services.matrix-tuwunel.stateDirectory}";
       user = config.services.matrix-tuwunel.user;

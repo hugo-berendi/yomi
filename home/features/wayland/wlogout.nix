@@ -65,14 +65,15 @@ in {
   config = {
     yomi.sessionMenu = lib.getExe sessionMenu;
 
-    home.packages = [pkgs.wlogout sessionMenu];
+    home.packages = [sessionMenu];
 
-    xdg.configFile = {
-      # wlogout reads a stream of bare objects, not an array: a JSON list makes
-      # it exit 3 with "Invalid JSON Data" before drawing anything.
-      "wlogout/layout".text = lib.concatMapStrings (e: builtins.toJSON e + "\n") layout;
+    programs.wlogout = {
+      enable = true;
+      # The module renders a stream of bare objects, not an array: wlogout exits
+      # 3 with "Invalid JSON Data" on a JSON list.
+      inherit layout;
 
-      "wlogout/style.css".text = ''
+      style = ''
         * {
           background-image: none;
           box-shadow: none;

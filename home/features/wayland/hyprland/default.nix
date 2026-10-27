@@ -365,7 +365,7 @@ in {
   '';
   # }}}
   # {{{ Pyprland config
-  home.file.".config/hypr/pyprland.toml".text =
+  xdg.configFile."hypr/pyprland.toml".text =
     /*
     toml
     */

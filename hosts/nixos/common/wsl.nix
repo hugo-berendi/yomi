@@ -21,6 +21,7 @@
 
   # {{{ Disable features not applicable to WSL
   yomi.persistence.enable = false;
+  yomi.filesystems.persistPaths = []; # no impermanence layout to mark neededForBoot
   yomi.wireless.enable = false;
   boot.initrd.systemd.enable = lib.mkForce false;
   systemd.oomd.enable = lib.mkForce false;

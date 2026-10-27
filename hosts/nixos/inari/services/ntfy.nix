@@ -47,7 +47,7 @@ in {
   };
   # }}}
   # {{{ Storage
-  environment.persistence."/persist/state".directories = [
+  yomi.persistence.at.state.apps.ntfy.directories = [
     {
       directory = "/var/lib/ntfy-sh";
       mode = "u=rwx,g=,o=";

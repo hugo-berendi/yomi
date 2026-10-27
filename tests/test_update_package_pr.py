@@ -6,7 +6,7 @@ import tempfile
 import unittest
 
 
-SCRIPT = Path(__file__).resolve().parents[1] / "scripts/update-package-pr.py"
+SCRIPT = Path(__file__).resolve().parents[1] / "scripts/ci/update-package-pr.py"
 spec = importlib.util.spec_from_file_location("update_package_pr", SCRIPT)
 publisher = importlib.util.module_from_spec(spec)
 

@@ -60,7 +60,7 @@ in {
   };
   # }}}
   # {{{ Storage
-  environment.persistence."/persist/state".directories = [
+  yomi.persistence.at.state.apps.healthchecks.directories = [
     {
       directory = config.services.healthchecks.dataDir;
       mode = "u=rwx,g=,o=";

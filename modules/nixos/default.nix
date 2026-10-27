@@ -5,9 +5,11 @@
   postgres = import ./postgres.nix;
   meilisearch = import ./meilisearch.nix;
   acme = import ./acme.nix;
+  machine = import ./machine.nix;
   network-exposure = import ./network-exposure.nix;
   persistence = import ./persistence.nix;
   nginx = import ./nginx.nix;
+  filesystems = import ./filesystems.nix;
   endpoint-checks = import ./endpoint-checks.nix;
   cloudflared = import ./cloudflared.nix;
   iocaine = import ./iocaine.nix;
@@ -17,5 +19,7 @@
   protonvpn = import ./protonvpn.nix;
   steam-game-server = import ./steam-game-server.nix;
   vrising = import ./vrising;
+  tailscale = import ./tailscale.nix;
   windrose = import ./windrose.nix;
+  wireless = import ./wireless;
 }

@@ -150,10 +150,10 @@
     (check "recovery snapshots have a format tag" (lib.elem "--tag app-state-v1" base.config.services.restic.backups.offsite.extraBackupArgs))
     (check "Matrix bridge databases persist despite static service users" (lib.all (name: lib.any (d: d.directory == "/var/lib/${name}" && d.user == name && d.group == name) base.config.environment.persistence."/persist/state".directories) ["mautrix-discord" "mautrix-signal" "mautrix-whatsapp"]))
     (check "immich retains filesystem sandbox" (base.config.systemd.services.immich-server.serviceConfig.ProtectSystem == "strict" && lib.elem base.config.services.immich.mediaLocation base.config.systemd.services.immich-server.serviceConfig.ReadWritePaths))
-    (check "locally sandboxed units have commands" (lib.all (name: (base.config.systemd.services.${name}.serviceConfig.ExecStart or "") != "") ["immich-server" "immich-machine-learning" "immich-public-proxy" "karakeep-init" "karakeep-web" "karakeep-workers" "llama-cpp" "llama-cpp-classifier" "mail-sorter"]))
+    (check "locally sandboxed units have commands" (lib.all (name: (base.config.systemd.services.${name}.serviceConfig.ExecStart or "") != "") ["immich-server" "immich-machine-learning" "immich-public-proxy" "karakeep-init" "karakeep-web" "karakeep-workers" "llama-cpp" "llama-cpp-classifier" "proton-mail-sorter"]))
     (check "collector retains disk access" (base.config.systemd.services.scrutiny-collector.serviceConfig.PrivateDevices == false))
     (check "miniflux address families have one definition" (base.config.systemd.services.miniflux.serviceConfig.RestrictAddressFamilies == ["AF_INET" "AF_INET6" "AF_UNIX" "AF_NETLINK"]))
-    (check "installer and WSL do not run unused proxies" (lib.all (name: let c = configurations.${name}.config; in !c.services.nginx.enable && !c.yomi.iocaine.enable) ["iso" "wsl"]))
+    (check "installer and WSL do not run unused proxies" (lib.all (name: let c = configurations.${name}.config; in !c.services.nginx.enable && !c.yomi.iocaine.enable) ["iso" "tsukuyomi" "wsl-work"]))
   ];
   failures = map (c: c.name) (lib.filter (c: !c.assertion) checks);
   proxyConfig = pkgs.writeText "endpoint-fixture.conf" ''

@@ -190,7 +190,7 @@ gc:
 [doc("Move home persistence data into the per-app storage layout; pass --apply to commit to it")]
 [group("nix")]
 migrate-home-persistence host=hostname *args:
-  nix develop -c python3 scripts/migrate-home-persistence.py {{host}} {{args}}
+  nix develop -c python3 scripts/ops/migrate-home-persistence.py {{host}} {{args}}
 # }}}
 # {{{ Age / sops related thingies
 [doc("Save the user's SSH key as a key usable by sops")]
@@ -326,7 +326,7 @@ export-keys:
   #!/usr/bin/env bash
   set -euo pipefail
 
-  sudo scripts/kagutsuchi.sh open
+  sudo scripts/recovery/kagutsuchi.sh open
 
   dir=/kagutsuchi/secrets/{{hostname}}/
   sudo mkdir -p $dir
@@ -335,7 +335,7 @@ export-keys:
   sudo cp /home/*/.ssh/id* $dir
 
   sudo touch $dir/disk.key
-  sudo scripts/kagutsuchi.sh close
+  sudo scripts/recovery/kagutsuchi.sh close
   echo "💫 Don't forget to provide a disk encryption key!"
 # }}}
 # {{{ DNS
@@ -413,7 +413,7 @@ dns-clear zoneid bearerfile="/run/secrets/cloudflare_dns_api_token":
 [doc("Report evaluated service sandbox settings; use --json to save a baseline or --baseline FILE to compare")]
 [group("security")]
 hardening-report host=hostname *args:
-  nix develop -c python3 scripts/hardening-report.py {{host}} {{args}}
+  nix develop -c python3 scripts/ops/hardening-report.py {{host}} {{args}}
 
 [doc("Audit systemd service hardening using systemd-analyze security")]
 [group("security")]

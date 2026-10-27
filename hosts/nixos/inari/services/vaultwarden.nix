@@ -29,7 +29,7 @@
   };
   # }}}
   # {{{ Storage
-  environment.persistence."/persist/state".directories = [
+  yomi.persistence.at.state.apps.vaultwarden.directories = [
     {
       directory = "/var/lib/bitwarden_rs";
       mode = "u=rwx,g=,o=";

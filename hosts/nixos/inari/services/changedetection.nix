@@ -4,19 +4,23 @@
   pkgs,
   ...
 }: let
+  dockerNetwork = import ../lib/docker-network.nix;
   dataDir = "/persist/state/var/lib/changedetection";
   networkName = "changedetection_default";
   port = config.yomi.ports.changedetection;
-  notificationUrl = pkgs.writeShellScript "changedetection-notification-url" ''
-    set -euo pipefail
-    password=$(cat ${config.sops.secrets.no_reply_smtp_password.path})
-    encoded=$(printf '%s' "$password" | ${lib.getExe pkgs.jq} -sRr @uri)
-    echo "mailtos://no-reply%40tengu.hugo-berendi.de:$encoded@smtp.migadu.com?to=personal@hugo-berendi.de&from=no-reply%40tengu.hugo-berendi.de&name=Changedetection"
-  '';
+  notificationUrl = pkgs.writeShellApplication {
+    name = "changedetection-notification-url";
+    runtimeInputs = [pkgs.coreutils];
+    text = ''
+      password=$(cat ${config.sops.secrets.no_reply_smtp_password.path})
+      encoded=$(printf '%s' "$password" | ${lib.getExe pkgs.jq} -sRr @uri)
+      echo "mailtos://no-reply%40tengu.hugo-berendi.de:$encoded@smtp.migadu.com?to=personal@hugo-berendi.de&from=no-reply%40tengu.hugo-berendi.de&name=Changedetection"
+    '';
+  };
 
   setupNotifications = pkgs.writeShellScript "changedetection-setup-notifications" ''
     set -euo pipefail
-    url=$(${notificationUrl})
+    url=$(${lib.getExe notificationUrl})
     api="http://127.0.0.1:${toString port}/api/v1/notifications"
     curl="${lib.getExe pkgs.curl} -sf --max-time 15 --retry 3 --retry-delay 2"
 
@@ -64,7 +68,10 @@ in {
       # A fixed bridge name so nftables can name it; an unnamed br-<hash> is not
       # in the input chain, so replies from the container were dropped and the
       # published port on 127.0.0.1 simply hung.
-      docker network inspect ${networkName} || docker network create --opt com.docker.network.bridge.name=br-changedet ${networkName}
+      ${dockerNetwork {
+        name = networkName;
+        options = ["--opt com.docker.network.bridge.name=br-changedet"];
+      }}
     '';
     wantedBy = ["multi-user.target"];
   };
@@ -76,7 +83,7 @@ in {
   # }}}
   # {{{ Containers
   virtualisation.oci-containers.containers.changedetection-browser = {
-    image = "dgtlmoon/sockpuppetbrowser:latest@sha256:1d8f72d2ce2085faed4232e5ae1e65c02efe5b831a18e127829b267c260b4fb2";
+    image = "dgtlmoon/sockpuppetbrowser@sha256:1d8f72d2ce2085faed4232e5ae1e65c02efe5b831a18e127829b267c260b4fb2";
     autoStart = true;
     environment = {
       SCREEN_WIDTH = "1920";
@@ -92,7 +99,7 @@ in {
   };
 
   virtualisation.oci-containers.containers.changedetection = {
-    image = "ghcr.io/dgtlmoon/changedetection.io:latest@sha256:096dae27b5d677b89f0e810fff95a70403271aa3ff3b6437952d2db9be7e74c5";
+    image = "ghcr.io/dgtlmoon/changedetection.io@sha256:096dae27b5d677b89f0e810fff95a70403271aa3ff3b6437952d2db9be7e74c5";
     autoStart = true;
     dependsOn = ["changedetection-browser"];
     ports = ["127.0.0.1:${toString port}:5000"];

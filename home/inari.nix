@@ -1,31 +1,17 @@
-{
-  pkgs,
-  upkgs,
-  ...
-}: {
+{pkgs, ...}: {
   imports = [
     ./global.nix
     ./features/desktop/wakatime
   ];
   home = {
-    file = {};
-    sessionVariables = {EDITOR = "nvim";};
     packages = with pkgs; [
-      pay-respects
-      sxiv
       # upkgs.unityhub
       # upkgs.nerdfetch # for displaying pc/laptop stats
-      upkgs.nh
-      upkgs.nix-output-monitor
-      upkgs.nvd
 
       # {{{ Clis
-      sops # Secret editing
       # sherlock # Search for usernames across different websites
       # }}}
       # {{{ Media playing/recording
-      mpv # Video player
-      imv # Image viewer
       # peek # GIF recorder
       # obs-studio # video recorder
       # }}}

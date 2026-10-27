@@ -1,6 +1,5 @@
 _: {
   imports = [
-    ../../common/filesystems
     (import ./partitions.nix {})
   ];
 

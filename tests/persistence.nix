@@ -3,7 +3,7 @@
   configurations,
 }: let
   inherit (pkgs) lib;
-  wsl = configurations.wsl.config;
+  wsl = configurations.tsukuyomi.config; # same profile as wsl-work
   fixture =
     (configurations.inari.extendModules {
       modules = [

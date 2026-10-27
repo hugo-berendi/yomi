@@ -37,21 +37,25 @@
   # job runs as nextcloud and writes into the paperless consume directory
   # through the paperless group; the follow-up scan drops the now-missing rows
   # from Nextcloud's file cache.
-  paperlessHandoff = pkgs.writeShellScript "nextcloud-to-paperless" ''
-    shopt -s nullglob
-    for inbox in ${cfg.datadir}/data/*/files/${paperlessInbox}; do
-      user=$(basename "$(dirname "$(dirname "$inbox")")")
-      moved=0
-      for f in "$inbox"/*; do
-        [ -f "$f" ] || continue
-        # Skip files a sync client is still uploading.
-        [ -n "$(find "$f" -mmin -1 -print -quit)" ] && continue
-        mv -n -- "$f" "${consumeDir}/nextcloud-$user-$(basename "$f")" && moved=1
+  paperlessHandoff = pkgs.writeShellApplication {
+    name = "nextcloud-to-paperless";
+    runtimeInputs = [pkgs.coreutils pkgs.findutils];
+    text = ''
+      shopt -s nullglob
+      for inbox in ${cfg.datadir}/data/*/files/${paperlessInbox}; do
+        user=$(basename "$(dirname "$(dirname "$inbox")")")
+        moved=0
+        for f in "$inbox"/*; do
+          [ -f "$f" ] || continue
+          # Skip files a sync client is still uploading.
+          [ -n "$(find "$f" -mmin -1 -print -quit)" ] && continue
+          mv -n -- "$f" "${consumeDir}/nextcloud-$user-$(basename "$f")" && moved=1
+        done
+        [ "$moved" = 1 ] && { ${occ} files:scan --path="$user/files/${paperlessInbox}" --quiet || true; }
       done
-      [ "$moved" = 1 ] && ${occ} files:scan --path="$user/files/${paperlessInbox}" --quiet
-    done
-    exit 0
-  '';
+      exit 0
+    '';
+  };
   # }}}
 in {
   # {{{ reverse proxy
@@ -306,7 +310,7 @@ in {
     serviceConfig = {
       Type = "oneshot";
       User = "nextcloud";
-      ExecStart = paperlessHandoff;
+      ExecStart = lib.getExe paperlessHandoff;
     };
     path = [pkgs.coreutils pkgs.findutils];
   };
@@ -327,7 +331,7 @@ in {
   };
   # }}}
   # {{{ storage
-  environment.persistence."/persist/state".directories = [
+  yomi.persistence.at.state.apps.nextcloud.directories = [
     {
       directory = cfg.home;
       user = "nextcloud";

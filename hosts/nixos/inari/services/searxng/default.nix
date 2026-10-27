@@ -124,8 +124,8 @@ in {
   ];
   # }}}
 
-  environment.persistence."/persist/state".directories = [
-    "/var/lib/searx"
+  yomi.persistence.at.state.apps.searxng.directories = [
+    {directory = "/var/lib/searx";}
   ];
 
   systemd.services.searx.serviceConfig =

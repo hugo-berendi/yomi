@@ -3,6 +3,7 @@
   config,
   ...
 }: let
+  dockerNetwork = import ../../lib/docker-network.nix;
   # Wings reads its whole configuration from one YAML file, node credentials
   # included. Rendering it through sops keeps the node token out of a
   # repository that is mirrored to a public forge, and produces a real file
@@ -52,7 +53,10 @@ in {
       RemainAfterExit = true;
     };
     script = ''
-      docker network inspect pelican_nw || docker network create --subnet 172.21.0.0/16 --driver bridge pelican_nw
+      ${dockerNetwork {
+        name = "pelican_nw";
+        options = ["--subnet 172.21.0.0/16" "--driver bridge"];
+      }}
     '';
     preStop = ''
       docker network rm pelican_nw || true
@@ -98,9 +102,9 @@ in {
     "d /etc/pelican 0700 root root -"
     "d /var/lib/pelican/volumes 0700 root root -"
   ];
-  environment.persistence."/persist/state".directories = [
-    "/etc/pelican"
-    "/var/lib/pelican"
+  yomi.persistence.at.state.apps.pelican.directories = [
+    {directory = "/etc/pelican";}
+    {directory = "/var/lib/pelican";}
   ];
 
   environment.systemPackages = [pkgs.pelican-wings];

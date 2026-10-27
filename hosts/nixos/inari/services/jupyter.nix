@@ -90,8 +90,8 @@ in {
   # {{{ Networking & persistence
   yomi.cloudflared.at.jupyter.port = config.yomi.ports.jupyterhub;
 
-  environment.persistence."/persist/state".directories = [
-    "/var/lib/${config.services.jupyterhub.stateDirectory}"
+  yomi.persistence.at.state.apps.jupyter.directories = [
+    {directory = "/var/lib/${config.services.jupyterhub.stateDirectory}";}
   ];
   # }}}
 }

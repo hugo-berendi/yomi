@@ -3,7 +3,7 @@
   pkgs,
   ...
 }: let
-  extensions = import ./extensions.nix;
+  extensions = import ../../../../common/browser/extensions.nix;
   extensionUpdateUrl = "https://services.helium.imput.net/ext/";
 in {
   home.packages = [pkgs.helium];

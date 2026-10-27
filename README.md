@@ -12,10 +12,10 @@ and a self-hosted homelab. It is based on
 | Host                                  | Role                                                   |
 | ------------------------------------- | ------------------------------------------------------ |
 | [amaterasu](./hosts/nixos/amaterasu/) | Framework 13 laptop                                    |
-| [tsukuyomi](./hosts/nixos/tsukuyomi/) | Dormant desktop configuration (currently runs Windows) |
+| [tsukuyomi](./hosts/nixos/tsukuyomi/) | Home PC, NixOS-WSL                                     |
 | [inari](./hosts/nixos/inari/)         | ZFS home server and container host                     |
 | [iso](./hosts/nixos/iso/)             | Installation and recovery ISO                          |
-| [wsl](./hosts/nixos/wsl/)             | WSL environment                                        |
+| [wsl-work](./hosts/nixos/wsl-work/)   | Work laptop, NixOS-WSL                                 |
 
 ## Highlights
 

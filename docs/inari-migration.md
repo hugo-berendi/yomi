@@ -79,10 +79,10 @@ unlocks the pool, and disko would reuse it for a new pool unless it is replaced.
 
 ## Run the non-destructive audit
 
-Review [the script](../scripts/inari-migration-check.sh), then run on Inari:
+Review [the script](../scripts/ops/inari-migration-check.sh), then run on Inari:
 
 ```sh
-nix develop -c bash scripts/inari-migration-check.sh
+nix develop -c bash scripts/ops/inari-migration-check.sh
 ```
 
 It requests sudo in your terminal. Do not send the password in chat. It does not
@@ -122,11 +122,11 @@ Four recipients can decrypt the SOPS files, and the audit script encrypts
 | `pilot_user_key` | Old shared SSH login key, SHA256:mYs7VNSw… | To be retired after the migration |
 | `shared_host_key` | Inari's and Amaterasu's shared host key, SHA256:G5JybhUg… | To be replaced after the migration |
 
-kagutsuchi is the USB key stick that `scripts/live.sh` and disko take their
+kagutsuchi is the USB key stick that `scripts/recovery/live.sh` and disko take their
 install-time keys from. It was plain ext4 and held `shared_host_key`'s private
 half, the old login key and every host's SSH host keys in the clear. It is now
 LUKS2 (header UUID `40ed3eaf-4232-4961-b87b-88b2f998ec10`), unlocked with
-`sudo scripts/kagutsuchi.sh open` and locked with `close`. Besides `secrets/<host>/`
+`sudo scripts/recovery/kagutsuchi.sh open` and locked with `close`. Besides `secrets/<host>/`
 it holds `gpg/` (the pilot's OpenPGP primary key, its backups and revocation
 certificates) and `age/`. Its passphrase is kept offline; without it the stick is
 unreadable.
@@ -160,9 +160,9 @@ On Amaterasu, test the archive with each new identity, never with the old keys:
 
 ```fish
 set t (mktemp -d -p /run/user/(id -u))
-sudo scripts/kagutsuchi.sh open
+sudo scripts/recovery/kagutsuchi.sh open
 sudo cat /kagutsuchi/age/yomi-recovery.txt > $t/offline.txt; chmod 600 $t/offline.txt
-sudo scripts/kagutsuchi.sh close
+sudo scripts/recovery/kagutsuchi.sh close
 age -d -i $t/offline.txt recovery.tar.age | tar -tf - >/dev/null; and echo OFFLINE-OK
 age -d -i ~/.config/sops/age/yubikey.txt recovery.tar.age | tar -tf - >/dev/null; and echo PIV-OK
 command rm -rf $t
@@ -203,7 +203,7 @@ disconnected during partitioning. The current disko configuration defaults to
 `/dev/nvme0n1` and references `/kagutsuchi/secrets/inari/disk.key`; it is not a
 ready-to-run replacement installer. Select the SSD by its verified identity and
 review the encryption-key setup before running any destructive command.
-`scripts/live.sh` asks for kagutsuchi's passphrase when it unlocks the stick.
+`scripts/recovery/live.sh` asks for kagutsuchi's passphrase when it unlocks the stick.
 The ISO's `liftoff` helper clones the GitHub mirror over https, which needs no
 credentials and is kept in sync with Inari's Forgejo. It runs in its own
 process, so `cd yomi` afterwards yourself.

@@ -70,7 +70,7 @@
   # {{{ Networking & persistence
   yomi.nginx.at.loki.port = config.services.loki.configuration.server.http_listen_port;
 
-  environment.persistence."/persist/state".directories = [
+  yomi.persistence.at.state.apps.loki.directories = [
     {
       directory = config.services.loki.dataDir;
       user = "loki";

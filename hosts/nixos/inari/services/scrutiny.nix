@@ -29,7 +29,7 @@ in {
   };
   # }}}
   # {{{ Storage - migrate SMART history across reboots
-  environment.persistence."/persist/state".directories = [
+  yomi.persistence.at.state.apps.scrutiny.directories = [
     {
       directory = "/var/lib/scrutiny";
       mode = "u=rwx,g=,o=";

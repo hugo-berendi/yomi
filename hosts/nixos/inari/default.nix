@@ -6,7 +6,6 @@
   # {{{ Imports
   imports =
     [
-      {yomi.tailscale.enable = true;}
       ../common
 
       ./networking
@@ -17,13 +16,12 @@
 
       ../common/services/anubis.nix
 
-      ./services/llama-cpp.nix
-      ./services/llama-cpp-classifier.nix
+      ./services/llama-cpp
       ./services/karakeep.nix
-      ./services/n8n.nix
-      ./services/proton-mail-sorter.nix
-      ./services/diabetes.nix
-      ./services/protonmail-bridge.nix
+      ./services/n8n
+      ./services/proton-mail-sorter
+      ./services/diabetes
+      ./services/protonmail-bridge
       ./services/cloudflared.nix
       ./services/forgejo
       ./services/paperless.nix
@@ -34,16 +32,16 @@
       ./services/jupyter.nix
       ./services/microbin.nix
       ./services/mealie.nix
-      ./services/radicale.nix
+      ./services/radicale
       ./services/calsync.nix
-      ./services/restic.nix
+      ./services/restic
       ./services/valheim.nix
       ./services/vaultwarden.nix
       ./services/immich.nix
       ./services/searxng
       ./services/zfs.nix
       ./services/adguard-home.nix
-      ./services/comics/default.nix
+      ./services/comics.nix
       ./services/media
       ./services/home-assistant.nix
       ./services/ntfy.nix
@@ -85,6 +83,7 @@
   yomi.containers.enable = true;
   yomi.postgres.enable = true;
   yomi.wireless.enable = false;
+  yomi.tailscale.enable = true;
   yomi.tailscale.exitNode = true;
   yomi.meilisearch.sopsFile = ./secrets.yaml;
   yomi.meilisearch.environment = "production";

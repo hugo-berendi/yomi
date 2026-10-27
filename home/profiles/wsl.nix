@@ -1,6 +1,5 @@
 {
   pkgs,
-  upkgs,
   lib,
   ...
 }: {
@@ -9,19 +8,13 @@
   ];
 
   home = {
-    file = {};
     sessionVariables = {
-      EDITOR = "nvim";
       BROWSER = "wslview";
     };
     packages = with pkgs; [
       # {{{ Nix tooling
       just
-      sops
-      pkgs.alejandra
-      upkgs.nh
-      upkgs.nix-output-monitor
-      upkgs.nvd
+      alejandra
       # }}}
 
       # {{{ Development languages & runtimes
@@ -34,13 +27,6 @@
       # {{{ Development tools
       lazydocker
       dive
-      # }}}
-
-      # {{{ General usability
-      pay-respects
-      mpv
-      imv
-      sxiv
       # }}}
 
       # {{{ WSL utilities

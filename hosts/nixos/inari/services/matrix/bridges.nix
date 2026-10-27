@@ -17,7 +17,7 @@ in {
   # These upstream services use static users, so /var/lib/private does not
   # persist their databases. Migrate the live directories before the first
   # switch with these bind mounts; see docs/backup-monitoring.md.
-  environment.persistence."/persist/state".directories = map (name: {
+  yomi.persistence.at.state.apps.mautrix-bridges.directories = map (name: {
     directory = "/var/lib/${name}";
     user = name;
     group = name;

@@ -457,7 +457,7 @@ in {
   # {{{ Networking & persistence
   yomi.nginx.at.grafana.port = port;
 
-  environment.persistence."/persist/state".directories = [
+  yomi.persistence.at.state.apps.grafana.directories = [
     {
       directory = config.services.grafana.dataDir;
       user = "grafana";

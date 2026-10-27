@@ -22,6 +22,7 @@
     ./1password.nix
     ./ai
     ./yomi-repo-sync.nix
+    ./host-common.nix
   ];
   # }}}
   # {{{ Basic programs

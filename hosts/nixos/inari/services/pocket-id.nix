@@ -69,7 +69,7 @@
 
   # }}}
   # {{{ Storage
-  environment.persistence."/persist/state".directories = [
+  yomi.persistence.at.state.apps.pocket-id.directories = [
     {
       directory = config.services.pocket-id.dataDir;
       mode = "u=rwx,g=,o=";

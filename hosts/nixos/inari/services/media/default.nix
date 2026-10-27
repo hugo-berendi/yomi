@@ -23,7 +23,7 @@
   };
   # }}}
   # {{{ Persistence
-  environment.persistence."/persist/state".directories = [
+  yomi.persistence.at.state.apps.nixarr.directories = [
     {
       directory = config.nixarr.stateDir;
       mode = "u=rwx,g=r,o=rwx";

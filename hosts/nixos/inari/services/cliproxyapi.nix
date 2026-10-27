@@ -106,14 +106,17 @@ in {
       };
       Service = {
         RuntimeDirectory = "cliproxyapi";
-        ExecStartPre = pkgs.writeShellScript "cliproxyapi-render-config" ''
-          set -euo pipefail
-          management_key="$(cat ${managementKeyPath})"
-          sed \
-            -e "s/__CLIPROXYAPI_MANAGEMENT_KEY__/$management_key/" \
-            ${configTemplate} > "$RUNTIME_DIRECTORY/config.yaml"
-          chmod 600 "$RUNTIME_DIRECTORY/config.yaml"
-        '';
+        ExecStartPre = lib.getExe (pkgs.writeShellApplication {
+          name = "cliproxyapi-render-config";
+          runtimeInputs = [pkgs.coreutils pkgs.gnused];
+          text = ''
+            management_key="$(cat ${managementKeyPath})"
+            sed \
+              -e "s/__CLIPROXYAPI_MANAGEMENT_KEY__/$management_key/" \
+              ${configTemplate} > "$RUNTIME_DIRECTORY/config.yaml"
+            chmod 600 "$RUNTIME_DIRECTORY/config.yaml"
+          '';
+        });
         ExecStart = "${lib.getExe package} -config %t/cliproxyapi/config.yaml";
         Restart = "always";
         RestartSec = 2;

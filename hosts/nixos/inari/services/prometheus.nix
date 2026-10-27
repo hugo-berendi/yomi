@@ -156,7 +156,7 @@
   # {{{ Networking & persistence
   yomi.nginx.at.prometheus.port = config.services.prometheus.port;
 
-  environment.persistence."/persist/state".directories = [
+  yomi.persistence.at.state.apps.prometheus.directories = [
     {
       directory = "/var/lib/prometheus2";
       user = "prometheus";

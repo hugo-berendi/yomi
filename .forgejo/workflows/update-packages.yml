@@ -85,7 +85,7 @@ jobs:
       - name: Update pinned docker image digests
         run: |
           echo "::group::update-docker-digests"
-          nix develop -c bash scripts/update-docker-digests.sh
+          nix develop -c bash scripts/ci/update-docker-digests.sh
           echo "::endgroup::"
 
       - name: Check for changes
@@ -131,4 +131,4 @@ jobs:
           bodyFile=$(mktemp)
           trap 'rm -f "$bodyFile"' EXIT
           printf '%s' "$body" > "$bodyFile"
-          nix develop -c python3 scripts/update-package-pr.py "$bodyFile"
+          nix develop -c python3 scripts/ci/update-package-pr.py "$bodyFile"

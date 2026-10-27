@@ -179,7 +179,7 @@
     group = "gitea-runner";
   };
 
-  environment.persistence."/persist/state".directories = [
+  yomi.persistence.at.state.apps.gitea-runner.directories = [
     {
       directory = "/var/lib/gitea-runner";
       user = "gitea-runner";

@@ -32,7 +32,7 @@
   };
   # }}}
   # {{{ Persistence
-  environment.persistence."/persist/state".directories = [
+  yomi.persistence.at.state.apps.jellyfin.directories = [
     {
       directory = config.services.jellyfin.dataDir;
       mode = "u=rwx,g=rx,o=";

@@ -17,32 +17,37 @@
 
     ../../../common
 
-    ./base
-    ./cli
+    ./base/ports.nix
+    ./cli/fish.nix
+    ./cli/1password.nix
     ./nix.nix
     ./desktop
-    ./wireless
     ./persistence.nix
     ./users/pilot.nix
 
     # services
     ./services/beszel-agent.nix
-    ./services/acme.nix
-    ./services/greetd.nix
+    ./services/greetd
     ./services/memory.nix
     ./services/oci.nix
     ./services/openssh.nix
     ./services/syncthing.nix
-    ./services/tailscale.nix
-    ./services/restic
+    ./services/restic.nix
   ];
   # }}}
 in {
   # Import all modules defined in modules/nixos
   imports = builtins.attrValues outputs.nixosModules ++ imports;
 
+  yomi.wireless.sopsFile = ./secrets.yaml;
+
   # Tell sops-nix to use the host keys for decrypting secrets
   sops.age.sshKeyPaths = ["/persist/state/etc/ssh/ssh_host_ed25519_key"];
+
+  yomi.acme = {
+    sopsFile = ./secrets.yaml;
+    email = "acme@hugo-berendi.de";
+  };
 
   # {{{ ad-hoc options
   # Use DHCP/NetworkManager-provided DNS by default; AdGuardHome sets this on its host.

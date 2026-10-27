@@ -25,10 +25,10 @@ More than one machine commits here, sometimes during a session. Expect to rebase
 | Host | Role | Notes |
 |------|------|-------|
 | `amaterasu` | Framework 13 laptop | BTRFS + impermanence, hyprland, desktop |
-| `tsukuyomi` | Tower PC (dormant) | Runs Windows now; config kept but excluded from CI and `nix flake check` |
+| `tsukuyomi` | Home PC (NixOS-WSL on Windows) | WSL profile shared with `wsl-work`; no impermanence |
 | `inari` | Home server | ZFS, ~40 services, Docker containers, router (nftables/hostapd/dnsmasq) |
 | `iso` | Installation ISO | Bootable installer |
-| `wsl` | WSL environment | No impermanence |
+| `wsl-work` | Work laptop (NixOS-WSL on Windows) | Same profile as `tsukuyomi`: `hosts/nixos/common/wsl.nix` + `home/profiles/wsl.nix` |
 
 ## Commands
 
@@ -77,11 +77,11 @@ Things found this way that source-reading missed: an sshd that still accepted pa
 ## CI
 
 Forgejo Actions (`.forgejo/workflows/`):
-- `check-nixos-flake.yml`: push/PR — `just lint`, `just check`, builds amaterasu + inari + wsl
+- `check-nixos-flake.yml`: push/PR — `just lint`, `just check`, builds amaterasu + inari + tsukuyomi + wsl-work
 - `update-flake-inputs.yml`: daily cron — `nix flake update`, builds hosts, auto-commits to main if checks pass
 - `update-packages.yml`: weekly — `nix-update` for the `pkgs/` derivations
 
-`nix flake check` covers amaterasu, inari, iso and wsl, and evaluates **every** package output — so a broken `pkgs/` derivation fails CI even if no host uses it.
+`nix flake check` covers amaterasu, inari, iso, tsukuyomi and wsl-work, and evaluates **every** package output — so a broken `pkgs/` derivation fails CI even if no host uses it.
 
 ## Architecture
 
@@ -92,7 +92,7 @@ Forgejo Actions (`.forgejo/workflows/`):
 | Common | `modules/common/` | Both NixOS + HM | Options usable from both sides (`yomi.pilot`, `yomi.theming`, `yomi.location`) |
 | NixOS | `modules/nixos/` | NixOS only | System modules (`yomi.cloudflared`, `yomi.restic`, `yomi.ports`) |
 | HM | `modules/home-manager/` | Home-manager only | User modules (`yomi.monitors`, `yomi.persistence`, `yomi.dev`) |
-| Shared host | `hosts/nixos/common/` | All hosts | Base: users, networking, boot, filesystems, persistence |
+| Shared host | `hosts/nixos/common/` | All hosts | Base: users, networking, boot, persistence; `wsl.nix` is the shared WSL profile |
 | Per-host | `hosts/nixos/<host>/` | Single host | Hardware, partitions, services |
 | Home features | `home/features/` | Per-host HM | cli, desktop, neovim, productivity, wayland |
 | Per-host home | `home/<host>.nix` | Single host | Imports `global.nix` + features |
@@ -119,7 +119,7 @@ Forgejo Actions (`.forgejo/workflows/`):
 - `systemd.services.<unit>.serviceConfig` — native, service-local sandbox settings (see below)
 - `yomi.restic.{repository,offsite}` — local and off-site backup sets
 - `yomi.filesystems.*` — BTRFS rollback + persistPaths
-- `yomi.n8n.workflows.<name>` — workflow JSON imported into n8n on inari at start; see `hosts/nixos/inari/services/n8n/AGENTS.md` before touching a workflow or adding a new one
+- `yomi.n8n.workflows.<name>` — workflow JSON imported into n8n on inari at start; see `docs/n8n.md` before touching a workflow or adding a new one
 
 ### Service-wrapper exception
 
@@ -194,7 +194,7 @@ Tabs, width 4, max column 120 (`stylua.toml`). Config uses nvf; plugin specs go 
 - **A nixpkgs bump can move a language runtime under a package.** karakeep 0.32.0 core-dumped on every start once nodejs 24 arrived (`better_sqlite3.node`, `Assertion failed: (env) != nullptr`); unstable's 0.33.1 is built against nodejs 22. When a service dies with no application error, compare the runtime version across generations.
 - **On inari `networking.firewall.enable = false`** — nftables owns the ruleset, so `openFirewall`/`allowedTCPPorts` reach nothing. LAN grants go in `yomi.network.exposure` in `hosts/nixos/inari/networking/nftables.nix`. A warning lists any port that asked and was ignored.
 - **Any nftables ruleset change bounces every container**, down to a comment — `postStart` restarts docker, which docker needs in order to reinstall its own rules. Game servers set `--stop-timeout` for this.
-- **ghostty** has no home-manager module; install via `home.packages` + `xdg.configFile`.
+- **ghostty** is configured through `programs.ghostty`; the module's bash/fish/systemd extras are switched off to keep the old output.
 
 ### Working on inari
 - **`sudo` needs a password** (`wheelNeedsPassword = true`), so `sudo -n` fails. Use the `/run/wrappers/bin/sudo` path, and expect to ask a human.

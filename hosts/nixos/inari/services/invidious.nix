@@ -56,7 +56,7 @@
       ReadWritePaths = ["/var/lib/invidious"];
     };
 
-  environment.persistence."/persist/state".directories = [
+  yomi.persistence.at.state.apps.invidious.directories = [
     {
       directory = "/var/lib/invidious";
       user = "invidious";

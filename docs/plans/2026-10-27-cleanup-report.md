@@ -171,3 +171,16 @@ Each step is a separate commit with a dry build of amaterasu and inari first.
 7. **Docs:** README layout table, `docs/custom-options.md`, `CLAUDE.md` file references.
 
 Anything touching sops, ssh, firewall, hardening or backups (steps 4 and 5 for protonmail-bridge, restic and persistence) should get a security review before it is pushed. Switching to a new generation stays with you.
+
+## 8. Status (2026-10-27)
+
+Done: sections 2 (dead code, tsukuyomi/wsl rework), 3 (tealdeer, wlogout, ghostty, pyprland, avatar, `writeShellApplication` on inari), 4 (persistence migration on inari, shared docker-network and llama-cpp helpers, host-common home packages), and 5 (option declarations moved to `modules/nixos`, per-theme files, merged keymaps, split `vrising` options, `greetd` data files, inari one-directory-per-service layout, `scripts/{ci,ops,recovery}`, `docs/n8n.md`).
+
+Deliberately not done:
+- Swapping running services for nixpkgs modules (`changedetection-io`, `protonmail-bridge`, `llama-cpp`): they carry state, so they need a maintenance window.
+- The `DynamicUser` helper: the eight sites differ too much for one helper to read better.
+- Driving `restic` app-state from the persistence inventory: it carries per-app settings that the inventory lacks.
+- Stylix-target conversions and replacing the opencode fork: visual or upstream-dependent.
+- Regrouping `tests/` and removing the three unwired glooko/n8n test scripts: another session is editing the n8n tests.
+- Splitting `grafana`, `homepage`, `n8n` and `diabetes/app.py`, and moving `home/features/cli/scripts`: no behaviour change, so left for a follow-up.
+- Removing the stale sops entries (`navidrome_env`, `recyclarr_env`, `guacamole_users`, `jellarr_api_key`): needs the YubiKey.

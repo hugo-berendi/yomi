@@ -67,7 +67,7 @@
     # /boot/zroot-recovery-key.age with an Age key from .sops.yaml and running
     # zfs load-key -L file://<decrypted> zroot.
     boot.zfs.requestEncryptionCredentials = true;
-    environment.persistence."/persist/state".directories = ["/etc/secrets/initrd"];
+    yomi.persistence.at.state.apps.zfs-initrd.directories = [{directory = "/etc/secrets/initrd";}];
     # }}}
     # {{{ Sanoid
     services.sanoid = {

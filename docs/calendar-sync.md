@@ -2,7 +2,7 @@
 
 Inari syncs nine explicitly mapped Radicale collections with Google Calendar.
 The mapping and service configuration live in
-[`radicale.nix`](../hosts/nixos/inari/services/radicale.nix).
+[`radicale.nix`](../hosts/nixos/inari/services/radicale/default.nix).
 Each Google calendar must already exist before adding its mapping.
 
 The timer runs every five minutes. Radicale also touches a trigger file after a
