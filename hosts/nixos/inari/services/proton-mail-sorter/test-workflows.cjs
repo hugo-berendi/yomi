@@ -6,12 +6,14 @@ const vm = require('node:vm');
 async function main() {
   const directory = process.argv[2];
   const workflowIds = new Set();
-  for (const filename of ['proton-mail-sorter.json', 'proton-mark-read.json']) {
+  // The sorter was published in ea261b3; the mark-read pass stays off.
+  const expectedActive = {'proton-mail-sorter.json': true, 'proton-mark-read.json': false};
+  for (const [filename, active] of Object.entries(expectedActive)) {
     const workflow = JSON.parse(fs.readFileSync(path.join(directory, filename), 'utf8'));
     assert.match(workflow.id, /^[a-zA-Z0-9]{16}$/);
     assert(!workflowIds.has(workflow.id));
     workflowIds.add(workflow.id);
-    assert.equal(workflow.active, false);
+    assert.equal(workflow.active, active, `${filename} active`);
     assert.deepEqual(workflow.nodeGroups, []);
     assert.equal(workflow.settings.saveDataSuccessExecution, 'none');
     assert.equal(workflow.settings.saveDataErrorExecution, 'none');

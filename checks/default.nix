@@ -68,6 +68,10 @@ in
       inherit pkgs;
       config = self.nixosConfigurations.inari.config;
     };
+    # Service unit tests live beside their modules and are exposed through
+    # system.build so they build against the same python the service runs.
+    diabetes = self.nixosConfigurations.inari.config.system.build.diabetes-tests;
+    proton-mail-sorter = self.nixosConfigurations.inari.config.system.build.proton-mail-sorter-tests;
     dns-zones = dnsPackages.octodns-zones;
     dns-sync = dnsPackages.octodns-sync;
   }
