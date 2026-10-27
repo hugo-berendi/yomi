@@ -27,6 +27,10 @@
         "/raid5pool/data" # paperless index
         "/raid5pool/cloud" # nextcloud files (database is in the postgres dump below)
         "/persist/data" # calendars, contacts, game server worlds
+        # amaterasu's own restic repository (received over sftp, below). The
+        # laptop's only other copy is itself, so a lost raid5pool would take
+        # its whole history. Already encrypted, so it barely deduplicates.
+        "/raid5pool/backups/restic-amaterasu"
 
         # Immich and Nextcloud keep albums, users and file metadata in PostgreSQL. Paperless uses SQLite,
         # covered by the app-state staging job alongside other critical state.

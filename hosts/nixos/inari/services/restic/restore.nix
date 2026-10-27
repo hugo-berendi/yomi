@@ -9,16 +9,17 @@ in {
   # A repository check cannot prove that a SQL dump can actually be imported.
   # Use the production extensions, but a disposable cluster with no TCP listener.
   systemd.services.restic-offsite-restore = {
-    description = "Restore a B2 document, Paperless SQLite and PostgreSQL dump";
+    description = "Restore a B2 document, an Immich original, Paperless SQLite and PostgreSQL dump";
     wants = ["network-online.target"];
     after = ["network-online.target" "restic-backups-offsite.service" "restic-backups-offsite-check.service"];
     restartIfChanged = false;
-    path = [backup.package pkgs.jq pkgs.zstd pkgs.sqlite config.services.postgresql.finalPackage];
+    path = [backup.package pkgs.jq pkgs.zstd pkgs.sqlite pkgs.file pkgs.coreutils config.services.postgresql.finalPackage];
     environment = {
       PGHOST = "/run/restic-offsite-restore";
       PGPORT = "55432";
       PGUSER = "yomi_restore_admin";
       PAPERLESS_ORIGINALS = "${config.services.paperless.mediaDir}/documents/originals";
+      IMMICH_ORIGINALS = config.services.immich.mediaLocation;
     };
     serviceConfig = {
       Type = "oneshot";
@@ -83,6 +84,20 @@ in {
       test "$(sqlite3 -readonly "$work/paperless.sqlite3" 'PRAGMA integrity_check')" = ok
       count=$(sqlite3 -readonly "$work/paperless.sqlite3" 'SELECT count(*) FROM documents_document')
       test "$count" -gt 0
+
+      # The photo library is what the off-site set exists for, and the weekly
+      # check only reads a 5% sample of it. Restore one random original:
+      # restic verifies every blob hash on the way out, and the size and type
+      # catch an empty or truncated entry in the snapshot itself.
+      restic --retry-lock=30m ls --recursive --json "$snapshot" "$IMMICH_ORIGINALS" \
+        | jq -c 'select(.type == "file" and .size > 0 and (.path | test("/(library|upload)/")) and (.path | test("\\.xmp$"; "i") | not))' \
+        > "$work/photos.jsonl"
+      photo=$(shuf -n 1 "$work/photos.jsonl")
+      test -n "$photo"
+      restic --retry-lock=30m dump "$snapshot" "$(jq -r .path <<< "$photo")" > "$work/photo"
+      test "$(stat -c %s "$work/photo")" = "$(jq -r .size <<< "$photo")"
+      file --brief --mime-type "$work/photo" | grep -Eq '^(image|video)/'
+
       restic --retry-lock=30m dump "$snapshot" /persist/state/var/backup/postgresql/all.sql.zstd > "$work/all.sql.zstd"
       zstd --test "$work/all.sql.zstd"
 
@@ -98,7 +113,7 @@ in {
       # An empty or truncated-but-valid SQL file must not count as recovery.
       count=$(psql -XAt --dbname=immich -c "SELECT count(*) FROM pg_tables WHERE schemaname = 'public'")
       test "$count" -gt 0
-      echo "Restored one document, validated Paperless SQLite and imported the PostgreSQL dump successfully."
+      echo "Restored one document and one Immich original, validated Paperless SQLite and imported the PostgreSQL dump successfully."
     '';
   };
   systemd.timers.restic-offsite-restore = {

@@ -21,6 +21,7 @@ in
     export PGPORT=55432
     export PGHOST="$TMPDIR/restore-socket"
     export PAPERLESS_ORIGINALS="$FIXTURE${restore.environment.PAPERLESS_ORIGINALS}"
+    export IMMICH_ORIGINALS="$FIXTURE${restore.environment.IMMICH_ORIGINALS}"
     mkdir -p "$CREDENTIALS_DIRECTORY" "$CACHE_DIRECTORY" "$PGHOST" "$TMPDIR/source-socket"
     printf 'synthetic-test-password' > "$CREDENTIALS_DIRECTORY/password"
     printf '%s' "$TMPDIR/repository" > "$CREDENTIALS_DIRECTORY/repository"
@@ -32,6 +33,11 @@ in
       "$FIXTURE/persist/state/var/backup/postgresql" \
       "$FIXTURE/persist/state/var/backup/app-state/paperless"
     printf 'synthetic original document' > "$FIXTURE/raid5pool/media/documents/documents/originals/document.pdf"
+    # A 1x1 PNG, so the type check sees an image; the thumbnail must never be picked.
+    mkdir -p "$IMMICH_ORIGINALS/library/admin/2026" "$IMMICH_ORIGINALS/thumbs/admin"
+    printf '\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\rIDATx\x9cc\xf8\x0f\x00\x00\x01\x01\x00\x05\x18\xd8N\x00\x00\x00\x00IEND\xaeB`\x82' > "$IMMICH_ORIGINALS/library/admin/2026/photo.png"
+    printf 'not an image' > "$IMMICH_ORIGINALS/thumbs/admin/thumb.webp"
+    printf '<x:xmpmeta/>' > "$IMMICH_ORIGINALS/library/admin/2026/photo.png.xmp"
     sqlite3 "$FIXTURE/persist/state/var/backup/app-state/paperless/db.sqlite3" \
       'CREATE TABLE documents_document (id INTEGER PRIMARY KEY); INSERT INTO documents_document VALUES (1);'
     initdb -D "$TMPDIR/source-pg" -U postgres --auth=trust --no-locale > /dev/null
@@ -72,5 +78,14 @@ in
       exit 1
     fi
     test ! -e "$CACHE_DIRECTORY/work"
-    echo 'App-state, restic, PostgreSQL and Paperless SQLite recovery checks passed' > "$out"
+    # An original that is not an image or video must not count as recovery.
+    sqlite3 "$FIXTURE/persist/state/var/backup/app-state/paperless/db.sqlite3" 'DROP TABLE unrelated; CREATE TABLE documents_document (id INTEGER PRIMARY KEY); INSERT INTO documents_document VALUES (1);'
+    printf 'corrupted original' > "$IMMICH_ORIGINALS/library/admin/2026/photo.png"
+    restic backup --host inari --tag app-state-v1 "$FIXTURE"
+    if ${restoreScript}; then
+      echo 'Corrupted Immich original counted as successful recovery' >&2
+      exit 1
+    fi
+    test ! -e "$CACHE_DIRECTORY/work"
+    echo 'App-state, restic, PostgreSQL, Paperless SQLite and Immich original recovery checks passed' > "$out"
   ''
