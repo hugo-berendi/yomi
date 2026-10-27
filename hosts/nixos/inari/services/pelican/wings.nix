@@ -76,6 +76,28 @@ in {
       RestartSec = "5s";
       LimitNOFILE = 4096;
       RuntimeDirectory = "wings";
+
+      # Wings is root and drives docker, so a compromise is root either way;
+      # this only narrows what the process itself can touch. ProtectSystem is
+      # "full", not "strict": wings writes install scripts to /tmp/pelican for
+      # dockerd to bind into installer containers, and logs to
+      # /var/log/pelican, so /tmp and /var stay writable and PrivateTmp stays
+      # off. Connecting to /run/docker.sock is unaffected. Unverified at
+      # runtime until the next switch.
+      ProtectSystem = "full";
+      ReadWritePaths = ["/etc/pelican"];
+      ProtectHome = true;
+      NoNewPrivileges = true;
+      ProtectKernelTunables = true;
+      ProtectKernelModules = true;
+      ProtectKernelLogs = true;
+      ProtectClock = true;
+      ProtectHostname = true;
+      RestrictRealtime = true;
+      RestrictSUIDSGID = true;
+      LockPersonality = true;
+      SystemCallArchitectures = "native";
+      RestrictAddressFamilies = ["AF_UNIX" "AF_INET" "AF_INET6" "AF_NETLINK"];
     };
 
     wantedBy = ["multi-user.target"];
