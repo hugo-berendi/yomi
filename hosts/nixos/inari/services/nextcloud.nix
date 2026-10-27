@@ -130,11 +130,12 @@ in {
   };
   # }}}
   # {{{ sso
-  # Group claims are mirrored into Nextcloud on every login, both ways: a Pocket
-  # ID group called "admin" lands in Nextcloud's built-in admin group, every
-  # other group becomes a plain group. Removing someone from the Pocket ID
-  # group demotes them at their next login. Who may sign in at all is decided
-  # by the client's allowed groups in Pocket ID, not here.
+  # Only nextcloud_* groups are synced, so Pocket ID groups of other services
+  # (jellyfin_*) never show up here, and membership of Nextcloud's own admin
+  # group is left to nextcloud-admin-sync below: user_oidc cannot rename a
+  # claim value, and without the whitelist its sync would strip "admin" from
+  # everyone at every login. Login is restricted to members of those groups
+  # on this side as well as by the client's allowed groups in Pocket ID.
   # The provider is registered from the secrets on every start so that rotating
   # the Pocket ID client needs no manual occ call. Redirect URI in Pocket ID:
   # ${cloud.url}/apps/user_oidc/code
@@ -160,9 +161,47 @@ in {
         --mapping-display-name=name \
         --mapping-email=email \
         --mapping-groups=groups \
-        --group-provisioning=1
+        --group-provisioning=1 \
+        --group-whitelist-regex='^nextcloud_' \
+        --group-restrict-login-to-whitelist=1
       nextcloud-occ config:app:set --value=0 user_oidc allow_multiple_user_backends
     '';
+  };
+  # nextcloud_admins in Pocket ID means admin here. Runs on a timer because the
+  # group sync happens inside the login request; a new admin is promoted within
+  # a minute. Only oidc accounts are ever demoted, so the local admin keeps its
+  # role.
+  systemd.services.nextcloud-admin-sync = {
+    description = "Mirror nextcloud_admins into the Nextcloud admin group";
+    after = ["nextcloud-setup.service"];
+    path = [cfg.occ pkgs.jq pkgs.gnugrep];
+    serviceConfig = {
+      Type = "oneshot";
+      User = "nextcloud";
+    };
+    script = ''
+      groups=$(nextcloud-occ group:list --output=json)
+      wanted=$(jq -r '.nextcloud_admins // [] | .[]' <<<"$groups")
+      current=$(jq -r '.admin // [] | .[]' <<<"$groups")
+
+      for uid in $wanted; do
+        grep -qx -- "$uid" <<<"$current" || nextcloud-occ group:adduser admin "$uid"
+      done
+
+      for uid in $current; do
+        grep -qx -- "$uid" <<<"$wanted" && continue
+        backend=$(nextcloud-occ user:info --output=json "$uid" | jq -r .backend)
+        [ "$backend" = user_oidc ] && nextcloud-occ group:removeuser admin "$uid"
+      done
+      exit 0
+    '';
+  };
+  systemd.timers.nextcloud-admin-sync = {
+    wantedBy = ["timers.target"];
+    timerConfig = {
+      OnBootSec = "2min";
+      OnUnitActiveSec = "1min";
+    };
   };
   # }}}
   # {{{ theme
