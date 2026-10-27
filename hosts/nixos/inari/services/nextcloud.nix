@@ -9,6 +9,23 @@
   cloud = config.yomi.cloudflared.at.cloud;
   office = config.yomi.cloudflared.at.office;
   occ = lib.getExe cfg.occ;
+  colors = config.lib.stylix.colors;
+  themeCss = pkgs.writeText "nextcloud-theme.css" ''
+    :root, body {
+      --color-main-background: #${colors.base00};
+      --color-main-background-rgb: ${colors.base00-rgb-r}, ${colors.base00-rgb-g}, ${colors.base00-rgb-b};
+      --color-main-text: #${colors.base05};
+      --color-text-maxcontrast: #${colors.base04};
+      --color-background-hover: #${colors.base01};
+      --color-background-dark: #${colors.base01};
+      --color-background-darker: #${colors.base02};
+      --color-border: #${colors.base02};
+      --color-border-dark: #${colors.base03};
+      --color-primary-element: #${colors.base0D};
+      --color-primary-element-text: #${colors.base00};
+      --color-primary-element-hover: #${colors.base0C};
+    }
+  '';
 
   # Files dropped here in the web UI or the sync client are handed to paperless.
   paperlessInbox = "Paperless";
@@ -95,7 +112,7 @@ in {
     appstoreEnable = false;
     extraAppsEnable = true;
     extraApps = {
-      inherit (cfg.package.packages.apps) user_oidc richdocuments;
+      inherit (cfg.package.packages.apps) user_oidc richdocuments theming_customcss;
     };
 
     settings = {
@@ -103,6 +120,7 @@ in {
       trusted_proxies = ["127.0.0.1" "::1"];
       trusted_domains = [cloud.host];
       default_phone_region = "DE";
+      enforce_theme = "dark";
       maintenance_window_start = 2;
       # Pocket ID is the only way in; local passwords stay for the admin.
       allow_user_to_change_display_name = false;
@@ -137,6 +155,34 @@ in {
         --mapping-display-name=name \
         --mapping-email=email
       nextcloud-occ config:app:set --value=0 user_oidc allow_multiple_user_backends
+    '';
+  };
+  # }}}
+  # {{{ theme
+  # Mirrors the stylix palette the other services use (immich, forgejo). The
+  # theming app takes the accent and login background; the dark surfaces need
+  # css variables, delivered by theming_customcss. Dark is enforced so the
+  # palette applies to every user instead of following their OS setting.
+  systemd.services.nextcloud-theme = {
+    description = "Apply the stylix palette to Nextcloud";
+    after = ["nextcloud-setup.service"];
+    requires = ["nextcloud-setup.service"];
+    wantedBy = ["multi-user.target"];
+    # Re-run when the palette changes, not only on boot.
+    restartTriggers = [themeCss];
+    path = [cfg.occ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      User = "nextcloud";
+    };
+    script = ''
+      nextcloud-occ config:app:set theming name --value="Yomi Cloud"
+      nextcloud-occ config:app:set theming primary_color --value="#${colors.base0D}"
+      nextcloud-occ config:app:set theming background_color --value="#${colors.base00}"
+      nextcloud-occ theming:config background backgroundColor
+      nextcloud-occ config:app:set theming_customcss customcss --value="$(cat ${themeCss})"
+      nextcloud-occ config:app:set theming_customcss cachebuster --value="${builtins.substring 11 8 (builtins.baseNameOf themeCss)}"
     '';
   };
   # }}}
