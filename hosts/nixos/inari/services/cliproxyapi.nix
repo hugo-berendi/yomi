@@ -2,21 +2,27 @@
   config,
   lib,
   pkgs,
-  upkgs,
   ...
 }: let
   pilot = config.yomi.pilot.name;
   port = config.yomi.ports.cliproxyapi;
-  # Take the newer Nixpkgs package without moving every unstable package on Inari.
-  package = upkgs.cliproxyapi.overrideAttrs (finalAttrs: {
-    version = "7.3.10";
-    src = upkgs.fetchFromGitHub {
-      owner = "router-for-me";
-      repo = "CLIProxyAPI";
-      tag = "v${finalAttrs.version}";
-      hash = "sha256-pKguqvvQA1IVIE4f3qQbZ8VOWEcY4evkyacyYt36+T8=";
+  # The pinned Go compiler is too old for this release. Use upstream's
+  # plugin-enabled Linux build until nixpkgs supplies a recent enough Go.
+  package = pkgs.stdenv.mkDerivation (finalAttrs: {
+    pname = "cliproxyapi";
+    version = "8.0.44";
+    src = pkgs.fetchurl {
+      url = "https://github.com/router-for-me/CLIProxyAPI/releases/download/v${finalAttrs.version}/CLIProxyAPI_${finalAttrs.version}_linux_amd64.tar.gz";
+      sha256 = "3957c34fe4a95a37f5997ab63d78dca431fa1521997d7c2ab3bdfe169ad89307";
     };
-    vendorHash = "sha256-r3yWkdMcM40G9jV7MxW/qNv3E9WrHavFilW24quEf+8=";
+    nativeBuildInputs = [pkgs.autoPatchelfHook];
+    dontUnpack = true;
+    installPhase = ''
+      mkdir -p "$out/bin"
+      tar -xzf "$src" -C "$out/bin" cli-proxy-api
+      mv "$out/bin/cli-proxy-api" "$out/bin/cliproxyapi"
+    '';
+    meta.mainProgram = "cliproxyapi";
   });
   plugin = pkgs.cliproxyapi-copilot-plugin;
   managementKeyPath = config.sops.secrets.cliproxyapi_management_key.path;
