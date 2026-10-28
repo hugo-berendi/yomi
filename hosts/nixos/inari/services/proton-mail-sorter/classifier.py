@@ -6,6 +6,7 @@ from email.utils import getaddresses, parsedate_to_datetime
 from html.parser import HTMLParser
 import json
 import re
+import urllib.error
 import urllib.request
 from zoneinfo import ZoneInfo
 
@@ -374,7 +375,27 @@ def labels_for(msg, verdict):
 # }}}
 
 
+# The body cap in message_data counts characters, not tokens. Emoji, long
+# URLs and invisible characters tokenize so badly that one 6000-character
+# body made a 12519-token request against the classifier's 8192 context
+# (2026-10-28), and llama.cpp refused every run. Halve and retry instead; a
+# mail that still does not fit is held like any other unusable verdict.
+CONTEXT_RETRIES = 4
+
+
 def ask(data):
+    for _ in range(CONTEXT_RETRIES + 1):
+        try:
+            return ask_once(data)
+        except urllib.error.HTTPError as error:
+            detail = error.read().decode(errors="replace")
+            if error.code != 400 or "exceeds the available context" not in detail:
+                raise
+        data = {**data, "body": data["body"][: len(data["body"]) // 2]}
+    raise ValueError("mail does not fit the classifier context")
+
+
+def ask_once(data):
     # OpenAI-compatible request to the local llama.cpp server. The schema is
     # enforced as a grammar while decoding, so the model cannot emit anything
     # but an allowed folder and two booleans. Thinking is off server-side.

@@ -11,6 +11,7 @@ import tempfile
 import threading
 from types import SimpleNamespace
 import unittest
+import urllib.error
 from unittest.mock import patch
 
 import classifier
@@ -254,6 +255,73 @@ class WorkerTests(unittest.TestCase):
         ):
             with self.subTest(plain=plain):
                 self.assertEqual(classifier.labels_for(msg(plain), V("Werbung")), [])
+
+    def test_oversized_prompt_is_shortened_not_fatal(self):
+        # A mail whose body tokenizes past the classifier's context (seen
+        # 2026-10-28: 12519 tokens against 8192) failed every run with an
+        # HTTPError. It must be shortened, and held if it never fits.
+        msg = SimpleNamespace(
+            text="\U0001f600" * 6000, html="", from_="a@example.org", subject="Big"
+        )
+        sizes = []
+
+        def opener(limit, status=400):
+            def open_request(request, **kwargs):
+                body = json.loads(json.loads(request.data)["messages"][1]["content"])[
+                    "body"
+                ]
+                sizes.append(len(body))
+                if len(body) > limit:
+                    raise urllib.error.HTTPError(
+                        request.full_url,
+                        status,
+                        "Bad Request",
+                        {},
+                        io.BytesIO(
+                            b'{"error":{"message":"request (12519 tokens) exceeds the available context size (8192 tokens), try increasing it"}}'
+                        ),
+                    )
+                return io.BytesIO(
+                    json.dumps(
+                        {
+                            "choices": [
+                                {"message": {"content": json.dumps(V("Newsletter"))}}
+                            ]
+                        }
+                    ).encode()
+                )
+
+            return SimpleNamespace(open=open_request)
+
+        with (
+            patch.object(classifier, "ZoneInfo", return_value=timezone.utc),
+            patch.object(
+                classifier.urllib.request, "build_opener", return_value=opener(1600)
+            ),
+        ):
+            self.assertEqual(classifier.classify(msg), V("Newsletter"))
+        self.assertEqual(sizes, [6000, 3000, 1500])
+
+        with (
+            patch.object(classifier, "ZoneInfo", return_value=timezone.utc),
+            patch.object(
+                classifier.urllib.request, "build_opener", return_value=opener(0)
+            ),
+        ):
+            with self.assertRaises(ValueError):
+                classifier.classify(msg)
+
+        # Any other HTTP error is the model server's problem and still aborts.
+        with (
+            patch.object(classifier, "ZoneInfo", return_value=timezone.utc),
+            patch.object(
+                classifier.urllib.request,
+                "build_opener",
+                return_value=opener(0, status=500),
+            ),
+        ):
+            with self.assertRaises(urllib.error.HTTPError):
+                classifier.classify(msg)
 
     def test_local_classifier_schema_and_twitch_boundary(self):
         msg = SimpleNamespace(
