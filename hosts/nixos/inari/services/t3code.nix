@@ -13,6 +13,7 @@
   opencode = import ../../../../home/features/cli/ai/opencode/package.nix {inherit inputs pkgs;};
   package = pkgs.callPackage ../../../../pkgs/t3code-release.nix {
     providerPackages = [codex agents.claude-code opencode];
+    customExecutable = "${config.users.users.${pilot}.home}/.t3/tools/t3code-memory/t3";
   };
 in {
   yomi.nginx.at.t3code.port = port;

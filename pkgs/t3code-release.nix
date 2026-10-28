@@ -5,6 +5,7 @@
   buildFHSEnv,
   writeShellScript,
   providerPackages ? [],
+  customExecutable ? null,
 }: let
   version = "0.1.2";
   release =
@@ -52,7 +53,26 @@ in
       ++ providerPackages;
     runScript = writeShellScript "t3-with-providers" ''
       export PATH=${lib.makeBinPath providerPackages}:$PATH
-      exec ${release}/t3 "$@"
+      ${
+        if customExecutable == null
+        then ''exec ${release}/t3 "$@"''
+        else ''
+          t3_release=${lib.escapeShellArg "${release}"}
+          t3_custom=${lib.escapeShellArg customExecutable}
+          t3_custom_dir="$(dirname "$t3_custom")"
+          if [ ! -x "$t3_custom" ] || [ "$("$t3_custom" --version)" != "$("$t3_release/t3" --version)" ]; then
+            echo "T3 memory executable is missing or does not match the pinned release; starting the official release" >&2
+            exec "$t3_release/t3" "$@"
+          fi
+          for asset in client node_modules resource-monitor; do
+            if [ "$(readlink -f "$t3_custom_dir/$asset")" != "$t3_release/$asset" ]; then
+              echo "T3 memory executable has mismatched release assets: $asset; starting the official release" >&2
+              exec "$t3_release/t3" "$@"
+            fi
+          done
+          exec "$t3_custom" "$@"
+        ''
+      }
     '';
     meta = {
       description = "T3 Code official release with a NixOS runtime";
