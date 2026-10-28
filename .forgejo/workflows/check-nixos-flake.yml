@@ -12,10 +12,23 @@ jobs:
     steps:
       - name: Checkout repository
         uses: https://data.forgejo.org/actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          # The secret scan needs the pushed range's parents: in a depth-1
+          # clone the tip has none, and gitleaks then scans the whole tree.
+          fetch-depth: 0
       - name: Scan for secrets
-        # Only the pushed tip. Older history still holds the retired Authentik
-        # .env (S-02), whose dead values would fail every run.
-        run: nix run nixpkgs#gitleaks -- git --no-banner --redact --log-opts=-1
+        # Only the commits this push added. Older history still holds the
+        # retired Authentik .env (S-02), whose dead values would fail every run.
+        env:
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+        run: |
+          if [[ -n "$BEFORE" && ! "$BEFORE" =~ ^0+$ ]] && git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+            range="$BEFORE..$AFTER"
+          else
+            range="-1"
+          fi
+          nix run nixpkgs#gitleaks -- git --no-banner --redact --log-opts="$range"
       - name: Check formatting
         run: just lint
       - name: Test the update PR pipeline (publish, gate, LLM review)

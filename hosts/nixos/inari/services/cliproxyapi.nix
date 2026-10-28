@@ -38,7 +38,7 @@
   # If that trade stops being acceptable, the cheaper answer is to drop
   # api-keys entirely and let filesystem and loopback be the boundary, rather
   # than to hide a key that every local process can read anyway.
-  apiKey = "ac44eaaf0d9eab6ff1eb768ec279911712f1291014cdabf68f69bb89fdc04f74";
+  apiKey = "ac44eaaf0d9eab6ff1eb768ec279911712f1291014cdabf68f69bb89fdc04f74"; # gitleaks:allow (public by design, see above)
 
   configTemplate = (pkgs.formats.yaml {}).generate "cliproxyapi-config.yaml" {
     host = "127.0.0.1";

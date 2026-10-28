@@ -20,7 +20,9 @@ if len(sys.argv) != 2:
     raise SystemExit("usage: n8n-diabetes.py /path/to/n8n")
 N8N = sys.argv[1]
 TOKEN = "synthetic-diabetes-integration-token"
-ENCRYPTION_KEY = "synthetic-diabetes-n8n-test-key-32bytes"
+ENCRYPTION_KEY = (
+    "synthetic-diabetes-n8n-test-key-32bytes"  # gitleaks:allow (test fixture)
+)
 
 sys.path.insert(0, str(SERVICE))
 
