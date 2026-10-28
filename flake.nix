@@ -60,7 +60,7 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
     skills.url = "git+ssh://forgejo@ssh.git.hugo-berendi.de/hugo-berendi/skills.git";
-    skills.flake = false;
+    skills.inputs.nixpkgs.follows = "nixpkgs";
 
     # {{{ Hyprland
     hyprland = {
