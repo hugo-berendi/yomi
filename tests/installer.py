@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import stat
 import sys
 import tempfile
 import unittest
@@ -37,7 +38,8 @@ class InstallerTests(unittest.TestCase):
         self.addCleanup(self.work.cleanup)
         self.root = Path(self.work.name)
         self.repo = self.root / "repo"
-        scripts = self.repo / "scripts"
+        # live.sh finds the repository root two levels up, from scripts/recovery.
+        scripts = self.repo / "scripts/recovery"
         scripts.mkdir(parents=True)
         self.hardware = self.repo / "hosts/nixos/fixture/hardware/generated.nix"
         self.hardware.parent.mkdir(parents=True)
@@ -154,6 +156,20 @@ class InstallerTests(unittest.TestCase):
             self.assertTrue(
                 (self.target / "persist/state/etc/ssh/ssh_host_ed25519_key").is_file()
             )
+
+    def test_keys_are_private_and_owned_by_their_user(self):
+        passwd = self.target / "etc/passwd"
+        passwd.parent.mkdir(parents=True)
+        passwd.write_text(f"hugob:x:{os.getuid()}:{os.getgid()}::/home/hugob:/bin/sh\n")
+        result, _ = self.run_installer("fixture", "mount", "install")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        ssh = self.target / "persist/state/home/hugob/ssh/.ssh"
+        self.assertEqual(stat.S_IMODE(ssh.stat().st_mode), 0o700)
+        self.assertEqual(stat.S_IMODE((ssh / "id_ed25519").stat().st_mode), 0o600)
+        self.assertEqual(stat.S_IMODE((ssh / "id_ed25519.pub").stat().st_mode), 0o644)
+        self.assertEqual((ssh / "id_ed25519").stat().st_uid, os.getuid())
+        host_key = self.target / "persist/state/etc/ssh/ssh_host_ed25519_key"
+        self.assertEqual(stat.S_IMODE(host_key.stat().st_mode), 0o600)
 
     def test_preexisting_key_mount_is_left_open(self):
         result, calls = self.run_installer(

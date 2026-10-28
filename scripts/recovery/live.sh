@@ -1,5 +1,5 @@
 #!/usr/bin/env nix-shell
-#!nix-shell ../devshells/bootstrap/shell.nix
+#!nix-shell ../../devshells/bootstrap/shell.nix
 #!nix-shell -i bash
 
 set -euo pipefail
@@ -99,16 +99,18 @@ if [ "$action" = "install" ]; then
 	echo "🔑 Copying user ssh keys"
 	mkdir -p /mnt/persist/state/home/hugob
 	for dir in /mnt/persist/state/home/*; do
-		owner=$(awk -F: -v name="$(basename "$dir")" '$1 == name { print $3 ":" $4 }' /mnt/etc/passwd)
-		if [ -z "$owner" ]; then
-			echo "⚠️ no user $(basename "$dir") in /mnt/etc/passwd; copying keys owned by root" >&2
-			owner=0:0
+		owner=$(awk -F: -v name="$(basename "$dir")" '$1 == name { print $3 ":" $4 }' /mnt/etc/passwd 2>/dev/null || true)
+		ownership=()
+		if [ -n "$owner" ]; then
+			ownership=(-o "${owner%:*}" -g "${owner#*:}")
+		else
+			echo "⚠️ no user $(basename "$dir") in /mnt/etc/passwd; keys stay owned by the installer" >&2
 		fi
-		install -d -m 700 -o "${owner%:*}" -g "${owner#*:}" "$dir/ssh" "$dir/ssh/.ssh"
+		install -d -m 700 "${ownership[@]}" "$dir/ssh" "$dir/ssh/.ssh"
 		for key in "/kagutsuchi/secrets/$host"/id*; do
 			case "$key" in
-			*.pub) install -m 644 -o "${owner%:*}" -g "${owner#*:}" "$key" "$dir/ssh/.ssh/" ;;
-			*) install -m 600 -o "${owner%:*}" -g "${owner#*:}" "$key" "$dir/ssh/.ssh/" ;;
+			*.pub) install -m 644 "${ownership[@]}" "$key" "$dir/ssh/.ssh/" ;;
+			*) install -m 600 "${ownership[@]}" "$key" "$dir/ssh/.ssh/" ;;
 			esac
 		done
 	done
