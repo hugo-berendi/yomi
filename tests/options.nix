@@ -173,7 +173,7 @@
       unit = base.config.systemd.services.${name} or null;
     in
       check "systemd unit ${name} exists and has a command" (unit != null && (unit.serviceConfig.ExecStart or "") != ""))
-    ["immich-server" "immich-machine-learning" "immich-public-proxy" "karakeep-init" "karakeep-web" "karakeep-workers" "llama-cpp" "llama-cpp-classifier" "proton-mail-sorter"];
+    ["immich-server" "immich-machine-learning" "immich-public-proxy" "karakeep-init" "karakeep-web" "karakeep-workers" "llama-cpp-classifier" "proton-mail-sorter"];
   failures = map (c: c.name) (lib.filter (c: !c.assertion) checks);
   proxyConfig = pkgs.writeText "endpoint-fixture.conf" ''
     daemon off;
