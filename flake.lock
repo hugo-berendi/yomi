@@ -1321,13 +1321,17 @@
       }
     },
     "skills": {
-      "flake": false,
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
       "locked": {
-        "lastModified": 1792852589,
-        "narHash": "sha256-LLQ0+Ii0Dxi0hoW7wLkbpCfjA1v1pBFr19c3iUWwRmc=",
+        "lastModified": 1793219744,
+        "narHash": "sha256-GQLhY8Ep6/dzSQFYHQ+SngpBZkBy7bjVO3XwpVmoe3w=",
         "ref": "refs/heads/main",
-        "rev": "5779455af16d97a11f3930a702a523f2551f0c92",
-        "revCount": 19,
+        "rev": "5e7b4eb9f4e1bce1e2106919fc55812db596f92a",
+        "revCount": 21,
         "type": "git",
         "url": "ssh://forgejo@ssh.git.hugo-berendi.de/hugo-berendi/skills.git"
       },
