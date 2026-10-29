@@ -17,10 +17,6 @@ in {
       headerStyle = "clean";
       color = "slate";
       layout = {
-        Infrastructure = {
-          style = "row";
-          columns = 3;
-        };
         Tooling = {
           style = "row";
           columns = 3;
@@ -56,117 +52,6 @@ in {
 
     services = [
       {
-        Infrastructure = [
-          {
-            Prometheus = {
-              icon = "prometheus.svg";
-              href = "https://prometheus.hugo-berendi.de";
-              description = "Monitoring system";
-              widget = {
-                type = "prometheus";
-                url = "http://127.0.0.1:${toString config.yomi.ports.prometheus}";
-              };
-            };
-          }
-          {
-            Grafana = {
-              icon = "grafana.svg";
-              href = "https://grafana.hugo-berendi.de";
-              description = "Pretty dashboards :3";
-              widget = {
-                type = "grafana";
-                url = "http://127.0.0.1:${toString config.yomi.ports.grafana}";
-                username = "{{HOMEPAGE_VAR_GRAFANA_USERNAME}}";
-                password = "{{HOMEPAGE_VAR_GRAFANA_PASSWORD}}";
-                version = 2;
-              };
-            };
-          }
-          {
-            Syncthing = {
-              icon = "syncthing.svg";
-              href = "https://syncthing.lapetus.hugo-berendi.de";
-              description = "File synchronization";
-            };
-          }
-          {
-            Tailscale = {
-              icon = "tailscale.svg";
-              href = "https://tailscale.com/";
-              description = "Access this homelab from anywhere";
-            };
-          }
-          {
-            "Pocket ID" = {
-              icon = "mdi-fingerprint";
-              href = "https://pocket-id.hugo-berendi.de";
-              description = "Passkey authentication & OIDC";
-            };
-          }
-          {
-            Gatus = {
-              icon = "gatus.svg";
-              href = "https://status.hugo-berendi.de";
-              description = "Service status monitoring";
-              widget = {
-                type = "gatus";
-                url = "http://127.0.0.1:${toString config.yomi.ports.gatus}";
-              };
-            };
-          }
-          {
-            Ntfy = {
-              icon = "ntfy.svg";
-              href = "https://ntfy.hugo-berendi.de";
-              description = "Push notifications hub";
-            };
-          }
-          {
-            Scrutiny = {
-              icon = "scrutiny.svg";
-              href = "https://scrutiny.hugo-berendi.de";
-              description = "SMART / disk health dashboard";
-              widget = {
-                type = "scrutiny";
-                url = "http://127.0.0.1:${toString config.yomi.ports.scrutiny}";
-              };
-            };
-          }
-          {
-            Healthchecks = {
-              icon = "healthchecks.svg";
-              href = "https://ping.hugo-berendi.de";
-              description = "Cron heartbeat monitor";
-            };
-          }
-          {
-            "Adguard Home" = {
-              icon = "adguard-home.svg";
-              href = "https://adguard.hugo-berendi.de";
-              description = "DNS filtering";
-              widget = {
-                type = "adguard";
-                url = "http://127.0.0.1:${toString config.yomi.ports.adguard}";
-              };
-            };
-          }
-          {
-            Cloudflare = {
-              icon = "cloudflare.svg";
-              href = "https://dash.cloudflare.com/761d3e81b3e42551e33c4b73274ecc82/hugo-berendi.de/";
-              description = "Domain management";
-            };
-          }
-          {
-            Beszel = {
-              icon = "mdi-chart-areaspline";
-              href = "https://monitoring.hugo-berendi.de";
-              description = "Server metrics";
-            };
-          }
-        ];
-      }
-      {
         Tooling = [
           {
             Mealie = {
@@ -180,20 +65,6 @@ in {
               icon = "changedetection-io.svg";
               href = config.yomi.nginx.at.changedetection.url;
               description = "Website change monitoring";
-            };
-          }
-          {
-            "Stirling PDF" = {
-              icon = "stirling-pdf.svg";
-              href = config.yomi.nginx.at.pdf.url;
-              description = "PDF tools";
-            };
-          }
-          {
-            "Paperless AI" = {
-              icon = "paperless.svg";
-              href = config.yomi.nginx.at.paperless-ai.url;
-              description = "Document processing assistant";
             };
           }
           {
@@ -229,20 +100,6 @@ in {
               icon = "searxng.svg";
               href = "https://search.hugo-berendi.de";
               description = "Search engine";
-            };
-          }
-          {
-            Radicale = {
-              icon = "radicale.svg";
-              href = "https://cal.hugo-berendi.de";
-              description = "Calendar server";
-            };
-          }
-          {
-            Microbin = {
-              icon = "microbin.svg";
-              href = "https://bin.hugo-berendi.de";
-              description = "Code & file sharing";
             };
           }
           {
@@ -342,6 +199,11 @@ in {
               icon = "mdi-book-open-page-variant";
               href = "https://suwayomi.hugo-berendi.de";
               description = "Comic server";
+              widget = {
+                type = "suwayomi";
+                url = "http://127.0.0.1:${toString config.yomi.ports.suwayomi}";
+                fields = ["unread" "downloadedunread"];
+              };
             };
           }
           {
@@ -375,84 +237,6 @@ in {
               };
             };
           }
-          {
-            Radarr = {
-              icon = "radarr.svg";
-              href = "https://radarr.hugo-berendi.de";
-              description = "Movie management";
-              widget = {
-                type = "radarr";
-                url = "http://127.0.0.1:${toString config.yomi.ports.radarr}";
-                key = "{{HOMEPAGE_VAR_RADARR_API_KEY}}";
-                enableQueue = true;
-              };
-            };
-          }
-          {
-            Sonarr = {
-              icon = "sonarr.svg";
-              href = "https://sonarr.hugo-berendi.de";
-              description = "TV show management";
-              widget = {
-                type = "sonarr";
-                url = "http://127.0.0.1:${toString config.yomi.ports.sonarr}";
-                key = "{{HOMEPAGE_VAR_SONARR_API_KEY}}";
-                enableQueue = true;
-              };
-            };
-          }
-          {
-            Lidarr = {
-              icon = "lidarr.svg";
-              href = "https://lidarr.hugo-berendi.de";
-              description = "Music management";
-              widget = {
-                type = "lidarr";
-                url = "http://127.0.0.1:${toString config.yomi.ports.lidarr}";
-                key = "{{HOMEPAGE_VAR_LIDARR_API_KEY}}";
-                enableQueue = true;
-              };
-            };
-          }
-          {
-            Readarr = {
-              icon = "readarr.svg";
-              href = "https://readarr.hugo-berendi.de";
-              description = "Book management";
-              widget = {
-                type = "readarr";
-                url = "http://127.0.0.1:${toString config.yomi.ports.readarr}";
-                key = "{{HOMEPAGE_VAR_READARR_API_KEY}}";
-                enableQueue = true;
-              };
-            };
-          }
-          {
-            Bazarr = {
-              icon = "bazarr.svg";
-              href = "https://bazarr.hugo-berendi.de";
-              description = "Subtitle management";
-              widget = {
-                type = "bazarr";
-                url = "http://127.0.0.1:${toString config.yomi.ports.bazarr}";
-                key = "{{HOMEPAGE_VAR_BAZARR_API_KEY}}";
-                enableQueue = true;
-              };
-            };
-          }
-          {
-            Prowlarr = {
-              icon = "prowlarr.svg";
-              href = "https://prowlarr.hugo-berendi.de";
-              description = "Indexer manager";
-              widget = {
-                type = "prowlarr";
-                url = "http://127.0.0.1:${toString config.yomi.ports.prowlarr}";
-                key = "{{HOMEPAGE_VAR_PROWLARR_API_KEY}}";
-                enableQueue = true;
-              };
-            };
-          }
         ];
       }
       {
@@ -462,13 +246,6 @@ in {
               icon = "invidious.svg";
               href = "https://yt.hugo-berendi.de";
               description = "Youtube client";
-            };
-          }
-          {
-            Pelican = {
-              icon = "mdi-feather";
-              href = "https://pelican.hugo-berendi.de";
-              description = "Game server panel";
             };
           }
           {
@@ -498,14 +275,6 @@ in {
     ];
 
     widgets = [
-      {
-        resources = {
-          cpu = true;
-          memory = true;
-          disk = "/";
-          uptime = true;
-        };
-      }
       {
         datetime = {
           text_size = "xl";
