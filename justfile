@@ -100,6 +100,11 @@ rebuild:
 [doc("Run all flake checks (builds hosts, DNS, formatter)")]
 [group("ci")]
 check:
+  scripts/ci/flake-check.sh
+
+[doc("The same as `check` in a single nix process: faster on a big machine, but the evaluator holds every host at once")]
+[group("ci")]
+check-single:
   nix flake check --show-trace --keep-going
 
 [doc("Run only the cheap regression checks (a minute, no host builds); run before every push")]
