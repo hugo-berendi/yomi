@@ -5,7 +5,7 @@
   buildFHSEnv,
   writeShellScript,
   providerPackages ? [],
-  customExecutable ? null,
+  memoryServer,
 }: let
   version = "0.1.2";
   release =
@@ -17,6 +17,14 @@
     } ''
       mkdir -p "$out"
       tar -xzf "$src" --strip-components=1 -C "$out"
+    '';
+  bundle = assert memoryServer.version == version;
+    runCommand "t3code-memory-bundle-${version}" {} ''
+      mkdir -p "$out"
+      cp ${memoryServer}/bin/t3 "$out/t3"
+      for asset in client node_modules resource-monitor; do
+        ln -s ${release}/"$asset" "$out/$asset"
+      done
     '';
 in
   # Keep the upstream single-executable bundle intact: ELF rewriting corrupts it.
@@ -53,26 +61,7 @@ in
       ++ providerPackages;
     runScript = writeShellScript "t3-with-providers" ''
       export PATH=${lib.makeBinPath providerPackages}:$PATH
-      ${
-        if customExecutable == null
-        then ''exec ${release}/t3 "$@"''
-        else ''
-          t3_release=${lib.escapeShellArg "${release}"}
-          t3_custom=${lib.escapeShellArg customExecutable}
-          t3_custom_dir="$(dirname "$t3_custom")"
-          if [ ! -x "$t3_custom" ] || [ "$("$t3_custom" --version)" != "$("$t3_release/t3" --version)" ]; then
-            echo "T3 memory executable is missing or does not match the pinned release; starting the official release" >&2
-            exec "$t3_release/t3" "$@"
-          fi
-          for asset in client node_modules resource-monitor; do
-            if [ "$(readlink -f "$t3_custom_dir/$asset")" != "$t3_release/$asset" ]; then
-              echo "T3 memory executable has mismatched release assets: $asset; starting the official release" >&2
-              exec "$t3_release/t3" "$@"
-            fi
-          done
-          exec "$t3_custom" "$@"
-        ''
-      }
+      exec ${bundle}/t3 "$@"
     '';
     meta = {
       description = "T3 Code official release with a NixOS runtime";
@@ -80,7 +69,7 @@ in
       license = lib.licenses.mit;
       mainProgram = "t3";
       platforms = ["x86_64-linux"];
-      sourceProvenance = [lib.sourceTypes.binaryNativeCode];
+      sourceProvenance = [lib.sourceTypes.fromSource lib.sourceTypes.binaryNativeCode];
     };
   }).overrideAttrs (_: {
     pname = "t3code";
