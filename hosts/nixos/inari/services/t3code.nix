@@ -3,10 +3,13 @@
   lib,
   pkgs,
   inputs,
+  upkgs,
   ...
 }: let
   pilot = config.yomi.pilot.name;
   port = config.yomi.ports.t3code;
+  # Forge CLIs t3code's Forgejo/Gitea integration looks for. tea needs 0.16+, stable has 0.14.
+  forgeClis = [upkgs.forgejo-cli upkgs.tea];
   agents = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
   codex = import ../../../../home/features/cli/ai/codex-package.nix {inherit inputs pkgs;};
   # Use the pinned upstream release until llm-agents packages 0.1.2.
@@ -21,7 +24,7 @@ in {
   users.users.${pilot}.linger = true;
 
   home-manager.users.${pilot} = {config, ...}: {
-    home.packages = [package];
+    home.packages = [package] ++ forgeClis;
 
     yomi.persistence.at.state.apps.t3code.directories = [
       "${config.home.homeDirectory}/.t3"
@@ -34,7 +37,7 @@ in {
       };
       Service = {
         Environment = [
-          "PATH=${lib.makeBinPath [pkgs.git pkgs.ripgrep pkgs.nodejs]}:${config.home.profileDirectory}/bin:/run/current-system/sw/bin:/run/wrappers/bin"
+          "PATH=${lib.makeBinPath ([pkgs.git pkgs.ripgrep pkgs.nodejs] ++ forgeClis)}:${config.home.profileDirectory}/bin:/run/current-system/sw/bin:/run/wrappers/bin"
         ];
         ExecStart = "${lib.getExe package} serve --host 127.0.0.1 --port ${toString port} --base-dir ${config.home.homeDirectory}/.t3";
         WorkingDirectory = config.home.homeDirectory;
