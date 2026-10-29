@@ -309,6 +309,13 @@ in {
           idle_inhibit = "fullscreen";
         }
         {
+          # Dense reference lists and PDFs are hard to read through the global
+          # active/inactive opacity; keep Zotero solid in both states.
+          match.class = "^(Zotero|zotero)$";
+          opacity = "1.0 override 1.0 override";
+          no_blur = true;
+        }
+        {
           match.class = "^(mpv|.+exe)$";
           idle_inhibit = "focus";
         }
