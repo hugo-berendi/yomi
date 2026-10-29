@@ -35,13 +35,6 @@ in {
       Service = {
         Environment = [
           "PATH=${lib.makeBinPath [pkgs.git pkgs.ripgrep pkgs.nodejs]}:${config.home.profileDirectory}/bin:/run/current-system/sw/bin:/run/wrappers/bin"
-          # The FHS wrapper runs in a bwrap user namespace that maps only the
-          # pilot's uid, so every /nix/store file shows up as owned by nobody.
-          # ~/.ssh/config is a home-manager symlink into the store, and ssh
-          # refuses the default user config with "Bad owner or permissions",
-          # which failed `git fetch origin` while provisioning worktrees.
-          # An explicit -F skips that ownership check.
-          "\"GIT_SSH_COMMAND=ssh -F ${config.home.homeDirectory}/.ssh/config\""
         ];
         ExecStart = "${lib.getExe package} serve --host 127.0.0.1 --port ${toString port} --base-dir ${config.home.homeDirectory}/.t3";
         WorkingDirectory = config.home.homeDirectory;
