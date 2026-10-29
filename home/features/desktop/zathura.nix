@@ -8,13 +8,11 @@
       set adjust-open "best-fit"
 
       # Roomier, easier-to-scan reading view
-      set page-padding 8
       set page-right-to-left false
       set scroll-step 80
       set guioptions "sv"
       set statusbar-h-padding 12
       set statusbar-v-padding 8
-      set smooth-reload true
       set selection-clipboard clipboard
 
       # Inject font
@@ -79,7 +77,7 @@
       # }}}
       # {{{ Index mode
       set index-fg '${base05}'
-      set index-bg 'rgba(0,0,0.0)'
+      set index-bg '${base00}'
 
       # Selected element in index mode
       set index-active-fg '${base07}'
@@ -94,6 +92,7 @@
     {
       match.class = "^(org\\.pwmt\\.zathura|zathura)$";
       opacity = "1.0 override 1.0 override";
+      opaque = true;
       no_blur = true;
     }
   ];
