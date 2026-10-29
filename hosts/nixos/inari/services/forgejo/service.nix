@@ -116,7 +116,8 @@
       python313
     ];
     settings = {
-      runner.capacity = 2;
+      # Parallel flake evaluations exhausted RAM and zram beside the GPU model.
+      runner.capacity = 1;
     };
   };
 
@@ -126,6 +127,11 @@
       PrivateTmp = true;
       ProtectSystem = "strict";
       ProtectHome = true;
+      # Bound host-job evaluators together. Builds dispatched to nix-daemon
+      # run outside this cgroup and are not covered by these limits.
+      MemoryHigh = "8G";
+      MemoryMax = "12G";
+      MemorySwapMax = "2G";
     }
     // {PrivateDevices = lib.mkForce false;}
     // {

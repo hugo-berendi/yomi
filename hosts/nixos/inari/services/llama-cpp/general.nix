@@ -72,6 +72,10 @@ in {
         # Read the weights straight into GPU memory. An mmap would also leave
         # a second 22 GB copy in this unit's page cache.
         "--no-mmap"
+        # The OOM dump held 19 GiB in TTM buffers outside MemoryMax while
+        # zram was full. Release the idle model; requests reload it on demand.
+        "--sleep-idle-seconds"
+        "60"
         # The GPU does the math. The CPU only samples and schedules.
         "--threads"
         "4"
