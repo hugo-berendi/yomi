@@ -6,10 +6,10 @@ on:
 concurrency:
   group: update-packages
   cancel-in-progress: false
-# Updates land as a PR that merges on its own only when the job's checks,
-# the deterministic gate and the OpenCode review all say yes; otherwise the
-# alert router pushes the PR link to a human. The same trust boundary as in
-# update-flake-inputs.yml: no credentials in the checkout, gate and review
+# Updates land as a PR that merges on its own only when the job's checks
+# and the deterministic gate say yes. Every new PR also pushes its link to a
+# human through the alert router, as does any PR that is not merged. The same trust boundary as in
+# update-flake-inputs.yml: no credentials in the checkout, the gate
 # from copies taken before the update, token only in the last step.
 jobs:
   update:
@@ -35,7 +35,7 @@ jobs:
         id: trusted
         run: |
           dir=$(mktemp -d "$RUNNER_TEMP/update.XXXXXX")
-          cp scripts/ci/update-gate.py scripts/ci/update-llm-review.py scripts/ci/update-package-pr.py "$dir/"
+          cp scripts/ci/update-gate.py scripts/ci/update-package-pr.py "$dir/"
           echo "dir=$dir" >> "$GITHUB_OUTPUT"
           echo "sums=$(cd "$dir" && sha256sum ./*.py | sha256sum | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
 
@@ -140,21 +140,6 @@ jobs:
           fi
           cat "$DIR/gate.json"
 
-      - name: Review by Copilot Auto through OpenCode
-        id: review
-        if: steps.gate.outputs.ok == 'true'
-        timeout-minutes: 30
-        env:
-          DIR: ${{ steps.trusted.outputs.dir }}
-        run: |
-          git diff "${{ steps.commit.outputs.base }}" HEAD -- pkgs/ hosts/ > "$DIR/diff.txt"
-          if python3 "$DIR/update-llm-review.py" --diff "$DIR/diff.txt" > "$DIR/review.json"; then
-            echo "safe=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "safe=false" >> "$GITHUB_OUTPUT"
-          fi
-          cat "$DIR/review.json"
-
       - name: Lint and flake checks
         id: ci
         if: steps.commit.outputs.changed == 'true'
@@ -174,7 +159,7 @@ jobs:
           set -euo pipefail
           # Steps before this one ran upstream code; refuse to act on a
           # changed script or a moved branch.
-          test "$(cd "$DIR" && sha256sum ./update-gate.py ./update-llm-review.py ./update-package-pr.py | sha256sum | cut -d' ' -f1)" = "$SUMS"
+          test "$(cd "$DIR" && sha256sum ./update-gate.py ./update-package-pr.py | sha256sum | cut -d' ' -f1)" = "$SUMS"
           test "$(git rev-parse HEAD)" = "$HEAD_SHA"
           summary=""
           for f in $(git diff --name-only "$BASE" HEAD -- pkgs/ hosts/); do
@@ -189,7 +174,7 @@ jobs:
           done
 
           diffSummary=$(git diff "$BASE" HEAD -- pkgs/ hosts/ | head -c 60000 || true)
-          checks="- CI: ${{ steps.ci.outcome }}"$'\n'"- Gate: ${{ steps.gate.outputs.ok || 'did not run' }}"$'\n'"- LLM review: ${{ steps.review.outputs.safe || 'skipped' }}"
+          checks="- CI: ${{ steps.ci.outcome }}"$'\n'"- Gate: ${{ steps.gate.outputs.ok || 'did not run' }}"
           # Keep the Markdown code fences literal.
           # shellcheck disable=SC2016
           body=$(printf '%s\n\n%s\n<details>\n<summary>Show diff</summary>\n\n```diff\n%s\n```\n\n</details>\n' "$checks" "$summary" "$diffSummary")
@@ -201,5 +186,4 @@ jobs:
           export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=http.extraHeader GIT_CONFIG_VALUE_0="Authorization: basic $auth"
           python3 "$DIR/update-package-pr.py" "$DIR/body.md" \
             --ci-outcome "${{ steps.ci.outcome }}" \
-            --gate "$DIR/gate.json" --gate-ok "${{ steps.gate.outputs.ok }}" \
-            --review "$DIR/review.json" --review-ok "${{ steps.review.outputs.safe }}"
+            --gate "$DIR/gate.json" --gate-ok "${{ steps.gate.outputs.ok }}"

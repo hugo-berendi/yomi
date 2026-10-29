@@ -167,15 +167,13 @@ class DecideTests(unittest.TestCase):
             "title": "chore: update flake inputs",
             "html_url": "https://git/pr/7",
         }
-        verdict = dict(
-            ci_ok=True, gate_ok=True, review_ok=True, reasons=[], can_merge=True
-        )
+        verdict = dict(ci_ok=True, gate_ok=True, reasons=[], can_merge=True)
         verdict.update(overrides)
         result = publisher.decide(api, pr, "a" * 40, notify=alerts.append, **verdict)
         merges = [e for e in api.events if e[0] == "POST" and e[1].endswith("/merge")]
         return result, merges, alerts
 
-    def test_merges_only_when_all_three_agree(self):
+    def test_merges_only_when_both_checks_agree(self):
         result, merges, alerts = self.decide()
         self.assertEqual(result, "merged")
         self.assertEqual(merges[0][2]["head_commit_id"], "a" * 40)
@@ -183,7 +181,7 @@ class DecideTests(unittest.TestCase):
         self.assertEqual(alerts, [])
 
     def test_any_single_no_notifies_instead_of_merging(self):
-        for failing in ("ci_ok", "gate_ok", "review_ok", "can_merge"):
+        for failing in ("ci_ok", "gate_ok", "can_merge"):
             with self.subTest(failing=failing):
                 result, merges, alerts = self.decide(
                     **{failing: False}, reasons=["why"]
@@ -202,12 +200,20 @@ class DecideTests(unittest.TestCase):
             "b" * 40,
             ci_ok=True,
             gate_ok=False,
-            review_ok=True,
             reasons=[],
             can_merge=True,
             notify=lambda event: None,
         )
         self.assertIn(("DELETE", "/pulls/7/merge", None), api.events)
+
+    def test_announces_only_a_newly_opened_pr(self):
+        announced = []
+        fresh = Forgejo()
+        publisher.publish(fresh, "body", lambda: None, announce=announced.append)
+        self.assertEqual(len(announced), 1)
+        existing = Forgejo([pull(1, "update-packages")])
+        publisher.publish(existing, "body", lambda: None, announce=announced.append)
+        self.assertEqual(len(announced), 1)
 
     def test_push_cancels_a_scheduled_merge_first(self):
         api = Forgejo([pull(1, "update-packages")])

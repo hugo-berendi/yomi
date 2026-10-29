@@ -82,7 +82,7 @@ Forgejo Actions (`.forgejo/workflows/`):
 - `update-flake-inputs.yml`: Monday and Thursday 04:00 cron — `nix flake update` onto the rolling `update-flake-inputs` PR
 - `update-packages.yml`: weekly — `nix-update` for the `pkgs/` derivations and image digests onto the rolling `update-packages` PR
 
-Both update PRs merge on their own only when the job's `just lint`/`just check`, the deterministic gate (`scripts/ci/update-gate.py`: only lock revisions, package versions/hashes and image digests) and Copilot Auto through OpenCode (`scripts/ci/update-llm-review.py`) all say yes. Anything else pushes the PR link through the alert router. Auto-merge needs the `UPDATE_BOT_TOKEN` repo secret; without it every update waits for a human.
+Both update PRs merge on their own only when the job's `just lint`/`just check`, the deterministic gate (`scripts/ci/update-gate.py`: only lock revisions, package versions/hashes and image digests) say yes. Every new PR, and any PR that is not merged, pushes its link through the alert router. Auto-merge needs the `UPDATE_BOT_TOKEN` repo secret; without it every update waits for a human.
 
 `nix flake check` covers amaterasu, inari, iso, tsukuyomi and wsl-work, and evaluates **every** package output — so a broken `pkgs/` derivation fails CI even if no host uses it.
 

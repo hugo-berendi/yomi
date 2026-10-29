@@ -1,10 +1,10 @@
 """Publish one rolling update PR, then merge it or ask a human.
 
 Used by both update workflows: update-packages and update-flake-inputs.
-The merge decision needs three independent yeses: the job's own CI run,
-scripts/ci/update-gate.py (deterministic) and scripts/ci/update-llm-review.py
-(the OpenCode review, never the only gate). Anything else sends a notification
-through the local alert router with the PR link and leaves the PR open.
+The merge decision needs two independent yeses: the job's own CI run and
+scripts/ci/update-gate.py (deterministic). Anything else sends a notification
+through the local alert router with the PR link and leaves the PR open. A PR
+that was just opened is announced the same way, merged or not.
 """
 
 import argparse
@@ -46,7 +46,7 @@ def protected(pr):
     return any(user["login"] == "welles" for user in pr.get("assignees") or [])
 
 
-def publish(api, body, push, branch=BRANCH, title=TITLE):
+def publish(api, body, push, branch=BRANCH, title=TITLE, announce=None):
     # Collect every page before closing anything: changing the open set while
     # paginating would shift later pages and silently skip old PRs.
     candidates = []
@@ -95,6 +95,8 @@ def publish(api, body, push, branch=BRANCH, title=TITLE):
             f"/pulls/{pr['number']}/requested_reviewers",
             {"reviewers": ["hugo-berendi"]},
         )
+        if announce:
+            announce(pr)
 
     for old in candidates:
         if old["number"] != pr["number"] and not protected(old):
@@ -140,9 +142,9 @@ def read_verdict(path, key):
     return True, []
 
 
-def decide(api, pr, head, *, ci_ok, gate_ok, review_ok, reasons, can_merge, notify):
+def decide(api, pr, head, *, ci_ok, gate_ok, reasons, can_merge, notify):
     """Merge only when every check said yes; otherwise hand the PR to a human."""
-    if ci_ok and gate_ok and review_ok and can_merge:
+    if ci_ok and gate_ok and can_merge:
         # head_commit_id pins the merge to the commit the checks looked at;
         # Forgejo refuses if the branch moved. merge_when_checks_succeed
         # additionally waits for the PR's own CI run and branch protection.
@@ -158,11 +160,7 @@ def decide(api, pr, head, *, ci_ok, gate_ok, review_ok, reasons, can_merge, noti
         )
         return "merged"
     cancel_auto_merge(api, pr["number"])
-    failed = [
-        name
-        for name, ok in (("CI", ci_ok), ("gate", gate_ok), ("LLM review", review_ok))
-        if not ok
-    ]
+    failed = [name for name, ok in (("CI", ci_ok), ("gate", gate_ok)) if not ok]
     if not failed and not can_merge:
         reasons = [*reasons, "auto-merge is off: UPDATE_BOT_TOKEN is not set"]
     notify(
@@ -180,6 +178,24 @@ def decide(api, pr, head, *, ci_ok, gate_ok, review_ok, reasons, can_merge, noti
         }
     )
     return "notified"
+
+
+def announce_new(pr):
+    """Tell a human a fresh update PR exists; never fail the run over it."""
+    try:
+        post_alert(
+            {
+                "source": "updates",
+                "severity": "info",
+                "event": True,
+                "title": f"New PR: {pr.get('title', 'update')}",
+                "message": f"#{pr['number']} was opened and is being checked.",
+                "url": pr.get("html_url"),
+                "fingerprint": f"update-pr-new:{pr['number']}",
+            }
+        )
+    except OSError as error:
+        print(f"New-PR notification failed: {error}", file=sys.stderr)
 
 
 def post_alert(event):
@@ -203,12 +219,10 @@ def main(argv=None):
         "--ci-outcome", help="outcome of the job's own lint and check steps"
     )
     parser.add_argument("--gate", help="JSON written by update-gate.py")
-    parser.add_argument("--review", help="JSON written by update-llm-review.py")
-    # The verdicts as recorded in step outputs right after each check ran.
-    # The JSON files sit in a directory later steps could write to, so they
-    # only supply the reasons; a merge needs both sources to say yes.
+    # The verdict as recorded in the step output right after the gate ran.
+    # The JSON file sits in a directory later steps could write to, so it
+    # only supplies the reasons; a merge needs both sources to say yes.
     parser.add_argument("--gate-ok", default="false")
-    parser.add_argument("--review-ok", default="false")
     args = parser.parse_args(argv)
 
     api = Forgejo()
@@ -218,6 +232,7 @@ def main(argv=None):
         lambda: push_branch(args.branch),
         branch=args.branch,
         title=args.title,
+        announce=announce_new,
     )
     if args.ci_outcome is None:
         return 0
@@ -226,25 +241,14 @@ def main(argv=None):
     gate_ok, gate_reasons = (
         read_verdict(args.gate, "ok") if args.gate else (False, ["gate did not run"])
     )
-    review_ok, review_reasons = (
-        read_verdict(args.review, "safe")
-        if args.review
-        else (False, ["LLM review did not run"])
-    )
     gate_ok = gate_ok and args.gate_ok == "true"
-    review_ok = review_ok and args.review_ok == "true"
-    reasons = (
-        ([] if ci_ok else [f"CI outcome: {args.ci_outcome}"])
-        + gate_reasons
-        + review_reasons
-    )
+    reasons = ([] if ci_ok else [f"CI outcome: {args.ci_outcome}"]) + gate_reasons
     result = decide(
         api,
         pr,
         head,
         ci_ok=ci_ok,
         gate_ok=gate_ok,
-        review_ok=review_ok,
         reasons=reasons,
         can_merge=bool(os.environ.get("UPDATE_BOT_TOKEN")),
         notify=post_alert,

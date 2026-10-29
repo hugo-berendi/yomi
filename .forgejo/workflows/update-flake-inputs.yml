@@ -12,20 +12,20 @@ concurrency:
   group: update-flake-inputs
   cancel-in-progress: false
 # The update lands as a PR, never a direct push. It merges on its own only
-# when the job's checks, the deterministic gate and the OpenCode review all say
-# yes; otherwise the alert router pushes the PR link to a human. See
+# when the job's checks and
+# the deterministic gate say yes. Every new PR also pushes its link to a human
+# through the alert router, as does any PR that is not merged. See
 # scripts/ci/update-package-pr.py for the decision.
 #
 # `just lint` and `just check` run code from the updated inputs (devshell
 # hooks, evaluation) as the runner user. So: no credentials are kept in the
-# checkout, the gate and review run before that step from copies taken
+# checkout, the gate runs before that step from copies taken
 # before the update, the last step verifies those copies by hash and the
 # recorded commit, and only the last step sees the token.
 jobs:
   update:
     runs-on: native
-    # 180 for just check as before, plus up to 30 for the OpenCode review and
-    # the PR round trip.
+    # 180 for just check as before, plus the PR round trip.
     timeout-minutes: 240
     permissions:
       contents: write
@@ -44,7 +44,7 @@ jobs:
         id: trusted
         run: |
           dir=$(mktemp -d "$RUNNER_TEMP/update.XXXXXX")
-          cp scripts/ci/update-gate.py scripts/ci/update-llm-review.py scripts/ci/update-package-pr.py "$dir/"
+          cp scripts/ci/update-gate.py scripts/ci/update-package-pr.py "$dir/"
           echo "dir=$dir" >> "$GITHUB_OUTPUT"
           echo "sums=$(cd "$dir" && sha256sum ./*.py | sha256sum | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
       - name: Update flake inputs
@@ -78,50 +78,6 @@ jobs:
             echo "ok=false" >> "$GITHUB_OUTPUT"
           fi
           cat "$DIR/gate.json"
-      - name: Collect revisions and upstream commit subjects
-        if: steps.gate.outputs.ok == 'true'
-        env:
-          BASE: ${{ steps.commit.outputs.base }}
-          DIR: ${{ steps.trusted.outputs.dir }}
-        run: |
-          # The gate has already checked the lock structure; the model gets
-          # its revision list rather than kilobytes of lock JSON.
-          nix run nixpkgs#jq -- -r '.summary[]' "$DIR/gate.json" > "$DIR/diff.txt"
-          # Upstream commit subjects, as data for the reviewer. Best effort:
-          # a missing changelog leaves the reviewer with the revisions alone.
-          : > "$DIR/changelog.raw"
-          git show "$BASE:flake.lock" > "$DIR/old.lock"
-          # jq program, not shell: $old and $n are jq variables.
-          # shellcheck disable=SC2016
-          nix run nixpkgs#jq -- -r --slurpfile old "$DIR/old.lock" '
-            .nodes | to_entries[]
-            | select(.value.locked.type == "github")
-            | . as $n | ($old[0].nodes[$n.key].locked.rev // empty) as $prev
-            | select($prev != $n.value.locked.rev)
-            | "\($n.value.locked.owner) \($n.value.locked.repo) \($prev) \($n.value.locked.rev)"
-          ' flake.lock | while read -r owner repo old new; do
-            {
-              echo "## $owner/$repo $old..$new"
-              curl -fsS --max-time 30 "https://api.github.com/repos/$owner/$repo/compare/$old...$new" \
-                | nix run nixpkgs#jq -- -r '.commits[-20:][] | .commit.message | split("\n")[0]' || echo "(changelog unavailable)"
-            } >> "$DIR/changelog.raw"
-          done
-          # update-llm-review.py rejects oversized input outright; cut here so
-          # a long changelog shortens the review instead of skipping it.
-          head -c 16000 "$DIR/changelog.raw" > "$DIR/changelog.txt"
-      - name: Review by Copilot Auto through OpenCode
-        id: review
-        if: steps.gate.outputs.ok == 'true'
-        timeout-minutes: 30
-        env:
-          DIR: ${{ steps.trusted.outputs.dir }}
-        run: |
-          if python3 "$DIR/update-llm-review.py" --diff "$DIR/diff.txt" --changelog "$DIR/changelog.txt" > "$DIR/review.json"; then
-            echo "safe=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "safe=false" >> "$GITHUB_OUTPUT"
-          fi
-          cat "$DIR/review.json"
       - name: Lint and flake checks
         id: ci
         if: steps.commit.outputs.changed == 'true'
@@ -139,7 +95,7 @@ jobs:
           set -euo pipefail
           # Steps before this one ran upstream code; refuse to act on a
           # changed script or a moved branch.
-          test "$(cd "$DIR" && sha256sum ./update-gate.py ./update-llm-review.py ./update-package-pr.py | sha256sum | cut -d' ' -f1)" = "$SUMS"
+          test "$(cd "$DIR" && sha256sum ./update-gate.py ./update-package-pr.py | sha256sum | cut -d' ' -f1)" = "$SUMS"
           test "$(git rev-parse HEAD)" = "$HEAD_SHA"
           body="$DIR/body.md"
           {
@@ -147,11 +103,9 @@ jobs:
             echo
             echo "- CI: ${{ steps.ci.outcome }}"
             echo "- Gate: ${{ steps.gate.outputs.ok || 'did not run' }}"
-            echo "- LLM review: ${{ steps.review.outputs.safe || 'skipped' }}"
             echo
             echo '```json'
             cat "$DIR/gate.json" 2>/dev/null || true
-            cat "$DIR/review.json" 2>/dev/null || true
             echo '```'
           } > "$body"
           # Pushes made with the automatic token start no workflow, so the
@@ -161,5 +115,4 @@ jobs:
           python3 "$DIR/update-package-pr.py" "$body" \
             --branch update-flake-inputs --title "chore: update flake inputs" \
             --ci-outcome "${{ steps.ci.outcome }}" \
-            --gate "$DIR/gate.json" --gate-ok "${{ steps.gate.outputs.ok }}" \
-            --review "$DIR/review.json" --review-ok "${{ steps.review.outputs.safe }}"
+            --gate "$DIR/gate.json" --gate-ok "${{ steps.gate.outputs.ok }}"

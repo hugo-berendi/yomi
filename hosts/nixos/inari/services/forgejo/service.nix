@@ -100,11 +100,6 @@
     tokenFile = config.sops.templates."forgejo_runner_token.env".path;
     labels = ["native:host"];
     hostPackages = with pkgs; [
-      # update-llm-review.py runs the patched OpenCode that routes Copilot Auto.
-      # It needs `opencode auth login` once as gitea-runner, with HOME
-      # /var/lib/gitea-runner/default; until then the review rejects and the
-      # update waits for a human.
-      config.home-manager.users.${config.yomi.pilot.name}.programs.opencode.package
       bash
       coreutils
       curl
