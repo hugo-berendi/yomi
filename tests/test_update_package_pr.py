@@ -134,6 +134,36 @@ class PublishTests(unittest.TestCase):
                     f"{latest}\trefs/heads/update-packages",
                 )
 
+    def test_push_clears_legacy_dated_branches(self):
+        # git cannot hold update-packages next to update-packages/<date>, and
+        # the old scheme left the dated branches behind on the remote.
+        with tempfile.TemporaryDirectory() as directory, contextlib.chdir(directory):
+
+            def git(*args):
+                return subprocess.check_output(
+                    ["git", *args], text=True, stderr=subprocess.DEVNULL
+                ).strip()
+
+            git("init", "--bare", "remote.git")
+            git("init", "work")
+            with contextlib.chdir("work"):
+                git("config", "user.name", "Test")
+                git("config", "user.email", "test@example.org")
+                git("remote", "add", "origin", "../remote.git")
+                git("commit", "--allow-empty", "-m", "version 2")
+                git("push", "origin", "HEAD:refs/heads/update-packages/2026-09-18")
+                git("push", "origin", "HEAD:refs/heads/update-packages/2026-10-23")
+                git("push", "origin", "HEAD:refs/heads/feature/update-packages")
+                publisher.push_branch()
+                head = git("rev-parse", "HEAD")
+                self.assertEqual(
+                    git("ls-remote", "--heads", "origin").splitlines(),
+                    [
+                        f"{head}\trefs/heads/feature/update-packages",
+                        f"{head}\trefs/heads/update-packages",
+                    ],
+                )
+
     def test_cleanup_checks_all_pages_and_ignores_other_work(self):
         unrelated = [pull(n, "feature/test") for n in range(1, 52)]
         foreign = pull(52, "update-packages/2026-10-19", repo="other/yomi")

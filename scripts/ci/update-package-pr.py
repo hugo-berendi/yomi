@@ -107,6 +107,19 @@ def publish(api, body, push, branch=BRANCH, title=TITLE, announce=None):
 
 def push_branch(branch=BRANCH):
     ref = f"refs/heads/{branch}"
+    # Git refuses refs/heads/update-packages while refs/heads/update-packages/<date>
+    # exists, and the old dated-branch scheme left those behind (the push failed
+    # with "refname conflict" on 2026-10-29). The PRs on them are closed by publish.
+    legacy = [
+        line.split()[1]
+        for line in subprocess.check_output(
+            ["git", "ls-remote", "--heads", "origin", f"{ref}/*"], text=True
+        ).splitlines()
+    ]
+    if legacy:
+        subprocess.run(
+            ["git", "push", "origin", *(f":{name}" for name in legacy)], check=True
+        )
     remote = subprocess.check_output(["git", "ls-remote", "origin", ref], text=True)
     previous = remote.split()[0] if remote.strip() else ""
     subprocess.run(
