@@ -64,7 +64,7 @@ in {
               description = "Monitoring system";
               widget = {
                 type = "prometheus";
-                url = "https://prometheus.hugo-berendi.de";
+                url = "http://127.0.0.1:${toString config.yomi.ports.prometheus}";
               };
             };
           }
@@ -75,7 +75,7 @@ in {
               description = "Pretty dashboards :3";
               widget = {
                 type = "grafana";
-                url = "https://grafana.hugo-berendi.de";
+                url = "http://127.0.0.1:${toString config.yomi.ports.grafana}";
                 username = "{{HOMEPAGE_VAR_GRAFANA_USERNAME}}";
                 password = "{{HOMEPAGE_VAR_GRAFANA_PASSWORD}}";
                 version = 2;
@@ -108,6 +108,10 @@ in {
               icon = "gatus.svg";
               href = "https://status.hugo-berendi.de";
               description = "Service status monitoring";
+              widget = {
+                type = "gatus";
+                url = "http://127.0.0.1:${toString config.yomi.ports.gatus}";
+              };
             };
           }
           {
@@ -122,6 +126,10 @@ in {
               icon = "scrutiny.svg";
               href = "https://scrutiny.hugo-berendi.de";
               description = "SMART / disk health dashboard";
+              widget = {
+                type = "scrutiny";
+                url = "http://127.0.0.1:${toString config.yomi.ports.scrutiny}";
+              };
             };
           }
           {
@@ -138,7 +146,7 @@ in {
               description = "DNS filtering";
               widget = {
                 type = "adguard";
-                url = "https://adguard.hugo-berendi.de";
+                url = "http://127.0.0.1:${toString config.yomi.ports.adguard}";
               };
             };
           }
@@ -160,6 +168,55 @@ in {
       }
       {
         Tooling = [
+          {
+            Mealie = {
+              icon = "mealie.svg";
+              href = config.yomi.nginx.at.mealie.url;
+              description = "Recipes and meal planning";
+            };
+          }
+          {
+            "Changedetection.io" = {
+              icon = "changedetection-io.svg";
+              href = config.yomi.nginx.at.changedetection.url;
+              description = "Website change monitoring";
+            };
+          }
+          {
+            "Stirling PDF" = {
+              icon = "stirling-pdf.svg";
+              href = config.yomi.nginx.at.pdf.url;
+              description = "PDF tools";
+            };
+          }
+          {
+            "Paperless AI" = {
+              icon = "paperless.svg";
+              href = config.yomi.nginx.at.paperless-ai.url;
+              description = "Document processing assistant";
+            };
+          }
+          {
+            "T3 Code" = {
+              icon = "mdi-code-braces";
+              href = config.yomi.nginx.at.t3code.url;
+              description = "Coding agent workspace";
+            };
+          }
+          {
+            OpenCode = {
+              icon = "mdi-console";
+              href = config.yomi.nginx.at.code.url;
+              description = "Coding agent workspace";
+            };
+          }
+          {
+            Diabetes = {
+              icon = "mdi-chart-line";
+              href = config.yomi.nginx.at.diabetes.url;
+              description = "Glucose reports";
+            };
+          }
           {
             Vaultwarden = {
               icon = "bitwarden.svg";
@@ -230,7 +287,7 @@ in {
               description = "Home automation";
               widget = {
                 type = "homeassistant";
-                url = "https://home.hugo-berendi.de";
+                url = "http://127.0.0.1:${toString config.yomi.ports.home-assistant}";
                 key = "{{HOMEPAGE_VAR_HOMEASSISTANT_API_KEY}}";
               };
             };
@@ -242,7 +299,7 @@ in {
               description = "Photo management";
               widget = {
                 type = "immich";
-                url = "https://immich.hugo-berendi.de";
+                url = "http://127.0.0.1:${toString config.yomi.ports.immich}";
                 key = "{{HOMEPAGE_VAR_IMMICH_API_KEY}}";
                 version = 2;
               };
@@ -258,15 +315,8 @@ in {
           {
             Miniflux = {
               icon = "miniflux.svg";
-              href = "https://rss.hugo-berendi.de";
+              href = config.yomi.cloudflared.at.miniflux.url;
               description = "Minimal RSS reader";
-            };
-          }
-          {
-            BookStack = {
-              icon = "bookstack.png";
-              href = "https://wiki.hugo-berendi.de";
-              description = "Wiki for the homelab";
             };
           }
         ];
@@ -280,7 +330,7 @@ in {
               description = "Media server";
               widget = {
                 type = "jellyfin";
-                url = "https://media.hugo-berendi.de";
+                url = "http://127.0.0.1:${toString config.yomi.ports.jellyfin}";
                 key = "{{HOMEPAGE_VAR_JELLYFIN_API_KEY}}";
                 enableBlocks = true;
                 enableNowPlaying = true;
@@ -302,13 +352,13 @@ in {
             };
           }
           {
-            Jellyseerr = {
+            Seerr = {
               icon = "jellyseerr.svg";
               href = "https://request-media.hugo-berendi.de";
               description = "Media requests";
               widget = {
                 type = "jellyseerr";
-                url = "https://request-media.hugo-berendi.de";
+                url = "http://127.0.0.1:${toString config.yomi.ports.jellyseerr}";
                 key = "{{HOMEPAGE_VAR_JELLYSEERR_API_KEY}}";
               };
             };
@@ -412,13 +462,6 @@ in {
               icon = "invidious.svg";
               href = "https://yt.hugo-berendi.de";
               description = "Youtube client";
-            };
-          }
-          {
-            Commafeed = {
-              icon = "mdi-rss";
-              href = "https://rss.hugo-berendi.de";
-              description = "RSS reader";
             };
           }
           {
