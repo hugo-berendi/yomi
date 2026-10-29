@@ -41,10 +41,20 @@
       DISABLE_SIGNUPS = "false";
       DISABLE_NEW_RELEASE_CHECK = "true";
 
-      # No AI tagging or summaries. These pointed at an Ollama that was off
-      # for a long time and is gone now; llama.cpp is the one local runtime
-      # and its CPU belongs to the mail sorter. Without OLLAMA_BASE_URL or
-      # OPENAI_API_KEY karakeep simply skips inference.
+      # AI tagging and summaries through the classifier llama.cpp, the one
+      # local runtime (Ollama is gone). It has a single slot, so bookmarks
+      # queue behind the mail sorter instead of competing with it; both run
+      # at the lowest CPU weight in the background. The server ignores the
+      # key but karakeep refuses to enable the OpenAI client without one.
+      OPENAI_BASE_URL = "http://127.0.0.1:${toString config.yomi.ports.llama-cpp-classifier}/v1";
+      OPENAI_API_KEY = "unused";
+      INFERENCE_TEXT_MODEL = "qwen3.5-9b";
+      # No vision projector is loaded, so tagging of image bookmarks will
+      # fail; karakeep's default image model does not exist here either.
+      INFERENCE_IMAGE_MODEL = "qwen3.5-9b";
+      INFERENCE_CONTEXT_LENGTH = "6144";
+      # ~30 s a mail on this CPU, more with a queue and a cold model load.
+      INFERENCE_JOB_TIMEOUT_SEC = "600";
 
       # OCR
       OCR_LANGS = "eng,deu";
