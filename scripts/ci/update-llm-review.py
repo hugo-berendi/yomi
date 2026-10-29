@@ -1,21 +1,28 @@
-"""Ask a local LLM whether a dependency update looks routine.
+"""Ask an LLM, through OpenCode, whether a dependency update looks routine.
 
 This is an additional check behind a deterministic gate, never the only one.
 Diffs and changelogs are untrusted: they are fenced in a per-run random
 delimiter, screened for obvious injection phrases, and the model's reply must
 match a two-key schema exactly. Every failure path is a rejection.
+
+The model runs as an OpenCode agent with every tool denied, in an empty
+directory, so text injected through a diff has nothing to act with: the worst
+it can do is answer safe=true, which the deterministic gate does not rely on.
 """
 
 import argparse
 import json
 from pathlib import Path
 import re
+import os
 import secrets
+import subprocess
 import sys
-from urllib.request import Request, urlopen
+import tempfile
 
-DEFAULT_URL = "http://127.0.0.1:8491/v1/chat/completions"
-MODEL = "qwen3.6-35b-a3b"
+MODEL = "github-copilot/auto"
+AGENT = "update-review"
+ANSI = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
 MAX_REASON = 500
 
 # Phrases that only appear in text written to steer a model. Their presence in
@@ -30,16 +37,6 @@ INJECTION_PATTERNS = [
     '"safe": true',
     '"safe":true',
 ]
-
-SCHEMA = {
-    "type": "object",
-    "properties": {
-        "safe": {"type": "boolean"},
-        "reason": {"type": "string"},
-    },
-    "required": ["safe", "reason"],
-    "additionalProperties": False,
-}
 
 SYSTEM_PROMPT = """\
 You review dependency updates for a personal NixOS homeserver configuration.
@@ -76,15 +73,12 @@ def find_injection(text):
     return None
 
 
-def build_messages(diff, changelog, nonce):
+def build_prompt(diff, changelog, nonce):
     parts = [f"<<<DATA-{nonce}>>>", "--- DIFF ---", sanitize(diff, nonce)]
     if changelog:
         parts += ["--- CHANGELOG ---", sanitize(changelog, nonce)]
     parts += [f"<<<END-{nonce}>>>", "Answer with the JSON verdict only."]
-    return [
-        {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": "\n".join(parts)},
-    ]
+    return "\n".join(parts)
 
 
 def parse_verdict(content):
@@ -106,33 +100,46 @@ def parse_verdict(content):
     return {"safe": verdict["safe"], "reason": reason}
 
 
-def ask(url, timeout, messages):
-    body = {
-        "model": MODEL,
-        "messages": messages,
-        "temperature": 0,
-        "max_tokens": 400,
-        "response_format": {
-            "type": "json_schema",
-            "json_schema": {"name": "verdict", "strict": True, "schema": SCHEMA},
-        },
-    }
-    request = Request(
-        url,
-        method="POST",
-        data=json.dumps(body).encode(),
-        headers={"Content-Type": "application/json"},
+def agent_config():
+    return json.dumps(
+        {
+            "agent": {
+                AGENT: {
+                    "mode": "all",
+                    "model": MODEL,
+                    "steps": 1,
+                    "permission": {"*": "deny"},
+                    "prompt": SYSTEM_PROMPT,
+                }
+            }
+        }
     )
+
+
+def ask(opencode, timeout, prompt):
+    command = [opencode, "run", "--standalone", "--agent", AGENT, "--model", MODEL]
+    command += ["--title", "update-review", "--", prompt]
+    env = dict(os.environ, OPENCODE_CONFIG_CONTENT=agent_config())
     try:
-        with urlopen(request, timeout=timeout) as response:
-            reply = json.loads(response.read())
-        content = reply["choices"][0]["message"]["content"]
-    except (OSError, ValueError, KeyError, IndexError, TypeError) as error:
+        with tempfile.TemporaryDirectory() as cwd:
+            result = subprocess.run(
+                command,
+                cwd=cwd,
+                env=env,
+                stdin=subprocess.DEVNULL,
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+            )
+    except (OSError, subprocess.SubprocessError) as error:
         raise Rejected(
             f"model request failed: {type(error).__name__}: {error}"
         ) from error
-    if not isinstance(content, str):
-        raise Rejected("model reply has no text content")
+    if result.returncode != 0:
+        raise Rejected(f"opencode exited with {result.returncode}")
+    # OpenCode prints a "> agent · model" banner before the reply.
+    lines = ANSI.sub("", result.stdout).strip().splitlines()
+    content = "\n".join(line for line in lines if not line.startswith("> "))
     return parse_verdict(content)
 
 
@@ -149,7 +156,7 @@ def review(args):
     if pattern:
         raise Rejected(f"possible prompt injection: found {pattern!r}")
     nonce = secrets.token_hex(16)
-    return ask(args.url, args.timeout, build_messages(diff, changelog, nonce))
+    return ask(args.opencode, args.timeout, build_prompt(diff, changelog, nonce))
 
 
 def main(argv=None):
@@ -157,7 +164,7 @@ def main(argv=None):
         parser = argparse.ArgumentParser(description=__doc__)
         parser.add_argument("--diff", required=True)
         parser.add_argument("--changelog")
-        parser.add_argument("--url", default=DEFAULT_URL)
+        parser.add_argument("--opencode", default="opencode")
         parser.add_argument("--timeout", type=float, default=1500)
         parser.add_argument("--max-chars", type=int, default=24000)
         args = parser.parse_args(argv)

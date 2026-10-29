@@ -3,7 +3,7 @@
 Used by both update workflows: update-packages and update-flake-inputs.
 The merge decision needs three independent yeses: the job's own CI run,
 scripts/ci/update-gate.py (deterministic) and scripts/ci/update-llm-review.py
-(the local model, never the only gate). Anything else sends a notification
+(the OpenCode review, never the only gate). Anything else sends a notification
 through the local alert router with the PR link and leaves the PR open.
 """
 
