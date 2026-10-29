@@ -1,5 +1,6 @@
 {
   config,
+  lib,
   pkgs,
   ...
 }: {
@@ -9,6 +10,20 @@
       pkgs.texlive.combined.scheme-full
       pkgs.zotero
     ];
+
+    # Zotero reads user.js on every start and it wins over prefs.js, so the UI
+    # stays readable even when the app rewrites its own prefs. The profile dir
+    # name is random but fixed once created (see profiles.ini).
+    file.".zotero/zotero/977q0pek.default/user.js" = {
+      force = true;
+      text = lib.concatStrings (lib.mapAttrsToList (name: value: "user_pref(\"${name}\", ${builtins.toJSON value});\n") {
+        "extensions.zotero.fontSize" = "1.15";
+        "extensions.zotero.uiDensity" = "comfortable";
+        "extensions.zotero.note.fontSize" = "16";
+        "extensions.zotero.note.fontFamily" = "system-ui, sans-serif";
+        "browser.theme.toolbar-theme" = 2;
+      });
+    };
 
     file.".latexmkrc".text = ''
       $pdf_mode = 1;
