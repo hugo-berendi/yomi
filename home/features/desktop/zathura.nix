@@ -7,11 +7,21 @@
       # Open document in fit-width mode by default
       set adjust-open "best-fit"
 
+      # Roomier, easier-to-scan reading view
+      set page-padding 8
+      set page-right-to-left false
+      set scroll-step 80
+      set guioptions "sv"
+      set statusbar-h-padding 12
+      set statusbar-v-padding 8
+      set smooth-reload true
+      set selection-clipboard clipboard
+
       # Inject font
       set font "${config.stylix.fonts.sansSerif.name}"
       # }}}
       # {{{ Default foreground/background color
-      set default-bg rgba(${config.yomi.theming.colors.rgba "base00"})
+      set default-bg '${base00}'
       set default-fg ${base05}
       # }}}
       # {{{ Recolor
@@ -19,8 +29,10 @@
       set recolor-keephue 'false' # Don't allow original hue when recoloring
       set recolor-reverse-video 'true' # Keep original image colors while recoloring
 
+      # Opaque on purpose: a transparent light color lets the wallpaper bleed
+      # through every recolored page and makes text hard to read.
       # Represent light/dark colors in recoloring mode
-      set recolor-lightcolor rgba(0,0,0,0)
+      set recolor-lightcolor '${base00}'
       set recolor-darkcolor '${base05}'
       # }}}
       # {{{ Completion
@@ -75,6 +87,16 @@
       # }}}
     '';
   };
+
+  # Hyprland dims every window to stylix.opacity.applications; a page of text
+  # must stay solid.
+  wayland.windowManager.hyprland.settings.window_rule = [
+    {
+      match.class = "^(org\\.pwmt\\.zathura|zathura)$";
+      opacity = "1.0 override 1.0 override";
+      no_blur = true;
+    }
+  ];
 
   home.shellAliases.pdf = "zathura --fork";
 
