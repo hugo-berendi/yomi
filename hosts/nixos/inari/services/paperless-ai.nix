@@ -14,7 +14,7 @@
       PUID = "1000";
       PGID = "1000";
       PAPERLESS_AI_PORT = toString config.yomi.ports.paperless-ai;
-      RAG_SERVICE_URL = "http://127.0.0.1:${toString config.yomi.ports.paperless-ai-rag}";
+      RAG_SERVICE_URL = "http://127.0.0.1:8000";
       RAG_SERVICE_ENABLED = "true";
     };
     environmentFiles = [config.sops.secrets.paperless_ai_env.path];
@@ -32,24 +32,5 @@
     ];
   };
 
-  virtualisation.oci-containers.containers."paperless-ai-rag" = {
-    image = (import ../images.nix).paperless-ai;
-    environment = {
-      PUID = "1000";
-      PGID = "1000";
-      PORT = toString config.yomi.ports.paperless-ai-rag;
-    };
-    volumes = [
-      "paperless-ai_rag:/app/data:rw"
-    ];
-    ports = [
-      "127.0.0.1:${toString config.yomi.ports.paperless-ai-rag}:${toString config.yomi.ports.paperless-ai-rag}/tcp"
-    ];
-    log-driver = "journald";
-    extraOptions = [
-      "--cap-drop=ALL"
-      "--security-opt=no-new-privileges=true"
-    ];
-  };
   # }}}
 }
