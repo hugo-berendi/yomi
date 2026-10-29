@@ -67,6 +67,11 @@ in {
         "--jinja"
         "--reasoning"
         "off"
+        # The sorter works in bursts of a few mails; between them the 5.7 GB of
+        # weights (mapped, so also page cache) only crowd out CI and the
+        # games. Requests reload the model on demand.
+        "--sleep-idle-seconds"
+        "120"
         "--threads"
         "8"
       ];
