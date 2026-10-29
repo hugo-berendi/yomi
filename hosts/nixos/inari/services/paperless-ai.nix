@@ -29,6 +29,12 @@
       "--network=host"
       "--cap-drop=ALL"
       "--security-opt=no-new-privileges=true"
+      # These must come after the secret env-file, which can contain the old
+      # Ollama settings. llama.cpp exposes an OpenAI-compatible API locally.
+      "--env=AI_PROVIDER=custom"
+      "--env=CUSTOM_BASE_URL=http://127.0.0.1:${toString config.yomi.ports.llama-cpp-classifier}/v1"
+      "--env=CUSTOM_MODEL=qwen3.5-9b"
+      "--env=CUSTOM_API_KEY=local"
     ];
   };
 
