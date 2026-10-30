@@ -8,6 +8,11 @@ concurrency:
 jobs:
   check:
     runs-on: native
+    env:
+      # flake.nix nixConfig carries the binary caches. Nix ignores it with an
+      # "untrusted flake configuration" warning unless it is accepted, and the
+      # runner would then miss every cache but cache.nixos.org.
+      NIX_CONFIG: accept-flake-config = true
     timeout-minutes: 180
     steps:
       - name: Checkout repository

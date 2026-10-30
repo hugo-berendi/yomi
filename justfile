@@ -4,6 +4,11 @@ default:
 
 hostname := `hostname`
 
+# The caches live in flake.nix nixConfig; without this nix ignores them with an
+# "untrusted flake configuration" warning, for every recipe that calls nix.
+# Appends to a NIX_CONFIG you already have instead of replacing it.
+export NIX_CONFIG := env("NIX_CONFIG", "") + "\naccept-flake-config = true"
+
 # {{{ Nixos rebuilds
 [doc("Wrapper around `nixos-rebuild`, taking care of the generic arguments")]
 [group("nix")]

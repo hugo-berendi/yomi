@@ -193,6 +193,8 @@
     }
   ];
 
-  nix.settings.trusted-users = ["root" "hugob"];
+  # The runner is trusted so nix honours the flake's extra-trusted-public-keys
+  # (a restricted setting) instead of warning that it is not a trusted user.
+  nix.settings.trusted-users = ["root" "hugob" "gitea-runner"];
   # }}}
 }
