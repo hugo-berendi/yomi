@@ -13,6 +13,7 @@
       ./hardware
       ./memory-limits.nix
       ./nix-builds.nix
+      ./auto-upgrade.nix
 
       ../common/services/anubis.nix
 
