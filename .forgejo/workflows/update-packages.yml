@@ -62,6 +62,12 @@ jobs:
             echo "::endgroup::"
           done
 
+      - name: Update t3code to the latest stable release
+        # Bumps both pins and rebases the shared-memory patch; see the script.
+        # Restores its own files and exits non-zero on a conflict or a failed
+        # build, which must not stop the other updates.
+        run: scripts/ci/update-t3code.sh || echo "t3code not updated, see the warning above" >&2
+
       - name: Update vimclip to latest master commit
         run: |
           echo "::group::nix-update vimclip"
