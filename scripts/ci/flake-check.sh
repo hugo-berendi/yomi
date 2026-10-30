@@ -15,6 +15,11 @@ set -euo pipefail
 system=x86_64-linux
 flake=${1:-.}
 failed=()
+# Hosts to build in full. Unset means all of them. The rest are only evaluated
+# and dry-built (resolves every derivation and substitute, writes nothing),
+# which still catches evaluation errors but spares the NVMe a rebuild of
+# hosts a lock bump rarely breaks. Push CI runs without it.
+full_hosts=${CHECK_FULL_HOSTS:-}
 
 names() {
 	nix eval --accept-flake-config --raw "$flake#$1" \
@@ -31,7 +36,20 @@ run() {
 	echo "::endgroup::"
 }
 
+# Is this check a host closure outside CHECK_FULL_HOSTS?
+light() {
+	[[ -n $full_hosts ]] || return 1
+	local host=${1#nixos-}
+	host=${host#boot-space-}
+	[[ $1 == nixos-* || $1 == boot-space-* ]] || return 1
+	[[ " $full_hosts " != *" $host "* ]]
+}
+
 while read -r name; do
+	if light "$name"; then
+		run "checks.$name (dry-run)" nix build --accept-flake-config --show-trace --dry-run "$flake#checks.$system.$name"
+		continue
+	fi
 	run "checks.$name" nix build --accept-flake-config --show-trace --no-link "$flake#checks.$system.$name"
 done < <(names "checks.$system")
 

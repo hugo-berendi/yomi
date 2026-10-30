@@ -79,7 +79,7 @@ Things found this way that source-reading missed: an sshd that still accepted pa
 
 Forgejo Actions (`.forgejo/workflows/`):
 - `check-nixos-flake.yml`: push/PR — `just lint`, `just check`, builds amaterasu + inari + tsukuyomi + wsl-work
-- `update-flake-inputs.yml`: daily 18:00 Berlin cron — `nix flake update` onto the rolling `update-flake-inputs` PR
+- `update-flake-inputs.yml`: daily 18:00 Berlin cron — `nix flake update` (all inputs Monday and Thursday, only `llm-agents` otherwise; only inari is built in full) onto the rolling `update-flake-inputs` PR
 - `update-packages.yml`: daily 18:30 Berlin — `nix-update` for the `pkgs/` derivations and image digests onto the rolling `update-packages` PR
 
 Both update PRs merge on their own only when the job's `just lint`/`just check`, the deterministic gate (`scripts/ci/update-gate.py`: only lock revisions, package versions/hashes and image digests) say yes. Every new PR, and any PR that is not merged, pushes its link through the alert router. Auto-merge needs the `UPDATE_BOT_TOKEN` repo secret; without it every update waits for a human.

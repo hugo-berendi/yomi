@@ -1,9 +1,10 @@
 name: Update Flake Inputs
 on:
   # Daily at 18:00 Berlin (the Forgejo host's local time), so a merged bump is
-  # live after inari's 04:00 auto-upgrade. update-packages runs 30 minutes later:
-  # both build on the same runner, and the writes land on the NVMe holding
-  # zroot, which is already near its rated endurance.
+  # live after inari's 04:00 auto-upgrade. Only llm-agents moves on most days;
+  # the full update runs Monday and Thursday (see the update step). The writes
+  # land on the NVMe holding zroot, which is near its rated endurance.
+  # update-packages runs 30 minutes later on the same runner.
   schedule:
     - cron: "0 18 * * *"
   workflow_dispatch:
@@ -47,7 +48,15 @@ jobs:
           echo "dir=$dir" >> "$GITHUB_OUTPUT"
           echo "sums=$(cd "$dir" && sha256sum ./*.py | sha256sum | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
       - name: Update flake inputs
-        run: nix flake update
+        # llm-agents (claude-code, codex, opencode) has no nixpkgs follows and
+        # is prebuilt on cache.numtide.com, so bumping it alone is nearly free.
+        # Everything else, nixpkgs above all, can move a stdenv and rebuild the
+        # world, so it only moves on Monday and Thursday.
+        run: |
+          case "$(date +%u)" in
+            1|4) nix flake update ;;
+            *) nix flake update llm-agents ;;
+          esac
       - name: Commit to the update branch
         id: commit
         env:
@@ -81,6 +90,10 @@ jobs:
         id: ci
         if: steps.commit.outputs.changed == 'true'
         continue-on-error: true
+        # Only inari is built in full; the other hosts are dry-built. The push
+        # CI after the merge still builds all of them.
+        env:
+          CHECK_FULL_HOSTS: inari
         run: just lint && just check
       - name: Open the PR and merge or notify
         if: steps.commit.outputs.changed == 'true'
