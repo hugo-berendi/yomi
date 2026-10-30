@@ -7,12 +7,12 @@
   providerPackages ? [],
   memoryServer,
 }: let
-  version = "0.1.3";
+  version = "0.1.5";
   release =
     runCommand "t3code-release-${version}" {
       src = fetchurl {
         url = "https://github.com/pingdotgg/t3code/releases/download/v${version}/t3-${version}-linux-x64.tar.gz";
-        hash = "sha256-Y80PBUfu9iu07OJ/p3m7+eK6hTHMaFQlaLqeeIONxoQ=";
+        hash = "sha256-IdUNzJxjQiGxG1jWqUNQ0sbuNpBXN7BUsR+k66KVqYs=";
       };
     } ''
       mkdir -p "$out"

@@ -1,8 +1,8 @@
 diff --git a/apps/server/src/mcp/McpHttpServer.ts b/apps/server/src/mcp/McpHttpServer.ts
-index 179d82dc99..ee5c052725 100644
+index 4365267e21..0170c12bc7 100644
 --- a/apps/server/src/mcp/McpHttpServer.ts
 +++ b/apps/server/src/mcp/McpHttpServer.ts
-@@ -45,6 +45,9 @@ import { EnvironmentToolkit } from "./toolkits/environment/tools.ts";
+@@ -49,6 +49,9 @@ import { EnvironmentToolkit } from "./toolkits/environment/tools.ts";
  import * as EnvironmentHandlers from "./toolkits/environment/handlers.ts";
  import { ProjectToolkit } from "./toolkits/project/tools.ts";
  import * as ProjectHandlers from "./toolkits/project/handlers.ts";
@@ -12,9 +12,9 @@ index 179d82dc99..ee5c052725 100644
  import { AttachmentToolkit } from "./toolkits/attachment/tools.ts";
  import * as AttachmentHandlers from "./toolkits/attachment/handlers.ts";
  import { ThreadToolkit } from "./toolkits/thread/tools.ts";
-@@ -1022,6 +1025,10 @@ const layerEnvironmentToolkit = toolkitRegistration(
+@@ -1111,6 +1114,10 @@ const layerEnvironmentToolkit = toolkitRegistration(
  
- const layerProjectRegistration = toolkitRegistration(ProjectToolkit, ProjectHandlers.layer);
+ export const layerProjectRegistration = toolkitRegistration(ProjectToolkit, ProjectHandlers.layer);
  
 +const layerMemoryRegistration = toolkitRegistration(MemoryToolkit, MemoryHandlers.layer).pipe(
 +  Layer.provide(MemoryStore.layerConfig),
@@ -23,7 +23,7 @@ index 179d82dc99..ee5c052725 100644
  export const layerAttachmentToolkit = toolkitRegistration(
    AttachmentToolkit,
    AttachmentHandlers.layer,
-@@ -1061,6 +1068,7 @@ export const layer = Layer.mergeAll(
+@@ -1151,6 +1158,7 @@ export const layerTools = Layer.mergeAll(
    layerThreadToolkit,
    layerAttachmentToolkit,
    layerProjectRegistration,
@@ -758,10 +758,10 @@ index 0000000000..0885a8da0a
 +  }),
 +);
 diff --git a/apps/server/src/orchestration-v2/Adapters/ClaudeAdapterV2.test.ts b/apps/server/src/orchestration-v2/Adapters/ClaudeAdapterV2.test.ts
-index 7fece9817c..29d3ed4574 100644
+index ea5ee249a7..89f3ef7de4 100644
 --- a/apps/server/src/orchestration-v2/Adapters/ClaudeAdapterV2.test.ts
 +++ b/apps/server/src/orchestration-v2/Adapters/ClaudeAdapterV2.test.ts
-@@ -83,6 +83,7 @@ import { PreviewControlsToolkit } from "../../mcp/toolkits/previewControls/tools
+@@ -85,6 +85,7 @@ import { PreviewControlsToolkit } from "../../mcp/toolkits/previewControls/tools
  import { HtmlToolkit } from "../../mcp/toolkits/html/tools.ts";
  import { EnvironmentToolkit } from "../../mcp/toolkits/environment/tools.ts";
  import { ProjectToolkit } from "../../mcp/toolkits/project/tools.ts";
@@ -769,7 +769,7 @@ index 7fece9817c..29d3ed4574 100644
  import { WorktreeToolkit } from "../../mcp/toolkits/worktree/tools.ts";
  import { ThreadToolkit } from "../../mcp/toolkits/thread/tools.ts";
  import { OrchestratorToolkit } from "../../mcp/toolkits/orchestrator/tools.ts";
-@@ -533,6 +534,7 @@ describe("ClaudeAdapterV2 MCP query overrides", () => {
+@@ -535,6 +536,7 @@ describe("ClaudeAdapterV2 MCP query overrides", () => {
        ...Object.values(ThreadToolkit.tools),
        ...Object.values(WorktreeToolkit.tools),
        ...Object.values(ProjectToolkit.tools),
@@ -777,7 +777,7 @@ index 7fece9817c..29d3ed4574 100644
        ...Object.values(EnvironmentToolkit.tools),
        ...Object.values(PreviewControlsToolkit.tools),
        ...Object.values(HtmlToolkit.tools),
-@@ -591,6 +593,7 @@ describe("ClaudeAdapterV2 native protocol logging", () => {
+@@ -593,6 +595,7 @@ describe("ClaudeAdapterV2 native protocol logging", () => {
        allowedTools: overrides.allowedTools ?? [],
        mcpServers: overrides.mcpServers ?? {},
        environment: {},
@@ -785,10 +785,10 @@ index 7fece9817c..29d3ed4574 100644
      });
      assert.isObject(options.systemPrompt);
      const systemPrompt = options.systemPrompt as {
-@@ -602,6 +605,13 @@ describe("ClaudeAdapterV2 native protocol logging", () => {
-     assert.equal(systemPrompt.preset, "claude_code");
+@@ -605,6 +608,13 @@ describe("ClaudeAdapterV2 native protocol logging", () => {
      assert.include(systemPrompt.append ?? "", "Use `delegate_task`");
      assert.include(systemPrompt.append ?? "", "call `t3_background_wait`");
+     assert.notInclude(systemPrompt.append ?? "", "## T3 Code devices");
 +    assert.equal(options.env?.CLAUDE_CODE_DISABLE_AUTO_MEMORY, "1");
 +    assert.equal(
 +      typeof options.settings === "object"
@@ -800,13 +800,13 @@ index 7fece9817c..29d3ed4574 100644
      assert.equal(logged.hasMcpServers, true);
      assert.notInclude(JSON.stringify(logged), "secret-claude-token");
 diff --git a/apps/server/src/orchestration-v2/Adapters/ClaudeAdapterV2.ts b/apps/server/src/orchestration-v2/Adapters/ClaudeAdapterV2.ts
-index 94ccc16dda..c127db1264 100644
+index b1273cee72..1d584797b1 100644
 --- a/apps/server/src/orchestration-v2/Adapters/ClaudeAdapterV2.ts
 +++ b/apps/server/src/orchestration-v2/Adapters/ClaudeAdapterV2.ts
-@@ -1475,6 +1475,14 @@ export function makeClaudeQueryOptions(input: {
-           ...compactQuerySettings,
+@@ -1524,6 +1524,14 @@ export function makeClaudeQueryOptions(input: {
            env: { ...compactQuerySettings?.env, ENABLE_TOOL_SEARCH: input.toolSearchOverride },
          } as ClaudeSdkSettings);
+   const deviceInstructions = input.mcpServers !== undefined && input.deviceToolsAvailable === true;
 +  const t3MemorySettings =
 +    input.mcpServers?.["t3-code"] === undefined || typeof effectiveQuerySettings === "string"
 +      ? effectiveQuerySettings
@@ -818,7 +818,7 @@ index 94ccc16dda..c127db1264 100644
    const options: ClaudeAgentSdkQueryOptions = {
      model: compiledSelection.apiModelId,
      tools: claudeAgentSdkQueryToolsForSdk(selectedTools),
-@@ -1501,16 +1509,16 @@ export function makeClaudeQueryOptions(input: {
+@@ -1550,16 +1558,16 @@ export function makeClaudeQueryOptions(input: {
        ? {
            thinking: { type: "adaptive" as const, display: "summarized" as const },
            settings:
@@ -840,7 +840,7 @@ index 94ccc16dda..c127db1264 100644
      ...(input.onUserDialog === undefined ? {} : { onUserDialog: input.onUserDialog }),
      ...(input.supportedDialogKinds === undefined
        ? {}
-@@ -1518,7 +1526,11 @@ export function makeClaudeQueryOptions(input: {
+@@ -1567,7 +1575,11 @@ export function makeClaudeQueryOptions(input: {
      ...(input.settings?.binaryPath
        ? { pathToClaudeCodeExecutable: input.settings.binaryPath }
        : {}),
@@ -853,7 +853,7 @@ index 94ccc16dda..c127db1264 100644
      ...(input.mcpServers === undefined ? {} : { mcpServers: input.mcpServers }),
      systemPrompt: {
        type: "preset" as const,
-@@ -1591,6 +1603,7 @@ export const CLAUDE_READ_ONLY_T3_MCP_ALLOWED_TOOLS: ReadonlyArray<string> = [
+@@ -1683,6 +1695,7 @@ export const CLAUDE_READ_ONLY_T3_MCP_ALLOWED_TOOLS: ReadonlyArray<string> = [
    "mcp__t3-code__t3_worktree_list",
    "mcp__t3-code__t3_project_list",
    "mcp__t3-code__t3_project_read",
@@ -862,10 +862,10 @@ index 94ccc16dda..c127db1264 100644
    "mcp__t3-code__t3_preview_list",
    "mcp__t3-code__t3_environment_read",
 diff --git a/apps/server/src/orchestration-v2/Adapters/CodexAdapterV2.test.ts b/apps/server/src/orchestration-v2/Adapters/CodexAdapterV2.test.ts
-index 602e1a4d56..a3f0d44f7f 100644
+index 69fca8c082..9ded15d693 100644
 --- a/apps/server/src/orchestration-v2/Adapters/CodexAdapterV2.test.ts
 +++ b/apps/server/src/orchestration-v2/Adapters/CodexAdapterV2.test.ts
-@@ -1159,14 +1159,24 @@ describe("CodexAdapterV2 post-settle continuation", () => {
+@@ -1323,14 +1323,24 @@ describe("CodexAdapterV2 post-settle continuation", () => {
          browserToolsAvailable: true,
        });
        const requests: Array<unknown> = [];
@@ -895,7 +895,7 @@ index 602e1a4d56..a3f0d44f7f 100644
          }),
          () => Effect.void,
          (method, params) =>
-@@ -1181,6 +1191,7 @@ describe("CodexAdapterV2 post-settle continuation", () => {
+@@ -1345,6 +1355,7 @@ describe("CodexAdapterV2 post-settle continuation", () => {
            config: {
              "tools.update_plan.enabled": true,
              mcp_optional_startup_grace_ms: 10_000,
@@ -904,10 +904,10 @@ index 602e1a4d56..a3f0d44f7f 100644
                url: "http://127.0.0.1:43123/mcp",
                tool_timeout_sec: 3_900,
 diff --git a/apps/server/src/orchestration-v2/Adapters/CodexAdapterV2.ts b/apps/server/src/orchestration-v2/Adapters/CodexAdapterV2.ts
-index 6dba639b63..ecf3cacff3 100644
+index 58cd4a0c0c..251fc1323c 100644
 --- a/apps/server/src/orchestration-v2/Adapters/CodexAdapterV2.ts
 +++ b/apps/server/src/orchestration-v2/Adapters/CodexAdapterV2.ts
-@@ -1319,6 +1319,7 @@ function codexThreadRuntimeParams(input: {
+@@ -1337,6 +1337,7 @@ function codexThreadRuntimeParams(input: {
          ? {}
          : {
              // Override only T3's server so launch-argument MCP servers survive.
@@ -1052,7 +1052,7 @@ index 394cc1527c..45e07d5c8c 100644
            Layer.mock(CheckpointService.CheckpointServiceV2)({ captureBaseline: () => Effect.void }),
            layerTurnItemPositionsTest,
 diff --git a/apps/server/src/orchestration-v2/RunExecutionService.ts b/apps/server/src/orchestration-v2/RunExecutionService.ts
-index 2ea57af67d..076f2d1ce1 100644
+index 3e3f37a15a..b5ab8b2222 100644
 --- a/apps/server/src/orchestration-v2/RunExecutionService.ts
 +++ b/apps/server/src/orchestration-v2/RunExecutionService.ts
 @@ -39,6 +39,8 @@ import * as Stream from "effect/Stream";
@@ -1080,7 +1080,7 @@ index 2ea57af67d..076f2d1ce1 100644
      const previewAgentActivity = yield* PreviewAgentActivity.PreviewAgentActivity;
      const turnItemPositions = yield* TurnItemPositionStore.TurnItemPositionStoreV2;
      const finalizationObserver = yield* RunFinalizationService.RunFinalizationObserver;
-@@ -1627,6 +1631,13 @@ export const layer: Layer.Layer<
+@@ -1623,6 +1627,13 @@ export const layer: Layer.Layer<
            key: `mcp_app_${entry.itemId.replace(/[^\w.-]/g, "_")}`,
            text: entry.text,
          }));
@@ -1094,7 +1094,7 @@ index 2ea57af67d..076f2d1ce1 100644
          const turnInput = {
            appThread: input.appThread,
            threadId: input.run.threadId,
-@@ -1644,7 +1655,13 @@ export const layer: Layer.Layer<
+@@ -1640,7 +1651,13 @@ export const layer: Layer.Layer<
            attemptId: input.attemptId,
            rootNodeId: input.rootNode.id,
            providerThread: input.providerThread,
@@ -1110,7 +1110,7 @@ index 2ea57af67d..076f2d1ce1 100644
            runtimePolicy: input.runtimePolicy,
            ...(appContext.length === 0 ? {} : { appContext }),
 diff --git a/apps/server/src/orchestration-v2/runtimeLayer.ts b/apps/server/src/orchestration-v2/runtimeLayer.ts
-index eb6f9d1d3e..9dc2ee57e9 100644
+index 1b54627595..fbfba42969 100644
 --- a/apps/server/src/orchestration-v2/runtimeLayer.ts
 +++ b/apps/server/src/orchestration-v2/runtimeLayer.ts
 @@ -6,6 +6,7 @@ import * as GitVcsDriver from "../vcs/GitVcsDriver.ts";
@@ -1121,19 +1121,19 @@ index eb6f9d1d3e..9dc2ee57e9 100644
  import * as PreviewAgentActivity from "../preview/PreviewAgentActivity.ts";
  import * as McpAppRequests from "../mcpApps/McpAppRequests.ts";
  import * as ProviderSessionRuntime from "../persistence/ProviderSessionRuntime.ts";
-@@ -154,6 +155,7 @@ const layerRunExecutionServiceProvided = RunExecutionService.layer.pipe(
+@@ -151,6 +152,7 @@ const layerRunExecutionServiceProvided = RunExecutionService.layer.pipe(
    Layer.provide(
      Layer.mergeAll(
        McpAppModelContext.layer,
 +      MemoryStore.layerConfig,
        PreviewAgentActivity.layer,
        layerCheckpointServiceProvided,
-       layerEventSinkProvided,
+       layerEventSink,
 diff --git a/apps/server/src/orchestration-v2/testkit/ProviderReplayHarness.ts b/apps/server/src/orchestration-v2/testkit/ProviderReplayHarness.ts
-index 4da359f74c..bfd3908f82 100644
+index afd11a9ab7..5188b96d7c 100644
 --- a/apps/server/src/orchestration-v2/testkit/ProviderReplayHarness.ts
 +++ b/apps/server/src/orchestration-v2/testkit/ProviderReplayHarness.ts
-@@ -48,6 +48,7 @@ import * as ProviderTurnControlService from "../ProviderTurnControlService.ts";
+@@ -49,6 +49,7 @@ import * as ProviderTurnControlService from "../ProviderTurnControlService.ts";
  import * as ProviderTurnStartService from "../ProviderTurnStartService.ts";
  import * as ProviderTurnStartServiceTestkit from "../ProviderTurnStartService.testkit.ts";
  import * as McpAppModelContext from "../../mcpApps/McpAppModelContext.ts";
@@ -1141,7 +1141,7 @@ index 4da359f74c..bfd3908f82 100644
  import * as PreviewAgentActivity from "../../preview/PreviewAgentActivity.ts";
  import * as RunExecutionService from "../RunExecutionService.ts";
  import * as RunFinalizationService from "../RunFinalizationService.ts";
-@@ -379,6 +380,7 @@ export function layerWithRegistry<Error>(
+@@ -384,6 +385,7 @@ export function layerWithRegistry<Error>(
      Layer.provide(
        Layer.mergeAll(
          McpAppModelContext.layerEmpty,
