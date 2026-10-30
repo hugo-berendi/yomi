@@ -1,4 +1,4 @@
-{...}: {
+_: {
   # Pulls main over anonymous HTTPS so root needs no ssh key. main only
   # receives the update PRs after `just lint`/`just check` and the update gate pass,
   # and a failed build leaves the running generation untouched.
