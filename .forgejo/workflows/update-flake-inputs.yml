@@ -1,12 +1,11 @@
 name: Update Flake Inputs
 on:
-  # Mondays and Thursdays rather than daily. Every lock bump that moves
-  # stdenv rebuilds the world for four host configurations, and the write
-  # volume lands on the NVMe holding zroot, which is already near its rated
-  # endurance. Two batched updates a week instead of seven, at the cost of
-  # security patches arriving up to three days later.
+  # Daily at 18:00 Berlin (the Forgejo host's local time), so a merged bump is
+  # live after inari's 04:00 auto-upgrade. update-packages runs 30 minutes later:
+  # both build on the same runner, and the writes land on the NVMe holding
+  # zroot, which is already near its rated endurance.
   schedule:
-    - cron: "0 4 * * 1,4"
+    - cron: "0 18 * * *"
   workflow_dispatch:
 concurrency:
   group: update-flake-inputs

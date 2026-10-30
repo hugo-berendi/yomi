@@ -1,7 +1,7 @@
 name: Update Packages
 on:
   schedule:
-    - cron: "0 5 * * 1"
+    - cron: "30 18 * * *"
   workflow_dispatch:
 concurrency:
   group: update-packages
