@@ -90,11 +90,18 @@ def publish(api, body, push, branch=BRANCH, title=TITLE, announce=None):
             "/pulls",
             {**payload, "head": branch, "base": "main", "assignees": ["hugo-berendi"]},
         )
-        api.request(
-            "POST",
-            f"/pulls/{pr['number']}/requested_reviewers",
-            {"reviewers": ["hugo-berendi"]},
-        )
+        # Best effort: Forgejo answers 422 when the reviewer is the PR's author,
+        # which is the case whenever UPDATE_BOT_TOKEN belongs to hugo-berendi
+        # (2026-10-30). The PR already exists and is assigned, so a refused
+        # review request must not skip the announcement below.
+        try:
+            api.request(
+                "POST",
+                f"/pulls/{pr['number']}/requested_reviewers",
+                {"reviewers": ["hugo-berendi"]},
+            )
+        except HTTPError as error:
+            print(f"Review request refused: HTTP {error.code}", file=sys.stderr)
         if announce:
             announce(pr)
 
