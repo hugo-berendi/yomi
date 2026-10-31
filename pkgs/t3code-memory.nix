@@ -25,6 +25,14 @@ stdenv.mkDerivation (final: {
     hash = "sha256-uk2GkyazT9HWh/CGcwBS3wnRaKuU/7unZvabx8BA7Vg=";
   };
 
+  # Upstream tags the commit before its release job commits the version bump, and
+  # CI aligns the manifests on the runner instead. Built from the tag, the binary
+  # would report the previous release (pingdotgg/t3code#28152). Not in pnpmDeps:
+  # the lockfile does not depend on the version.
+  postPatch = ''
+    sed -i 's/^  "version": ".*",$/  "version": "${final.version}",/' apps/server/package.json
+  '';
+
   nativeBuildInputs = [nodejs-slim_26 pnpm_12 pnpmConfigHook];
   buildPhase = ''
     runHook preBuild
