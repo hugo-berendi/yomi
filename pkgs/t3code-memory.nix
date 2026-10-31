@@ -8,13 +8,13 @@
 }:
 stdenv.mkDerivation (final: {
   pname = "t3code-memory-server";
-  version = "0.1.5";
+  version = "0.1.6";
 
   src = fetchFromGitHub {
     owner = "pingdotgg";
     repo = "t3code";
-    rev = "6d450a4284852af137b2f3407fddd89eb76e7644";
-    hash = "sha256-MUIf+6/gk2jG3eziHFjtvOfooDeQbbcJxMBECFZh6KQ=";
+    rev = "2359643cffa6ba9ee84d6f2694b935de54a8013e";
+    hash = "sha256-GWO+/gJWLu9GUwZCbmrBYIVn9Y7N8PwXrjQYFLOtmWk=";
   };
 
   patches = [./patches/t3code/shared-memory.patch];
@@ -22,7 +22,7 @@ stdenv.mkDerivation (final: {
     inherit (final) pname version src patches;
     pnpm = pnpm_12;
     fetcherVersion = 4;
-    hash = "sha256-euPXYkQ4447Y08TI00HpZhRMYjr39mMTcok+JvMwIW4=";
+    hash = "sha256-uk2GkyazT9HWh/CGcwBS3wnRaKuU/7unZvabx8BA7Vg=";
   };
 
   nativeBuildInputs = [nodejs-slim_26 pnpm_12 pnpmConfigHook];
