@@ -141,7 +141,13 @@ in
       done
       find "$resources" -type f -name '*.musl.node' -delete
 
-      ln -sf ${lib.getExe tectonic-unwrapped} "$resources/plugins/openai-bundled/plugins/latex/bin/tectonic"
+      # 26.915 shipped the binary in the latex plugin; 26.1027 moved it to
+      # resources/tectonic/ and dropped the plugin's bin/, so `ln` failed there.
+      for tectonic in "$resources/plugins/openai-bundled/plugins/latex/bin/tectonic" "$resources/tectonic/tectonic"; do
+        if [ -e "$tectonic" ]; then
+          ln -sf ${lib.getExe tectonic-unwrapped} "$tectonic"
+        fi
+      done
       ln -sf ${lib.getExe ripgrep} "$resources/rg"
       ln -sf ${lib.getExe nodejs-slim} "$resources/cua_node/bin/node"
       install -Dm755 ${lib.getExe launcher} "$out/bin/chatgpt"
