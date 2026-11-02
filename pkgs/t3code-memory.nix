@@ -4,45 +4,53 @@
   fetchPnpmDeps,
   pnpm_12,
   pnpmConfigHook,
-  nodejs-slim_26,
-}:
-stdenv.mkDerivation (final: {
-  pname = "t3code-memory-server";
-  version = "0.1.6";
+}: let
+  # The upstream SEA build requires its exact Node version (nodejs/node#67048).
+  nodePkgs = import (builtins.fetchTree {
+    type = "github";
+    owner = "NixOS";
+    repo = "nixpkgs";
+    rev = "68d1d71d61a3e7e5b882ae0013a7ee1ed3ab1b66";
+    narHash = "sha256-o5oug+wxmLbv4rBVX+Z5BuO3qunPs5aRdzjwHL2K328=";
+  }) {system = stdenv.hostPlatform.system;};
+in
+  stdenv.mkDerivation (final: {
+    pname = "t3code-memory-server";
+    version = "0.1.6";
 
-  src = fetchFromGitHub {
-    owner = "pingdotgg";
-    repo = "t3code";
-    rev = "2359643cffa6ba9ee84d6f2694b935de54a8013e";
-    hash = "sha256-GWO+/gJWLu9GUwZCbmrBYIVn9Y7N8PwXrjQYFLOtmWk=";
-  };
+    src = fetchFromGitHub {
+      owner = "pingdotgg";
+      repo = "t3code";
+      rev = "2359643cffa6ba9ee84d6f2694b935de54a8013e";
+      hash = "sha256-GWO+/gJWLu9GUwZCbmrBYIVn9Y7N8PwXrjQYFLOtmWk=";
+    };
 
-  patches = [./patches/t3code/shared-memory.patch];
-  pnpmDeps = fetchPnpmDeps {
-    inherit (final) pname version src patches;
-    pnpm = pnpm_12;
-    fetcherVersion = 4;
-    hash = "sha256-LxE/dyp9J1LNeC5U8eBFQY4MfVbnRR3a8HuGPJFmER4=";
-  };
+    patches = [./patches/t3code/shared-memory.patch];
+    pnpmDeps = fetchPnpmDeps {
+      inherit (final) pname version src patches;
+      pnpm = pnpm_12;
+      fetcherVersion = 4;
+      hash = "sha256-LxE/dyp9J1LNeC5U8eBFQY4MfVbnRR3a8HuGPJFmER4=";
+    };
 
-  # Upstream tags the commit before its release job commits the version bump, and
-  # CI aligns the manifests on the runner instead. Built from the tag, the binary
-  # would report the previous release (pingdotgg/t3code#28152). Not in pnpmDeps:
-  # the lockfile does not depend on the version.
-  postPatch = ''
-    sed -i 's/^  "version": ".*",$/  "version": "${final.version}",/' apps/server/package.json
-  '';
+    # Upstream tags the commit before its release job commits the version bump, and
+    # CI aligns the manifests on the runner instead. Built from the tag, the binary
+    # would report the previous release (pingdotgg/t3code#28152). Not in pnpmDeps:
+    # the lockfile does not depend on the version.
+    postPatch = ''
+      sed -i 's/^  "version": ".*",$/  "version": "${final.version}",/' apps/server/package.json
+    '';
 
-  nativeBuildInputs = [nodejs-slim_26 pnpm_12 pnpmConfigHook];
-  buildPhase = ''
-    runHook preBuild
-    export PATH="$PWD/node_modules/.bin:$PATH"
-    node apps/server/scripts/cli.ts build-exe
-    runHook postBuild
-  '';
-  installPhase = ''
-    mkdir -p "$out/bin"
-    cp apps/server/dist-exe/t3 "$out/bin/t3"
-  '';
-  dontStrip = true;
-})
+    nativeBuildInputs = [nodePkgs.nodejs-slim_26 pnpm_12 pnpmConfigHook];
+    buildPhase = ''
+      runHook preBuild
+      export PATH="$PWD/node_modules/.bin:$PATH"
+      node apps/server/scripts/cli.ts build-exe
+      runHook postBuild
+    '';
+    installPhase = ''
+      mkdir -p "$out/bin"
+      cp apps/server/dist-exe/t3 "$out/bin/t3"
+    '';
+    dontStrip = true;
+  })
