@@ -81,12 +81,53 @@ in {
     systemd.services.t3code-vm-provision.requires = ["t3code-vm-host-keys.service"];
     systemd.services.t3code-vm-provision.after = ["t3code-vm-host-keys.service"];
 
+    # T3 rejects bearer-bearing HTTP links to non-loopback LAN addresses.
+    # SSH encrypts the guest hop while exposing only a local peer endpoint.
+    systemd.services.t3code-vm-tunnel = {
+      description = "Encrypted loopback connection to the T3 testing VM";
+      wantedBy = ["multi-user.target"];
+      requires = ["t3code-vm.service" "t3code-vm-host-keys.service"];
+      after = ["t3code-vm.service" "t3code-vm-host-keys.service"];
+      serviceConfig = {
+        Type = "exec";
+        User = cfg.pilot;
+        Group = "users";
+        LoadCredential = ["ssh_key:${stateDir}/ssh_key" "known_hosts:${stateDir}/known_hosts"];
+        ExecStart = lib.escapeShellArgs [
+          "${pkgs.openssh}/bin/ssh"
+          "-NT"
+          "-o"
+          "BatchMode=yes"
+          "-o"
+          "StrictHostKeyChecking=yes"
+          "-o"
+          "UserKnownHostsFile=%d/known_hosts"
+          "-o"
+          "ExitOnForwardFailure=yes"
+          "-o"
+          "ServerAliveInterval=15"
+          "-o"
+          "ServerAliveCountMax=3"
+          "-i"
+          "%d/ssh_key"
+          "-L"
+          "127.0.0.1:${toString config.yomi.ports.t3code-vm-tunnel}:10.231.0.2:3773"
+          "agent@10.231.0.2"
+        ];
+        Restart = "always";
+        RestartSec = 5;
+        ProtectSystem = "strict";
+        PrivateTmp = true;
+        UMask = "0077";
+      };
+    };
+
     systemd.services.t3code-vm-bootstrap = {
       path = [pkgs.openssh pkgs.nix pkgs.util-linux pkgs.nodejs cfg.toolingPackage];
       description = "Bootstrap and link the T3 Code Ubuntu VM";
       wantedBy = ["multi-user.target"];
-      requires = ["t3code-vm.service" "t3code-vm-host-keys.service"];
-      after = ["t3code-vm.service" "t3code-vm-host-keys.service"];
+      requires = ["t3code-vm.service" "t3code-vm-host-keys.service" "t3code-vm-tunnel.service"];
+      after = ["t3code-vm.service" "t3code-vm-host-keys.service" "t3code-vm-tunnel.service"];
       serviceConfig = {
         # Provisioning can wait for cloud-init/SSH for minutes; it must not
         # hold multi-user.target and nixos-rebuild switch open meanwhile.
@@ -110,6 +151,8 @@ in {
             cfg.pilot
             "--local-url"
             cfg.localUrl
+            "--peer-url"
+            "http://127.0.0.1:${toString config.yomi.ports.t3code-vm-tunnel}"
             "--credential-home"
             "/home/${cfg.pilot}"
           ]

@@ -182,6 +182,7 @@ def parse_args():
     parser.add_argument("--rpc", type=Path, required=True)
     parser.add_argument("--pilot", required=True)
     parser.add_argument("--local-url", default="http://127.0.0.1:3773")
+    parser.add_argument("--peer-url", default="http://127.0.0.1:8511")
     parser.add_argument("--credential-home", default="/home/agent")
     parser.add_argument("--provider-instances", default="")
     parser.add_argument("--credentials", action="append", default=[])
@@ -333,7 +334,7 @@ def main():
         token,
         "peerLinks.link",
         {
-            "url": "http://10.231.0.2:3773",
+            "url": args.peer_url,
             "pairingCode": credential,
             "access": "full-access",
         },

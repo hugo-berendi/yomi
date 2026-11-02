@@ -28,6 +28,7 @@ in {
       opencode = {
         driver = "opencode";
         enabled = true;
+        config.binaryPath = "/opt/t3code-tools/bin/opencode2";
       };
       acpRegistry_copilot = {
         driver = "acpRegistry";
