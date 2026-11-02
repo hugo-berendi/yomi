@@ -27,6 +27,7 @@ in {
   # each SKILL.md's `harnesses` field; this only turns the module on. Bump
   # with `just bump-common`.
   skills.enable = true;
+  yomi.persistence.at.state.apps.t3code.directories = ["${config.home.homeDirectory}/.copilot"];
   # Use skills shared by Codex and OpenCode, excluding harness-specific skills.
   home.file = lib.mapAttrs' (name: _:
     lib.nameValuePair ".copilot/skills/${name}" {
