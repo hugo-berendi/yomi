@@ -106,6 +106,10 @@ in {
           chain input {
             type filter hook input priority 0; policy drop;
 
+            ${lib.optionalString config.yomi.t3codeVm.enable ''
+          iifname "t3test0" ip saddr 10.231.0.2 ct state { established, related } accept
+          iifname "t3test0" drop
+        ''}
             iifname "lo" accept comment "Accept loopback"
             iifname "br0" ct state { established, related } accept comment "Allow established LAN traffic"
             iifname "br0" meta l4proto tcp th dport { ${lanTcpPorts} } accept comment "Allow registered LAN TCP services"
@@ -126,6 +130,14 @@ in {
           chain forward {
             type filter hook forward priority filter; policy drop;
 
+            ${lib.optionalString config.yomi.t3codeVm.enable ''
+          # Guest egress may reach the internet, never private or host networks.
+          iifname "t3test0" meta nfproto ipv6 drop
+          iifname "t3test0" ip saddr != 10.231.0.2 drop
+          iifname "t3test0" ip daddr { 0.0.0.0/8, 10.0.0.0/8, 100.64.0.0/10, 127.0.0.0/8, 169.254.0.0/16, 172.16.0.0/12, 192.0.0.0/24, 192.0.2.0/24, 192.168.0.0/16, 198.18.0.0/15, 198.51.100.0/24, 203.0.113.0/24, 224.0.0.0/4, 240.0.0.0/4 } drop
+          iifname "t3test0" oifname "br0" accept
+          iifname "br0" oifname "t3test0" ip daddr 10.231.0.2 ct state { established, related } accept
+        ''}
             # Internal networks (VLANs, WiFi, Docker, Tailscale) to upstream bridge (WAN toward home router)
             iifname { "vlan20", "vlan30", "br1", "docker0", "br-pelican", "br-changedet", "tailscale0" } oifname "br0" accept comment "internal to WAN"
             iifname "br0" oifname { "vlan20", "vlan30", "br1", "docker0", "br-pelican", "br-changedet", "tailscale0" } ct state { established, related } accept comment "WAN back to internal"
@@ -150,6 +162,9 @@ in {
           chain postrouting {
             type nat hook postrouting priority 100; policy accept;
 
+            ${lib.optionalString config.yomi.t3codeVm.enable ''
+          iifname "t3test0" ip saddr 10.231.0.2 oifname "br0" masquerade
+        ''}
             # Masquerade traffic from internal networks towards upstream bridge (WAN toward home router)
             iifname {"vlan20", "vlan30", "br1", "docker0", "br-pelican", "br-changedet", "tailscale0"} oifname "br0" masquerade comment "NAT towards WAN"
           }

@@ -10,13 +10,36 @@
   port = config.yomi.ports.t3code;
   # Forge CLIs t3code's Forgejo/Gitea integration looks for. tea needs 0.16+, stable has 0.14.
   forgeClis = [upkgs.forgejo-cli upkgs.tea];
-  agents = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
-  codex = import ../../../../home/features/cli/ai/codex-package.nix {inherit inputs pkgs;};
-  package = pkgs.callPackage ../../../../pkgs/t3code-release.nix {
-    providerPackages = [codex agents.claude-code agents.opencode2 agents.copilot-cli];
-    memoryServer = pkgs.callPackage ../../../../pkgs/t3code-memory.nix {};
-  };
+  package = import ../../../../pkgs/t3code-tools.nix {inherit pkgs inputs;};
 in {
+  imports = [./t3code-vm];
+  yomi.t3codeVm = {
+    enable = true;
+    toolingPackage = package;
+    providerInstances = {
+      codex = {
+        driver = "codex";
+        enabled = true;
+      };
+      claudeAgent = {
+        driver = "claudeAgent";
+        enabled = true;
+      };
+      opencode = {
+        driver = "opencode";
+        enabled = true;
+      };
+      acpRegistry_copilot = {
+        driver = "acpRegistry";
+        enabled = true;
+        config = {
+          source = "local";
+          commandPath = "/opt/t3code-tools/bin/copilot";
+          commandArgs = ["--acp"];
+        };
+      };
+    };
+  };
   yomi.nginx.at.t3code.port = port;
 
   users.users.${pilot}.linger = true;
@@ -26,6 +49,7 @@ in {
 
     yomi.persistence.at.state.apps.t3code.directories = [
       "${config.home.homeDirectory}/.t3"
+      "${config.home.homeDirectory}/.local/state/t3code-vm"
     ];
 
     systemd.user.services.t3code-web = {

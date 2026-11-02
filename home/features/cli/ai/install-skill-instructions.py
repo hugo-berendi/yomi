@@ -10,7 +10,12 @@ begin = "<!-- BEGIN MANAGED SKILL USAGE -->"
 end = "<!-- END MANAGED SKILL USAGE -->"
 block = f"{begin}\n{policy}\n{end}"
 
-for rel in [".codex/AGENTS.md", ".claude/CLAUDE.md", ".gemini/GEMINI.md"]:
+for rel in [
+    ".codex/AGENTS.md",
+    ".claude/CLAUDE.md",
+    ".gemini/GEMINI.md",
+    ".copilot/copilot-instructions.md",
+]:
     path = home / rel
     old = path.read_text() if path.exists() else ""
     if begin in old:

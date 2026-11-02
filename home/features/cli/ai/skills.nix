@@ -13,6 +13,8 @@
     Use the current installed catalog rather than assuming a skill exists.
     If a relevant skill is unavailable, say so briefly and continue with the
     available tools. The user's instructions take precedence over skill guidance.
+
+    ${builtins.readFile ./linux-test-policy.txt}
   '';
 in {
   imports = [inputs.skills.homeModules.default];
