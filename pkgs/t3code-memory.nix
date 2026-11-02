@@ -10,8 +10,8 @@
     type = "github";
     owner = "NixOS";
     repo = "nixpkgs";
-    rev = "68d1d71d61a3e7e5b882ae0013a7ee1ed3ab1b66";
-    narHash = "sha256-o5oug+wxmLbv4rBVX+Z5BuO3qunPs5aRdzjwHL2K328=";
+    rev = "607036aace1dbcfeb0897d709519ca14f82ba227";
+    narHash = "sha256-y6FSM8JvGew+KHVtHHZjD++9ZeuZzOltKSK7gFDFbFA=";
   }) {system = stdenv.hostPlatform.system;};
 in
   stdenv.mkDerivation (final: {
