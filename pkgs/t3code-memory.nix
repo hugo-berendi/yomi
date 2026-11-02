@@ -22,7 +22,7 @@ stdenv.mkDerivation (final: {
     inherit (final) pname version src patches;
     pnpm = pnpm_12;
     fetcherVersion = 4;
-    hash = "sha256-uk2GkyazT9HWh/CGcwBS3wnRaKuU/7unZvabx8BA7Vg=";
+    hash = "sha256-LxE/dyp9J1LNeC5U8eBFQY4MfVbnRR3a8HuGPJFmER4=";
   };
 
   # Upstream tags the commit before its release job commits the version bump, and
