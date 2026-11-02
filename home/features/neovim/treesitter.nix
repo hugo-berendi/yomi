@@ -22,7 +22,11 @@ _: {
       bash.enable = true;
       csharp.enable = true;
       helm.enable = true;
-      astro.enable = true;
+      astro = {
+        enable = true;
+        # nvf pins an invalid pnpm dependency hash for its Astro formatter.
+        format.enable = false;
+      };
       svelte = {
         enable = true;
         # nvf's Prettier plugin pins vulnerable pnpm 10.34.0; Biome keeps
