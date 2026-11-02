@@ -71,6 +71,60 @@ def run_remote(key, known_hosts, command, *, input=None, check=True):
     )
 
 
+def wait_cloud_init(key, known_hosts):
+    result = run_remote(
+        key,
+        known_hosts,
+        ["sudo", "cloud-init", "status", "--wait", "--format", "json"],
+        check=False,
+    )
+    if result.returncode != 0:
+        status = json.loads(result.stdout)
+        errors = status.get("errors", [])
+        # Cloud-init retains historical errors after a successful module retry.
+        # Recover only our original Noble package-name mistake; other failures
+        # must still stop bootstrap rather than being hidden by readiness checks.
+        if not (
+            status.get("status") == "error"
+            and len(errors) == 1
+            and "PackageInstallerError" in errors[0]
+            and "{'libatk-bridge2.0-0'}" in errors[0]
+        ):
+            raise RuntimeError("Cloud-init did not complete successfully")
+        run_remote(
+            key,
+            known_hosts,
+            ["sudo", "apt-get", "install", "-y", "libatk-bridge2.0-0t64"],
+        )
+        print(
+            "Recovered legacy Noble package error; cloud-init retains its historical error",
+            flush=True,
+        )
+    # Noble's package post-install starts the daemon before the socket. Starting
+    # the socket while that daemon runs fails, so converge on socket activation.
+    active = run_remote(
+        key,
+        known_hosts,
+        ["systemctl", "is-active", "--quiet", "nix-daemon.socket"],
+        check=False,
+    )
+    if active.returncode != 0:
+        run_remote(
+            key, known_hosts, ["sudo", "systemctl", "stop", "nix-daemon.service"]
+        )
+        run_remote(
+            key, known_hosts, ["sudo", "systemctl", "reset-failed", "nix-daemon.socket"]
+        )
+        run_remote(
+            key,
+            known_hosts,
+            ["sudo", "systemctl", "enable", "--now", "nix-daemon.socket"],
+        )
+    run_remote(
+        key, known_hosts, ["systemctl", "is-active", "--quiet", "nix-daemon.socket"]
+    )
+
+
 def install_tools(key, known_hosts, package):
     current = run_remote(
         key, known_hosts, ["readlink", "-f", "/opt/t3code-tools"], check=False
@@ -154,12 +208,7 @@ def main():
     else:
         raise RuntimeError("Guest SSH did not become ready")
     PHASE = "cloud-init"
-    run_remote(args.key, args.known_hosts, ["sudo", "cloud-init", "status", "--wait"])
-    run_remote(
-        args.key,
-        args.known_hosts,
-        ["systemctl", "is-active", "--quiet", "nix-daemon.socket"],
-    )
+    wait_cloud_init(args.key, args.known_hosts)
     PHASE = "tooling-import"
     tools_changed = install_tools(args.key, args.known_hosts, args.package)
     run_remote(args.key, args.known_hosts, ["/opt/t3code-tools/bin/t3", "--version"])

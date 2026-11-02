@@ -14,6 +14,29 @@ SPEC.loader.exec_module(bootstrap)
 
 
 class BootstrapTests(unittest.TestCase):
+    def test_cloud_init_recovers_only_the_known_legacy_package_failure(self):
+        error = "PackageInstallerError(\"Failed packages: {'libatk-bridge2.0-0'}\")"
+        failed = mock.Mock(
+            returncode=1, stdout=json.dumps({"status": "error", "errors": [error]})
+        )
+        okay = mock.Mock(returncode=0, stdout="")
+        with mock.patch.object(
+            bootstrap, "run_remote", side_effect=[failed, okay, okay, okay]
+        ) as remote:
+            bootstrap.wait_cloud_init(Path("/key"), Path("/known"))
+        self.assertEqual(
+            remote.call_args_list[1].args[2],
+            ["sudo", "apt-get", "install", "-y", "libatk-bridge2.0-0t64"],
+        )
+        for errors in [["network failed"], [error, "another failure"]]:
+            failed.stdout = json.dumps({"status": "error", "errors": errors})
+            with mock.patch.object(
+                bootstrap, "run_remote", return_value=failed
+            ) as remote:
+                with self.assertRaises(RuntimeError):
+                    bootstrap.wait_cloud_init(Path("/key"), Path("/known"))
+                self.assertEqual(remote.call_count, 1)
+
     def test_ssh_arguments_keep_values_out_of_shell_and_use_pinning(self):
         command = ["sudo", "echo", "value; $(touch /tmp/unwanted)"]
         args = bootstrap.ssh_args(Path("/key"), Path("/known"), command)

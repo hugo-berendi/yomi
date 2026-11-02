@@ -23,7 +23,7 @@ in {
       # Noble provides both the binaries and daemon unit; bootstrap checks the
       # socket and the actual FHS-wrapped T3 executable before reporting readiness.
       package_update = true;
-      packages = ["ca-certificates" "curl" "git" "python3" "qemu-guest-agent" "nix-bin" "nix-setup-systemd" "rsync" "libnss3" "libatk-bridge2.0-0" "libgbm1" "libasound2t64"];
+      packages = ["ca-certificates" "curl" "git" "python3" "qemu-guest-agent" "nix-bin" "nix-setup-systemd" "rsync" "libnss3" "libatk-bridge2.0-0t64" "libgbm1" "libasound2t64"];
       write_files =
         [
           {
@@ -43,7 +43,14 @@ in {
           content = builtins.readFile guestSetupScript;
         };
       runcmd =
-        [["sysctl" "--system"] ["systemctl" "restart" "ssh"] ["systemctl" "enable" "--now" "nix-daemon.socket"]]
+        [
+          ["sysctl" "--system"]
+          ["systemctl" "restart" "ssh"]
+          # Noble starts the daemon directly during package installation. Stop
+          # it before socket activation, which refuses an already running daemon.
+          ["systemctl" "stop" "nix-daemon.service"]
+          ["systemctl" "enable" "--now" "nix-daemon.socket"]
+        ]
         ++ pkgs.lib.optional (guestSetupScript != null) ["bash" "/usr/local/sbin/t3code-vm-guest-setup"];
     });
   networkConfig = yaml.generate "t3code-vm-network.yaml" {
