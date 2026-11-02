@@ -35,21 +35,6 @@ in
       ${policy}
       Review only the supplied scope; report concrete findings and evidence.
     '';
-    # Student exposes Auto only; fixed hidden models fail instead of saving usage.
-    programs.opencode.settings.agent = {
-      fast-task = {
-        description = "Bounded routine work using the available Copilot Auto router.";
-        mode = "subagent";
-        model = "github-copilot/auto";
-        prompt = policy + "\nComplete only the assigned task; do not delegate again.";
-      };
-      quick-review = {
-        description = "Bounded independent review using the available Copilot Auto router.";
-        mode = "subagent";
-        model = "github-copilot/auto";
-        prompt = policy + "\nReview only the assigned scope; report concrete findings compactly.";
-      };
-    };
     home.activation.efficientAgentRouting = lib.hm.dag.entryAfter ["linkGeneration"] ''
       run ${python}/bin/python3 ${./install-agent-routing.py} ${lib.escapeShellArg config.home.homeDirectory} ${policyFile} ${codexRole}
     '';

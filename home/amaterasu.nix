@@ -8,7 +8,7 @@
   codex = import ./features/cli/ai/codex-package.nix {inherit inputs pkgs;};
   t3code-desktop = agents.t3code-desktop.override {
     t3code = agents.t3code.override {
-      providerPackages = [codex agents.claude-code agents.opencode];
+      providerPackages = [codex agents.claude-code agents.opencode agents.copilot-cli];
     };
   };
 in {

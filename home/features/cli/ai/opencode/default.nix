@@ -9,7 +9,7 @@
   useV2 = osConfig != null && osConfig.networking.hostName == "inari";
   opencodePackage =
     if useV2
-    then import ./package.nix {inherit inputs pkgs;}
+    then inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.opencode2
     else inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.opencode;
   attachCommand =
     if useV2
@@ -101,10 +101,7 @@ in {
     package = opencodePackage;
 
     settings = {
-      model =
-        if useV2
-        then "github-copilot/auto"
-        else "openai/gpt-5.3-codex";
+      model = "openai/gpt-5.3-codex";
 
       # Keep V1's approval before reading outside a project.
       permission = lib.optionalAttrs useV2 {external_directory = "ask";};
