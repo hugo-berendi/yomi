@@ -88,7 +88,9 @@ in {
       requires = ["t3code-vm.service" "t3code-vm-host-keys.service"];
       after = ["t3code-vm.service" "t3code-vm-host-keys.service"];
       serviceConfig = {
-        Type = "oneshot";
+        # Provisioning can wait for cloud-init/SSH for minutes; it must not
+        # hold multi-user.target and nixos-rebuild switch open meanwhile.
+        Type = "exec";
         User = cfg.pilot;
         Group = "users";
         LoadCredential = ["ssh_key:${stateDir}/ssh_key" "known_hosts:${stateDir}/known_hosts"];

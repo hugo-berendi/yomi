@@ -49,7 +49,7 @@ in {
   networkConfig = yaml.generate "t3code-vm-network.yaml" {
     version = 2;
     ethernets.ens3 = {
-      match.driver = "virtio_net";
+      match.macaddress = "02:54:00:e7:00:02";
       set-name = "ens3";
       addresses = ["10.231.0.2/30"];
       routes = [
@@ -62,7 +62,9 @@ in {
     };
   };
   metadata = yaml.generate "t3code-vm-meta-data" {
-    instance-id = "t3code-vm";
+    # A new identity lets cloud-init rerender networking for the initial guest
+    # created with the driver-only match, while preserving its existing disk.
+    instance-id = "t3code-vm-mac-v1";
     local-hostname = "t3code-vm";
   };
 }

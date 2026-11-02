@@ -158,7 +158,7 @@ in {
           "-drive file=${diskDir}/root.qcow2,if=virtio,format=qcow2,bps=20971520,iops=2000"
           "-drive file=${stateDir}/seed.iso,if=virtio,format=raw,readonly=on"
           "-netdev tap,id=net0,ifname=t3test0,script=no,downscript=no"
-          "-device virtio-net-pci,netdev=net0"
+          "-device virtio-net-pci,netdev=net0,mac=02:54:00:e7:00:02"
           "-device virtio-rng-pci"
         ];
         Restart = "on-failure";
