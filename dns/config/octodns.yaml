@@ -17,6 +17,9 @@ providers:
   cloudflare:
     class: octodns_cloudflare.CloudflareProvider
     token: "env/CLOUDFLARE_TOKEN"
+    # No URLFWD records here, and the Page Rules endpoint that backs them
+    # rejects account-owned API tokens outright.
+    pagerules: false
 zones:
   hugo-berendi.de.:
     sources:
