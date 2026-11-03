@@ -39,8 +39,32 @@
       # which would let any LAN client spoof X-Forwarded-For past the login
       # rate limiter.
       trustedProxies = ["127.0.0.1/32" "::1/128"];
-      loginMethod = "password";
+
+      # Pocket ID only. The first OpenID login becomes owner and inherits
+      # every budget of the earlier password user (transferAllFilesFromUser),
+      # so the owner must log in first after this lands. Further users have to
+      # be added by the owner; Pocket ID accounts alone do not get in.
+      loginMethod = "openid";
+      allowedLoginMethods = ["openid"];
+      enforceOpenId = true;
+      userCreationMode = "manual";
+      openId = {
+        discoveryURL = "${config.yomi.cloudflared.at.pocket-id.url}/.well-known/openid-configuration";
+        client_id = "e73eccb5-a6ae-4db9-974e-4dc795cda925";
+        server_hostname = config.yomi.nginx.at.budget.url;
+        authMethod = "openid";
+      };
     };
+  };
+  # }}}
+  # {{{ Secrets
+  sops.secrets.actual_oidc_client_secret.sopsFile = ../secrets.yaml;
+  # DynamicUser cannot read a root-owned secret; systemd hands it over as a
+  # credential instead. The module's `_secret` mechanism runs in preStart as
+  # the same dynamic user, so it would hit the same wall.
+  systemd.services.actual = {
+    serviceConfig.LoadCredential = ["oidc-client-secret:${config.sops.secrets.actual_oidc_client_secret.path}"];
+    environment.ACTUAL_OPENID_CLIENT_SECRET_FILE = "/run/credentials/actual.service/oidc-client-secret";
   };
   # }}}
   # {{{ Hardening
