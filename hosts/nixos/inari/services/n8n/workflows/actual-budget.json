@@ -1,0 +1,85 @@
+{
+  "name": "Actual · Bank-Sync und Kategorien",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "93034158-5cce-43f3-a52e-9c612619382d",
+      "name": "Manual test",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -300,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "30 7 * * *"
+            }
+          ]
+        }
+      },
+      "id": "28c225c1-8bef-4b63-a676-9a008c88cb1a",
+      "name": "Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -300,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Daily bank sync and categorisation for Actual Budget, through the loopback\n// actual-bridge (hosts/nixos/inari/services/actual/bridge.cjs).\n//\n// Order of trust: the owner's own history first, then the local classifier,\n// which may only answer with an existing category or \"unbekannt\". Whatever is\n// left goes to the alert spine instead of being guessed. Model answers carry\n// #auto in the notes so they can be reviewed with one filter in Actual.\nconst SOURCE = 'actual-budget';\nconst BRIDGE = $env.ACTUAL_BRIDGE_URL;\nconst KEY = $env.ACTUAL_BRIDGE_API_KEY;\nconst BUDGET_URL = $env.ACTUAL_URL;\nconst CANDIDATE_DAYS = 45;\nconst HISTORY_DAYS = 365;\nconst MAX_MODEL_CALLS = 15;\nconst EXAMPLES = 30;\nconst AUTO_TAG = '#auto';\nconst UNKNOWN = 'unbekannt';\n\nconst http = this.helpers.httpRequest.bind(this.helpers);\nconst bridge = (route, body = {}) => http({\n  method: 'POST', url: `${BRIDGE}${route}`, headers: {Authorization: `Bearer ${KEY}`},\n  body, json: true, timeout: 10 * 60 * 1000,\n});\nconst alert = (payload) => http({\n  method: 'POST', url: $env.ALERT_WEBHOOK_URL, body: {source: SOURCE, ...payload}, json: true, timeout: 30000,\n});\nconst message = (error) => String(error?.response?.body?.error ?? error?.message ?? error).slice(0, 300);\n\n// {{{ Bridge reachable at all\nlet sync;\ntry {\n  sync = await bridge('/bank-sync');\n} catch (error) {\n  await alert({\n    fingerprint: `${SOURCE}:bridge`, severity: 'warning',\n    title: 'Actual: Bank-Sync nicht möglich',\n    message: `Die Actual-Bridge hat nicht geantwortet: ${message(error)}\\n\\nLäuft actual-bridge.service, und gibt es die Session der Bridge noch?`,\n  });\n  return [{json: {ok: false, stage: 'bank-sync', error: message(error)}}];\n}\nawait alert({fingerprint: `${SOURCE}:bridge`, resolved: true, title: 'Actual: Bank-Sync nicht möglich'});\n// }}}\n// {{{ Per-account bank sync results\n// Accounts without a bank link answer with an error too; those are not\n// failures, so only linked-account errors reach the owner.\nconst notLinked = (result) => /not linked|no.*(bank|sync).*account|account.*not.*sync|ACCOUNT_NOT_LINKED|invalid-account/i.test(`${result.code} ${result.error}`);\nconst failed = [];\nfor (const result of sync.accounts) {\n  const title = `Actual: Bank-Sync für ${result.name} fehlgeschlagen`;\n  if (result.ok || notLinked(result)) {\n    await alert({fingerprint: `${SOURCE}:bank:${result.id}`, resolved: true, title});\n    continue;\n  }\n  failed.push(result);\n  await alert({\n    fingerprint: `${SOURCE}:bank:${result.id}`, severity: 'warning', title, url: BUDGET_URL,\n    message: `${result.error}\\n\\nMeist ist die Bankfreigabe abgelaufen: in Actual unter Bank-Sync das Konto neu verknüpfen.`,\n  });\n}\n// }}}\n// {{{ Snapshot\nconst snap = await bridge('/snapshot', {days: HISTORY_DAYS});\nconst accounts = new Map(snap.accounts.map((account) => [account.id, account]));\nconst payees = new Map(snap.payees.map((payee) => [payee.id, payee]));\nconst categories = snap.categories.filter((category) => !category.hidden);\nconst categoryById = new Map(snap.categories.map((category) => [category.id, category]));\nconst since = new Date(Date.now() - CANDIDATE_DAYS * 86400000).toISOString().slice(0, 10);\n\nconst budgetRow = (tx) => !tx.transfer && !tx.starting_balance && accounts.get(tx.account) && !accounts.get(tx.account).offbudget\n  && !payees.get(tx.payee)?.transfer;\nconst history = snap.transactions.filter((tx) => budgetRow(tx) && tx.category && categoryById.has(tx.category));\nconst candidates = snap.transactions.filter((tx) => budgetRow(tx) && !tx.category && tx.date >= since);\n// }}}\n// {{{ Matching on the owner's own history\nconst STOP = new Set(['gmbh', 'ag', 'kg', 'co', 'se', 'ug', 'mbh', 'ev', 'sagt', 'danke', 'sepa', 'lastschrift',\n  'kartenzahlung', 'debitk', 'visa', 'girocard', 'gutschrift', 'ueberweisung', 'uberweisung', 'dauerauftrag',\n  'elv', 'pos', 'nr', 'de', 'www', 'com', 'online', 'gmbhco', 'fil', 'filiale']);\nconst INTERMEDIARIES = new Set(['paypal', 'klarna', 'sumup', 'stripe', 'adyen', 'zettle', 'payone',\n  'unzer', 'mollie', 'google', 'apple', 'amazon', 'sofort', 'giropay', 'wero', 'vr', 'sparkasse']);\nfunction normalise(text) {\n  const words = String(text ?? '').toLowerCase()\n    .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')\n    .replace(/[0-9]{3,}/g, ' ').replace(/[^a-z0-9]+/g, ' ')\n    .split(' ').filter((word) => word.length > 1 && !STOP.has(word));\n  // The first word names the merchant (REWE Markt GmbH, REWE 4711): branch\n  // numbers and towns differ between bookings. Payment providers name nobody,\n  // so they never match by name and go to the model with their full text.\n  return words.length && !INTERMEDIARIES.has(words[0]) ? words[0] : '';\n}\nconst payeeName = (tx) => payees.get(tx.payee)?.name ?? tx.imported_payee ?? '';\nconst sign = (tx) => Math.sign(tx.amount);\n\n// One earlier example is enough when it is the only category ever used for\n// that payee; with three or more, a clear three-quarter majority will do.\nfunction vote(rows) {\n  const counts = new Map();\n  for (const row of rows) counts.set(row.category, (counts.get(row.category) ?? 0) + 1);\n  const ranked = [...counts.entries()].sort((a, b) => b[1] - a[1]);\n  if (!ranked.length) return null;\n  const [category, top] = ranked[0];\n  const share = top / rows.length;\n  return share === 1 || (rows.length >= 3 && share >= 0.75) ? category : null;\n}\nfunction fromHistory(tx) {\n  const sameSign = history.filter((row) => sign(row) === sign(tx));\n  if (tx.payee) {\n    const byPayee = vote(sameSign.filter((row) => row.payee === tx.payee));\n    if (byPayee) return byPayee;\n  }\n  const key = normalise(payeeName(tx)) || normalise(tx.imported_payee);\n  if (!key) return null;\n  return vote(sameSign.filter((row) => (normalise(payeeName(row)) || normalise(row.imported_payee)) === key));\n}\n// }}}\n// {{{ Classifier\nconst label = (category) => `${category.group} / ${category.name}`;\nfunction allowed(tx) {\n  // Expenses never go to income categories; money coming in may be income or\n  // a refund against an expense category.\n  return categories.filter((category) => tx.amount > 0 || !category.is_income);\n}\nfunction examples(tx) {\n  const seen = new Set();\n  const rows = [];\n  for (const row of [...history].reverse()) {\n    if (sign(row) !== sign(tx)) continue;\n    const name = payeeName(row);\n    const key = normalise(name);\n    if (!key || seen.has(key)) continue;\n    seen.add(key);\n    rows.push(`${name} -> ${label(categoryById.get(row.category))}`);\n    if (rows.length >= EXAMPLES) break;\n  }\n  return rows;\n}\nasync function fromModel(tx) {\n  const options = allowed(tx);\n  const labels = options.map(label);\n  const prompt = [\n    'Du ordnest eine Banktransaktion einer Budgetkategorie zu.',\n    'Antworte nur mit einer Kategorie aus der Liste. Wenn Empfänger und Verwendungszweck nicht eindeutig sind,',\n    `antworte \"${UNKNOWN}\". Rate nicht: eine falsche Kategorie ist schlimmer als keine.`,\n    'Setze \"sicher\" nur auf true, wenn die Zuordnung offensichtlich ist.',\n    '',\n    'Bisherige Zuordnungen des Nutzers:',\n    ...examples(tx),\n  ].join('\\n');\n  const input = {\n    empfaenger: payeeName(tx), bank_empfaenger: tx.imported_payee, verwendungszweck: (tx.notes ?? '').slice(0, 300),\n    betrag_eur: tx.amount / 100, konto: accounts.get(tx.account)?.name,\n  };\n  const response = await http({\n    method: 'POST', url: $env.CLASSIFIER_URL, json: true, timeout: 5 * 60 * 1000,\n    body: {\n      stream: false, temperature: 0, max_tokens: 80,\n      response_format: {type: 'json_schema', json_schema: {name: 'verdict', strict: true, schema: {\n        type: 'object', additionalProperties: false, required: ['kategorie', 'sicher'],\n        properties: {kategorie: {type: 'string', enum: [...labels, UNKNOWN]}, sicher: {type: 'boolean'}},\n      }}},\n      messages: [{role: 'system', content: prompt}, {role: 'user', content: JSON.stringify(input)}],\n    },\n  });\n  const verdict = JSON.parse(response.choices[0].message.content);\n  if (verdict.sicher !== true || verdict.kategorie === UNKNOWN) return null;\n  const index = labels.indexOf(verdict.kategorie);\n  return index === -1 ? null : options[index].id;\n}\n// }}}\n// {{{ Decide\nconst updates = [];\nconst unresolved = [];\nlet modelCalls = 0;\nlet modelErrors = 0;\nfor (const tx of candidates) {\n  const known = fromHistory(tx);\n  if (known) {\n    updates.push({id: tx.id, category: known, source: 'history'});\n    continue;\n  }\n  if ($env.CLASSIFIER_URL && modelCalls < MAX_MODEL_CALLS) {\n    modelCalls += 1;\n    try {\n      const guess = await fromModel(tx);\n      if (guess) {\n        updates.push({id: tx.id, category: guess, note: AUTO_TAG, source: 'model'});\n        continue;\n      }\n    } catch (error) {\n      // A model that is down must not lose the transaction: it is reported\n      // as unresolved below and retried on the next run.\n      modelErrors += 1;\n    }\n  }\n  unresolved.push(tx);\n}\nconst applied = updates.length\n  ? await bridge('/categorize', {updates: updates.map(({id, category, note}) => ({id, category, note}))})\n  : {applied: [], skipped: []};\n// }}}\n// {{{ Report\nconst money = (cents) => (cents / 100).toLocaleString('de-DE', {style: 'currency', currency: 'EUR'});\nconst day = (date) => `${date.slice(8, 10)}.${date.slice(5, 7)}.`;\nconst fingerprint = `${SOURCE}:uncategorized`;\nif (unresolved.length) {\n  const lines = unresolved.slice(0, 10).map((tx) => `${day(tx.date)} ${money(tx.amount)} ${payeeName(tx) || '?'} (${accounts.get(tx.account)?.name})`);\n  if (unresolved.length > 10) lines.push(`… und ${unresolved.length - 10} weitere`);\n  const auto = applied.applied.length ? `\\n\\n${applied.applied.length} andere wurden automatisch zugeordnet.` : '';\n  const down = modelErrors ? `\\n\\nDas Klassifizierungsmodell war ${modelErrors}× nicht erreichbar.` : '';\n  await alert({\n    fingerprint, severity: 'info', url: BUDGET_URL,\n    title: `Actual: ${unresolved.length} Buchung${unresolved.length === 1 ? '' : 'en'} ohne Kategorie`,\n    message: `Dafür reichen die Daten nicht für eine sichere Zuordnung:\\n\\n${lines.join('\\n')}${auto}${down}`,\n  });\n} else {\n  await alert({fingerprint, resolved: true, title: 'Actual: Buchungen ohne Kategorie'});\n}\nreturn [{json: {\n  ok: true,\n  bankSyncFailed: failed.map(({name, error}) => ({name, error})),\n  candidates: candidates.length,\n  fromHistory: updates.filter((update) => update.source === 'history').length,\n  fromModel: updates.filter((update) => update.source === 'model').length,\n  applied: applied.applied.length,\n  skipped: applied.skipped,\n  unresolved: unresolved.length,\n  modelCalls,\n  modelErrors,\n}}];\n// }}}"
+      },
+      "id": "b4febdf9-d887-4ea9-b46b-64c9619ae208",
+      "name": "Sync and categorise",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        80
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual test": {
+      "main": [
+        [
+          {
+            "node": "Sync and categorise",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule": {
+      "main": [
+        [
+          {
+            "node": "Sync and categorise",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "errorWorkflow": "AutomationFail26",
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "338426b3-1ec3-4d4d-be1a-8fce87533d34",
+  "id": "ActualBudget2611",
+  "tags": [],
+  "nodeGroups": []
+}

@@ -3,6 +3,8 @@
   upkgs,
   ...
 }: {
+  imports = [./bridge.nix];
+
   # {{{ Reverse proxy
   # LAN/VPN only: this is the whole financial history. nginx terminates TLS,
   # which Actual needs anyway (the client uses SharedArrayBuffer, so it only
@@ -58,7 +60,7 @@
   };
   # }}}
   # {{{ Secrets
-  sops.secrets.actual_oidc_client_secret.sopsFile = ../secrets.yaml;
+  sops.secrets.actual_oidc_client_secret.sopsFile = ../../secrets.yaml;
   # DynamicUser cannot read a root-owned secret; systemd hands it over as a
   # credential instead. The module's `_secret` mechanism runs in preStart as
   # the same dynamic user, so it would hit the same wall.

@@ -272,7 +272,9 @@ That flag hands every Code node the unit's whole environment. The unit loads
 two sops-backed `EnvironmentFile`s (`n8n_webuntis_env` and the
 `n8n-services.env` template in `n8n/default.nix`), so that environment holds
 the WebUntis credentials and the API keys for Immich,
-Paperless, Mealie, Home Assistant, Jellyseerr and the `*arr` services. Every
+Paperless, Mealie, Home Assistant, Jellyseerr and the `*arr` services, plus
+the Actual bridge key (added to the template from `actual/bridge.nix`), which
+reads and recategorises the whole budget. Every
 Code node can read all of them through `$env`, including a Code node created
 in the web editor. Editor access to n8n therefore equals access to those keys.
 Anyone who can edit workflows should be treated as holding them.
