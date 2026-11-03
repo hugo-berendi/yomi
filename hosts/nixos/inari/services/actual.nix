@@ -17,6 +17,13 @@
     # few years of bank-synced transactions passes 1M quickly.
     clientMaxBodySize = "50M";
   };
+  # The client long-polls this while the user approves the login at the bank;
+  # the server holds it for up to POLL_TIMEOUT_MS (300 s). nginx's default 60 s
+  # cut off every Sparkasse pushTAN approval with a 504.
+  services.nginx.virtualHosts.${config.yomi.nginx.at.budget.host}.locations."/enablebanking/poll-auth" = {
+    proxyPass = "http://127.0.0.1:${toString config.yomi.ports.actual}";
+    extraConfig = "proxy_read_timeout 310s;";
+  };
   # }}}
   # {{{ Service
   services.actual = {
