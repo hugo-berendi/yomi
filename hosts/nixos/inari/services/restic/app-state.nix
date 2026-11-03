@@ -21,6 +21,7 @@
     n8n = (state "var/lib/private/n8n") // {sqlite = [".n8n/database.sqlite"];};
     home-assistant = state "var/lib/hass";
     pocket-id = state "var/lib/pocket-id";
+    actual = (state "var/lib/private/actual") // {sqlite = ["server-files/account.sqlite"];};
     matrix = state "var/lib/tuwunel";
     mautrix-discord = state "var/lib/mautrix-discord";
     mautrix-signal = state "var/lib/mautrix-signal";

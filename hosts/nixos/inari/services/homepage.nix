@@ -163,6 +163,13 @@ in {
             };
           }
           {
+            "Actual Budget" = {
+              icon = "actual-budget.svg";
+              href = config.yomi.nginx.at.budget.url;
+              description = "Budgeting and bank sync";
+            };
+          }
+          {
             Karakeep = {
               icon = "si-hoarder";
               href = "https://karakeep.hugo-berendi.de";

@@ -55,7 +55,7 @@ in {
         name
       } or name;
   });
-  yomi.nginx.at = (lib.genAttrs ["paperless" "immich" "lab" "n8n" "karakeep" "warden" "yt" "radarr" "sonarr" "lidarr" "readarr" "bazarr" "prowlarr" "torrent" "cal" "pdf" "grafana" "prometheus" "home" "adguard" "monitoring"] (_: {monitor.enable = true;})) // {status.port = port;};
+  yomi.nginx.at = (lib.genAttrs ["paperless" "immich" "lab" "n8n" "karakeep" "warden" "yt" "radarr" "sonarr" "lidarr" "readarr" "bazarr" "prowlarr" "torrent" "cal" "pdf" "grafana" "prometheus" "home" "adguard" "monitoring" "budget"] (_: {monitor.enable = true;})) // {status.port = port;};
   # {{{ Reverse proxy
   # }}}
   # {{{ Secrets

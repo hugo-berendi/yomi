@@ -69,6 +69,7 @@
       ./services/t3code.nix
       ./services/cliproxyapi.nix
       ./services/changedetection.nix
+      ./services/actual.nix
     ]
     # The wizard saves hardware choices alongside the restored checkout.
     ++ lib.optional (builtins.pathExists ./recovery-local.nix) ./recovery-local.nix;

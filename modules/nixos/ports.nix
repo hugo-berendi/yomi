@@ -112,6 +112,7 @@
     remote-access = lib.mkDefault 8509;
     oauth2-proxy = lib.mkDefault 8510;
     t3code-vm-tunnel = lib.mkDefault 8511;
+    actual = lib.mkDefault 8512;
   };
   # }}}
 }
