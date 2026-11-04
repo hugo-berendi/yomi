@@ -23,9 +23,9 @@ in {
       enable = true;
       issuer = config.yomi.cloudflared.at.pocket-id.url;
       origin = config.yomi.nginx.at.t3code.url;
+      # Pocket ID restricts this client to the t3code group.
       clientId = "2db66a5a-664a-4938-a2d1-15815ec7c1d2";
       clientSecretFile = config.sops.secrets.t3code_oidc_client_secret.path;
-      allowedEmails = [config.yomi.pilot.email];
     };
   };
   sops.secrets.t3code_oidc_client_secret = {
