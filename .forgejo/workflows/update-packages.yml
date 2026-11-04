@@ -64,15 +64,6 @@ jobs:
             echo "::endgroup::"
           done
 
-      - name: Update t3code to the latest stable release
-        # Bumps both pins and rebases the complete local patch series.
-        # Restores its own files and exits non-zero on a conflict or a failed
-        # build, which must not stop the other updates.
-        run: |
-          if ! scripts/ci/update-t3code.sh; then
-            echo "t3code update or patch rebase failed" >> "${{ steps.trusted.outputs.dir }}/failures"
-          fi
-
       - name: Update vimclip to latest master commit
         run: |
           echo "::group::nix-update vimclip"

@@ -1,6 +1,5 @@
 {
   config,
-  lib,
   pkgs,
   inputs,
   upkgs,
@@ -12,10 +11,26 @@
   forgeClis = [upkgs.forgejo-cli upkgs.tea];
   package = import ../../../../pkgs/t3code-tools.nix {inherit pkgs inputs;};
 in {
-  imports = [./t3code-vm ./t3code-oidc.nix ./t3code-repair.nix];
-  yomi.t3codeOidc = {
+  imports = [inputs.t3code-nix.nixosModules.default ./t3code-vm ./t3code-repair.nix];
+  services.t3code = {
     enable = true;
-    clientId = "2db66a5a-664a-4938-a2d1-15815ec7c1d2";
+    user = pilot;
+    inherit port;
+    providerPackages = package.providers;
+    extraPackages = [package] ++ forgeClis;
+    memory.enable = true;
+    oidc = {
+      enable = true;
+      issuer = config.yomi.cloudflared.at.pocket-id.url;
+      origin = config.yomi.nginx.at.t3code.url;
+      clientId = "2db66a5a-664a-4938-a2d1-15815ec7c1d2";
+      clientSecretFile = config.sops.secrets.t3code_oidc_client_secret.path;
+      allowedEmails = [config.yomi.pilot.email];
+    };
+  };
+  sops.secrets.t3code_oidc_client_secret = {
+    sopsFile = ../secrets.yaml;
+    owner = pilot;
   };
   yomi.t3codeVm = {
     enable = true;
@@ -47,8 +62,6 @@ in {
   };
   yomi.nginx.at.t3code.port = port;
 
-  users.users.${pilot}.linger = true;
-
   home-manager.users.${pilot} = {config, ...}: {
     home.packages = [package] ++ forgeClis;
 
@@ -56,23 +69,5 @@ in {
       "${config.home.homeDirectory}/.t3"
       "${config.home.homeDirectory}/.local/state/t3code-vm"
     ];
-
-    systemd.user.services.t3code-web = {
-      Unit = {
-        Description = "T3 Code Web Server";
-        After = ["network.target"];
-      };
-      Service = {
-        Environment = [
-          "SSH_AUTH_SOCK=%t/ssh-agent"
-          "PATH=${lib.makeBinPath ([pkgs.git pkgs.ripgrep pkgs.nodejs] ++ forgeClis)}:${config.home.profileDirectory}/bin:/run/current-system/sw/bin:/run/wrappers/bin"
-        ];
-        ExecStart = "${lib.getExe package} serve --host 127.0.0.1 --port ${toString port} --base-dir ${config.home.homeDirectory}/.t3";
-        WorkingDirectory = config.home.homeDirectory;
-        Restart = "always";
-        RestartSec = 2;
-      };
-      Install.WantedBy = ["default.target"];
-    };
   };
 }

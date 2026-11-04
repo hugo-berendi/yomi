@@ -60,7 +60,7 @@ jobs:
         run: |
           case "$(date +%u)" in
             1|4) nix flake update ;;
-            *) nix flake update llm-agents ;;
+            *) nix flake update llm-agents t3code-nix ;;
           esac
       - name: Commit to the update branch
         id: commit

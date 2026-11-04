@@ -30,6 +30,34 @@ class RepairTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "welles"):
             repair.eligible_pr([pull(["welles"])], "hugo-berendi/yomi")
 
+    def test_capability_probe_does_not_require_a_workflow_or_launch_data(self):
+        self.assertEqual(
+            repair.request_json(io.StringIO('{"action":"capabilities"}')),
+            {"action": "capabilities"},
+        )
+
+    def test_routes_only_configured_repositories_and_separates_run_ids(self):
+        args = SimpleNamespace(
+            repository="hugo-berendi/yomi",
+            remote="yomi-remote",
+            t3code_remote="t3code-remote",
+            state_dir="/state",
+        )
+        repair.select_repository(args, {"repository": "hugo-berendi/t3code-nix"})
+        self.assertEqual(args.repository, "hugo-berendi/t3code-nix")
+        self.assertEqual(args.remote, "t3code-remote")
+        self.assertEqual(args.state_dir, "/state/t3code-nix")
+
+    def test_unknown_repository_cannot_choose_a_checkout_remote(self):
+        args = SimpleNamespace(
+            repository="hugo-berendi/yomi",
+            remote="yomi-remote",
+            t3code_remote="t3code-remote",
+            state_dir="/state",
+        )
+        with self.assertRaisesRegex(ValueError, "repository"):
+            repair.select_repository(args, {"repository": "attacker/repository"})
+
     def test_invalid_run_id_cannot_escape_state_directory(self):
         with self.assertRaises(ValueError):
             repair.request_json(

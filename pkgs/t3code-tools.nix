@@ -5,9 +5,8 @@
   agents = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
   codex = import ../home/features/cli/ai/codex-package.nix {inherit inputs pkgs;};
   providers = [codex agents.claude-code agents.opencode2 agents.copilot-cli];
-  t3 = pkgs.callPackage ./t3code-release.nix {
+  t3 = inputs.t3code-nix.packages.${pkgs.stdenv.hostPlatform.system}.default.override {
     providerPackages = providers;
-    memoryServer = pkgs.callPackage ./t3code-memory.nix {};
   };
   skillLib = import (inputs.skills + "/nix/lib.nix") {inherit (pkgs) lib;};
   skills = skillLib.readSkills (inputs.skills + "/skills");
@@ -41,4 +40,5 @@ in
     name = "t3code-tools";
     paths = [t3 helpers pkgs.nodejs] ++ providers;
     meta.mainProgram = "t3";
+    passthru = {inherit providers;};
   }

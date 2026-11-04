@@ -51,6 +51,8 @@
 
     # }}}
 
+    t3code-nix.url = "git+https://git.hugo-berendi.de/hugo-berendi/t3code-nix.git";
+
     llm-agents.url = "github:numtide/llm-agents.nix";
     mcp-nixos = {
       url = "github:utensils/mcp-nixos";

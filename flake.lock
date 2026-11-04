@@ -1136,6 +1136,22 @@
         "type": "github"
       }
     },
+    "nixpkgs_3": {
+      "locked": {
+        "lastModified": 1793526781,
+        "narHash": "sha256-2Cxxgpz1+cRgKZJFi12/9LG3aIBN66f2RvFs34Oj/A0=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "9bb52223f4f6a0cc606fd0852d8784f896c137d5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-26.05",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nur": {
       "inputs": {
         "flake-parts": [
@@ -1295,7 +1311,8 @@
         "skills": "skills",
         "sops-nix": "sops-nix",
         "spicetify-nix": "spicetify-nix",
-        "stylix": "stylix"
+        "stylix": "stylix",
+        "t3code-nix": "t3code-nix"
       }
     },
     "rose-pine-hyprcursor": {
@@ -1533,6 +1550,24 @@
         "owner": "nix-systems",
         "repo": "default",
         "type": "github"
+      }
+    },
+    "t3code-nix": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_3"
+      },
+      "locked": {
+        "lastModified": 1793818333,
+        "narHash": "sha256-Ii1RWajHRwNMOnZooiG4baUxKduksddIttvCM3+R7VM=",
+        "ref": "refs/heads/main",
+        "rev": "3eef82ae243289bd31077681428e8ac2ed972ca7",
+        "revCount": 4,
+        "type": "git",
+        "url": "https://git.hugo-berendi.de/hugo-berendi/t3code-nix.git"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://git.hugo-berendi.de/hugo-berendi/t3code-nix.git"
       }
     },
     "tinted-kitty": {

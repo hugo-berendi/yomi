@@ -20,6 +20,7 @@
     exec ${pkgs.python313}/bin/python3 ${./t3code-repair/launch.py} \
       --repository hugo-berendi/yomi \
       --remote forgejo@ssh.git.hugo-berendi.de:hugo-berendi/yomi.git \
+      --t3code-remote forgejo@ssh.git.hugo-berendi.de:hugo-berendi/t3code-nix.git \
       --forgejo https://git.hugo-berendi.de \
       --state-dir ${home}/.local/state/t3code-package-repair \
       --t3-base-dir ${home}/.t3
@@ -34,7 +35,9 @@ in {
       Accept = true;
       SocketUser = "gitea-runner";
       SocketMode = "0600";
-      MaxConnections = 1;
+      # The capability probe may still be exiting when its repair request arrives.
+      # Launches themselves remain serialized by each repository's lock.
+      MaxConnections = 2;
     };
   };
   systemd.services."t3code-package-repair@" = {

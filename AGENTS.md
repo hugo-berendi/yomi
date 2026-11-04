@@ -79,8 +79,8 @@ Things found this way that source-reading missed: an sshd that still accepted pa
 
 Forgejo Actions (`.forgejo/workflows/`):
 - `check-nixos-flake.yml`: push/PR — `just lint`, `just check`, builds amaterasu + inari + tsukuyomi + wsl-work
-- `update-flake-inputs.yml`: daily 18:00 Berlin cron — `nix flake update` (all inputs Monday and Thursday, only `llm-agents` otherwise; only inari is built in full) onto the rolling `update-flake-inputs` PR
-- `update-packages.yml`: daily 18:30 Berlin — `nix-update` for the `pkgs/` derivations, t3code (`scripts/ci/update-t3code.sh`: both pins plus a 3-way rebase of the shared-memory patch; a changed patch fails the gate and waits for review) and image digests onto the rolling `update-packages` PR
+- `update-flake-inputs.yml`: daily 18:00 Berlin cron — `nix flake update` (all inputs Monday and Thursday, only `llm-agents` and `t3code-nix` otherwise; only inari is built in full) onto the rolling `update-flake-inputs` PR
+- `update-packages.yml`: daily 18:30 Berlin — `nix-update` for the `pkgs/` derivations and image digests (T3 Code packages and patches are maintained in the separate `t3code-nix` input) onto the rolling `update-packages` PR
 
 Both update PRs merge on their own only when the job's `just lint`/`just check`, the deterministic gate (`scripts/ci/update-gate.py`: only lock revisions, package versions/hashes and image digests) say yes. Every new PR, and any PR that is not merged, pushes its link through the alert router. Auto-merge needs the `UPDATE_BOT_TOKEN` repo secret; without it every update waits for a human.
 
