@@ -16,13 +16,13 @@
 in
   stdenv.mkDerivation (final: {
     pname = "t3code-memory-server";
-    version = "0.1.6";
+    version = "0.1.7";
 
     src = fetchFromGitHub {
       owner = "pingdotgg";
       repo = "t3code";
-      rev = "2359643cffa6ba9ee84d6f2694b935de54a8013e";
-      hash = "sha256-GWO+/gJWLu9GUwZCbmrBYIVn9Y7N8PwXrjQYFLOtmWk=";
+      rev = "322f6544dfad0a3c8a0c8cbecf2c7f7874b14268";
+      hash = "sha256-oQLmDCDuJPNBsf8MHMD2xhMq+CF6L836/PQesM91Clw=";
     };
 
     patches = [./patches/t3code/shared-memory.patch];
@@ -30,7 +30,7 @@ in
       inherit (final) pname version src patches;
       pnpm = pnpm_12;
       fetcherVersion = 4;
-      hash = "sha256-LxE/dyp9J1LNeC5U8eBFQY4MfVbnRR3a8HuGPJFmER4=";
+      hash = "sha256-1vScvol//sRdCwnEJTGmjo+pbMrUP+TshbWaN1mjO+I=";
     };
 
     # Upstream tags the commit before its release job commits the version bump, and
