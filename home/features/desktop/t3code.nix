@@ -1,4 +1,17 @@
-{config, ...}: {
+{
+  config,
+  inputs,
+  lib,
+  pkgs,
+  ...
+}: let
+  t3code = import ./t3code-package.nix {
+    inherit inputs pkgs;
+    providerPackages = [];
+  };
+  themeFile = "${config.xdg.dataHome}/t3code/stylix.json";
+  baseDir = "${config.home.homeDirectory}/.t3";
+in {
   # {{{ T3 Code
   # ~/.t3 holds the server's sessions. The desktop app's own Electron profile
   # is separate, and it is where the UI keeps its settings -- installed
@@ -11,10 +24,17 @@
     "${config.xdg.configHome}/t3code-v2"
   ];
 
-  # T3 Code has no theme directory to drop this into; the library lives in
-  # localStorage. Import it once through Settings -> Colors & themes ->
-  # Import, which now survives reboots. Roles left out fall back to the
-  # built-in dark theme, and the import accepts any CSS colour, hex included.
+  # Beta starts with a new Electron profile, so Alpha's localStorage theme
+  # does not follow it. The CLI publishes a regular file (the server rejects
+  # symlinked themes) and updates only the theme settings in its mutable JSON.
+  # Republish only when the palette changes, preserving later manual choices.
+  home.activation.t3codeTheme = lib.hm.dag.entryAfter ["linkGeneration"] ''
+    if ! ${pkgs.diffutils}/bin/cmp -s ${lib.escapeShellArg themeFile} ${lib.escapeShellArg "${baseDir}/userdata/themes/stylix.json"}; then
+      run ${t3code}/bin/t3 theme set --base-dir ${lib.escapeShellArg baseDir} ${lib.escapeShellArg themeFile}
+    fi
+  '';
+
+  # Roles left out fall back to the built-in dark theme.
   xdg.dataFile."t3code/stylix.json".text = let
     c = config.lib.stylix.colors.withHashtag;
   in
