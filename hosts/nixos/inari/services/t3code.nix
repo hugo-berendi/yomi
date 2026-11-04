@@ -12,7 +12,7 @@
   forgeClis = [upkgs.forgejo-cli upkgs.tea];
   package = import ../../../../pkgs/t3code-tools.nix {inherit pkgs inputs;};
 in {
-  imports = [./t3code-vm ./t3code-oidc.nix];
+  imports = [./t3code-vm ./t3code-oidc.nix ./t3code-repair.nix];
   yomi.t3codeVm = {
     enable = true;
     toolingPackage = package;
@@ -60,6 +60,7 @@ in {
       };
       Service = {
         Environment = [
+          "SSH_AUTH_SOCK=%t/ssh-agent"
           "PATH=${lib.makeBinPath ([pkgs.git pkgs.ripgrep pkgs.nodejs] ++ forgeClis)}:${config.home.profileDirectory}/bin:/run/current-system/sw/bin:/run/wrappers/bin"
         ];
         ExecStart = "${lib.getExe package} serve --host 127.0.0.1 --port ${toString port} --base-dir ${config.home.homeDirectory}/.t3";

@@ -119,8 +119,8 @@ class PublishTests(unittest.TestCase):
             git("init", "--bare", "remote.git")
             git("init", "work")
             with contextlib.chdir("work"):
-                git("config", "user.name", "Test")
-                git("config", "user.email", "test@example.org")
+                git("config", "user.name", "forgejo-actions")
+                git("config", "user.email", "forgejo-actions@localhost")
                 git("remote", "add", "origin", "../remote.git")
                 git("commit", "--allow-empty", "-m", "version 2")
                 publisher.push_branch()
@@ -132,6 +132,40 @@ class PublishTests(unittest.TestCase):
                 self.assertEqual(
                     git("ls-remote", "--heads", "origin"),
                     f"{latest}\trefs/heads/update-packages",
+                )
+
+    def test_push_preserves_an_unmerged_repair_commit(self):
+        with tempfile.TemporaryDirectory() as directory, contextlib.chdir(directory):
+
+            def git(*args):
+                return subprocess.check_output(
+                    ["git", *args], text=True, stderr=subprocess.DEVNULL
+                ).strip()
+
+            git("init", "--bare", "remote.git")
+            git("init", "work")
+            with contextlib.chdir("work"):
+                git("config", "user.name", "forgejo-actions")
+                git("config", "user.email", "forgejo-actions@localhost")
+                git("remote", "add", "origin", "../remote.git")
+                git("commit", "--allow-empty", "-m", "base")
+                base = git("rev-parse", "HEAD")
+                git(
+                    "commit",
+                    "--allow-empty",
+                    "--author=Hugo <hugo@example.org>",
+                    "-m",
+                    "repair",
+                )
+                repair = git("rev-parse", "HEAD")
+                git("push", "origin", "HEAD:refs/heads/update-packages")
+                git("reset", "--hard", base)
+                git("commit", "--allow-empty", "-m", "next automatic update")
+                with self.assertRaisesRegex(RuntimeError, "repair"):
+                    publisher.push_branch()
+                self.assertEqual(
+                    git("ls-remote", "origin", "refs/heads/update-packages").split()[0],
+                    repair,
                 )
 
     def test_push_clears_legacy_dated_branches(self):
@@ -147,8 +181,8 @@ class PublishTests(unittest.TestCase):
             git("init", "--bare", "remote.git")
             git("init", "work")
             with contextlib.chdir("work"):
-                git("config", "user.name", "Test")
-                git("config", "user.email", "test@example.org")
+                git("config", "user.name", "forgejo-actions")
+                git("config", "user.email", "forgejo-actions@localhost")
                 git("remote", "add", "origin", "../remote.git")
                 git("commit", "--allow-empty", "-m", "version 2")
                 git("push", "origin", "HEAD:refs/heads/update-packages/2026-09-18")

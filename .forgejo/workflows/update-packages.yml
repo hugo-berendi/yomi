@@ -19,8 +19,7 @@ jobs:
       # "untrusted flake configuration" warning unless it is accepted, and the
       # runner would then miss every cache but cache.nixos.org.
       NIX_CONFIG: accept-flake-config = true
-    # 180 for the updates and just check as before, plus up to 30 for the
-    # local model and the PR round trip.
+    # Includes builds, checks and the PR round trip. Repair sessions run in T3.
     timeout-minutes: 240
     permissions:
       contents: write
@@ -40,8 +39,9 @@ jobs:
         id: trusted
         run: |
           dir=$(mktemp -d "$RUNNER_TEMP/update.XXXXXX")
-          cp scripts/ci/update-gate.py scripts/ci/update-package-pr.py "$dir/"
+          cp scripts/ci/update-gate.py scripts/ci/update-package-pr.py scripts/ci/request-package-repair.py "$dir/"
           echo "dir=$dir" >> "$GITHUB_OUTPUT"
+          touch "$dir/failures"
           echo "sums=$(cd "$dir" && sha256sum ./*.py | sha256sum | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
 
       - name: Update GitHub-release packages with nix-update
@@ -53,20 +53,25 @@ jobs:
                 echo "$pkg updated and builds"
               else
                 echo "$pkg failed to build after update, reverting" >&2
+                echo "$pkg build failed" >> "${{ steps.trusted.outputs.dir }}/failures"
                 git checkout -- "pkgs/$pkg.nix"
               fi
             else
               echo "nix-update failed for $pkg, skipping" >&2
+              echo "$pkg update failed" >> "${{ steps.trusted.outputs.dir }}/failures"
               git checkout -- "pkgs/$pkg.nix"
             fi
             echo "::endgroup::"
           done
 
       - name: Update t3code to the latest stable release
-        # Bumps both pins and rebases the shared-memory patch; see the script.
+        # Bumps both pins and rebases the complete local patch series.
         # Restores its own files and exits non-zero on a conflict or a failed
         # build, which must not stop the other updates.
-        run: scripts/ci/update-t3code.sh || echo "t3code not updated, see the warning above" >&2
+        run: |
+          if ! scripts/ci/update-t3code.sh; then
+            echo "t3code update or patch rebase failed" >> "${{ steps.trusted.outputs.dir }}/failures"
+          fi
 
       - name: Update vimclip to latest master commit
         run: |
@@ -76,10 +81,12 @@ jobs:
               echo "vimclip updated and builds"
             else
               echo "vimclip failed to build after update, reverting" >&2
+              echo "vimclip build failed" >> "${{ steps.trusted.outputs.dir }}/failures"
               git checkout -- pkgs/vimclip.nix
             fi
           else
             echo "nix-update failed for vimclip, skipping" >&2
+            echo "vimclip update failed" >> "${{ steps.trusted.outputs.dir }}/failures"
             git checkout -- pkgs/vimclip.nix
           fi
           echo "::endgroup::"
@@ -92,11 +99,13 @@ jobs:
           newVersion=$(curl -fsSL "$packagesUrl" | awk -F': ' '/^Version:/ {print $2; exit}')
           if [[ -z "$newVersion" ]]; then
             echo "could not determine latest chatgpt version, skipping" >&2
+            echo "chatgpt version lookup failed" >> "${{ steps.trusted.outputs.dir }}/failures"
           else
             debUrl="https://persistent.oaistatic.com/codex-app-prod/linux/deb/pool/main/c/chatgpt/chatgpt_${newVersion}_amd64.deb"
             newHash=$(nix store prefetch-file --hash-type sha256 --json "$debUrl" | nix run nixpkgs#jq -- -r '.hash')
             if [[ -z "$newHash" || "$newHash" == "null" ]]; then
               echo "could not prefetch hash for chatgpt $newVersion, skipping" >&2
+              echo "chatgpt hash lookup failed" >> "${{ steps.trusted.outputs.dir }}/failures"
             else
               sed -i \
                 -e "s|version = \".*\";|version = \"${newVersion}\";|" \
@@ -106,6 +115,7 @@ jobs:
                 echo "chatgpt updated to $newVersion and builds"
               else
                 echo "chatgpt $newVersion failed to build, reverting" >&2
+                echo "chatgpt build failed" >> "${{ steps.trusted.outputs.dir }}/failures"
                 git checkout -- pkgs/chatgpt.nix
               fi
             fi
@@ -116,7 +126,9 @@ jobs:
       - name: Update pinned docker image digests
         run: |
           echo "::group::update-docker-digests"
-          nix develop -c bash scripts/ci/update-docker-digests.sh
+          if ! nix develop -c bash scripts/ci/update-docker-digests.sh; then
+            echo "Docker digest update failed" >> "${{ steps.trusted.outputs.dir }}/failures"
+          fi
           echo "::endgroup::"
 
       - name: Commit to the update branch
@@ -170,7 +182,7 @@ jobs:
           set -euo pipefail
           # Steps before this one ran upstream code; refuse to act on a
           # changed script or a moved branch.
-          test "$(cd "$DIR" && sha256sum ./update-gate.py ./update-package-pr.py | sha256sum | cut -d' ' -f1)" = "$SUMS"
+          test "$(cd "$DIR" && sha256sum ./*.py | sha256sum | cut -d' ' -f1)" = "$SUMS"
           test "$(git rev-parse HEAD)" = "$HEAD_SHA"
           summary=""
           for f in $(git diff --name-only "$BASE" HEAD -- pkgs/ hosts/); do
@@ -195,6 +207,19 @@ jobs:
           # PR's own CI run needs UPDATE_BOT_TOKEN. Without it nothing merges.
           auth=$(printf 'x-access-token:%s' "$GITHUB_TOKEN" | base64 -w0)
           export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=http.extraHeader GIT_CONFIG_VALUE_0="Authorization: basic $auth"
+          ci_outcome="${{ steps.ci.outcome }}"
+          if test -s "$DIR/failures"; then ci_outcome=failure; fi
           python3 "$DIR/update-package-pr.py" "$DIR/body.md" \
-            --ci-outcome "${{ steps.ci.outcome }}" \
+            --ci-outcome "$ci_outcome" \
             --gate "$DIR/gate.json" --gate-ok "${{ steps.gate.outputs.ok }}"
+
+      - name: Start T3 Code repair session for failed updates
+        if: always() && !cancelled() && steps.trusted.outcome == 'success'
+        env:
+          DIR: ${{ steps.trusted.outputs.dir }}
+          SUMS: ${{ steps.trusted.outputs.sums }}
+          CI_OUTCOME: ${{ steps.ci.outcome }}
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          test "$(cd "$DIR" && sha256sum ./*.py | sha256sum | cut -d' ' -f1)" = "$SUMS"
+          python3 "$DIR/request-package-repair.py" "$DIR/failures"

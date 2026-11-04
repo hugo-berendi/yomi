@@ -129,6 +129,25 @@ def push_branch(branch=BRANCH):
         )
     remote = subprocess.check_output(["git", "ls-remote", "origin", ref], text=True)
     previous = remote.split()[0] if remote.strip() else ""
+    if branch == BRANCH and previous:
+        # A repaired PR must survive tomorrow's rolling update. Only replace
+        # automatic commits; preserve every unmerged human or agent repair.
+        subprocess.run(["git", "fetch", "--no-tags", "origin", previous], check=True)
+        shallow = subprocess.check_output(
+            ["git", "rev-parse", "--is-shallow-repository"], text=True
+        ).strip()
+        if shallow == "true":
+            subprocess.run(["git", "fetch", "--unshallow", "origin"], check=True)
+        authors = subprocess.check_output(
+            ["git", "log", "--format=%an <%ae>", f"HEAD..{previous}"], text=True
+        ).splitlines()
+        if any(
+            author != "forgejo-actions <forgejo-actions@localhost>"
+            for author in authors
+        ):
+            raise RuntimeError(
+                "The rolling update PR contains an unmerged repair; preserving it"
+            )
     subprocess.run(
         [
             "git",
