@@ -7,7 +7,8 @@
   agents = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
   codex = import ./features/cli/ai/codex-package.nix {inherit inputs pkgs;};
   t3code-desktop = agents.t3code-desktop.override {
-    t3code = agents.t3code.override {
+    t3code = import ./features/desktop/t3code-package.nix {
+      inherit inputs pkgs;
       providerPackages = [codex agents.claude-code agents.opencode agents.copilot-cli];
     };
   };

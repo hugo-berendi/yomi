@@ -5,9 +5,10 @@
   # themes included, in localStorage under `t3code:themes:v1`. Unpersisted,
   # it came back empty on every boot, so an imported theme lasted until the
   # next reboot and only the built-in ones ever seemed to exist.
+  # Beta uses a stable profile name independent of the application title.
   yomi.persistence.at.state.apps.t3code.directories = [
     "${config.home.homeDirectory}/.t3"
-    "${config.xdg.configHome}/T3 Code (Alpha)"
+    "${config.xdg.configHome}/t3code-v2"
   ];
 
   # T3 Code has no theme directory to drop this into; the library lives in
