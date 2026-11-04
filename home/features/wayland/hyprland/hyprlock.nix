@@ -1,11 +1,14 @@
 {
   pkgs,
   config,
+  lib,
+  osConfig,
   ...
 }: let
   gravatar = pkgs.callPackage (import ../../../../common/avatar.nix) {};
   shell = config.yomi.shellTheme;
   hyprColor = config.yomi.theming.colors.hexToRgb;
+  fingerprintEnabled = osConfig.services.fprintd.enable;
 in {
   programs.hyprlock = {
     enable = true;
@@ -81,8 +84,11 @@ in {
         inner_color = shell.rgba "surfaceRaised" 0.88;
         font_color = hyprColor shell.palette.textStrong;
         font_family = config.stylix.fonts.sansSerif.name;
-        fade_on_empty = false;
-        fade_timeout = 1000;
+        fade_on_empty = fingerprintEnabled;
+        fade_timeout =
+          if fingerprintEnabled
+          then 0
+          else 1000;
         placeholder_text = "󰌾  Passwort";
         rounding = 18;
         check_color = hyprColor shell.palette.success;
@@ -99,58 +105,72 @@ in {
         valign = "center";
       };
 
-      label = [
-        {
-          text = "cmd[update:1000] date +'%H:%M'";
+      label =
+        lib.optional fingerprintEnabled {
+          text = "Finger auf den Einschaltknopf legen";
           color = hyprColor shell.palette.textStrong;
           font_family = config.stylix.fonts.sansSerif.name;
-          font_size = 82;
+          font_size = 14;
           zindex = 1;
-          position = "116, 150";
+          position = "124, -78";
           halign = "left";
           valign = "center";
         }
-        {
-          text = "cmd[update:60000] date +'%A · %d. %B'";
-          color = hyprColor shell.palette.muted;
-          font_family = config.stylix.fonts.sansSerif.name;
-          font_size = 16;
-          zindex = 1;
-          position = "124, 82";
-          halign = "left";
-          valign = "center";
-        }
-        {
-          text = "Willkommen zurück";
-          color = hyprColor shell.palette.muted;
-          font_family = config.stylix.fonts.sansSerif.name;
-          font_size = 13;
-          zindex = 1;
-          position = "230, -4";
-          halign = "left";
-          valign = "center";
-        }
-        {
-          text = "$USER";
-          color = hyprColor shell.palette.textStrong;
-          font_family = config.stylix.fonts.sansSerif.name;
-          font_size = 24;
-          zindex = 1;
-          position = "228, -32";
-          halign = "left";
-          valign = "center";
-        }
-        {
-          text = "󰌾  Passwort eingeben, um fortzufahren";
-          color = hyprColor shell.palette.muted;
-          font_family = config.stylix.fonts.sansSerif.name;
-          font_size = 12;
-          zindex = 1;
-          position = "124, -184";
-          halign = "left";
-          valign = "center";
-        }
-      ];
+        ++ [
+          {
+            text = "cmd[update:1000] date +'%H:%M'";
+            color = hyprColor shell.palette.textStrong;
+            font_family = config.stylix.fonts.sansSerif.name;
+            font_size = 82;
+            zindex = 1;
+            position = "116, 150";
+            halign = "left";
+            valign = "center";
+          }
+          {
+            text = "cmd[update:60000] date +'%A · %d. %B'";
+            color = hyprColor shell.palette.muted;
+            font_family = config.stylix.fonts.sansSerif.name;
+            font_size = 16;
+            zindex = 1;
+            position = "124, 82";
+            halign = "left";
+            valign = "center";
+          }
+          {
+            text = "Willkommen zurück";
+            color = hyprColor shell.palette.muted;
+            font_family = config.stylix.fonts.sansSerif.name;
+            font_size = 13;
+            zindex = 1;
+            position = "230, -4";
+            halign = "left";
+            valign = "center";
+          }
+          {
+            text = "$USER";
+            color = hyprColor shell.palette.textStrong;
+            font_family = config.stylix.fonts.sansSerif.name;
+            font_size = 24;
+            zindex = 1;
+            position = "228, -32";
+            halign = "left";
+            valign = "center";
+          }
+          {
+            text =
+              if fingerprintEnabled
+              then "Alternativ: Passwort tippen und Enter drücken"
+              else "󰌾  Passwort eingeben, um fortzufahren";
+            color = hyprColor shell.palette.muted;
+            font_family = config.stylix.fonts.sansSerif.name;
+            font_size = 12;
+            zindex = 1;
+            position = "124, -184";
+            halign = "left";
+            valign = "center";
+          }
+        ];
     };
     extraConfig = "";
   };

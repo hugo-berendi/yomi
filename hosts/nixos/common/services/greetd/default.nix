@@ -76,7 +76,7 @@ in {
       enable = true;
       useTextGreeter = false;
       settings.default_session = {
-        command = greeterSession;
+        command = lib.mkIf (!config.programs.regreet.enable) greeterSession;
         user = "greeter";
       };
     };
@@ -103,6 +103,8 @@ in {
     };
 
     services.accounts-daemon.enable = true;
-    environment.systemPackages = [pkgs.nwg-hello config.stylix.cursor.package];
+    environment.systemPackages =
+      [config.stylix.cursor.package]
+      ++ lib.optional (!config.programs.regreet.enable) pkgs.nwg-hello;
   };
 }
