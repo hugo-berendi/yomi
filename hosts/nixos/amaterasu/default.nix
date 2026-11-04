@@ -23,6 +23,23 @@
   yomi.machine.interactible = true;
   yomi.wireless.enable = true;
 
+  # {{{ Fingerprint authentication
+  services.fprintd.enable = true;
+
+  # Root is rolled back at boot; fprintd's enrollment database must survive.
+  yomi.persistence.at.state.apps.fprintd.directories = [
+    {
+      directory = "/var/lib/fprint";
+      mode = "0700";
+    }
+  ];
+
+  # Hyprlock talks to fprintd directly so password entry can run in parallel.
+  # A second reader in PAM would compete for the same sensor.
+  security.pam.services.hyprlock.fprintAuth = false;
+  security.pam.services.sshd.fprintAuth = false;
+  # }}}
+
   # udev rules so the pilot can use the YubiKey as a FIDO2 SSH authenticator
   # (ssh-keygen -t ed25519-sk) without root. libfido2 ships its own rules;
   # openssh's built-in security-key support needs no separate provider.

@@ -68,6 +68,12 @@ in {
 
   home.sessionVariables.QT_SCREEN_SCALE_FACTORS = 1.4; # Bigger text in qt apps
 
+  programs.hyprlock.settings.auth.fingerprint = {
+    enabled = true;
+    ready_message = "Finger auf den Sensor legen";
+    present_message = "Fingerabdruck wird geprüft";
+  };
+
   # {{{ SSH identity
   # The YubiKey's resident FIDO2 key first, the old shared key as a fallback
   # until the sops/ZFS recovery path no longer depends on it.
