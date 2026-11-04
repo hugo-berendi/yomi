@@ -52,7 +52,7 @@ fail() {
 }
 
 new_rev=$(git ls-remote --tags "$repo" "refs/tags/v$latest" | cut -f1)
-old_rev=$(sed -n 's/^    rev = "\(.*\)";$/\1/p' "$memory")
+old_rev=$(sed -n '/= fetchFromGitHub {/,/};/s/^      rev = "\(.*\)";$/\1/p' "$memory")
 
 # Rebase the patch: replay it on the old tag, then cherry-pick that commit onto the new one.
 timeout 900 git clone --quiet "$repo" "$work/src" || fail "could not clone $repo"
@@ -71,8 +71,8 @@ hash_of() { sed -n 's/.*"hash": *"\([^"]*\)".*/\1/p'; }
 tarball_hash=$(nix store prefetch-file --json "$repo/releases/download/v$latest/t3-$latest-linux-x64.tar.gz" | hash_of)
 src_hash=$(nix store prefetch-file --json --unpack "$repo/archive/$new_rev.tar.gz" | hash_of)
 old_tarball_hash=$(sed -n 's/^        hash = "\(.*\)";$/\1/p' "$release")
-old_src_hash=$(sed -n '/= fetchFromGitHub {/,/};/s/^    hash = "\(.*\)";$/\1/p' "$memory")
-old_deps_hash=$(sed -n '/= fetchPnpmDeps {/,/};/s/^    hash = "\(.*\)";$/\1/p' "$memory")
+old_src_hash=$(sed -n '/= fetchFromGitHub {/,/};/s/^ *hash = "\(.*\)";$/\1/p' "$memory")
+old_deps_hash=$(sed -n '/= fetchPnpmDeps {/,/};/s/^ *hash = "\(.*\)";$/\1/p' "$memory")
 [[ -n $tarball_hash && -n $src_hash && -n $old_tarball_hash && -n $old_src_hash && -n $old_deps_hash ]] ||
 	fail "could not read or compute a hash"
 
