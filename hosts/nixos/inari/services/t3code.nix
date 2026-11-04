@@ -13,6 +13,10 @@
   package = import ../../../../pkgs/t3code-tools.nix {inherit pkgs inputs;};
 in {
   imports = [./t3code-vm ./t3code-oidc.nix ./t3code-repair.nix];
+  yomi.t3codeOidc = {
+    enable = true;
+    clientId = "2db66a5a-664a-4938-a2d1-15815ec7c1d2";
+  };
   yomi.t3codeVm = {
     enable = true;
     toolingPackage = package;
