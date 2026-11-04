@@ -25,7 +25,11 @@ in
       hash = "sha256-oQLmDCDuJPNBsf8MHMD2xhMq+CF6L836/PQesM91Clw=";
     };
 
-    patches = [./patches/t3code/shared-memory.patch];
+    patches = [
+      ./patches/t3code/shared-memory.patch
+      ./patches/t3code/pocket-id.patch
+      ./patches/t3code/repair-cli.patch
+    ];
     pnpmDeps = fetchPnpmDeps {
       inherit (final) pname version src patches;
       pnpm = pnpm_12;
@@ -47,6 +51,19 @@ in
       export PATH="$PWD/node_modules/.bin:$PATH"
       node apps/server/scripts/cli.ts build-exe
       runHook postBuild
+    '';
+    doCheck = true;
+    checkPhase = ''
+      runHook preCheck
+      (cd apps/server && pnpm exec vp test run src/auth/OidcLogin.test.ts src/http.test.ts src/auth/http.test.ts src/cli/thread.test.ts)
+      apps/server/dist-exe/t3 thread start --help > thread-help.txt
+      for flag in --reasoning-effort --runtime-mode; do
+        if ! grep -q -- "$flag" thread-help.txt; then
+          echo "Missing repair CLI flag: $flag" >&2
+          exit 1
+        fi
+      done
+      runHook postCheck
     '';
     installPhase = ''
       mkdir -p "$out/bin"

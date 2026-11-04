@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 # Bump t3code to the latest stable release.
 #
-# Three files move together: pkgs/t3code-release.nix (the release tarball),
+# The release, source pin and patch series move together:
+# pkgs/t3code-release.nix (the release tarball),
 # pkgs/t3code-memory.nix (the memory server, built from source with our patch;
 # the release build asserts the two versions match) and
-# pkgs/patches/t3code/shared-memory.patch, which has to be rebased onto every
+# pkgs/patches/t3code/*.patch, which have to be rebased onto every
 # new tag. Git's 3-way merge does the rebase. If it conflicts, or anything fails
-# to build, the three paths are restored and the script exits non-zero, so the
-# job carries on without a t3code change and a human rebases the patch.
+# to build, all paths are restored and the script exits non-zero. The workflow
+# continues the other updates and asks a T3 repair session to fix the failure.
 #
 # A changed patch is not a hash or version bump, so update-gate.py refuses it
 # and the PR waits for review. A bump that leaves the patch byte-identical
@@ -17,7 +18,7 @@ set -euo pipefail
 repo=https://github.com/pingdotgg/t3code
 release=pkgs/t3code-release.nix
 memory=pkgs/t3code-memory.nix
-patch=pkgs/patches/t3code/shared-memory.patch
+patches=(pkgs/patches/t3code/shared-memory.patch pkgs/patches/t3code/pocket-id.patch pkgs/patches/t3code/repair-cli.patch)
 fake=sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
 
 current=$(sed -n 's/^  version = "\(.*\)";$/\1/p' "$release" | head -1)
@@ -39,11 +40,11 @@ echo "t3code $current -> $latest"
 
 work=$(mktemp -d)
 # Any exit that is not a finished update, including a failing command under set -e,
-# puts the three files back.
+# restores the release, source pin and entire patch series.
 succeeded=false
 finish() {
 	rm -rf "$work"
-	$succeeded || git checkout -- "$release" "$memory" "$patch"
+	$succeeded || git checkout -- "$release" "$memory" "${patches[@]}"
 }
 trap finish EXIT
 fail() {
@@ -57,14 +58,24 @@ old_rev=$(sed -n '/= fetchFromGitHub {/,/};/s/^      rev = "\(.*\)";$/\1/p' "$me
 # Rebase the patch: replay it on the old tag, then cherry-pick that commit onto the new one.
 timeout 900 git clone --quiet "$repo" "$work/src" || fail "could not clone $repo"
 git_in() { git -C "$work/src" -c user.name=ci -c user.email=ci@localhost "$@"; }
+# Replay each patch in order, then regenerate the same separate series on the new tag.
+commits=()
 git_in checkout --quiet --force "$old_rev"
-git_in apply --index "$PWD/$patch"
-git_in commit --quiet -m "shared memory"
-patch_commit=$(git_in rev-parse HEAD)
+for patch in "${patches[@]}"; do
+	git_in apply --index "$PWD/$patch"
+	git_in commit --quiet -m "$(basename "$patch" .patch)"
+	commits+=("$(git_in rev-parse HEAD)")
+done
 git_in checkout --quiet --force "$new_rev"
-git_in cherry-pick --no-commit "$patch_commit" >/dev/null 2>&1 || fail "the shared-memory patch no longer merges cleanly"
-git_in diff --cached "$new_rev" >"$work/new.patch"
-cp "$work/new.patch" "$patch"
+for i in "${!patches[@]}"; do
+	before=$(git_in rev-parse HEAD)
+	git_in cherry-pick "${commits[$i]}" >/dev/null 2>&1 || fail "${patches[$i]} no longer merges cleanly"
+	git_in diff "$before" HEAD >"$work/$i.patch"
+done
+# Do not replace any patch until the complete series has rebased.
+for i in "${!patches[@]}"; do
+	cp "$work/$i.patch" "${patches[$i]}"
+done
 
 # Hashes. nix prints the correct pnpm dependency hash when given a wrong one.
 hash_of() { sed -n 's/.*"hash": *"\([^"]*\)".*/\1/p'; }

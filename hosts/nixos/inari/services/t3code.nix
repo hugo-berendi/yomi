@@ -12,7 +12,7 @@
   forgeClis = [upkgs.forgejo-cli upkgs.tea];
   package = import ../../../../pkgs/t3code-tools.nix {inherit pkgs inputs;};
 in {
-  imports = [./t3code-vm];
+  imports = [./t3code-vm ./t3code-oidc.nix];
   yomi.t3codeVm = {
     enable = true;
     toolingPackage = package;
