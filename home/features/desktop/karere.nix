@@ -1,5 +1,6 @@
 {
   config,
+  lib,
   pkgs,
   ...
 }: let
@@ -11,9 +12,28 @@
   # follows the stylix gtk target, but the page styles itself and karere has
   # no way to add CSS to it. The patch loads ~/.config/karere/user.css as a
   # WebKit user stylesheet; without the file it does nothing.
-  karere = pkgs.karere.overrideAttrs (old: {
+  themedKarere = pkgs.karere.overrideAttrs (old: {
     patches = (old.patches or []) ++ [./karere-user-css.patch];
   });
+
+  # WebKit can miss the media plugins via GST_PLUGIN_SYSTEM_PATH_1_0 alone.
+  # Keep the workaround local to Karere: https://github.com/NixOS/nixpkgs/issues/539711
+  karere = pkgs.symlinkJoin {
+    name = "karere-${themedKarere.version}";
+    paths = [themedKarere];
+    nativeBuildInputs = [pkgs.makeBinaryWrapper];
+    postBuild = ''
+      wrapProgram "$out/bin/karere" \
+        --prefix GST_PLUGIN_PATH_1_0 : "${lib.makeSearchPathOutput "out" "lib/gstreamer-1.0" (with pkgs.gst_all_1; [
+        gstreamer
+        gst-plugins-base
+        gst-plugins-good
+        gst-plugins-bad
+        gst-libav
+      ])}"
+    '';
+    inherit (themedKarere) meta;
+  };
 in {
   # {{{ Package
   home.packages = [karere];
