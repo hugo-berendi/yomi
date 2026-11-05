@@ -11,6 +11,8 @@
     if useV2
     then inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.opencode2
     else inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.opencode;
+  # opencode2 ships only bin/opencode2, so `command opencode` finds nothing on inari.
+  opencodeExe = lib.getExe opencodePackage;
   attachCommand =
     if useV2
     then "--server"
@@ -147,9 +149,9 @@ in {
   programs.bash.initExtra = ''
     opencode() {
       if [ "$#" -eq 0 ]; then
-        command opencode ${attachCommand} ${opencodeAttachUrl}
+        ${opencodeExe} ${attachCommand} ${opencodeAttachUrl}
       else
-        command opencode "$@"
+        ${opencodeExe} "$@"
       fi
     }
   '';
@@ -157,9 +159,9 @@ in {
   programs.fish.interactiveShellInit = ''
     function opencode
       if test (count $argv) -eq 0
-        command opencode ${attachCommand} ${opencodeAttachUrl}
+        ${opencodeExe} ${attachCommand} ${opencodeAttachUrl}
       else
-        command opencode $argv
+        ${opencodeExe} $argv
       end
     end
   '';
