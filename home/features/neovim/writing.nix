@@ -1,5 +1,37 @@
-{pkgs, ...}: {
+{
+  lib,
+  pkgs,
+  ...
+}: let
+  texcount = lib.getExe' pkgs.texlivePackages.texcount "texcount";
+in {
   programs.nvf.settings.vim = {
+    # Word count of the current TeX file in the statusline (filled by the autocmd below).
+    # Added at runtime: defining setupOpts.sections.lualine_x in Nix would replace
+    # nvf's default entries instead of extending them.
+    luaConfigRC.texcount-statusline = {
+      after = ["pluginConfigs" "lazyConfigs"];
+      before = [];
+      data = ''
+        do
+        	local ok, lualine = pcall(require, "lualine")
+        	if ok then
+        		local config = lualine.get_config()
+        		table.insert(config.sections.lualine_x, 1, {
+        			function()
+        				return vim.b.texcount_words or ""
+        			end,
+        			cond = function()
+        				return vim.bo.filetype == "tex"
+        			end,
+        			icon = "󰈭",
+        		})
+        		lualine.setup(config)
+        	end
+        end
+      '';
+    };
+
     globals = {
       vimtex_compiler_method = "latexmk";
       vimtex_compiler_latexmk = {
@@ -76,6 +108,38 @@
           '';
         };
         desc = "Start continuous LaTeX compilation";
+      }
+      {
+        # Runs texcount asynchronously and caches the count for the statusline.
+        # Only this file's running text is counted (no \input files, no headings).
+        event = ["BufReadPost" "BufWritePost"];
+        pattern = ["*.tex"];
+        callback = {
+          _type = "lua-inline";
+          expr = ''
+            function(args)
+            	local file = vim.api.nvim_buf_get_name(args.buf)
+            	if file == "" then
+            		return
+            	end
+            	vim.system({ "${texcount}", "-1", "-utf8", "-nosub", file }, { text = true }, function(result)
+            		local words = result.code == 0 and (result.stdout or ""):match("^(%d+)")
+            		if not words then
+            			return
+            		end
+            		vim.schedule(function()
+            			if vim.api.nvim_buf_is_valid(args.buf) then
+            				vim.b[args.buf].texcount_words = words .. " Wörter"
+            				pcall(function()
+            					require("lualine").refresh()
+            				end)
+            			end
+            		end)
+            	end)
+            end
+          '';
+        };
+        desc = "Count words in TeX files for the statusline";
       }
       {
         # Opt-in per repository through a `.autocommit` file at its root, so the
