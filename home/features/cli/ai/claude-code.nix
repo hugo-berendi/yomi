@@ -25,11 +25,12 @@
       ANTHROPIC_FOUNDRY_API_KEY="$(cat "$key_file")"
       export ANTHROPIC_FOUNDRY_API_KEY
       export ANTHROPIC_MODEL=claude-opus-5-5
-      # Only Opus is deployed here; aliases must not select absent deployments.
-      export ANTHROPIC_DEFAULT_OPUS_MODEL="$ANTHROPIC_MODEL"
-      export ANTHROPIC_DEFAULT_SONNET_MODEL="$ANTHROPIC_MODEL"
-      export ANTHROPIC_DEFAULT_HAIKU_MODEL="$ANTHROPIC_MODEL"
-      export ANTHROPIC_SMALL_FAST_MODEL="$ANTHROPIC_MODEL"
+      # Foundry deployment names, not Anthropic ids. Every alias must name a
+      # deployment that exists, or subagents and background calls 404.
+      export ANTHROPIC_DEFAULT_OPUS_MODEL=claude-opus-5-5
+      export ANTHROPIC_DEFAULT_SONNET_MODEL=claude-sonnet-5-5
+      export ANTHROPIC_DEFAULT_HAIKU_MODEL=claude-haiku-5-5
+      export ANTHROPIC_SMALL_FAST_MODEL="$ANTHROPIC_DEFAULT_HAIKU_MODEL"
       exec ${lib.getExe claudeCode} "$@"
     '';
   };
