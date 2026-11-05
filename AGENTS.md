@@ -228,6 +228,34 @@ Names vary between harnesses and some sessions offer none of these. Match agains
 
 ## Agent Workflow
 
+### Regression lessons from local threads
+
+Behavioral cases and source evidence live in `evals/agent-reliability/README.md`.
+The shared global policy is maintained in
+`home/features/cli/ai/agent-reliability-policy.md`; `skills.nix` installs it.
+
+- Use `nix develop -c just ...` when `just` is absent from the harness PATH.
+  Inspect a missing test wrapper's dependencies before retrying its implementation.
+  Keep heavy tests in the managed environment; report an unavailable route.
+- Flake inputs are not automatically outputs: inspect pinned inputs with
+  `builtins.getFlake` or supported metadata. `filterAttrs` belongs to `lib`, not
+  `builtins`. Inspect real derivation attributes/passthru before overriding them.
+  Derive module conditions from independent options, avoiding self-reference in
+  freeform settings. Evaluate narrow values and separate baseline errors.
+- Verify generated files with their consumer: greeter desktop-entry parsing,
+  wlogout's object-stream format, installed Zathura options, Hyprland's active
+  bindings and effective window identity. A Nix evaluation cannot establish these.
+  Find state paths through the real launcher, including `NVIM_APPNAME`.
+- Compare identical authenticated requests locally and through the proxy before
+  changing credentials or networking. Check mounts when persisted directories
+  can hide generated configuration. Do not infer linkage from a missing patch hook.
+- Stage specific new files for flake visibility; `git add -A` can capture another
+  logical change. Preserve signed-commit requirements and omit agent co-author
+  trailers. Read rebase state before retrying after a signing timeout.
+- For runtime diagnosis, use exact owned PIDs and account for inherited
+  `ELECTRON_RUN_AS_NODE`. Do not disconnect a live call or close the user's windows
+  as an incidental test. A permission error from `kill -0` does not mean exited.
+
 1. `hostname`, then `git status -sb` and `git log --oneline -10` — know where you are and what changed
 2. Read your harness's skill list and route the task (see above) before choosing a method by hand
 3. Search nixos MCP for packages/options; check neighbouring modules for the local pattern

@@ -15,6 +15,8 @@
     available tools. The user's instructions take precedence over skill guidance.
 
     ${builtins.readFile ./linux-test-policy.txt}
+
+    ${builtins.readFile ./agent-reliability-policy.md}
   '';
 in {
   imports = [inputs.skills.homeModules.default];

@@ -1,0 +1,26 @@
+{
+  "capturedAt": "2026-11-05T14:24:31.098Z",
+  "excludedThread": "d5bf051b-b43d-4448-955e-2806d14c8272",
+  "threads": 63,
+  "listedNondeleted": 62,
+  "deletedLocalRecords": 1,
+  "historicalItems": 3712,
+  "legacyActivityRows": 5046,
+  "failureRecords": 126,
+  "v2Failures": 56,
+  "legacyToolFailures": 38,
+  "legacyTaskAndRuntimeFailures": 32,
+  "duplicateTaskNotifications": 20,
+  "candidateSignals": 359,
+  "categories": {
+    "missing_path_or_expected_absence": 18,
+    "missing_tool_or_environment": 15,
+    "needs_context": 50,
+    "provider_or_quota": 16,
+    "signing": 12,
+    "ambiguous_edit_anchor": 2,
+    "nix_evaluation": 8,
+    "script_or_quoting": 2,
+    "git_state": 3
+  }
+}

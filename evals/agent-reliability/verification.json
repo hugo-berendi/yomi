@@ -1,0 +1,30 @@
+{
+  "checkedAt": "2026-11-05T14:29:52.970Z",
+  "caseCount": 39,
+  "requiredCriteria": 117,
+  "datasetValidation": "passed",
+  "rubricAggregationControls": "passed; synthetic verdicts only",
+  "baselineUpdatedExportContract": "passed",
+  "sourceReferences": "all resolved against v2 and legacy retained records",
+  "policyInstaller": "existing test and temporary-home repeat install passed; preferences and permissions retained",
+  "nixIntegration": "nix-instantiate --parse passed; no host evaluation/build or activation",
+  "scopedDiffChecks": "passed",
+  "unrestrictedDiffCheck": "failed in concurrent home/features/neovim/writing.nix; left unchanged",
+  "modelBenchmark": "not run; no measured improvement claim",
+  "chartPreview": "host browser libraries missing; html_render delivered chart",
+  "redactionSpotCheck": "no matches for checked private-key/admin-token signatures; not a guarantee of complete redaction",
+  "seminarAutosave": "existing workflow captured AGENTS change in de40317; audit invoked no commit",
+  "unsignedCommitFollowup": {
+    "authorization": "User explicitly requested: use unsigned",
+    "dryBuild": {
+      "command": "nix develop -c just nixos-rebuild dry-build amaterasu",
+      "exitCode": 0,
+      "scope": "Current working tree, including concurrent Neovim edits; no system activation",
+      "warnings": [
+        "Untrusted/restricted Nix cache settings",
+        "SSH host keys not pinned for amaterasu, iso, tsukuyomi, wsl-work"
+      ]
+    },
+    "commitScope": "Audit files only; per-command signing override; no persistent signing-setting change"
+  }
+}

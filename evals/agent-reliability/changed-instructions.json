@@ -1,0 +1,65 @@
+{
+  "capturedAt": "2026-11-05T14:29:02.727Z",
+  "files": [
+    {
+      "path": "/home/hugob/.codex/AGENTS.md",
+      "realPath": "/home/hugob/.codex/AGENTS.md",
+      "sha256": "b1141b2c15c0c19e90be82e78f9db54c56e8563149aac42f5e954b7ecb04c7ae",
+      "mode": "644"
+    },
+    {
+      "path": "/home/hugob/.claude/CLAUDE.md",
+      "realPath": "/home/hugob/.claude/CLAUDE.md",
+      "sha256": "a18db66726e1a25fb4b5d0f1443b45919ab464459e4ce29cfe4d09fd365c26a6",
+      "mode": "644"
+    },
+    {
+      "path": "/home/hugob/.config/opencode/AGENTS.md",
+      "realPath": "/home/hugob/.config/opencode/AGENTS.md",
+      "sha256": "4bd59ec16d6081c02fa056d0c66a5b7603ba419b28df91664b955366e54ed2cb",
+      "mode": "644"
+    },
+    {
+      "path": "/home/hugob/projects/yomi/AGENTS.md",
+      "realPath": "/home/hugob/projects/yomi/AGENTS.md",
+      "sha256": "ccc70b6b54e5cecba4fba9e1ad33ca6cc5f5a37b9a41149ddb64d2f0899013e8",
+      "mode": "644"
+    },
+    {
+      "path": "/home/hugob/projects/website-astro/AGENTS.md",
+      "realPath": "/home/hugob/projects/website-astro/AGENTS.md",
+      "sha256": "266f2facaf27b0a51945765ecf442eba871e522d15b7c898bae8685e3fe42f02",
+      "mode": "644"
+    },
+    {
+      "path": "/home/hugob/projects/w-seminar/AGENTS.md",
+      "realPath": "/home/hugob/projects/w-seminar/AGENTS.md",
+      "sha256": "71ecc98010e5e8ce0aa5a4b19788fd1a85b71b001da11b13638952950d6f8386",
+      "mode": "644"
+    },
+    {
+      "path": "/home/hugob/projects/carpool-planer/AGENTS.md",
+      "realPath": "/home/hugob/projects/carpool-planer/AGENTS.md",
+      "sha256": "0de43f1a5f3332b014ad021bc16c89112bbef0fc12a805dc3ceea7d05a31171a",
+      "mode": "644"
+    },
+    {
+      "path": "/home/hugob/projects/yomi/CLAUDE.md",
+      "realPath": "/home/hugob/projects/yomi/AGENTS.md",
+      "sha256": "ccc70b6b54e5cecba4fba9e1ad33ca6cc5f5a37b9a41149ddb64d2f0899013e8",
+      "mode": "644"
+    },
+    {
+      "path": "/home/hugob/projects/yomi/home/features/cli/ai/skills.nix",
+      "realPath": "/home/hugob/projects/yomi/home/features/cli/ai/skills.nix",
+      "sha256": "a0a0dd8c5f8c35895c6bfa7647ea40af2ccfddfcaa6f98779c747d5e025a2acd",
+      "mode": "644"
+    },
+    {
+      "path": "/home/hugob/projects/yomi/home/features/cli/ai/agent-reliability-policy.md",
+      "realPath": "/home/hugob/projects/yomi/home/features/cli/ai/agent-reliability-policy.md",
+      "sha256": "51109c07aad772fa485241adbe567f5302a1017fd1ee80197967927ac5cbcd8e",
+      "mode": "644"
+    }
+  ]
+}
