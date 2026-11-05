@@ -93,6 +93,7 @@ in {
     ./commands.nix
     ./agents.nix
     ./watcher.nix
+    ./foundry.nix
   ];
 
   home.packages = formatterPackages;

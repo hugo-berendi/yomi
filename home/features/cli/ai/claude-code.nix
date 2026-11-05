@@ -5,12 +5,13 @@
   inputs,
   ...
 }: let
+  foundryResource = import ./foundry.nix;
   claudeCode = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.claude-code;
   foundry = pkgs.writeShellApplication {
     name = "claude-foundry";
     runtimeInputs = [pkgs.coreutils];
     text = ''
-      key_file="${config.home.homeDirectory}/.claude/foundry-api-key"
+      key_file="${config.home.homeDirectory}/${foundryResource.keyFile}"
       if [[ ! -s "$key_file" ]]; then
         echo "Foundry API key missing: $key_file" >&2
         exit 1
@@ -20,7 +21,7 @@
       unset ANTHROPIC_FOUNDRY_AUTH_TOKEN ANTHROPIC_FOUNDRY_BASE_URL
       unset CLAUDE_CODE_USE_BEDROCK CLAUDE_CODE_USE_VERTEX
       export CLAUDE_CODE_USE_FOUNDRY=1
-      export ANTHROPIC_FOUNDRY_RESOURCE=website-astro-ai-resource
+      export ANTHROPIC_FOUNDRY_RESOURCE=${foundryResource.resource}
       ANTHROPIC_FOUNDRY_API_KEY="$(cat "$key_file")"
       export ANTHROPIC_FOUNDRY_API_KEY
       export ANTHROPIC_MODEL=claude-opus-5-5
