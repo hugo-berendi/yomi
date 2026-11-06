@@ -17,6 +17,11 @@ in {
     };
   in
     builtins.map assertProperToUsage cfg.records
+    ++ builtins.map (r: {
+      assertion = r.type != "ALIAS" || r.at == "";
+      message = "The ALIAS record at ${r.at}.${r.zone} is not at the apex; use CNAME below the apex.";
+    })
+    cfg.records
     ++ (import ./validate-records.nix {
       inherit lib;
       inherit (cfg) records;

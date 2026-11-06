@@ -27,6 +27,25 @@
       enableAnubis = true;
     };
   };
+  # A tunnel endpoint on the apex of a zone yomi does not otherwise use, so it
+  # cannot collide with the real homepage endpoint.
+  apexTunnel = extend {
+    yomi.cloudflared.at.apex-fixture = {
+      subdomain = "";
+      host = "example.org";
+      dns.zone = "example.org";
+      port = 19202;
+    };
+  };
+  misplacedAlias = extend {
+    yomi.dns.records = [
+      {
+        at = "www";
+        type = "ALIAS";
+        value = "target.example.org.";
+      }
+    ];
+  };
   disabled = extend ({lib, ...}: {yomi.nginx.enable = lib.mkForce false;});
   mismatch = extend {
     yomi.nginx.at.fixture = {
@@ -146,6 +165,9 @@
       (check "derived port collision rejected" (!valid collision))
       (check "derived port overflow rejected" (!(builtins.tryEval (builtins.deepSeq overflow.yomi.ports true)).success))
       (check "DNS apex normalized" ((builtins.head apex).at == ""))
+      (check "apex tunnel endpoint publishes an ALIAS" (lib.any (r: r.zone == "example.org" && r.at == "" && r.type == "ALIAS" && r.enableCloudflareProxy) apexTunnel.yomi.dns.records && valid apexTunnel))
+      (check "subdomain tunnel endpoint still publishes a CNAME" (lib.any (r: r.at == "bin" && r.type == "CNAME" && r.enableCloudflareProxy) base.config.yomi.dns.records))
+      (check "ALIAS below the apex rejected" (!valid misplacedAlias))
       (check "CNAME coexistence rejected" (!(lib.all (a: a.assertion) dnsChecks)))
       (check "custom backup prerequisites ordered" (lib.elem "fixture-dump.service" backups.systemd.services.restic-backups-fixture.after && lib.elem "fixture-dump.service" backups.systemd.services.restic-backups-fixture.requires))
       (check "disabled backup omitted" (!(backups.services.restic.backups ? disabled-fixture)))

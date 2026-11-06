@@ -41,9 +41,10 @@ in {
                   "AAAA"
                   "TXT"
                   "CNAME"
+                  "ALIAS"
                   "MX"
                 ];
-                description = "The type of the DNS record";
+                description = "The type of the DNS record. ALIAS is only valid at the zone apex, where it stands in for the CNAME the DNS standard forbids there; Cloudflare publishes it as a flattened root CNAME.";
               };
 
               to = lib.mkOption {

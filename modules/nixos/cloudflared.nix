@@ -134,7 +134,12 @@ in {
     enabled);
 
     yomi.dns.records = lib.mapAttrsToList (_: e: {
-      type = "CNAME";
+      # A CNAME at the zone apex is invalid; octodns publishes ALIAS at Cloudflare
+      # as a flattened root CNAME, which can sit beside the apex MX and TXT.
+      type =
+        if e.dns.name == ""
+        then "ALIAS"
+        else "CNAME";
       at = e.dns.name;
       zone = e.dns.zone;
       value = "${cfg.tunnel}.cfargotunnel.com.";
