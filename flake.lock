@@ -473,11 +473,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1793930618,
-        "narHash": "sha256-7b5qz2EFc3jbqSGqXE0JQeDePckaSPI7IIEWnBq3I70=",
+        "lastModified": 1793931385,
+        "narHash": "sha256-4NszA6J44vXfsJq9x1H34mBqHuWlPHpVSOC6Bn1QsZE=",
         "ref": "refs/heads/main",
-        "rev": "5e76084a30925af62bb59858dc6495ec203baeef",
-        "revCount": 42,
+        "rev": "cfff45ff4b141f6394bfad162609dfe3f76263e4",
+        "revCount": 44,
         "type": "git",
         "url": "https://git.hugo-berendi.de/hugo-berendi/hugo-berendi.de.git"
       },
