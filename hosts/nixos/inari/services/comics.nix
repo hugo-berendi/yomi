@@ -6,6 +6,7 @@
 }: let
   comicDir = "/raid5pool/media/comics";
   port = config.yomi.nginx.at.suwayomi.port;
+  webviewDisplay = ":99";
 in {
   yomi.nginx.at.suwayomi.port = config.yomi.ports.suwayomi;
 
@@ -77,6 +78,28 @@ in {
     stdenv.cc.cc.lib
     systemd
   ]);
+
+  # With the libraries in place Chromium then stopped at "Missing X server or
+  # $DISPLAY": even the off-screen WebView needs an X display. The upstream Docker
+  # image starts Xvfb the same way before launching the server.
+  systemd.services.suwayomi-xvfb = {
+    description = "Virtual X display for the Suwayomi WebView";
+    before = ["suwayomi-server.service"];
+    serviceConfig = {
+      User = config.services.suwayomi-server.user;
+      Group = config.services.suwayomi-server.group;
+      ExecStart = "${pkgs.xvfb}/bin/Xvfb ${webviewDisplay} -screen 0 1280x1024x24 -nolisten tcp";
+      # Xvfb reports readiness only by accepting connections; wait for its socket.
+      ExecStartPost = "${pkgs.bash}/bin/bash -c 'for _ in $(seq 100); do [ -S /tmp/.X11-unix/X${lib.removePrefix ":" webviewDisplay} ] && exit 0; sleep 0.1; done; exit 1'";
+      Restart = "on-failure";
+    };
+  };
+
+  systemd.services.suwayomi-server = {
+    requires = ["suwayomi-xvfb.service"];
+    after = ["suwayomi-xvfb.service"];
+    environment.DISPLAY = webviewDisplay;
+  };
   # }}}
 
   # {{{ Storage
