@@ -1,5 +1,6 @@
 {
   config,
+  lib,
   pkgs,
   ...
 }: let
@@ -40,6 +41,43 @@ in {
       };
     };
   };
+
+  # {{{ WebView
+  # Suwayomi downloads a prebuilt Chromium (KCEF) into bin/kcef on first use. Its
+  # libjcef.so links against system libraries NixOS has no global copy of, so the
+  # WebView died with an UnsatisfiedLinkError (libcups, libcairo, libpango, libXtst
+  # reported missing by `ldd`). The WebView is how a site login, such as Asura
+  # premium, reaches the extensions' cookie jar. cef_server itself runs via nix-ld.
+  systemd.services.suwayomi-server.environment.LD_LIBRARY_PATH = lib.makeLibraryPath (with pkgs; [
+    alsa-lib
+    at-spi2-atk
+    at-spi2-core
+    atk
+    cairo
+    cups
+    dbus
+    expat
+    glib
+    libdrm
+    libgbm
+    libx11
+    libxcb
+    libxcomposite
+    libxdamage
+    libxext
+    libxfixes
+    libxi
+    libxkbcommon
+    libxrandr
+    libxrender
+    libxtst
+    nspr
+    nss
+    pango
+    stdenv.cc.cc.lib
+    systemd
+  ]);
+  # }}}
 
   # {{{ Storage
   systemd.tmpfiles.rules = let
