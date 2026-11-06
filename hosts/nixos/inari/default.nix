@@ -70,6 +70,7 @@
       ./services/cliproxyapi.nix
       ./services/changedetection.nix
       ./services/actual
+      ./services/hugo-berendi-de.nix
     ]
     # The wizard saves hardware choices alongside the restored checkout.
     ++ lib.optional (builtins.pathExists ./recovery-local.nix) ./recovery-local.nix;

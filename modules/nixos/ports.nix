@@ -114,6 +114,7 @@
     t3code-vm-tunnel = lib.mkDefault 8511;
     actual = lib.mkDefault 8512;
     actual-bridge = lib.mkDefault 8513;
+    hugo-berendi-de = lib.mkDefault 8514;
   };
   # }}}
 }
