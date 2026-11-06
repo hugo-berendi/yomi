@@ -53,6 +53,11 @@
 
     t3code-nix.url = "git+https://git.hugo-berendi.de/hugo-berendi/t3code-nix.git";
 
+    # No `inputs.nixpkgs.follows` on purpose: the site's node_modules is a
+    # fixed-output derivation whose hash depends on the bun from the site's own
+    # pinned nixpkgs, so following ours would break that hash.
+    hugo-berendi-de.url = "git+https://git.hugo-berendi.de/hugo-berendi/hugo-berendi.de.git";
+
     llm-agents.url = "github:numtide/llm-agents.nix";
     mcp-nixos = {
       url = "github:utensils/mcp-nixos";
