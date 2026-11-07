@@ -53,6 +53,10 @@
 
     t3code-nix.url = "git+https://git.hugo-berendi.de/hugo-berendi/t3code-nix.git";
 
+    nixtop.url = "git+https://git.hugo-berendi.de/hugo-berendi/nixtop.git";
+    nixtop.inputs.nixpkgs.follows = "nixpkgs";
+    nixtop.inputs.rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
+
     # No `inputs.nixpkgs.follows` on purpose: the site's node_modules is a
     # fixed-output derivation whose hash depends on the bun from the site's own
     # pinned nixpkgs, so following ours would break that hash.

@@ -18,6 +18,7 @@
     ./lazygit.nix
     ./cava.nix
     ./hyfetch.nix
+    ./nixtop.nix
     ./rbw.nix
     ./1password.nix
     ./ai
