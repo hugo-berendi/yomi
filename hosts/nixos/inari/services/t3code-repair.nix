@@ -22,6 +22,7 @@
       --remote forgejo@ssh.git.hugo-berendi.de:hugo-berendi/yomi.git \
       --t3code-remote forgejo@ssh.git.hugo-berendi.de:hugo-berendi/t3code-nix.git \
       --forgejo https://git.hugo-berendi.de \
+      --forgejo-api http://127.0.0.1:${toString config.services.forgejo.settings.server.HTTP_PORT} \
       --state-dir ${home}/.local/state/t3code-package-repair \
       --t3-base-dir ${home}/.t3
   '';

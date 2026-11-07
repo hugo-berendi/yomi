@@ -190,7 +190,14 @@ def select_repository(args, request):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    for name in ("repository", "remote", "forgejo", "state-dir", "t3-base-dir"):
+    for name in (
+        "repository",
+        "remote",
+        "forgejo",
+        "forgejo-api",
+        "state-dir",
+        "t3-base-dir",
+    ):
         parser.add_argument(f"--{name}", required=True)
     parser.add_argument("--t3code-remote")
     args = parser.parse_args()
@@ -210,7 +217,7 @@ def main():
         pulls = []
         page = 1
         while True:
-            url = f"{args.forgejo}/api/v1/repos/{args.repository}/pulls?state=open&limit=50&page={page}"
+            url = f"{args.forgejo_api}/api/v1/repos/{args.repository}/pulls?state=open&limit=50&page={page}"
             with urlopen(url, timeout=30) as response:
                 batch = json.load(response)
             if not batch:
