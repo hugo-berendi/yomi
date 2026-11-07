@@ -5,6 +5,15 @@
   ...
 }: let
   vicinae = lib.getExe config.programs.vicinae.package;
+  nixtop = lib.getExe config.programs.nixtop.package;
+  # A bar value whose hover tooltip is the nixtop panel; a click toggles the
+  # interactive panel as a pyprland scratchpad (see hyprland/default.nix).
+  nixtopModule = panel: format: {
+    exec = "${nixtop} --waybar ${panel} --interval 2000";
+    return-type = "json";
+    inherit format;
+    on-click = "pypr toggle nixtop-${panel}";
+  };
 in {
   imports = [./style.nix];
 
@@ -43,8 +52,9 @@ in {
         "network"
         "bluetooth"
         "pulseaudio"
-        "cpu"
-        "memory"
+        "custom/nixtop-nix"
+        "custom/nixtop-cpu"
+        "custom/nixtop-memory"
         "battery"
         "custom/notifications"
         "custom/power"
@@ -152,17 +162,9 @@ in {
         on-click-right = "${lib.getExe' pkgs.pulseaudio "pactl"} set-sink-mute @DEFAULT_SINK@ toggle";
       };
 
-      cpu = {
-        interval = 5;
-        format = "  {usage}%";
-        tooltip = false;
-      };
-
-      memory = {
-        interval = 5;
-        format = "  {percentage}%";
-        tooltip-format = "{used:0.1f} GiB of {total:0.1f} GiB";
-      };
+      "custom/nixtop-nix" = nixtopModule "nix" "󱄅  {}";
+      "custom/nixtop-cpu" = nixtopModule "cpu" "  {}";
+      "custom/nixtop-memory" = nixtopModule "memory" "  {}";
 
       battery = {
         interval = 10;

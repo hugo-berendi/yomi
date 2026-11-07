@@ -387,6 +387,31 @@ in {
         size = "20% 90%"
         unfocus = "hide"
         lazy = true
+
+      # nixtop panels, toggled by clicking their Waybar modules.
+      [scratchpads.nixtop-nix]
+        animation = "fromTop"
+        command = "foot -a nixtop-nix nixtop --panel nix"
+        class = "nixtop-nix"
+        size = "45% 30%"
+        unfocus = "hide"
+        lazy = true
+
+      [scratchpads.nixtop-cpu]
+        animation = "fromTop"
+        command = "foot -a nixtop-cpu nixtop --panel cpu"
+        class = "nixtop-cpu"
+        size = "50% 35%"
+        unfocus = "hide"
+        lazy = true
+
+      [scratchpads.nixtop-memory]
+        animation = "fromTop"
+        command = "foot -a nixtop-memory nixtop --panel memory"
+        class = "nixtop-memory"
+        size = "40% 30%"
+        unfocus = "hide"
+        lazy = true
     '';
   # }}}
 }

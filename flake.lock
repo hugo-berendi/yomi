@@ -1232,11 +1232,11 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1794009863,
-        "narHash": "sha256-Q0lEN4BE6eTg4WBN8SzFQ+9NlWCoMX7bAnNkPgYHh5g=",
+        "lastModified": 1794046928,
+        "narHash": "sha256-OCWJJ84iUGWy/0jv4CFy+3uTyJQ72IDwu7gSFv+8Nug=",
         "ref": "refs/heads/main",
-        "rev": "4c250fd125438a763b8cd613275f9a275e71242a",
-        "revCount": 32,
+        "rev": "01f1f5a26539085372c1da04fe4db054ef3f2f7e",
+        "revCount": 33,
         "type": "git",
         "url": "https://git.hugo-berendi.de/hugo-berendi/nixtop.git"
       },

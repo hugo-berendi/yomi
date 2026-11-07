@@ -35,8 +35,9 @@ in {
     #network,
     #bluetooth,
     #pulseaudio,
-    #cpu,
-    #memory,
+    #custom-nixtop-nix,
+    #custom-nixtop-cpu,
+    #custom-nixtop-memory,
     #battery,
     #custom-notifications,
     #custom-power {
@@ -94,10 +95,23 @@ in {
       color: ${shell.palette.info};
     }
 
+    #custom-nixtop-nix.building {
+      color: ${shell.palette.info};
+    }
+
+    #custom-nixtop-nix {
+      color: ${shell.palette.secondary};
+    }
+
+    #custom-nixtop-nix.reboot,
+    #custom-nixtop-cpu.warn,
+    #custom-nixtop-memory.warn,
     #battery.warning {
       color: ${shell.palette.attention};
     }
 
+    #custom-nixtop-cpu.crit,
+    #custom-nixtop-memory.crit,
     #battery.critical {
       color: ${shell.palette.critical};
     }
@@ -109,6 +123,9 @@ in {
     #network:hover,
     #bluetooth:hover,
     #pulseaudio:hover,
+    #custom-nixtop-nix:hover,
+    #custom-nixtop-cpu:hover,
+    #custom-nixtop-memory:hover,
     #custom-notifications:hover,
     #custom-power:hover {
       color: ${shell.palette.textStrong};
