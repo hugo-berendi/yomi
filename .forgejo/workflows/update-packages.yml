@@ -48,7 +48,10 @@ jobs:
         run: |
           for pkg in cliproxyapi-copilot-plugin helium pelican-wings suwayomi-server; do
             echo "::group::nix-update $pkg"
-            if nix run nixpkgs#nix-update -- --flake "$pkg"; then
+            version_args=()
+            # Wings currently tracks prereleases, including release candidates.
+            if [[ "$pkg" == pelican-wings ]]; then version_args+=(--version=unstable); fi
+            if nix run nixpkgs#nix-update -- --flake "$pkg" "${version_args[@]}"; then
               if nix build ".#$pkg" --no-link; then
                 echo "$pkg updated and builds"
               else
