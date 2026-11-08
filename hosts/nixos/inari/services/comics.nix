@@ -33,7 +33,7 @@ in {
         excludeEntryWithUnreadChapters = true;
 
         extensionRepos = [
-          "https://raw.githubusercontent.com/keiyoushi/extensions/repo/index.min.json"
+          "https://github.com/keiyoushi/extensions/raw/repo/index.pb"
           "https://raw.githubusercontent.com/suwayomi/tachiyomi-extension/repo/index.min.json"
         ];
 
