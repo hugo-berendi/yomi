@@ -3,7 +3,6 @@
 import json
 import os
 from pathlib import Path
-import re
 import subprocess
 import sys
 import tempfile
@@ -19,15 +18,48 @@ def atomic_text(path, text):
         Path(temporary).unlink(missing_ok=True)
 
 
+def managed_link(path, target):
+    # Replace only our symlink; never remove an existing skill directory.
+    if path.exists() and not path.is_symlink():
+        raise FileExistsError(f"Refusing to replace unmanaged skills at {path}")
+    path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(dir=path.parent, prefix=".managed-") as temporary:
+        link = Path(temporary) / "link"
+        link.symlink_to(target, target_is_directory=True)
+        os.replace(link, path)
+
+
 def main():
     settings = json.loads(Path(sys.argv[1]).read_text())
     action = sys.argv[2] if len(sys.argv) > 2 else "status"
-    if action not in {"link", "login", "gateway", "signal", "status"}:
-        raise SystemExit("Use: hermes-dispatcher {link|login|status}")
+    if action not in {"matrix-bootstrap", "profile", "login", "gateway", "status"}:
+        raise SystemExit("Use: hermes-dispatcher {login|profile|status}")
     state = Path(settings["stateDirectory"])
     state.mkdir(mode=0o700, parents=True, exist_ok=True)
-    for name in ("home", "hermes", "codex", "signal", "cache", "config"):
+    for name in ("home", "hermes", "codex", "cache", "config"):
         (state / name).mkdir(mode=0o700, exist_ok=True)
+    if action == "matrix-bootstrap":
+        from matrix_bootstrap import bootstrap
+
+        bootstrap(state, settings["matrix"])
+        from matrix_profile import update_profile
+
+        update_profile(
+            state, settings["matrix"], name=settings["matrix"]["displayName"]
+        )
+        return
+    if action == "profile":
+        import argparse
+        from matrix_profile import update_profile
+
+        parser = argparse.ArgumentParser(prog="hermes-dispatcher profile")
+        parser.add_argument("--name")
+        parser.add_argument("--avatar", type=Path)
+        args = parser.parse_args(sys.argv[3:])
+        if not args.name and not args.avatar:
+            parser.error("Pass --name and/or --avatar")
+        update_profile(state, settings["matrix"], name=args.name, avatar=args.avatar)
+        return
     env = {
         "PATH": settings["path"],
         "HOME": str(state / "home"),
@@ -35,8 +67,6 @@ def main():
         "CODEX_HOME": str(state / "codex"),
         "XDG_CONFIG_HOME": str(state / "config"),
         "XDG_CACHE_HOME": str(state / "cache"),
-        "YOMI_SIGNAL_SOCKET": settings["socket"],
-        "YOMI_SIGNAL_LEDGER": str(state / "hermes/signal-sent.sqlite"),
         "HERMES_DISABLE_LAZY_INSTALLS": "1",
         "LANG": "C.UTF-8",
     }
@@ -51,10 +81,11 @@ def main():
         print(
             json.dumps(
                 {
-                    "signalLinked": (state / "signal-account").exists(),
+                    "matrixLoginPresent": (state / "matrix-auth.json").exists(),
+                    "matrixUser": settings["matrix"]["userId"],
+                    "allowedUser": settings["matrix"]["allowedUser"],
                     "codexLoginPresent": (state / "codex/auth.json").exists(),
                     "hermesLoginPresent": (state / "hermes/auth.json").exists(),
-                    "signalSocketPresent": Path(settings["socket"]).exists(),
                     "model": "gpt-6.1-sol",
                     "effort": "medium",
                 }
@@ -63,29 +94,15 @@ def main():
         return
     config = state / "hermes/config.yaml"
     atomic_text(config, Path(settings["configuration"]).read_text())
-    atomic_text(state / "hermes/SOUL.md", Path(settings["instructions"]).read_text())
+    instructions = (
+        Path(settings["instructions"]).read_text()
+        + f"\n\nInstalled skill catalog: {settings['catalog']}\n"
+    )
+    atomic_text(state / "hermes/SOUL.md", instructions)
+    # Codex's native loop has its own skill discovery and instruction loader.
+    managed_link(state / "codex/skills/yomi", Path(settings["skills"]))
+    atomic_text(state / "codex/AGENTS.md", instructions)
     os.chdir(state / "home")
-    signal = [settings["signal"], "--config", str(state / "signal"), "--scrub-log"]
-    if action == "link":
-        subprocess.run([*signal, "link", "--name", "Yomi Hermes"], env=env, check=True)
-        result = subprocess.run(
-            [*signal, "--output", "json", "listAccounts"],
-            env=env,
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        accounts = json.loads(result.stdout)
-        if len(accounts) != 1 or not re.fullmatch(
-            r"\+[1-9][0-9]{6,14}", accounts[0].get("number", "")
-        ):
-            raise SystemExit(
-                "Expected exactly one linked Signal account with a phone number"
-            )
-        account_file = state / "signal-account"
-        atomic_text(account_file, accounts[0]["number"] + "\n")
-        account_file.chmod(0o600)
-        return
     if action == "login":
         # Separate grants avoid two clients racing single-use refresh tokens.
         subprocess.run(
@@ -93,43 +110,29 @@ def main():
         )
         argv = [settings["hermes"], "auth", "add", "openai-codex", "--type", "oauth"]
     else:
-        if action == "gateway":
-            codex_auth = json.loads((state / "codex/auth.json").read_text())
-            if codex_auth.get("auth_mode") != "chatgpt" or codex_auth.get(
-                "OPENAI_API_KEY"
-            ):
-                raise SystemExit("Only a ChatGPT subscription login is allowed")
-        account = (state / "signal-account").read_text().strip()
-        if not re.fullmatch(r"\+[1-9][0-9]{6,14}", account):
-            raise SystemExit("Invalid Signal account")
+        codex_auth = json.loads((state / "codex/auth.json").read_text())
+        if codex_auth.get("auth_mode") != "chatgpt" or codex_auth.get("OPENAI_API_KEY"):
+            raise SystemExit("Only a ChatGPT subscription login is allowed")
+        from matrix_bootstrap import validate_auth
+
+        auth = json.loads((state / "matrix-auth.json").read_text())
+        validate_auth(auth, settings["matrix"]["userId"])
         env.update(
             {
-                "SIGNAL_ACCOUNT": account,
-                "SIGNAL_ALLOWED_USERS": account,
-                "SIGNAL_ALLOW_ALL_USERS": "false",
-                "SIGNAL_GROUP_ALLOWED_USERS": "",
-                "SIGNAL_HTTP_URL": "http://signal-unix",
-                "SIGNAL_IGNORE_STORIES": "true",
+                "MATRIX_HOMESERVER": settings["matrix"]["homeserver"],
+                "MATRIX_USER_ID": auth["user_id"],
+                "MATRIX_ACCESS_TOKEN": auth["access_token"],
+                "MATRIX_DEVICE_ID": auth["device_id"],
+                "MATRIX_ALLOWED_USERS": settings["matrix"]["allowedUser"],
+                "MATRIX_ALLOW_ALL_USERS": "false",
+                "MATRIX_E2EE_MODE": "required",
+                "MATRIX_ALLOW_PUBLIC_ROOMS": "false",
+                "MATRIX_DM_AUTO_THREAD": "false",
+                "MATRIX_AUTO_THREAD": "false",
+                "MATRIX_RECOVERY_KEY_OUTPUT_FILE": str(state / "matrix-recovery-key"),
             }
         )
-        argv = (
-            [
-                *signal,
-                "--account",
-                account,
-                "daemon",
-                "--socket",
-                settings["socket"],
-                "--receive-mode",
-                "manual",
-                "--ignore-attachments",
-                "--ignore-stories",
-                "--ignore-avatars",
-                "--ignore-stickers",
-            ]
-            if action == "signal"
-            else [settings["hermes"], "gateway", "run"]
-        )
+        argv = [settings["hermes"], "gateway", "run"]
     os.execve(argv[0], argv, env)
 
 
