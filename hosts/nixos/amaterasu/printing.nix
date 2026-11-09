@@ -1,4 +1,4 @@
-_: {
+{pkgs, ...}: {
   # {{{ Local USB printing
   # CUPS listens on localhost:631 only (module defaults: no sharing, no firewall
   # opening, no network browsing). Its usb backend runs as root inside cupsd, so
@@ -8,9 +8,13 @@ _: {
   #
   # ipp-usb is deliberately not enabled. The nixpkgs module unconditionally
   # switches on avahi with publishing and SANE, which is network discovery
-  # nobody asked for. Add it, restricted, only once a driverless printer
-  # turns out to need it.
+  # nobody asked for, and the Brother below is a PPD-based printer anyway.
   services.printing.enable = true;
+
+  # Brother MFC-1910W. brlaser's PPD list names "MFC-1910W series" (checked in
+  # share/cups/drv/brlaser.drv of the pinned package). Printing only: the
+  # scanner and fax parts are out of scope.
+  services.printing.drivers = [pkgs.brlaser];
 
   # Root is rolled back at boot; printers.conf and the PPD files live in
   # /var/lib/cups, so a configured printer would vanish at the next reboot.
