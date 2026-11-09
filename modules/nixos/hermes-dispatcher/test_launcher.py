@@ -10,6 +10,23 @@ import launcher
 
 
 class LauncherTests(unittest.TestCase):
+    def test_matrix_home_room_state_is_allowed_but_other_dotenv_settings_are_not(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / ".env"
+            path.write_text(
+                'MATRIX_HOME_ROOM="!room:matrix.example.org"\nMATRIX_HOME_ROOM_THREAD_ID=\n'
+            )
+            launcher.validate_matrix_env(path)
+            for extra in [
+                "OPENAI_API_KEY=dummy",
+                "MATRIX_ALLOW_ALL_USERS=true",
+                "MATRIX_HOME_ROOM=${OPENAI_API_KEY}",
+                'MATRIX_HOME_ROOM="first\nOPENAI_API_KEY=dummy"',
+            ]:
+                path.write_text(extra)
+                with self.assertRaises(SystemExit):
+                    launcher.validate_matrix_env(path)
+
     def test_managed_skills_refresh_without_replacing_local_skills(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

@@ -2,10 +2,31 @@
 
 import json
 import os
+import re
 from pathlib import Path
 import subprocess
 import sys
 import tempfile
+
+
+def validate_matrix_env(path):
+    if not path.exists():
+        return
+    for line in path.read_text().splitlines():
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        key, separator, value = line.partition("=")
+        value = value.strip()
+        if len(value) >= 2 and value[0] in {"'", '"'} and value[-1] == value[0]:
+            value = value[1:-1]
+        if (
+            not separator
+            or key.strip() not in {"MATRIX_HOME_ROOM", "MATRIX_HOME_ROOM_THREAD_ID"}
+            or not re.fullmatch(r"[A-Za-z0-9_!$:.@/+=-]*", value)
+        ):
+            raise SystemExit(
+                "Unexpected dispatcher .env setting; only subscription login and Matrix home-room state are supported"
+            )
 
 
 def atomic_text(path, text):
@@ -74,12 +95,13 @@ def main():
         "LANG": "C.UTF-8",
     }
     # No inherited API keys, proxy credentials or unrelated provider logins.
-    # Hermes also reads .env itself; refuse one rather than allowing hidden billing.
-    for directory in (state / "hermes", state / "home"):
-        if (directory / ".env").exists():
-            raise SystemExit(
-                "Remove the dispatcher's .env; only subscription login is supported"
-            )
+    # Hermes writes its Matrix home room here itself. Permit only that state,
+    # never hidden provider keys or arbitrary dotenv expansion/multiline values.
+    validate_matrix_env(state / "hermes/.env")
+    if (state / "home/.env").exists():
+        raise SystemExit(
+            "Remove the dispatcher's home .env; only subscription login is supported"
+        )
     if action == "status":
         print(
             json.dumps(
