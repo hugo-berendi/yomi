@@ -6,6 +6,7 @@
   meilisearch = import ./meilisearch.nix;
   acme = import ./acme.nix;
   machine = import ./machine.nix;
+  hermes-dispatcher = import ./hermes-dispatcher;
   network-exposure = import ./network-exposure.nix;
   persistence = import ./persistence.nix;
   nginx = import ./nginx.nix;
