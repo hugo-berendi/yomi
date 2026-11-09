@@ -8,12 +8,13 @@
 
   pelican-wings = pkgs.stdenv.mkDerivation rec {
     pname = "pelican-wings";
-    version = "v1.0.0-beta29";
+    version = "1.0.0-rc.1";
 
     src = pkgs.fetchurl {
       # The project moved from pelican-dev/wings to pelican/wings.
-      url = "https://github.com/pelican/wings/releases/download/${version}/wings_linux_${arch}";
-      hash = "sha256-ddgezyU2btPAWtbGzLrVMu2Ja4IZqp0sk6WvAD1pAAs=";
+      # nix-update normalizes versions without the release tag's v prefix.
+      url = "https://github.com/pelican/wings/releases/download/v${version}/wings_linux_${arch}";
+      hash = "sha256-Gd2jhuAgQdofH7zHPzTkuwHB+8LUmarHmmvjpRun8Og=";
     };
 
     dontUnpack = true;
