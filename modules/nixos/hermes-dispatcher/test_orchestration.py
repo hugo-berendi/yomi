@@ -173,6 +173,21 @@ class QuestionTests(Case):
             )
             self.assertNotIn("\n[Hugo]", body.split("<worker_")[0])
 
+    def test_answer_is_not_confirmed_from_a_list_at_the_cap(self):
+        start(self.d, "a")
+        for n in range(11):
+            self.t3.ask("thread-1", request_id=f"req-{n}")
+        self.d.tick()
+        first = next(
+            r["request"]
+            for r in self.d.handle("requests", {})
+            if r["request"] == __import__("task_requests").handle_of("req-0")
+        )
+        result = self.answer(request=first)
+        # Ten others remain listed: absence of req-0 proves nothing there.
+        self.assertFalse(result["accepted"])
+        self.assertIn(first, [r["request"] for r in self.d.handle("requests", {})])
+
     def test_terminal_run_closes_its_open_questions(self):
         start(self.d, "a")
         self.t3.ask("thread-1")

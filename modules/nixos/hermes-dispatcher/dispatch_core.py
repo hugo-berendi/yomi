@@ -15,7 +15,7 @@ from pr_verification import verify
 from project_memory import project_facts
 from task_followup import request_followup
 from dispatch_store import WAKE_FALLBACK, command_id
-from task_notices import event_key, format_notice
+from task_notices import event_key, fenced, format_notice
 import task_requests as requests
 import task_supplements as supplements
 from task_solve import STAGES, solve
@@ -693,13 +693,13 @@ class Dispatcher:
             self.store.notify(
                 task,
                 f"{task['task_key']}:uncertain_launch",
-                f"T3-Auftrag {task['task_key']}: Der Start ließ sich nach {failures} Versuchen nicht bestätigen ({error[:200]}). Ciel startet nichts doppelt; bitte prüfe T3 auf einen vorhandenen Worktree.",
+                f"T3-Auftrag {task['task_key']}: Der Start ließ sich nach {failures} Versuchen nicht bestätigen ({fenced(error[:200])}). Ciel startet nichts doppelt; bitte prüfe T3 auf einen vorhandenen Worktree.",
             )
         elif failures == STUCK_NOTICE_AFTER:
             self.store.notify(
                 task,
                 f"{task['task_key']}:observation-stuck:{error[:60]}",
-                f"T3-Auftrag {task['task_key']}: Ciel kann den Zustand seit {failures} Versuchen nicht lesen ({error[:200]}). Der Auftrag ist unverändert; Ciel prüft mit wachsendem Abstand weiter.",
+                f"T3-Auftrag {task['task_key']}: Ciel kann den Zustand seit {failures} Versuchen nicht lesen ({fenced(error[:200])}). Der Auftrag ist unverändert; Ciel prüft mit wachsendem Abstand weiter.",
             )
 
     def observe(self, task):

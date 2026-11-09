@@ -244,14 +244,21 @@ def answer(dispatcher, args):
         # T3 refuses a second answer. If the question is gone, the answer
         # (ours after a lost reply, or Hugo's in T3) already landed.
         listed = dispatcher.rpc("requests.list", {"threadId": task["thread_id"]})
-        if row["request_id"] in {r.get("requestId") for r in listed}:
+        if (
+            row["request_id"] in {r.get("requestId") for r in listed}
+            or len(listed) >= LIST_LIMIT
+        ):
             raise
     return confirm(dispatcher, task, row)
 
 
 def confirm(dispatcher, task, row, already=False):
     listed = dispatcher.rpc("requests.list", {"threadId": task["thread_id"]})
-    still_open = row["request_id"] in {r.get("requestId") for r in listed}
+    # At the cap, absence from the list proves nothing; report it unconfirmed.
+    still_open = (
+        row["request_id"] in {r.get("requestId") for r in listed}
+        or len(listed) >= LIST_LIMIT
+    )
     if not still_open:
         close(
             dispatcher,
