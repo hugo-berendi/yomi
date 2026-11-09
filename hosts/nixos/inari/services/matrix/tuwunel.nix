@@ -5,106 +5,82 @@
   ...
 }: let
   matrixHost = "matrix.${config.yomi.dns.domain}";
+  bridges = config.yomi.matrix.bridges.enable;
+  secret = {
+    sopsFile = ../../secrets.yaml;
+    owner = config.services.matrix-tuwunel.user;
+    group = config.services.matrix-tuwunel.group;
+  };
+  appserviceTokens = lib.concatMap (bridge: ["matrix_tuwunel_appservice_${bridge}_as_token" "matrix_tuwunel_appservice_${bridge}_hs_token"]) ["whatsapp" "signal" "discord"];
 in {
   # {{{ Reverse proxy
   yomi.cloudflared.at.matrix.port = config.yomi.ports.matrix-tuwunel-proxy;
   # }}}
 
   # {{{ Secrets
-  sops.secrets.matrix_tuwunel_registration_token = {
-    sopsFile = ../../secrets.yaml;
-    owner = config.services.matrix-tuwunel.user;
-    group = config.services.matrix-tuwunel.group;
-  };
+  sops.secrets = lib.mkMerge [
+    {
+      matrix_tuwunel_registration_token = secret;
+    }
+    # The appservice tokens stay encrypted in secrets.yaml while the bridges are
+    # disabled; only their decryption and the Tuwunel registration depend on it.
+    (lib.mkIf bridges (lib.genAttrs appserviceTokens (_: secret)))
+  ];
 
-  sops.secrets.matrix_tuwunel_appservice_whatsapp_as_token = {
-    sopsFile = ../../secrets.yaml;
-    owner = config.services.matrix-tuwunel.user;
-    group = config.services.matrix-tuwunel.group;
-  };
+  sops.templates = lib.mkIf bridges {
+    "tuwunel-appservices.toml" = {
+      content = ''
+        [global.appservice.whatsapp]
+        url = "http://127.0.0.1:29318"
+        as_token = "${config.sops.placeholder.matrix_tuwunel_appservice_whatsapp_as_token}"
+        hs_token = "${config.sops.placeholder.matrix_tuwunel_appservice_whatsapp_hs_token}"
+        sender_localpart = "whatsappbot"
+        rate_limited = false
+        receive_ephemeral = false
 
-  sops.secrets.matrix_tuwunel_appservice_whatsapp_hs_token = {
-    sopsFile = ../../secrets.yaml;
-    owner = config.services.matrix-tuwunel.user;
-    group = config.services.matrix-tuwunel.group;
-  };
+        [[global.appservice.whatsapp.users]]
+        exclusive = true
+        regex = "@whatsapp_.*:${matrixHost}"
 
-  sops.secrets.matrix_tuwunel_appservice_signal_as_token = {
-    sopsFile = ../../secrets.yaml;
-    owner = config.services.matrix-tuwunel.user;
-    group = config.services.matrix-tuwunel.group;
-  };
+        [[global.appservice.whatsapp.users]]
+        exclusive = true
+        regex = "@whatsappbot:${matrixHost}"
 
-  sops.secrets.matrix_tuwunel_appservice_signal_hs_token = {
-    sopsFile = ../../secrets.yaml;
-    owner = config.services.matrix-tuwunel.user;
-    group = config.services.matrix-tuwunel.group;
-  };
+        [global.appservice.signal]
+        url = "http://127.0.0.1:29328"
+        as_token = "${config.sops.placeholder.matrix_tuwunel_appservice_signal_as_token}"
+        hs_token = "${config.sops.placeholder.matrix_tuwunel_appservice_signal_hs_token}"
+        sender_localpart = "signalbot"
+        rate_limited = false
+        receive_ephemeral = false
 
-  sops.secrets.matrix_tuwunel_appservice_discord_as_token = {
-    sopsFile = ../../secrets.yaml;
-    owner = config.services.matrix-tuwunel.user;
-    group = config.services.matrix-tuwunel.group;
-  };
+        [[global.appservice.signal.users]]
+        exclusive = true
+        regex = "@signal_.*:${matrixHost}"
 
-  sops.secrets.matrix_tuwunel_appservice_discord_hs_token = {
-    sopsFile = ../../secrets.yaml;
-    owner = config.services.matrix-tuwunel.user;
-    group = config.services.matrix-tuwunel.group;
-  };
+        [[global.appservice.signal.users]]
+        exclusive = true
+        regex = "@signalbot:${matrixHost}"
 
-  sops.templates."tuwunel-appservices.toml" = {
-    content = ''
-      [global.appservice.whatsapp]
-      url = "http://127.0.0.1:29318"
-      as_token = "${config.sops.placeholder.matrix_tuwunel_appservice_whatsapp_as_token}"
-      hs_token = "${config.sops.placeholder.matrix_tuwunel_appservice_whatsapp_hs_token}"
-      sender_localpart = "whatsappbot"
-      rate_limited = false
-      receive_ephemeral = false
+        [global.appservice.discord]
+        url = "http://127.0.0.1:29334"
+        as_token = "${config.sops.placeholder.matrix_tuwunel_appservice_discord_as_token}"
+        hs_token = "${config.sops.placeholder.matrix_tuwunel_appservice_discord_hs_token}"
+        sender_localpart = "discordbot"
+        rate_limited = false
+        receive_ephemeral = true
 
-      [[global.appservice.whatsapp.users]]
-      exclusive = true
-      regex = "@whatsapp_.*:${matrixHost}"
+        [[global.appservice.discord.users]]
+        exclusive = true
+        regex = "@discord_.*:${matrixHost}"
 
-      [[global.appservice.whatsapp.users]]
-      exclusive = true
-      regex = "@whatsappbot:${matrixHost}"
-
-      [global.appservice.signal]
-      url = "http://127.0.0.1:29328"
-      as_token = "${config.sops.placeholder.matrix_tuwunel_appservice_signal_as_token}"
-      hs_token = "${config.sops.placeholder.matrix_tuwunel_appservice_signal_hs_token}"
-      sender_localpart = "signalbot"
-      rate_limited = false
-      receive_ephemeral = false
-
-      [[global.appservice.signal.users]]
-      exclusive = true
-      regex = "@signal_.*:${matrixHost}"
-
-      [[global.appservice.signal.users]]
-      exclusive = true
-      regex = "@signalbot:${matrixHost}"
-
-      [global.appservice.discord]
-      url = "http://127.0.0.1:29334"
-      as_token = "${config.sops.placeholder.matrix_tuwunel_appservice_discord_as_token}"
-      hs_token = "${config.sops.placeholder.matrix_tuwunel_appservice_discord_hs_token}"
-      sender_localpart = "discordbot"
-      rate_limited = false
-      receive_ephemeral = true
-
-      [[global.appservice.discord.users]]
-      exclusive = true
-      regex = "@discord_.*:${matrixHost}"
-
-      [[global.appservice.discord.users]]
-      exclusive = true
-      regex = "@discordbot:${matrixHost}"
-    '';
-    owner = config.services.matrix-tuwunel.user;
-    group = config.services.matrix-tuwunel.group;
+        [[global.appservice.discord.users]]
+        exclusive = true
+        regex = "@discordbot:${matrixHost}"
+      '';
+      owner = config.services.matrix-tuwunel.user;
+      group = config.services.matrix-tuwunel.group;
+    };
   };
   # }}}
 
@@ -138,14 +114,14 @@ in {
     };
   };
 
-  systemd.services.tuwunel = {
-    serviceConfig.ExecStart = lib.mkForce ''
-      ${lib.getExe config.services.matrix-tuwunel.package} \
-        --config "$TUWUNEL_CONFIG" \
-        --config "${config.sops.templates."tuwunel-appservices.toml".path}"
-    '';
-    restartTriggers = [config.sops.templates."tuwunel-appservices.toml".path];
-  };
+  # Without the bridges the upstream ExecStart applies unchanged, so Tuwunel
+  # reads no appservice file that no longer exists.
+  systemd.services.tuwunel.serviceConfig.ExecStart = lib.mkIf bridges (lib.mkForce ''
+    ${lib.getExe config.services.matrix-tuwunel.package} \
+      --config "$TUWUNEL_CONFIG" \
+      --config "${config.sops.templates."tuwunel-appservices.toml".path}"
+  '');
+  systemd.services.tuwunel.restartTriggers = lib.mkIf bridges [config.sops.templates."tuwunel-appservices.toml".path];
   # }}}
 
   # {{{ Nginx
