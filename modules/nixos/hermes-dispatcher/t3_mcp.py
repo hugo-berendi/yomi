@@ -11,6 +11,7 @@ READS = {
     "t3_project_list",
     "t3_thread_read",
     "t3_thread_configure",
+    "t3_pending_request",
     "orchestrator_capabilities",
 }
 WRITES = {
@@ -18,7 +19,19 @@ WRITES = {
     "t3_thread_send",
     "t3_thread_interrupt",
     "t3_thread_configure",
+    "t3_pending_request",
+    "t3_thread_organize",
 }
+
+
+def is_mutation(name, args):
+    """Reads may repeat freely; every write needs a durable receipt key."""
+    if name == "t3_thread_configure":
+        return "modelSelection" in args
+    if name == "t3_pending_request":
+        # list/read only observe; respond answers a worker's question.
+        return args.get("action") not in {"list", "read"}
+    return name not in READS
 
 
 class NativeMcp:
@@ -27,6 +40,7 @@ class NativeMcp:
         self.session = None
         self.generation = None
         self.mutation_generation = None
+        self.offered = None
         self.store.db.execute(
             "CREATE TABLE IF NOT EXISTS mcp_calls (key TEXT PRIMARY KEY, digest TEXT NOT NULL, generation TEXT NOT NULL, result TEXT)"
         )
@@ -101,12 +115,15 @@ class NativeMcp:
             raise ValueError("T3 MCP request failed; no success assumed")
         return result["result"]
 
+    def tools(self):
+        """Tool names this T3 server offers to the broker's own MCP session."""
+        if self.offered is None:
+            listed = self.request("tools/list", {})
+            self.offered = {tool["name"] for tool in listed.get("tools", [])}
+        return self.offered
+
     def call(self, name, args, key=None):
-        mutation = (
-            name not in READS
-            or name == "t3_thread_configure"
-            and "modelSelection" in args
-        )
+        mutation = is_mutation(name, args)
         if name not in READS | WRITES or mutation and key is None:
             raise ValueError(
                 "Unsupported MCP operation or missing durable mutation key"

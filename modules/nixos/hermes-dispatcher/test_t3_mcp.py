@@ -50,6 +50,14 @@ class BackendTests(unittest.TestCase):
         class Native:
             def call(self, name, args, key=None):
                 calls.append((name, args, key))
+                if name == "t3_thread_configure":
+                    return {
+                        "modelSelection": {
+                            "instanceId": "codex",
+                            "model": "luna",
+                            "options": [],
+                        }
+                    }
                 return {
                     "threadId": "mcp:actual",
                     "link": "t3-thread://v2/env/mcp:actual",
@@ -70,10 +78,67 @@ class BackendTests(unittest.TestCase):
         }
         result = backend("orchestration.launchThread", payload)
         self.assertEqual(result["threadId"], "mcp:actual")
-        self.assertEqual(calls[0][0], "t3_thread_launch")
+        # Launch idle, read the stored model back, then send the task.
+        self.assertEqual(
+            [c[0] for c in calls],
+            ["t3_thread_launch", "t3_thread_configure", "t3_thread_send"],
+        )
         self.assertEqual(calls[0][1]["clientRequestId"], "stable")
-        self.assertEqual(calls[0][1]["message"], "Task")
+        self.assertNotIn("message", calls[0][1], "no run before the check")
         self.assertNotIn("threadId", calls[0][1])
+        self.assertEqual(calls[2][1]["message"], "Task")
+        self.assertEqual(calls[2][1]["threadId"], "mcp:actual")
+        self.assertEqual(calls[2][2], "stable:start")
+
+    def test_launch_with_a_different_stored_model_never_sends_the_task(self):
+        from t3_backend import T3Backend
+        from model_selection import ModelNotEnforced
+
+        calls = []
+
+        class Native:
+            def call(self, name, args, key=None):
+                calls.append(name)
+                if name == "t3_thread_configure":
+                    # T3 dropped the effort option: medium is not proven.
+                    return {
+                        "modelSelection": {
+                            "instanceId": "claudeAgent",
+                            "model": "claude-fable-5-2",
+                        }
+                    }
+                return {"threadId": "idle", "link": "t3://idle"}
+
+        backend = T3Backend(Native(), None)
+        with self.assertRaises(ModelNotEnforced) as caught:
+            backend(
+                "orchestration.launchThread",
+                {
+                    "commandId": "stable",
+                    "projectId": "repo",
+                    "title": "Fix",
+                    "initialMessage": {"text": "Task", "attachments": []},
+                    "workspaceStrategy": {"type": "worktree", "baseRef": "HEAD"},
+                    "modelSelection": {
+                        "instanceId": "claudeAgent",
+                        "model": "claude-fable-5-2",
+                        "options": [{"id": "effort", "value": "medium"}],
+                    },
+                    "runtimeMode": "full-access",
+                    "interactionMode": "default",
+                },
+            )
+        self.assertEqual(caught.exception.thread, "idle")
+        self.assertNotIn("t3_thread_send", calls)
+
+    def test_input_request_answers_are_writes_with_receipts(self):
+        from t3_mcp import is_mutation
+
+        self.assertFalse(is_mutation("t3_pending_request", {"action": "list"}))
+        self.assertFalse(is_mutation("t3_pending_request", {"action": "read"}))
+        self.assertTrue(is_mutation("t3_pending_request", {"action": "respond"}))
+        self.assertTrue(is_mutation("t3_thread_organize", {"action": "settle"}))
+        self.assertFalse(is_mutation("t3_thread_configure", {"threadId": "t"}))
 
     def test_project_pagination_and_thread_read_use_native_tools(self):
         from t3_backend import T3Backend
@@ -211,17 +276,20 @@ class ReadBoundaryTests(unittest.TestCase):
 
         calls = []
 
-        class Native:
-            def call(self, name, args, key=None):
-                calls.append((name, args, key))
-                return {}
-
-        backend = T3Backend(Native(), None)
         selection = {
             "instanceId": "claudeAgent",
             "model": "sonnet",
             "options": [{"id": "effort", "value": "medium"}],
         }
+
+        class Native:
+            def call(self, name, args, key=None):
+                calls.append((name, args, key))
+                if name == "t3_thread_configure" and "modelSelection" not in args:
+                    return {"modelSelection": selection}
+                return {}
+
+        backend = T3Backend(Native(), None)
         backend(
             "orchestration.dispatchCommand",
             {
@@ -234,9 +302,10 @@ class ReadBoundaryTests(unittest.TestCase):
         )
         self.assertEqual(
             [name for name, args, key in calls],
-            ["t3_thread_configure", "t3_thread_send"],
+            ["t3_thread_configure", "t3_thread_configure", "t3_thread_send"],
         )
         self.assertEqual(calls[0][1]["modelSelection"], selection)
-        self.assertEqual(calls[1][1]["mode"], "queue")
-        self.assertEqual(calls[1][1]["clientRequestId"], "stable")
-        self.assertEqual(calls[1][1]["threadId"], "owned")
+        self.assertNotIn("modelSelection", calls[1][1], "read back, not assumed")
+        self.assertEqual(calls[2][1]["mode"], "queue")
+        self.assertEqual(calls[2][1]["clientRequestId"], "stable")
+        self.assertEqual(calls[2][1]["threadId"], "owned")

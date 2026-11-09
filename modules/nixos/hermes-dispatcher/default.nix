@@ -52,6 +52,11 @@
     };
     max_concurrent_sessions = 1;
     platform_toolsets.matrix = [];
+    # The Matrix plugin registers display tier "medium", which posts a bubble
+    # for every new tool call. Hugo reads Ciel's answers, not her tool log.
+    # This gate covers tool bubbles only: clarify prompts, approvals and
+    # subagent failure notices take separate paths and stay visible.
+    display.platforms.matrix.tool_progress = "off";
     stt = stt.settings;
     auxiliary =
       lib.recursiveUpdate
@@ -155,10 +160,32 @@
     cp ${./launcher.py} "$out/launcher.py"
     cp ${./matrix_bootstrap.py} "$out/matrix_bootstrap.py"
     cp ${./matrix_profile.py} "$out/matrix_profile.py"
-    ${lib.concatMapStringsSep "\n" (name: "cp ${./. + "/${name}.py"} \"$out/${name}.py\"") ["broker_client" "ciel_routing" "dispatch_core" "dispatch_service" "dispatch_store" "local_tools" "mcp_server" "t3_rpc" "t3_mcp" "t3_mcp_auth" "t3_backend" "task_policy" "provider_policy" "quota_recovery" "matrix_rooms" "pr_verification" "task_followup" "task_scheduler" "task_notices" "project_memory" "ciel_watch"]}
+    ${lib.concatMapStringsSep "\n" (name: "cp ${./. + "/${name}.py"} \"$out/${name}.py\"") ["broker_client" "ciel_routing" "dispatch_core" "dispatch_service" "dispatch_store" "local_tools" "mcp_server" "t3_rpc" "t3_mcp" "t3_mcp_auth" "t3_backend" "task_policy" "provider_policy" "quota_recovery" "matrix_rooms" "pr_verification" "task_followup" "task_scheduler" "task_notices" "project_memory" "ciel_watch" "model_selection" "task_requests" "task_supplements" "task_solve"]}
   '';
 in {
   options.yomi.hermesDispatcher = {
+    t3.selectableModels = lib.mkOption {
+      type = lib.types.attrsOf (lib.types.attrsOf (lib.types.listOf (lib.types.enum ["low" "medium" "high"])));
+      default = {
+        # Subscription logins only (T3's claudeAgent and codex instances).
+        # Fable is capped at medium: Hugo's orchestration test allows nothing
+        # higher, and a pinned task never escalates on its own.
+        claudeAgent = {
+          claude-fable-5-2 = ["low" "medium"];
+          claude-sonnet-5-5 = ["low" "medium" "high"];
+          claude-haiku-5-5 = ["low"];
+        };
+        codex = {
+          "gpt-6.1-sol" = ["low" "medium" "high"];
+          gpt-6-luna = ["low"];
+        };
+      };
+      description = ''
+        Provider → model → efforts Ciel may pin explicitly for a task. T3's live
+        catalog is checked as well, and the stored thread configuration is read
+        back before a run starts.
+      '';
+    };
     t3.maxConcurrentTasks = lib.mkOption {
       type = lib.types.ints.between 1 4;
       default = 2;
