@@ -7,10 +7,32 @@
 }: let
   cfg = config.yomi.hermesDispatcher;
   system = pkgs.stdenv.hostPlatform.system;
-  hermes = inputs.llm-agents.packages.${system}.hermes-agent;
+  hermes = import ./package.nix {
+    inherit pkgs;
+    upstream = inputs.llm-agents.packages.${system}.hermes-agent;
+  };
   codex = import ../../../home/features/cli/ai/codex-package.nix {inherit inputs pkgs;};
   skills = import ./skills.nix {inherit pkgs lib inputs;};
   state = cfg.stateDirectory;
+  routes = {
+    routine = {
+      model = "gpt-6-luna";
+      effort = "low";
+    };
+    standard = {
+      model = "gpt-6.1-sol";
+      effort = "medium";
+    };
+    complex = {
+      model = "gpt-6.1-sol";
+      effort = "high";
+    };
+  };
+  routingConfig = pkgs.writeText "ciel-routing.json" (builtins.toJSON {
+    baseline = routes.standard;
+    inherit routes;
+  });
+  dispatch = import ./dispatch.nix {inherit config lib pkgs inputs state skills launcherSource routes;};
   settings = pkgs.writeText "hermes-dispatcher-config.yaml" (builtins.toJSON {
     model = {
       provider = "openai-codex";
@@ -30,13 +52,17 @@
     max_concurrent_sessions = 1;
     platform_toolsets.matrix = [];
     auxiliary =
-      lib.genAttrs ["compression" "title_generation" "background_review" "vision" "web_extract"] (_: {
+      lib.recursiveUpdate
+      (lib.genAttrs ["compression" "title_generation" "background_review" "vision" "web_extract"] (name: {
         provider = "codex";
-        model = "gpt-6.1-sol";
-        reasoning_effort = "low";
+        model = "gpt-6-luna";
+        reasoning_effort =
+          if name == "compression"
+          then "medium"
+          else "low";
         fallback_chain = [];
-      })
-      // {
+      }))
+      {
         title_generation = {
           enabled = false;
           model_upgrade_enabled = false;
@@ -61,6 +87,26 @@
   launchSettings = pkgs.writeText "hermes-dispatcher-launch.json" (builtins.toJSON {
     stateDirectory = state;
     inherit instructions;
+    inherit routingConfig;
+    inherit (dispatch) codexConfig;
+    brokerSocket = dispatch.socket;
+    memorySeed = builtins.toJSON [
+      {
+        fact = "Hugo prefers German, direct practical answers, warm dry humor and reasoned disagreement with a concrete alternative.";
+        source = "Hugo, Ciel setup conversation";
+        date = "2026-11-09";
+      }
+      {
+        fact = "Use balanced model routing: cheaper models for clear routine, early escalation on uncertainty. Use another existing subscription at a confirmed quota limit; otherwise wait. No paid APIs.";
+        source = "Hugo, Ciel setup conversation";
+        date = "2026-11-09";
+      }
+      {
+        fact = "Persist only curated preferences and relevant project facts in English. Never store secrets or third-party conversations.";
+        source = "Hugo, Ciel setup conversation and existing memory preference";
+        date = "2026-11-09";
+      }
+    ];
     matrix = {
       inherit (cfg.matrix) homeserver userId allowedUser displayName;
     };
@@ -75,7 +121,10 @@
     (pkgs.writeShellScriptBin "hermes-dispatcher" ''
       exec ${pkgs.python3}/bin/python3 ${launcherSource}/launcher.py ${launchSettings} "$@"
     '').overrideAttrs (_: {
-      passthru = {inherit hermes settings launchSettings;};
+      passthru = {
+        inherit hermes settings launchSettings;
+        inherit (dispatch) brokerConfig codexConfig localConfig;
+      };
     });
   common = {
     User = cfg.user;
@@ -90,7 +139,8 @@
     ProtectKernelModules = true;
     ProtectControlGroups = true;
     RestrictSUIDSGID = true;
-    RestrictAddressFamilies = ["AF_UNIX" "AF_INET" "AF_INET6"];
+    # Bubblewrap configures its isolated loopback interface through rtnetlink.
+    RestrictAddressFamilies = ["AF_UNIX" "AF_INET" "AF_INET6" "AF_NETLINK"];
     CapabilityBoundingSet = "";
     ReadWritePaths = [state];
     Restart = "on-failure";
@@ -103,9 +153,15 @@
     cp ${./launcher.py} "$out/launcher.py"
     cp ${./matrix_bootstrap.py} "$out/matrix_bootstrap.py"
     cp ${./matrix_profile.py} "$out/matrix_profile.py"
+    ${lib.concatMapStringsSep "\n" (name: "cp ${./. + "/${name}.py"} \"$out/${name}.py\"") ["broker_client" "ciel_routing" "dispatch_core" "dispatch_service" "dispatch_store" "local_tools" "mcp_server" "t3_rpc" "t3_mcp" "t3_mcp_auth" "t3_backend" "task_policy" "provider_policy" "quota_recovery" "matrix_rooms" "pr_verification" "task_followup"]}
   '';
 in {
   options.yomi.hermesDispatcher = {
+    t3.projectIds = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [];
+      description = "Explicit registered T3 repository IDs Ciel may launch coding tasks in.";
+    };
     enable = lib.mkEnableOption "the subscription-only Hermes coding intake pilot";
     user = lib.mkOption {
       type = lib.types.str;
@@ -164,6 +220,7 @@ in {
       }
     ];
     environment.systemPackages = [launcher];
+    systemd.services.ciel-dispatcher = dispatch.service;
     systemd.tmpfiles.rules = [
       "d ${state} 0700 ${cfg.user} ${common.Group} -"
     ];
@@ -185,13 +242,14 @@ in {
     systemd.services.hermes-dispatcher = {
       description = "Hermes coding intake via Matrix and Codex subscription";
       wantedBy = ["multi-user.target"];
-      requires = ["hermes-matrix-bootstrap.service"];
-      after = ["hermes-matrix-bootstrap.service"];
+      requires = ["hermes-matrix-bootstrap.service" "ciel-dispatcher.service"];
+      after = ["hermes-matrix-bootstrap.service" "ciel-dispatcher.service"];
       unitConfig.ConditionPathExists = ["${state}/codex/auth.json" "${state}/hermes/auth.json"];
       serviceConfig =
         common
         // {
           ExecStart = "${launcher}/bin/hermes-dispatcher gateway";
+          InaccessiblePaths = ["${state}/dispatch"];
         };
     };
     yomi.persistence.at.state.apps.hermes-dispatcher = {
@@ -209,13 +267,12 @@ in {
       pkgs.runCommand "hermes-dispatcher-tests" {
         nativeBuildInputs = [pkgs.python3];
       } ''
-        cp ${./launcher.py} launcher.py
-        cp ${./test_launcher.py} test_launcher.py
-        cp ${./matrix_bootstrap.py} matrix_bootstrap.py
-        cp ${./test_matrix_bootstrap.py} test_matrix_bootstrap.py
-        cp ${./matrix_profile.py} matrix_profile.py
-        cp ${./test_matrix_profile.py} test_matrix_profile.py
-        python3 -m unittest -v test_launcher test_matrix_bootstrap test_matrix_profile
+        cp ${launcherSource}/*.py .
+        ${lib.concatMapStringsSep "\n" (name: "cp ${./. + "/${name}"} ${lib.escapeShellArg name}") (lib.filter (name: lib.hasPrefix "test_" name && lib.hasSuffix ".py" name) (builtins.attrNames (builtins.readDir ./.)))}
+        for site in ${hermes}/lib/python*/site-packages; do
+          export CIEL_HERMES_SOURCE="$site"
+        done
+        python3 -m unittest discover -p 'test_*.py' -v
         touch "$out"
       '';
   };

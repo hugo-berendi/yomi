@@ -65,6 +65,10 @@ class LauncherTests(unittest.TestCase):
                         "instructions": str(instructions),
                         "skills": str(skills),
                         "catalog": str(catalog),
+                        "routingConfig": str(configuration),
+                        "brokerSocket": str(root / "broker.sock"),
+                        "codexConfig": str(configuration),
+                        "memorySeed": "[]",
                         "matrix": {
                             "homeserver": "http://127.0.0.1:8432",
                             "userId": "@hermes:matrix.example.org",

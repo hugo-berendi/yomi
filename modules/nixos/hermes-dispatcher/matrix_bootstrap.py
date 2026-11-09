@@ -38,7 +38,11 @@ def request(
         headers["Authorization"] = "Bearer " + token
     req = Request(
         base.rstrip("/") + path,
-        data=payload if isinstance(payload, bytes) else json.dumps(payload).encode(),
+        data=None
+        if method == "GET"
+        else payload
+        if isinstance(payload, bytes)
+        else json.dumps(payload).encode(),
         headers=headers,
         method=method,
     )

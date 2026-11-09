@@ -68,6 +68,9 @@ def main():
         "XDG_CONFIG_HOME": str(state / "config"),
         "XDG_CACHE_HOME": str(state / "cache"),
         "HERMES_DISABLE_LAZY_INSTALLS": "1",
+        "CIEL_ROUTING_CONFIG": settings["routingConfig"],
+        "CIEL_ROUTE_LEDGER": str(state / "home/routes.jsonl"),
+        "CIEL_BROKER_SOCKET": settings["brokerSocket"],
         "LANG": "C.UTF-8",
     }
     # No inherited API keys, proxy credentials or unrelated provider logins.
@@ -94,6 +97,14 @@ def main():
         return
     config = state / "hermes/config.yaml"
     atomic_text(config, Path(settings["configuration"]).read_text())
+    atomic_text(state / "codex/config.toml", Path(settings["codexConfig"]).read_text())
+    memory = state / "home/memory"
+    memory.mkdir(mode=0o700, exist_ok=True)
+    # Curated memory survives upgrades; configuration only seeds a new profile.
+    for name, initial in (("preferences", settings["memorySeed"]), ("projects", "[]")):
+        target = memory / (name + ".json")
+        if not target.exists():
+            atomic_text(target, initial)
     instructions = (
         Path(settings["instructions"]).read_text()
         + f"\n\nInstalled skill catalog: {settings['catalog']}\n"

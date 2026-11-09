@@ -36,7 +36,14 @@ const result = await new Promise((resolve, reject) => {
   });
   socket.addEventListener("message", (event) => {
     const message = JSON.parse(String(event.data));
-    if (message.requestId !== requestId || message._tag !== "Exit") return;
+    if (message.requestId !== requestId) return;
+    if (input.firstChunk && message._tag === "Chunk" && message.values?.length) {
+      clearTimeout(timer);
+      resolve(message.values[0]);
+      socket.close();
+      return;
+    }
+    if (message._tag !== "Exit") return;
     clearTimeout(timer);
     if (message.exit?._tag === "Success") resolve(message.exit.value);
     else {
