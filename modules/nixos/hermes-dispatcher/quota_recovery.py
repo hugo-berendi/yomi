@@ -6,17 +6,17 @@ import uuid
 from provider_policy import exhausted, known_available, select_provider
 
 
-def pause(dispatcher, task, reason):
+def pause(dispatcher, task, reason, run_id=""):
     if task["last_status"] != "quota_paused":
         dispatcher.store.db.execute(
             "UPDATE tasks SET last_status='quota_paused' WHERE task_key=?",
             (task["task_key"],),
         )
-        dispatcher.store.db.execute(
-            "INSERT INTO notices(task_key,room_id,body) VALUES(?,?,?)",
-            (task["task_key"], task["room_id"], reason),
-        )
         dispatcher.store.db.commit()
+        # One notice per paused run, even if a stale row replays the transition.
+        dispatcher.store.notify(
+            task, f"{task['task_key']}:quota_paused:{run_id}", reason
+        )
     return True
 
 
@@ -51,6 +51,7 @@ def recover(dispatcher, task, state):
                 dispatcher,
                 task,
                 "Kontingent weiterhin unbekannt oder erschöpft; der Auftrag bleibt erhalten und wartet.",
+                run["id"],
             )
     prefix = "quota:" + task["task_key"] + ":"
     key = prefix + run["id"]
@@ -63,6 +64,7 @@ def recover(dispatcher, task, state):
             dispatcher,
             task,
             "Der Auftrag wartet nach zwei automatischen Abo-Fortsetzungen. Bitte entscheide, ob Ciel weiterarbeiten soll.",
+            run["id"],
         )
     selection = selection or select_provider(
         [p for p in providers if p["instanceId"] != current],
@@ -74,6 +76,7 @@ def recover(dispatcher, task, state):
             dispatcher,
             task,
             "Die vorhandenen Abos haben aktuell kein nutzbares Kontingent. Der Auftrag pausiert; keine kostenpflichtige API wird genutzt.",
+            run["id"],
         )
     args = {"thread_id": task["thread_id"], "run_id": run["id"], "selection": selection}
     command = dispatcher.store.reserve(key, args)
@@ -121,13 +124,10 @@ def continue_handoff(dispatcher, task, intent):
         "UPDATE tasks SET last_status='preparing', recovery=NULL, pending_command=?, baseline_ordinal=?, pending_since=? WHERE task_key=?",
         (command, intent.get("ordinal", 0), time.time(), task["task_key"]),
     )
-    dispatcher.store.db.execute(
-        "INSERT INTO notices(task_key,room_id,body) VALUES(?,?,?)",
-        (
-            task["task_key"],
-            task["room_id"],
-            f"Auftrag {task['task_key']}: Nach bestätigtem Abo-Limit läuft die Fortsetzung im selben T3-Thread mit {selection['model']}.",
-        ),
-    )
     dispatcher.store.db.commit()
+    dispatcher.store.notify(
+        task,
+        f"{task['task_key']}:quota_handoff:{command}",
+        f"Auftrag {task['task_key']}: Nach bestätigtem Abo-Limit läuft die Fortsetzung im selben T3-Thread mit {selection['model']}.",
+    )
     return True

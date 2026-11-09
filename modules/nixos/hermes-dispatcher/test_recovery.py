@@ -98,3 +98,24 @@ class RecoveryTests(unittest.TestCase):
             self.assertTrue(request_followup(dispatcher, task, state, "CI failed"))
             self.assertTrue(request_followup(dispatcher, task, state, "CI failed"))
             self.assertEqual(calls[0], calls[1])
+
+
+class QuotaNoticeTests(unittest.TestCase):
+    def test_replayed_quota_transitions_notify_once(self):
+        from quota_recovery import pause
+
+        with tempfile.TemporaryDirectory() as directory:
+            store = Store(Path(directory) / "db")
+            dispatcher = SimpleNamespace(store=store)
+            task = {"task_key": "a", "room_id": "!dm:host", "last_status": "running"}
+
+            def count():
+                return store.db.execute("SELECT COUNT(*) FROM notices").fetchone()[0]
+
+            pause(dispatcher, task, "Pausiert", "run-1")
+            pause(
+                dispatcher, task, "Pausiert", "run-1"
+            )  # a stale row replays the transition
+            self.assertEqual(count(), 1)
+            pause(dispatcher, task, "Pausiert", "run-2")  # a later run is a new event
+            self.assertEqual(count(), 2)
