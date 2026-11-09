@@ -12,6 +12,7 @@ def tool(name, description, properties=None, required=None):
     reads = {
         "ciel_projects",
         "ciel_task_status",
+        "ciel_tasks",
         "ciel_skills_list",
         "ciel_skill_read",
         "ciel_memory_read",
@@ -45,8 +46,20 @@ TOOLS = [
     tool("ciel_projects", "List registered T3 repositories authorized for Ciel."),
     tool(
         "ciel_start_task",
-        "Queue one authorized coding problem through T3. Reuse task_key on retries. Stops before merge/deploy. Omit room_id to discover the unique encrypted owner DM automatically.",
-        {k: STRING for k in ["project_id", "task_key", "description", "room_id"]},
+        "Queue one authorized coding problem through T3. Reuse task_key on retries. Stops before merge/deploy. Omit room_id to discover the unique encrypted owner DM automatically. Independent tasks run in parallel, each in its own worktree, up to the broker's slot limit; the rest queue and start by themselves. Set depends_on (task keys that must be ready or merged first) or a shared serial_group (never run together) when tasks touch the same work. Completion, failure and questions reach Hugo's owner DM on their own; no watching is needed.",
+        {
+            **{
+                k: STRING
+                for k in [
+                    "project_id",
+                    "task_key",
+                    "description",
+                    "room_id",
+                    "serial_group",
+                ]
+            },
+            "depends_on": {"type": "array", "items": STRING},
+        },
         ["project_id", "task_key", "description"],
     ),
     tool(
@@ -54,6 +67,10 @@ TOOLS = [
         "Read a Ciel-owned task. A completed agent run is not proof of a green PR.",
         {"task_key": STRING},
         ["task_key"],
+    ),
+    tool(
+        "ciel_tasks",
+        "List every Ciel-owned task with slot usage, queue reasons, observation errors and undelivered owner notices. Queued, preparing or running is not a verified result.",
     ),
     tool(
         "ciel_task_reply",
@@ -108,10 +125,11 @@ OPERATIONS = dict(
             "ciel_projects",
             "ciel_start_task",
             "ciel_task_status",
+            "ciel_tasks",
             "ciel_task_reply",
             "ciel_stop_task",
         ],
-        ["projects", "start", "status", "reply", "stop"],
+        ["projects", "start", "status", "tasks", "reply", "stop"],
     )
 )
 

@@ -1,5 +1,6 @@
 """Bounded, idempotent requests to finish PR creation or fix CI."""
 
+import time
 import uuid
 
 
@@ -35,8 +36,17 @@ def request_followup(dispatcher, task, state, reason):
             "dispatchMode": {"type": "queue_after_active"},
         },
     )
+    # The previous run stays visible in T3 until the new one starts; remember
+    # its ordinal so it is not read as the answer to this follow-up.
     dispatcher.store.db.execute(
-        "UPDATE tasks SET last_status='preparing' WHERE task_key=?", (task["task_key"],)
+        "UPDATE tasks SET last_status='preparing', pending_command=?, baseline_ordinal=?, pending_since=? WHERE task_key=? AND pending_command IS NOT ?",
+        (
+            command,
+            state["latest_run"].get("ordinal", 0),
+            time.time(),
+            task["task_key"],
+            command,
+        ),
     )
     dispatcher.store.db.commit()
     return True

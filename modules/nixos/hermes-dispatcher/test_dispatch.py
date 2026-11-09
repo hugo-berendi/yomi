@@ -83,7 +83,12 @@ class DispatchTests(unittest.TestCase):
             self.assertEqual(len(dispatch.projects()), 1)
             with self.assertRaises(TimeoutError):
                 dispatch.start(args)
-            self.assertEqual(dispatch.start(args)["status"], "running")
+            # The retry reuses the stored launch; the first poll then reports the real run.
+            self.assertEqual(dispatch.start(args)["status"], "preparing")
+            dispatch.tick()
+            self.assertEqual(
+                dispatch.summary(store.task(args["task_key"]))["status"], "running"
+            )
             self.assertEqual(store.task(args["task_key"])["thread_id"], "mcp:actual")
             self.assertEqual(launches[0], launches[1])
             self.assertEqual(launches[0]["workspaceStrategy"]["type"], "worktree")
@@ -132,7 +137,9 @@ class DispatchTests(unittest.TestCase):
                 calls.append((method, payload))
                 return {}
 
-            dispatcher = Dispatcher({"environmentId": "test"}, store, rpc)
+            dispatcher = Dispatcher(
+                {"environmentId": "test", "maxConcurrentTasks": 1}, store, rpc
+            )
             with patch(
                 "dispatch_core.verify",
                 return_value={"state": "failed", "reason": "CI failed"},
@@ -162,7 +169,7 @@ class DispatchTests(unittest.TestCase):
                 )
             store.db.commit()
             dispatcher = Dispatcher(
-                {},
+                {"maxConcurrentTasks": 1},
                 store,
                 lambda *args, **kwargs: self.fail(
                     "Must not launch or send without a receipt"

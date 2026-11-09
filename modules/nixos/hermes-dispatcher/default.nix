@@ -155,10 +155,19 @@
     cp ${./launcher.py} "$out/launcher.py"
     cp ${./matrix_bootstrap.py} "$out/matrix_bootstrap.py"
     cp ${./matrix_profile.py} "$out/matrix_profile.py"
-    ${lib.concatMapStringsSep "\n" (name: "cp ${./. + "/${name}.py"} \"$out/${name}.py\"") ["broker_client" "ciel_routing" "dispatch_core" "dispatch_service" "dispatch_store" "local_tools" "mcp_server" "t3_rpc" "t3_mcp" "t3_mcp_auth" "t3_backend" "task_policy" "provider_policy" "quota_recovery" "matrix_rooms" "pr_verification" "task_followup"]}
+    ${lib.concatMapStringsSep "\n" (name: "cp ${./. + "/${name}.py"} \"$out/${name}.py\"") ["broker_client" "ciel_routing" "dispatch_core" "dispatch_service" "dispatch_store" "local_tools" "mcp_server" "t3_rpc" "t3_mcp" "t3_mcp_auth" "t3_backend" "task_policy" "provider_policy" "quota_recovery" "matrix_rooms" "pr_verification" "task_followup" "task_scheduler" "task_notices" "project_memory" "ciel_watch"]}
   '';
 in {
   options.yomi.hermesDispatcher = {
+    t3.maxConcurrentTasks = lib.mkOption {
+      type = lib.types.ints.between 1 4;
+      default = 2;
+      description = ''
+        Coding tasks that may run at once. Each task has its own T3 worktree, so
+        independent tasks do not share files; Hugo authorized parallel work on
+        2026-11-09. Provider quota is still checked before every launch.
+      '';
+    };
     t3.projectIds = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [];

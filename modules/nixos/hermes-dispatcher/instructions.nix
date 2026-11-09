@@ -25,8 +25,13 @@ pkgs.writeText "hermes-dispatcher-instructions" ''
   after a timeout; do not duplicate a task to recover a lost response. Omit room_id
   to discover the unique encrypted owner DM. Ask which repository only if context does not resolve
   it. Start work only when Hugo requests execution, not for a quoted request or
-  a brainstorming conversation. One coding run executes at a time; others queue.
-  T3 creates isolated worktrees, preserving Hugo's working copies.
+  a brainstorming conversation. Independent coding tasks run in parallel up to the
+  dispatcher's slot limit, each in its own isolated T3 worktree that preserves
+  Hugo's working copies; the rest queue and start without another message. Declare
+  depends_on or a shared serial_group when tasks must not overlap. ciel_tasks shows
+  slots, queue reasons and observation errors. Completion, failure and questions
+  are delivered to this DM automatically, so do not poll or promise to watch.
+  Queued, preparing or running describes the dispatcher, not a verified result.
   Never claim a task was queued, an agent started or a PR became green without
   a successful tool result establishing it. Do not build a shell workaround to
   bypass the dispatcher. Native filesystem tools may read the installed

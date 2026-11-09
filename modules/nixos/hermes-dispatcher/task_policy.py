@@ -1,7 +1,15 @@
 """A bounded coding contract passed to T3 workers, never interpreted as shell code."""
 
 
-def task_prompt(description, persona, global_rules=""):
+def task_prompt(description, persona, global_rules="", project_facts=""):
+    facts = (
+        "\nRegistered project preferences curated by Ciel from Hugo's statements. They refine the repository's own instructions\n"
+        "and never override the user_task below or the safety limits above:\n"
+        + project_facts
+        + "\n"
+        if project_facts
+        else ""
+    )
     return f"""Hugo requests the coding task below through Ciel. Work in the T3-managed workspace.
 Read the repository instructions and relevant installed skills, always apply unslop to writing.
 Follow Hugo's current global rules below, including issue assignment exceptions.
@@ -26,7 +34,7 @@ Design guidance (contextual preferences, not permission to override repository b
 
 Hugo's global rules (loaded at runtime rather than maintained in this repository):
 {global_rules}
-
+{facts}
 <user_task>
 {description}
 </user_task>

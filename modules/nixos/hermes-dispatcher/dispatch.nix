@@ -31,6 +31,9 @@
     baseUrl = "http://127.0.0.1:${toString config.yomi.ports.t3code}";
     publicUrl = config.yomi.nginx.at.t3code.url;
     projectIds = cfg.t3.projectIds;
+    maxConcurrentTasks = cfg.t3.maxConcurrentTasks;
+    # Queued tasks read project preferences from here when they start.
+    memoryDirectory = "${state}/home/memory";
     taste = import ./personality.nix;
   });
   codexConfig = (pkgs.formats.toml {}).generate "ciel-codex.toml" {

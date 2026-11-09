@@ -1,6 +1,7 @@
 """Quota handoff stays in the same T3 thread/worktree with idempotent messages."""
 
 import json
+import time
 import uuid
 from provider_policy import exhausted, known_available, select_provider
 
@@ -76,7 +77,11 @@ def recover(dispatcher, task, state):
         )
     args = {"thread_id": task["thread_id"], "run_id": run["id"], "selection": selection}
     command = dispatcher.store.reserve(key, args)
-    intent = {"command": command, "selection": selection}
+    intent = {
+        "command": command,
+        "selection": selection,
+        "ordinal": run.get("ordinal", 0),
+    }
     dispatcher.store.db.execute(
         "UPDATE tasks SET recovery=? WHERE task_key=?",
         (json.dumps(intent), task["task_key"]),
@@ -113,8 +118,8 @@ def continue_handoff(dispatcher, task, intent):
         },
     )
     dispatcher.store.db.execute(
-        "UPDATE tasks SET last_status='preparing', recovery=NULL WHERE task_key=?",
-        (task["task_key"],),
+        "UPDATE tasks SET last_status='preparing', recovery=NULL, pending_command=?, baseline_ordinal=?, pending_since=? WHERE task_key=?",
+        (command, intent.get("ordinal", 0), time.time(), task["task_key"]),
     )
     dispatcher.store.db.execute(
         "INSERT INTO notices(task_key,room_id,body) VALUES(?,?,?)",

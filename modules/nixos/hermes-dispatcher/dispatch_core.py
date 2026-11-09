@@ -1,29 +1,29 @@
 """Narrow task API: registered projects, owned threads and stable server command IDs."""
 
 import json
+import logging
 import re
-import uuid
 import time
+import uuid
 
 from ciel_routing import choose
 from task_policy import task_prompt
 from provider_policy import codex_selection, select_provider
 from matrix_rooms import private_room
 from pr_verification import verify
+from project_memory import project_facts
 from task_followup import request_followup
+from dispatch_store import command_id
+from task_notices import event_key, format_notice
+from task_scheduler import TERMINAL, backoff, blocker, holds_slot, limit
 
-
-TERMINAL = {
-    "completed",
-    "failed",
-    "cancelled",
-    "interrupted",
-    "rolled_back",
-    "stopped",
-    "ready",
-    "merged",
-    "needs_user",
-}
+# A follow-up whose run never appears must not hold a slot forever.
+FOLLOWUP_GRACE = 900
+# Run states in which a newer run may still be about to start.
+RUN_DONE = {"completed", "failed", "interrupted", "cancelled", "stopped", "error"}
+# Repeated launch failures end in a human decision instead of retrying forever.
+LAUNCH_ATTEMPTS = 6
+STUCK_NOTICE_AFTER = 6
 
 
 def text(value, maximum=12000):
@@ -32,11 +32,19 @@ def text(value, maximum=12000):
     return value
 
 
+def key_list(value):
+    if value is None:
+        return []
+    if not isinstance(value, list) or len(value) > 10:
+        raise ValueError("depends_on must be a short list of task keys")
+    return [text(v, 100) for v in value]
+
+
 class Dispatcher:
     def __init__(self, config, store, rpc, verify_room=private_room):
         self.config, self.store, self.rpc = config, store, rpc
         self.verify_room = verify_room
-        self.ready_checked = {}
+        self.slots = limit(config)
 
     def projects(self):
         item = self.rpc("orchestration.subscribeShell", {}, first=True)
@@ -48,11 +56,20 @@ class Dispatcher:
             if p["id"] in self.config["projectIds"] and not p.get("archivedAt")
         ]
 
+    # {{{ Intake
     def start(self, args):
         key = text(args.get("task_key"), 100)
         if not re.fullmatch(r"[a-zA-Z0-9_.:-]+", key):
             raise ValueError("Invalid task key")
         description = text(args.get("description"))
+        depends_on = key_list(args.get("depends_on"))
+        group = args.get("serial_group")
+        if group is not None and not re.fullmatch(
+            r"[a-zA-Z0-9_.:-]{1,100}", str(group)
+        ):
+            raise ValueError("Invalid serial_group")
+        if key in depends_on:
+            raise ValueError("A task cannot depend on itself")
         room = self.verify_room(self.config, args.get("room_id"))
         # The homeserver already verified membership and encryption. Room v12
         # identifiers have no domain suffix, so a colon is not required.
@@ -63,11 +80,13 @@ class Dispatcher:
         project_id = args.get("project_id")
         if not any(p["id"] == project_id for p in self.projects()):
             raise ValueError("Project is not registered and authorized for Ciel")
+        known = {
+            r["task_key"] for r in self.store.db.execute("SELECT task_key FROM tasks")
+        }
+        if set(depends_on) - known:
+            raise ValueError("depends_on names a task Ciel does not own")
         command = self.store.reserve("start:" + key, args)
-        existing = self.store.db.execute(
-            "SELECT task_key FROM tasks WHERE task_key=?", (key,)
-        ).fetchone()
-        if not existing:
+        if key not in known:
             tier = choose(description)
             selection = self.config["routes"][tier]
             thread_id = str(uuid.uuid5(uuid.NAMESPACE_URL, command))
@@ -83,25 +102,44 @@ class Dispatcher:
                     "baseRef": "HEAD",
                     "branch": "ciel/" + thread_id[:12],
                 },
-                "initialMessage": {
-                    "text": task_prompt(
-                        description,
-                        self.config["taste"],
-                        self.config.get("globalRules", ""),
-                    ),
-                    "attachments": [],
-                },
+                "initialMessage": {"text": self.prompt(description), "attachments": []},
             }
             self.store.db.execute(
-                "INSERT INTO tasks(task_key,payload,thread_id,room_id,last_status) VALUES (?, ?, ?, ?, ?)",
-                (key, json.dumps(payload), None, room, "queued"),
+                "INSERT INTO tasks(task_key,payload,thread_id,room_id,last_status,description,depends_on,serial_group) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                (
+                    key,
+                    json.dumps(payload),
+                    None,
+                    room,
+                    "queued",
+                    description,
+                    json.dumps(depends_on),
+                    group,
+                ),
             )
             self.store.db.commit()
-        self.tick()
+        self.advance(key)
         return self.summary(self.store.task(key))
 
+    def prompt(self, description):
+        return task_prompt(
+            description,
+            self.config["taste"],
+            self.config.get("globalRules", ""),
+            project_facts(self.config),
+        )
+
+    # }}}
+
+    # {{{ Reporting
+    def tasks(self):
+        return self.store.db.execute("SELECT * FROM tasks ORDER BY rowid").fetchall()
+
+    def used(self, rows=None):
+        return sum(holds_slot(dict(r)) for r in (rows or self.tasks()))
+
     def summary(self, task):
-        return {
+        result = {
             "task_key": task["task_key"],
             "status": task["last_status"],
             "broker_state": task["last_status"],
@@ -110,6 +148,35 @@ class Dispatcher:
             else None,
             "thread_id": task["thread_id"],
             "url": task.get("thread_link"),
+            "observed_at": task.get("observed_at"),
+            "last_error": task.get("last_error"),
+            "observation_failures": task.get("failures") or 0,
+        }
+        if task["last_status"] in {"queued", "waiting_quota"}:
+            result["waiting_on"] = blocker(task, [dict(r) for r in self.tasks()]) or (
+                {"kind": "slot", "used": self.used(), "limit": self.slots}
+                if self.used() >= self.slots
+                else {"kind": "next_scheduler_pass"}
+            )
+        return result
+
+    def overview(self):
+        rows = [dict(r) for r in self.tasks()]
+        pending = {
+            r["task_key"]: r["n"]
+            for r in self.store.db.execute(
+                "SELECT task_key, COUNT(*) n FROM notices WHERE delivered=0 GROUP BY task_key"
+            )
+        }
+        return {
+            "slots": {"used": self.used(rows), "limit": self.slots},
+            "tasks": [
+                {
+                    **self.summary(t),
+                    "undelivered_notices": pending.get(t["task_key"], 0),
+                }
+                for t in rows
+            ],
         }
 
     def status(self, key):
@@ -125,10 +192,19 @@ class Dispatcher:
                 "orchestration.getThreadProjection", {"threadId": task["thread_id"]}
             )
             runs = projection["runs"]
-            result["status"] = (
-                max(runs, key=lambda r: r["ordinal"])["status"] if runs else "preparing"
-            )
+            latest = max(runs, key=lambda r: r["ordinal"]) if runs else None
+            result["status"] = latest["status"] if latest else "preparing"
             result["agent_status"] = result["status"]
+            if task.get("pending_command"):
+                # A follow-up is accepted, but T3 may still show the previous run.
+                # Reading it as the answer would report old work as the new result.
+                if latest and latest["ordinal"] > task["baseline_ordinal"]:
+                    result["followup_started"] = True
+                elif not latest or latest["status"] in RUN_DONE:
+                    if time.time() - (task["pending_since"] or 0) > FOLLOWUP_GRACE:
+                        result["followup_stalled"] = True
+                    else:
+                        result["status"] = result["agent_status"] = "preparing"
             if task["last_status"] in {
                 "verifying",
                 "ready",
@@ -141,9 +217,7 @@ class Dispatcher:
                 thread.get("linkedPullRequest") or thread.get("branchPullRequest")
             ]
             result["pr_links"] = [link for link in links if link]
-            result["latest_run"] = (
-                max(runs, key=lambda r: r["ordinal"]) if runs else None
-            )
+            result["latest_run"] = latest
             result["limit_recovery"] = projection.get("quota_recovery_eligible", False)
             messages = [
                 m
@@ -153,6 +227,9 @@ class Dispatcher:
             result["latest_reply"] = messages[-1]["text"][-10000:] if messages else ""
         return result
 
+    # }}}
+
+    # {{{ Operator commands
     def stop(self, args):
         task = self.store.task(text(args.get("task_key"), 100))
         command = self.store.reserve("stop:" + text(args.get("request_id"), 100), args)
@@ -190,7 +267,7 @@ class Dispatcher:
                 },
             )
         self.store.db.execute(
-            "UPDATE tasks SET last_status='stopped' WHERE task_key=?",
+            "UPDATE tasks SET last_status='stopped', pending_command=NULL WHERE task_key=?",
             (task["task_key"],),
         )
         self.store.db.commit()
@@ -205,12 +282,30 @@ class Dispatcher:
             "stopping",
         }:
             raise ValueError("Task has no active T3 conversation")
-        if self.other_active(task["task_key"]):
-            raise ValueError(
-                "Another coding task is active; wait before resuming this task"
-            )
         message = text(args.get("message"))
-        command = self.store.reserve("reply:" + text(args.get("request_id"), 100), args)
+        key = "reply:" + text(args.get("request_id"), 100)
+        # A reply to a running task queues behind its run. Resuming an idle one
+        # starts a new run and needs a free slot, so the bound holds for follow-ups too.
+        if (
+            not self.store.seen(key)
+            and not holds_slot(task)
+            and self.used() >= self.slots
+        ):
+            raise ValueError(
+                "All coding slots are busy; retry this reply with the same request_id when one frees up"
+            )
+        projection = self.rpc(
+            "orchestration.getThreadProjection", {"threadId": task["thread_id"]}
+        )
+        ordinal = max((r["ordinal"] for r in projection["runs"]), default=0)
+
+        def intent(db):
+            db.execute(
+                "UPDATE tasks SET pending_command=?, baseline_ordinal=?, pending_since=?, failures=0, next_check=NULL WHERE task_key=?",
+                (command_id(key), ordinal, time.time(), task["task_key"]),
+            )
+
+        command = self.store.reserve(key, args, apply=intent)
         result = self.rpc(
             "orchestration.dispatchCommand",
             {
@@ -224,197 +319,317 @@ class Dispatcher:
             },
         )
         self.store.db.execute(
-            "UPDATE tasks SET last_status='preparing' WHERE task_key=?",
-            (task["task_key"],),
+            "UPDATE tasks SET last_status='preparing' WHERE task_key=? AND pending_command=?",
+            (task["task_key"], command),
         )
         self.store.db.commit()
         return result
 
-    def other_active(self, key):
-        others = self.store.db.execute(
-            "SELECT task_key,last_status FROM tasks WHERE task_key!=?", (key,)
-        ).fetchall()
-        return any(
-            r["last_status"]
-            not in TERMINAL | {"queued", "waiting_quota", "waiting_followup"}
-            for r in others
-        )
+    # }}}
 
+    # {{{ Launching
     def launch(self, task):
         result = self.rpc("orchestration.launchThread", json.loads(task["payload"]))
         self.store.db.execute(
-            "UPDATE tasks SET thread_id=?, thread_link=?, last_status='preparing' WHERE task_key=?",
+            "UPDATE tasks SET thread_id=?, thread_link=?, last_status='preparing', failures=0, next_check=NULL, last_error=NULL WHERE task_key=?",
             (result["threadId"], result.get("link"), task["task_key"]),
         )
         self.store.db.commit()
 
-    def tick(self):
-        rows = self.store.db.execute("SELECT * FROM tasks ORDER BY rowid").fetchall()
-        active = False
-        for row in rows:
-            task = dict(row)
-            if task["last_status"] == "uncertain_launch":
-                active = True
-                continue
-            if task["last_status"] == "stopping":
-                self.rpc(
-                    "orchestration.dispatchCommand",
-                    {
-                        "type": "thread.stop",
-                        "commandId": task["stop_command"],
-                        "threadId": task["thread_id"],
-                        "reason": "Stopped by Hugo through Ciel",
-                        "stopDelegatedTasks": True,
-                    },
-                )
-                self.store.db.execute(
-                    "UPDATE tasks SET last_status='stopped' WHERE task_key=?",
-                    (task["task_key"],),
-                )
-                self.store.db.commit()
-                continue
-            if (
-                task["last_status"] == "ready"
-                and time.monotonic() - self.ready_checked.get(task["task_key"], 0) < 300
-            ):
-                continue
-            if (
-                task["last_status"] in TERMINAL and task["last_status"] != "ready"
-            ) or task["last_status"] in {
-                "queued",
-                "waiting_quota",
-            }:
-                continue
-            # launchThread has server receipts: retry exactly the stored operation after a lost reply.
-            if task["last_status"] == "launching":
-                self.launch(task)
-                task = self.store.task(task["task_key"])
-            state = self.status(task["task_key"])
-            from quota_recovery import recover
+    def tier_of(self, payload):
+        efforts = {
+            o["id"]: o["value"] for o in payload["modelSelection"].get("options", [])
+        }
+        return next(
+            (
+                name
+                for name, route in self.config["routes"].items()
+                if route["model"] == payload["modelSelection"]["model"]
+                and route["effort"] == efforts.get("reasoningEffort")
+            ),
+            "standard",
+        )
 
-            if recover(self, task, state):
-                active = True
-                continue
-            status = state.get("agent_status", state["status"])
-            verdict = None
-            if status == "completed":
-                try:
-                    project_id = json.loads(task["payload"])["projectId"]
-                    verdict = verify(self.rpc, project_id, state.get("pr_links", []))
-                except Exception:
-                    verdict = {
-                        "state": "unverified",
-                        "reason": "PR/CI-Status konnte nicht unabhängig über die Forge abgerufen werden.",
-                    }
-                deferred = verdict["state"] in {
-                    "missing",
-                    "failed",
-                } and self.other_active(task["task_key"])
-                if (
-                    not deferred
-                    and verdict["state"] in {"missing", "failed"}
-                    and request_followup(self, task, state, verdict["reason"])
-                ):
-                    active = True
-                    continue
-                status = {
-                    "ready": "ready",
-                    "merged": "merged",
-                    "pending": "verifying",
-                }.get(verdict["state"], "needs_user")
-                if deferred:
-                    status = "waiting_followup"
-                if status == "ready":
-                    self.ready_checked[task["task_key"]] = time.monotonic()
-                self.store.db.execute(
-                    "UPDATE tasks SET verification=? WHERE task_key=?",
-                    (json.dumps(verdict), task["task_key"]),
-                )
-                self.store.db.commit()
-            if status != task["last_status"] or (
-                verdict is not None and verdict != state["verification"]
+    def fresh_prompt(self, task, payload):
+        """Queued work starts with the preferences recorded while it waited."""
+        description = task.get("description")
+        if not description:
+            found = re.search(
+                r"<user_task>\n(.*)\n</user_task>",
+                payload["initialMessage"]["text"],
+                re.S,
+            )
+            description = found.group(1) if found else None
+        if description:
+            payload["initialMessage"]["text"] = self.prompt(description)
+
+    def fill_slots(self, raise_for=None):
+        """Start eligible queued tasks, in order, until the slot bound is reached."""
+        used = self.used()
+        providers = authorized = None
+        failure = None
+        for row in self.tasks():
+            if used >= self.slots:
+                break
+            task = dict(row)
+            if (
+                task["last_status"] not in {"queued", "waiting_quota"}
+                or task["thread_id"]
             ):
-                self.store.db.execute(
-                    "UPDATE tasks SET last_status=? WHERE task_key=?",
-                    (status, task["task_key"]),
-                )
-                if status in TERMINAL or status == "waiting":
-                    body = f"T3-Auftrag {task['task_key']}: {status}\n{state['url']}\n{state.get('latest_reply', '')[-8000:]}"
-                    if verdict is not None:
-                        body += "\nUnabhängige PR-Prüfung: " + json.dumps(
-                            verdict, ensure_ascii=False
-                        )
-                    self.store.db.execute(
-                        "INSERT INTO notices(task_key,room_id,body) VALUES(?,?,?)",
-                        (task["task_key"], task["room_id"], body),
+                continue
+            reason = blocker(task, [dict(r) for r in self.tasks()])
+            if reason:
+                if reason["kind"] == "dead":
+                    self.store.notify(
+                        task,
+                        f"{task['task_key']}:dependency:{reason['task']}",
+                        f"T3-Auftrag {task['task_key']} bleibt in der Warteschlange: Die Voraussetzung {reason['task']} ist nicht erfolgreich beendet. Entscheide, ob er trotzdem starten oder gestoppt werden soll.",
                     )
-                self.store.db.commit()
-            active |= status not in TERMINAL
-        # Unknown subscription quota: one concurrent coding run, not guessed capacity.
-        if not active:
-            queued = self.store.db.execute(
-                "SELECT * FROM tasks WHERE last_status IN ('queued','waiting_quota') ORDER BY rowid LIMIT 1"
-            ).fetchone()
-            if queued:
-                payload = json.loads(queued["payload"])
-                if not any(p["id"] == payload["projectId"] for p in self.projects()):
-                    raise ValueError("Queued task's project is no longer authorized")
-                config_event = self.rpc(
-                    "subscribeServerConfig",
-                    {
-                        "usageLimitsCommand": True,
-                        "usageLimitSources": True,
-                        "workspaceSnapshotsOnDemand": True,
-                    },
-                    first=True,
+                continue
+            payload = json.loads(task["payload"])
+            if authorized is None:
+                authorized = {p["id"] for p in self.projects()}
+            if payload["projectId"] not in authorized:
+                self.finish(
+                    task,
+                    "needs_user",
+                    "Der Auftrag wurde nicht gestartet: Sein Projekt ist nicht mehr für Ciel freigegeben.",
                 )
-                tier = next(
-                    (
-                        name
-                        for name, route in self.config["routes"].items()
-                        if route["model"] == payload["modelSelection"]["model"]
-                        and route["effort"]
-                        == next(
-                            (
-                                option["value"]
-                                for option in payload["modelSelection"].get(
-                                    "options", []
-                                )
-                                if option["id"] == "reasoningEffort"
-                            ),
-                            None,
-                        )
-                    ),
-                    "standard",
+                continue
+            if providers is None:
+                providers = (
+                    self.rpc(
+                        "subscribeServerConfig",
+                        {
+                            "usageLimitsCommand": True,
+                            "usageLimitSources": True,
+                            "workspaceSnapshotsOnDemand": True,
+                        },
+                        first=True,
+                    )
+                    .get("config", {})
+                    .get("providers", [])
                 )
-                selected = select_provider(
-                    config_event.get("config", {}).get("providers", []),
-                    tier,
-                    self.config["routes"],
-                )
-                if selected is None:
-                    if queued["last_status"] != "waiting_quota":
-                        self.store.db.execute(
-                            "UPDATE tasks SET last_status='waiting_quota' WHERE task_key=?",
-                            (queued["task_key"],),
-                        )
-                        self.store.db.execute(
-                            "INSERT INTO notices(task_key,room_id,body) VALUES(?,?,?)",
-                            (
-                                queued["task_key"],
-                                queued["room_id"],
-                                "Ciel-Auftrag wartet: Keines der freigegebenen Abos ist bereit. Ich nutze keine kostenpflichtige API und prüfe später erneut.",
-                            ),
-                        )
-                        self.store.db.commit()
-                    return
-                payload["modelSelection"] = selected
-                self.store.db.execute(
-                    "UPDATE tasks SET last_status='launching', payload=? WHERE task_key=?",
-                    (json.dumps(payload), queued["task_key"]),
-                )
-                self.store.db.commit()
-                self.launch(self.store.task(queued["task_key"]))
+            selected = select_provider(
+                providers, self.tier_of(payload), self.config["routes"]
+            )
+            if selected is None:
+                # Every queued task would meet the same exhausted subscriptions.
+                if task["last_status"] != "waiting_quota":
+                    self.store.db.execute(
+                        "UPDATE tasks SET last_status='waiting_quota' WHERE task_key=?",
+                        (task["task_key"],),
+                    )
+                    self.store.notify(
+                        task,
+                        f"{task['task_key']}:waiting_quota",
+                        "Ciel-Auftrag wartet: Keines der freigegebenen Abos ist bereit. Ich nutze keine kostenpflichtige API und prüfe später erneut.",
+                    )
+                break
+            payload["modelSelection"] = selected
+            self.fresh_prompt(task, payload)
+            self.store.db.execute(
+                "UPDATE tasks SET last_status='launching', payload=? WHERE task_key=?",
+                (json.dumps(payload), task["task_key"]),
+            )
+            self.store.db.commit()
+            used += 1
+            try:
+                self.launch(self.store.task(task["task_key"]))
+            except Exception as exc:
+                self.record_failure(self.store.task(task["task_key"]), exc)
+                if task["task_key"] == raise_for:
+                    failure = exc
+        if failure is not None:
+            raise failure
+
+    def advance(self, key=None):
+        """Start work now; an explicit request retries its own launch without waiting for backoff."""
+        if key:
+            task = self.store.task(key)
+            if task["last_status"] == "launching" and not task["thread_id"]:
+                try:
+                    self.launch(task)
+                except Exception as exc:
+                    self.record_failure(task, exc)
+                    raise
+        self.fill_slots(raise_for=key)
+
+    def finish(self, task, status, reason):
+        self.store.db.execute(
+            "UPDATE tasks SET last_status=?, pending_command=NULL WHERE task_key=?",
+            (status, task["task_key"]),
+        )
+        self.store.notify(
+            task,
+            f"{task['task_key']}:{status}:{reason[:40]}",
+            f"T3-Auftrag {task['task_key']}: {reason}",
+        )
+
+    # }}}
+
+    # {{{ Observation
+    def record_failure(self, task, exc):
+        failures = (task.get("failures") or 0) + 1
+        error = (
+            f"{type(exc).__name__}: {exc}"
+            if isinstance(exc, ValueError)
+            else type(exc).__name__
+        )
+        logging.warning(
+            "Ciel task %s observation failed (%d): %s",
+            task["task_key"],
+            failures,
+            type(exc).__name__,
+        )
+        self.store.db.execute(
+            "UPDATE tasks SET failures=?, last_error=?, next_check=? WHERE task_key=?",
+            (failures, error[:300], time.time() + backoff(failures), task["task_key"]),
+        )
+        self.store.db.commit()
+        if (
+            task["last_status"] == "launching"
+            and not task["thread_id"]
+            and failures >= LAUNCH_ATTEMPTS
+        ):
+            # Retrying a launch whose receipt cannot be confirmed risks a duplicate worktree.
+            self.store.db.execute(
+                "UPDATE tasks SET last_status='uncertain_launch' WHERE task_key=?",
+                (task["task_key"],),
+            )
+            self.store.db.commit()
+            self.store.notify(
+                task,
+                f"{task['task_key']}:uncertain_launch",
+                f"T3-Auftrag {task['task_key']}: Der Start ließ sich nach {failures} Versuchen nicht bestätigen ({error[:200]}). Ciel startet nichts doppelt; bitte prüfe T3 auf einen vorhandenen Worktree.",
+            )
+        elif failures == STUCK_NOTICE_AFTER:
+            self.store.notify(
+                task,
+                f"{task['task_key']}:observation-stuck:{error[:60]}",
+                f"T3-Auftrag {task['task_key']}: Ciel kann den Zustand seit {failures} Versuchen nicht lesen ({error[:200]}). Der Auftrag ist unverändert; Ciel prüft mit wachsendem Abstand weiter.",
+            )
+
+    def observe(self, task):
+        if task["last_status"] in {"uncertain_launch", "queued", "waiting_quota"}:
+            return
+        if task["last_status"] in TERMINAL and task["last_status"] != "ready":
+            return
+        if task.get("next_check") and task["next_check"] > time.time():
+            return
+        try:
+            self.reconcile(task)
+        except Exception as exc:
+            self.record_failure(self.store.task(task["task_key"]), exc)
+            return
+        self.store.db.execute(
+            "UPDATE tasks SET observed_at=?, failures=0, last_error=NULL WHERE task_key=?",
+            (time.time(), task["task_key"]),
+        )
+        self.store.db.commit()
+
+    def reconcile(self, task):
+        if task["last_status"] == "stopping":
+            self.rpc(
+                "orchestration.dispatchCommand",
+                {
+                    "type": "thread.stop",
+                    "commandId": task["stop_command"],
+                    "threadId": task["thread_id"],
+                    "reason": "Stopped by Hugo through Ciel",
+                    "stopDelegatedTasks": True,
+                },
+            )
+            self.store.db.execute(
+                "UPDATE tasks SET last_status='stopped' WHERE task_key=?",
+                (task["task_key"],),
+            )
+            self.store.db.commit()
+            return
+        # launchThread has server receipts: retry exactly the stored operation after a lost reply.
+        if task["last_status"] == "launching":
+            self.launch(task)
+            task = self.store.task(task["task_key"])
+        state = self.status(task["task_key"])
+        from quota_recovery import recover
+
+        if state.get("followup_started"):
+            self.store.db.execute(
+                "UPDATE tasks SET pending_command=NULL, pending_since=NULL WHERE task_key=?",
+                (task["task_key"],),
+            )
+            self.store.db.commit()
+            task = self.store.task(task["task_key"])
+        if state.get("followup_stalled"):
+            self.finish(
+                task,
+                "needs_user",
+                "Die Folgenachricht hat keinen neuen Agent-Lauf gestartet. Bitte prüfe den Thread oder sende sie erneut.",
+            )
+            self.store.db.commit()
+            return
+        if recover(self, task, state):
+            return
+        status = state.get("agent_status", state["status"])
+        if status in {"queued", "waiting_quota"}:
+            # T3's own run states must not be mistaken for this broker's queue.
+            status = "preparing"
+        verdict = None
+        if status == "completed":
+            try:
+                project_id = json.loads(task["payload"])["projectId"]
+                verdict = verify(self.rpc, project_id, state.get("pr_links", []))
+            except Exception:
+                verdict = {
+                    "state": "unverified",
+                    "reason": "PR/CI-Status konnte nicht unabhängig über die Forge abgerufen werden.",
+                }
+            # A repair run needs a slot like any other run.
+            deferred = (
+                verdict["state"] in {"missing", "failed"} and self.used() >= self.slots
+            )
+            if (
+                not deferred
+                and verdict["state"] in {"missing", "failed"}
+                and request_followup(self, task, state, verdict["reason"])
+            ):
+                return
+            status = {
+                "ready": "ready",
+                "merged": "merged",
+                "pending": "verifying",
+            }.get(verdict["state"], "needs_user")
+            if deferred:
+                status = "waiting_followup"
+            self.store.db.execute(
+                "UPDATE tasks SET verification=?, next_check=? WHERE task_key=?",
+                (
+                    json.dumps(verdict),
+                    time.time() + 300 if status == "ready" else None,
+                    task["task_key"],
+                ),
+            )
+            self.store.db.commit()
+        if status != task["last_status"]:
+            self.store.db.execute(
+                "UPDATE tasks SET last_status=? WHERE task_key=?",
+                (status, task["task_key"]),
+            )
+            self.store.db.commit()
+        if status in TERMINAL or status == "waiting":
+            self.store.notify(
+                task,
+                event_key(task, status, state, verdict),
+                format_notice(task, state, status, verdict),
+            )
+
+    def tick(self):
+        """Observe every task independently, then hand freed slots to queued work."""
+        for row in self.tasks():
+            self.observe(dict(row))
+        self.fill_slots()
+
+    # }}}
 
     def handle(self, operation, args):
         if operation == "projects":
@@ -423,12 +638,13 @@ class Dispatcher:
             return self.start(args)
         if operation == "status":
             return self.status(text(args.get("task_key"), 100))
+        if operation == "tasks":
+            return self.overview()
         if operation == "stop":
             return self.stop(args)
         if operation == "reply":
             return self.reply(args)
         if operation == "notices":
-            self.tick()
             return [
                 dict(r)
                 for r in self.store.db.execute(
