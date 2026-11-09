@@ -41,6 +41,11 @@
       args = ["${launcherSource}/mcp_server.py" "${localConfig}"];
       startup_timeout_sec = 15;
       tool_timeout_sec = 60;
+      # Matrix has no Codex approval dialog. Hugo authorized these bounded
+      # operations; keep shell/filesystem approvals separate from this server.
+      tools = lib.genAttrs ["ciel_start_task" "ciel_task_reply" "ciel_stop_task" "ciel_memory_write"] (_: {
+        approval_mode = "approve";
+      });
     };
   };
 in {
