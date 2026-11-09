@@ -57,7 +57,8 @@ outside `/var/lib/private` and would otherwise be lost by root rollback. On inar
 stop the bridges, copy their directories with ownership intact, switch, then start
 them again. Check that the destinations do not already hold a different copy
 before copying. This migration needs interactive sudo and briefly disconnects the
-bridges.
+bridges. While `yomi.matrix.bridges.enable` is false the bridge units do not
+exist, so omit the `systemctl stop` and `systemctl start` lines.
 
 ```sh
 (
