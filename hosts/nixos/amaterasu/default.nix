@@ -10,6 +10,7 @@
     ./hardware
     ./filesystems
     ./fingerprint.nix
+    ./printing.nix
     ./services/restic.nix
     ./yubikey.nix
   ];
