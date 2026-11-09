@@ -13,6 +13,8 @@ def tool(name, description, properties=None, required=None):
         "ciel_projects",
         "ciel_task_status",
         "ciel_tasks",
+        "ciel_task_requests",
+        "ciel_task_history",
         "ciel_skills_list",
         "ciel_skill_read",
         "ciel_memory_read",
@@ -42,11 +44,19 @@ def tool(name, description, properties=None, required=None):
 
 
 STRING = {"type": "string"}
+# Explicit model choice. All three together or none; the broker checks an
+# allowlist and T3's live catalog and reads the stored configuration back
+# before any run starts. A wish in the description text selects nothing.
+MODEL = {
+    "provider": {"enum": ["claudeAgent", "codex"]},
+    "model": STRING,
+    "effort": {"enum": ["low", "medium", "high"]},
+}
 TOOLS = [
     tool("ciel_projects", "List registered T3 repositories authorized for Ciel."),
     tool(
         "ciel_start_task",
-        "Queue one authorized coding problem through T3. Reuse task_key on retries. Stops before merge/deploy. Omit room_id to discover the unique encrypted owner DM automatically. Independent tasks run in parallel, each in its own worktree, up to the broker's slot limit; the rest queue and start by themselves. Set depends_on (task keys that must be ready or merged first) or a shared serial_group (never run together) when tasks touch the same work. Completion, failure and questions reach Hugo's owner DM on their own; no watching is needed.",
+        "Queue one authorized coding problem through T3. Reuse task_key on retries. Stops before merge/deploy. Omit room_id to discover the unique encrypted owner DM automatically. Independent tasks run in parallel, each in its own worktree, up to the broker's slot limit; the rest queue and start by themselves. Set depends_on (task keys that must be ready or merged first) or a shared serial_group (never run together) when tasks touch the same work. Pass provider, model and effort together only when Hugo chose them; the task then never runs under another model or effort and waits instead of substituting. Events (questions, completion, failure) reach you automatically as internal events; no watching or polling is needed.",
         {
             **{
                 k: STRING
@@ -59,8 +69,42 @@ TOOLS = [
                 ]
             },
             "depends_on": {"type": "array", "items": STRING},
+            **MODEL,
         },
         ["project_id", "task_key", "description"],
+    ),
+    tool(
+        "ciel_task_requests",
+        "List open structured worker questions of Ciel-owned tasks, with task, thread, run, a short request handle and the questions. Approvals are not listed; only Hugo grants them in T3.",
+        {"task_key": STRING},
+    ),
+    tool(
+        "ciel_task_answer",
+        "Answer one open worker question through T3's input-request interface. This continues the same run and never starts a new one. Answer every question of the request (keys are the question ids; a list only for multi-select). Reuse request_id on retries. The result states whether T3 accepted it and the run continues.",
+        {
+            "task_key": STRING,
+            "request": STRING,
+            "request_id": STRING,
+            "answers": {
+                "type": "object",
+                "additionalProperties": {
+                    "anyOf": [STRING, {"type": "array", "items": STRING}]
+                },
+            },
+        },
+        ["task_key", "request", "request_id", "answers"],
+    ),
+    tool(
+        "ciel_task_history",
+        "Read one bounded page of a Ciel-owned task's thread messages. Page with after_position = next_position.",
+        {"task_key": STRING, "after_position": {"type": "integer", "minimum": 0}},
+        ["task_key"],
+    ),
+    tool(
+        "ciel_task_solve",
+        "Mark a Ciel-owned T3 thread solved. Succeeds only when the run finished, no question or follow-up is open, and the forge shows the PR merged or green on its exact head with an approving review. Otherwise returns the blockers. Stopped tasks stay stopped.",
+        {k: STRING for k in ["task_key", "request_id"]},
+        ["task_key", "request_id"],
     ),
     tool(
         "ciel_task_status",
@@ -74,8 +118,8 @@ TOOLS = [
     ),
     tool(
         "ciel_task_reply",
-        "Send Hugo's clarification to a Ciel-owned task. Reuse request_id on retries.",
-        {k: STRING for k in ["task_key", "request_id", "message"]},
+        "Send an addition to a Ciel-owned task as a thread message. For a task still waiting to start, it is stored and included in the first prompt. Refused while a worker question is open; use ciel_task_answer then. provider/model/effort (all three) deliberately change the thread's configuration before sending. Reuse request_id on retries.",
+        {**{k: STRING for k in ["task_key", "request_id", "message"]}, **MODEL},
         ["task_key", "request_id", "message"],
     ),
     tool(
@@ -128,8 +172,23 @@ OPERATIONS = dict(
             "ciel_tasks",
             "ciel_task_reply",
             "ciel_stop_task",
+            "ciel_task_requests",
+            "ciel_task_answer",
+            "ciel_task_history",
+            "ciel_task_solve",
         ],
-        ["projects", "start", "status", "tasks", "reply", "stop"],
+        [
+            "projects",
+            "start",
+            "status",
+            "tasks",
+            "reply",
+            "stop",
+            "requests",
+            "answer",
+            "history",
+            "solve",
+        ],
     )
 )
 

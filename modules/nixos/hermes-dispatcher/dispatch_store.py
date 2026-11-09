@@ -27,6 +27,16 @@ TASK_COLUMNS = {
 }
 
 
+NOTICE_COLUMNS = {
+    "dedup_key": "TEXT",
+    # A notice first wakes Ciel's own session so she can act on it; after
+    # WAKE_FALLBACK seconds of failed wakes it goes to Hugo as plain text.
+    "wake_failed_since": "REAL",
+    "delivered_as": "TEXT",
+}
+WAKE_FALLBACK = 600
+
+
 def command_id(key):
     return "ciel:" + str(uuid.uuid5(uuid.NAMESPACE_URL, key))
 
@@ -49,10 +59,18 @@ class Store:
         self.db.execute(
             "CREATE TABLE IF NOT EXISTS notices (id INTEGER PRIMARY KEY, task_key TEXT NOT NULL, room_id TEXT NOT NULL, body TEXT NOT NULL, delivered INTEGER NOT NULL DEFAULT 0)"
         )
-        if "dedup_key" not in {
-            row[1] for row in self.db.execute("PRAGMA table_info(notices)")
-        }:
-            self.db.execute("ALTER TABLE notices ADD COLUMN dedup_key TEXT")
+        have = {row[1] for row in self.db.execute("PRAGMA table_info(notices)")}
+        for name, kind in NOTICE_COLUMNS.items():
+            if name not in have:
+                self.db.execute(f"ALTER TABLE notices ADD COLUMN {name} {kind}")
+        # Worker questions, keyed by T3's request id and exposed by a short handle.
+        self.db.execute(
+            "CREATE TABLE IF NOT EXISTS requests (handle TEXT PRIMARY KEY, request_id TEXT NOT NULL UNIQUE, task_key TEXT NOT NULL, thread_id TEXT NOT NULL, run_id TEXT, questions TEXT NOT NULL, state TEXT NOT NULL, seen_at REAL NOT NULL, closed_at REAL, outcome TEXT)"
+        )
+        # Hugo's additions to a task that has no T3 thread yet.
+        self.db.execute(
+            "CREATE TABLE IF NOT EXISTS supplements (operation_key TEXT PRIMARY KEY, task_key TEXT NOT NULL, message TEXT NOT NULL, state TEXT NOT NULL DEFAULT 'pending', created_at REAL NOT NULL)"
+        )
         # One notice per meaningful event, however often a poll re-derives it.
         self.db.execute(
             "CREATE UNIQUE INDEX IF NOT EXISTS notices_dedup ON notices(dedup_key) WHERE dedup_key IS NOT NULL"

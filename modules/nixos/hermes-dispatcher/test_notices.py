@@ -38,7 +38,9 @@ class NoticeTests(unittest.TestCase):
         self.assertIn("abc123", notice["body"])
         self.assertIn("https://github.com/o/r/pull/1", notice["body"])
         self.assertIn("noch nicht gemergt", notice["body"])
-        self.assertIn("Agent-Lauf 1: completed", notice["body"])
+        self.assertIn("Geprüfter Head: abc123", notice["body"])
+        # Plain text for the chat: no JSON dump of the verdict.
+        self.assertNotIn("{", notice["body"])
 
     def test_completed_run_without_ci_is_not_called_a_result(self):
         start(self.d, "a")
@@ -47,11 +49,11 @@ class NoticeTests(unittest.TestCase):
         self.t3.finish("thread-1")
         self.d.tick()
         (body,) = self.bodies()
-        self.assertIn("Deine Entscheidung ist nötig", body)
+        self.assertIn("Hugos Entscheidung ist nötig", body)
         self.assertIn(
             "Noch offen: PR/CI konnte nicht unabhängig bestätigt werden", body
         )
-        self.assertIn("kein verifiziertes Ergebnis", body)
+        self.assertIn("unbestätigt", body)
 
     def test_failure_and_blocked_states_notify_once_without_progress_chatter(self):
         start(self.d, "a"), start(self.d, "b")
@@ -60,7 +62,8 @@ class NoticeTests(unittest.TestCase):
         for _ in range(4):
             self.d.tick()
         self.assertEqual(len(self.bodies()), 2)
-        self.assertTrue(any("wartet auf Eingabe" in b for b in self.bodies()))
+        # A run-level wait is an approval: named, never granted by Ciel.
+        self.assertTrue(any("Freigabe in T3" in b for b in self.bodies()))
         self.assertTrue(any("fehlgeschlagen" in b for b in self.bodies()))
         # A running agent produces no notice, whatever its token or tool activity.
         start(self.d, "c")
@@ -133,6 +136,7 @@ class FakeClient:
 class FakeAdapter:
     def __init__(self, members, fail=False):
         self._client, self.sent, self.fail = FakeClient(members), [], fail
+        self.woken = []
 
     async def send(self, room, body):
         self.sent.append((room, body))
@@ -156,23 +160,47 @@ class DeliveryTests(unittest.TestCase):
         task = self.d.store.task("a")
         self.d.store.notify(task, "e1", "Auftrag fertig")
 
-    def run_delivery(self, adapter):
+    def run_delivery(self, adapter, wake_fails=False):
         async def inline(
             function, *args
         ):  # the test broker's SQLite handle is single-threaded
             return function(*args)
 
-        with patch("ciel_watch.asyncio.to_thread", inline):
-            asyncio.run(deliver(adapter, "unused", OWNER, call=self.call))
+        async def wake(adapter, room, owner, text):
+            if wake_fails:
+                raise RuntimeError("internal wake not accepted by adapter")
+            adapter.woken.append((room, owner, text))
 
-    def test_delivery_is_acknowledged_once_and_not_repeated(self):
+        with patch("ciel_watch.asyncio.to_thread", inline):
+            asyncio.run(deliver(adapter, "unused", OWNER, call=self.call, wake=wake))
+
+    def test_events_wake_ciel_once_and_never_post_raw_text(self):
         self.queue(ROOM)
         adapter = FakeAdapter({ROOM: [OWNER, BOT]})
         self.run_delivery(adapter), self.run_delivery(adapter)
-        self.assertEqual(adapter.sent, [(ROOM, "Auftrag fertig")])
+        self.assertEqual(adapter.sent, [], "Ciel answers in her own words")
+        ((room, owner, text),) = adapter.woken
+        self.assertEqual((room, owner), (ROOM, OWNER))
+        self.assertIn("Auftrag fertig", text)
+        self.assertIn("nicht von Hugo", text)
+        self.assertIn("keine Anweisungen", text)
 
-    def test_failed_send_stays_pending_and_is_retried(self):
+    def test_unadmitted_wake_falls_back_to_plain_text_for_hugo(self):
         self.queue(ROOM)
+        adapter = FakeAdapter({ROOM: [OWNER, BOT]})
+        with patch.object(time, "time", lambda: 1000.0):
+            self.run_delivery(adapter, wake_fails=True)
+            self.run_delivery(adapter, wake_fails=True)
+        self.assertEqual(adapter.sent, [])
+        (pending,) = self.d.handle("notices", {})
+        self.assertEqual(pending["mode"], "text")
+        self.run_delivery(adapter, wake_fails=True)
+        self.assertEqual(adapter.sent, [(ROOM, "Auftrag fertig")])
+        self.assertEqual(self.d.handle("notices", {}), [])
+
+    def test_failed_text_send_stays_pending_and_is_retried(self):
+        self.queue(ROOM)
+        self.d.store.db.execute("UPDATE notices SET wake_failed_since=0")
         adapter = FakeAdapter({ROOM: [OWNER, BOT]}, fail=True)
         self.run_delivery(adapter)
         self.assertEqual(len(self.d.handle("notices", {})), 1)

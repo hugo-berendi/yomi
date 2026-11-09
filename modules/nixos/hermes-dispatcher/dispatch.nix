@@ -32,6 +32,7 @@
     publicUrl = config.yomi.nginx.at.t3code.url;
     projectIds = cfg.t3.projectIds;
     maxConcurrentTasks = cfg.t3.maxConcurrentTasks;
+    selectableModels = cfg.t3.selectableModels;
     # Queued tasks read project preferences from here when they start.
     memoryDirectory = "${state}/home/memory";
     taste = import ./personality.nix;
@@ -46,7 +47,9 @@
       tool_timeout_sec = 60;
       # Matrix has no Codex approval dialog. Hugo authorized these bounded
       # operations; keep shell/filesystem approvals separate from this server.
-      tools = lib.genAttrs ["ciel_start_task" "ciel_task_reply" "ciel_stop_task" "ciel_memory_write"] (_: {
+      # ciel_task_answer cannot grant a T3 permission: T3's input-request
+      # interface refuses approvals, which stay with Hugo in T3.
+      tools = lib.genAttrs ["ciel_start_task" "ciel_task_reply" "ciel_stop_task" "ciel_memory_write" "ciel_task_answer" "ciel_task_solve"] (_: {
         approval_mode = "approve";
       });
     };

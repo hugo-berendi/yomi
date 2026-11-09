@@ -1,5 +1,7 @@
 """Policy-facing adapter: T3 controls use MCP; only quota/forge reads use RPC."""
 
+from model_selection import ModelNotEnforced, matches
+
 SUPPLEMENT_READS = {
     "subscribeServerConfig",
     "pullRequests.detail",
@@ -43,13 +45,87 @@ class T3Backend:
                     "workspaceStrategy",
                 ]
             }
-            args.update(
+            # Launch idle, read back the configuration T3 actually stored, and
+            # only then send the task. A thread whose model or effort differs
+            # from the request never starts a run.
+            command = payload["commandId"]
+            args["clientRequestId"] = command
+            result = self.native.call("t3_thread_launch", args, key=command)
+            thread = result["threadId"]
+            stored = self.native.call("t3_thread_configure", {"threadId": thread})
+            if not matches(payload["modelSelection"], stored.get("modelSelection")):
+                raise ModelNotEnforced(thread, result.get("link"), stored)
+            self.native.call(
+                "t3_thread_send",
                 {
-                    "clientRequestId": payload["commandId"],
+                    "threadId": thread,
+                    "clientRequestId": command + ":start",
                     "message": payload["initialMessage"]["text"],
-                }
+                    "mode": "queue",
+                },
+                key=command + ":start",
             )
-            return self.native.call("t3_thread_launch", args, key=payload["commandId"])
+            return {**result, "modelSelection": stored["modelSelection"]}
+        if operation == "thread.page":
+            return self.native.call(
+                "t3_thread_read",
+                {
+                    "threadId": payload["threadId"],
+                    "view": "messages",
+                    "limit": payload.get("limit", 10),
+                    "maxCharsPerItem": payload.get("maxChars", 2000),
+                    "runLimit": 3,
+                    **(
+                        {"afterPosition": payload["afterPosition"]}
+                        if payload.get("afterPosition") is not None
+                        else {}
+                    ),
+                },
+            )
+        if operation == "requests.list":
+            listed = self.native.call(
+                "t3_pending_request",
+                {"action": "list", "threadId": payload["threadId"]},
+            )
+            # Bounded: a worker rarely asks more than one thing at a time.
+            return [
+                self.native.call(
+                    "t3_pending_request",
+                    {
+                        "action": "read",
+                        "threadId": payload["threadId"],
+                        "requestId": request,
+                    },
+                )
+                for request in listed.get("requestIds", [])[:5]
+            ]
+        if operation == "requests.respond":
+            return self.native.call(
+                "t3_pending_request",
+                {
+                    "action": "respond",
+                    "threadId": payload["threadId"],
+                    "requestId": payload["requestId"],
+                    "answers": payload["answers"],
+                },
+                key=payload["commandId"],
+            )
+        if operation == "thread.settle":
+            return self.native.call(
+                "t3_thread_organize",
+                {"action": "settle", "threadId": payload["threadId"]},
+                key=payload["commandId"],
+            )
+        if operation == "thread.configuration":
+            return self.native.call(
+                "t3_thread_configure", {"threadId": payload["threadId"]}
+            )
+        if operation == "capabilities":
+            return self.native.call(
+                "orchestrator_capabilities", {"search": payload["search"]}
+            )
+        if operation == "tools":
+            return sorted(self.native.tools())
         if operation == "orchestration.getThreadProjection":
             args = {
                 "threadId": payload["threadId"],
@@ -122,6 +198,11 @@ class T3Backend:
                         {"threadId": thread, "modelSelection": selection},
                         key=command + ":model",
                     )
+                    stored = self.native.call(
+                        "t3_thread_configure", {"threadId": thread}
+                    )
+                    if not matches(selection, stored.get("modelSelection")):
+                        raise ModelNotEnforced(thread, None, stored)
                 return self.native.call(
                     "t3_thread_send",
                     {

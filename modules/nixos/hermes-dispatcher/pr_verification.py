@@ -80,7 +80,15 @@ def verify(rpc, project_id, links):
                 "state": "failed",
                 "reason": "Eine Review fordert noch Änderungen.",
             }
-        checked.append({"url": after["url"], "head": sha, "merged": False})
+        checked.append(
+            {
+                "url": after["url"],
+                "head": sha,
+                "merged": False,
+                # Evidence for "solved"; green checks alone are not a review.
+                "review": review.get("reviewDecision"),
+            }
+        )
     return {
         "state": "merged" if all(p["merged"] for p in checked) else "ready",
         "checked": checked,

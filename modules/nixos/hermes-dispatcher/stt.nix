@@ -32,6 +32,11 @@ in {
   settings = {
     enabled = true;
     provider = "local";
+    # Hermes echoes every transcript back as a separate chat message by
+    # default. The transcript still becomes the user turn Ciel answers; only
+    # the echo goes. It runs after transcription, so decryption and decoding
+    # of encrypted voice messages are untouched.
+    echo_transcripts = false;
     # Hermes ships stt.language = "en", which forces English decoding, so German
     # speech came back as an English paraphrase. Pin German instead of using
     # auto-detection: detection costs about 58% more CPU per clip on the base

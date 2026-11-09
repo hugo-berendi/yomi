@@ -21,6 +21,48 @@ class FakeT3:
         self.providers = [READY]
         self.fail = {}  # operation -> exception raised on the next call(s)
         self.pull_requests, self.calls, self.broken = {}, [], set()
+        self.answered, self.settled, self.configured = [], [], {}
+        self.tools = set()
+        # The live orchestrator_capabilities shape for Claude on inari, 2026-11-09.
+        self.catalog = [
+            {
+                "providerInstanceId": "claudeAgent",
+                "models": [
+                    {
+                        "id": "claude-fable-5-2",
+                        "options": [
+                            {
+                                "id": "effort",
+                                "values": ["low", "medium", "high", "xhigh", "max"],
+                            }
+                        ],
+                    }
+                ],
+                "constraints": [],
+            },
+            {"providerInstanceId": "codex", "models": [], "constraints": []},
+        ]
+
+    def ask(self, thread, request_id="req-1", questions=None):
+        """Play a worker's AskUserQuestion, in the shape T3 returned live."""
+        self.threads[thread].setdefault("requests", []).append(
+            {
+                "requestId": request_id,
+                "questions": questions
+                or [
+                    {
+                        "id": "Welche Farbe?",
+                        "header": "Farbe",
+                        "question": "Welche Farbe?",
+                        "options": [
+                            {"label": "Blau", "description": "blau"},
+                            {"label": "Grün", "description": "grün"},
+                        ],
+                        "multiSelect": False,
+                    }
+                ],
+            }
+        )
 
     def __call__(self, operation, payload=None, **kwargs):
         self.calls.append(operation)
@@ -56,8 +98,46 @@ class FakeT3:
                 "messages": [
                     {"role": "assistant", "text": t} for t in thread["messages"]
                 ],
-                "thread": {"pullRequests": thread["prs"]},
+                "thread": {
+                    "pullRequests": thread["prs"],
+                    "pendingRequestCount": len(thread.get("requests", [])),
+                    "settled": thread.get("settled", False),
+                },
             }
+        if operation == "requests.list":
+            return list(self.threads[payload["threadId"]].get("requests", []))
+        if operation == "requests.respond":
+            thread = self.threads[payload["threadId"]]
+            pending = thread.get("requests", [])
+            if payload["requestId"] not in [r["requestId"] for r in pending]:
+                raise ValueError(
+                    "T3 MCP tool refused the operation; no success assumed"
+                )
+            self.answered.append(payload)
+            thread["requests"] = [
+                r for r in pending if r["requestId"] != payload["requestId"]
+            ]
+            return {"sequence": len(self.answered)}
+        if operation == "thread.settle":
+            self.threads[payload["threadId"]]["settled"] = True
+            self.settled.append(payload)
+            return {"sequence": 1}
+        if operation == "thread.configuration":
+            return {"modelSelection": self.configured.get(payload["threadId"])}
+        if operation == "thread.page":
+            thread = self.threads[payload["threadId"]]
+            return {
+                "items": [
+                    {"position": i, "type": "assistant_message", "text": t}
+                    for i, t in enumerate(thread["messages"])
+                ],
+                "nextPosition": len(thread["messages"]),
+                "hasMore": False,
+            }
+        if operation == "capabilities":
+            return {"providers": self.catalog}
+        if operation == "tools":
+            return sorted(self.tools)
         if operation == "orchestration.dispatchCommand":
             if payload["commandId"] not in self.receipts:
                 self.receipts[payload["commandId"]] = True
