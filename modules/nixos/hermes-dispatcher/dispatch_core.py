@@ -384,7 +384,13 @@ class Dispatcher:
         if task["last_status"] in {"stopped", "stopping"}:
             raise ValueError("Der Auftrag ist gestoppt; nichts gesendet")
         if not task["thread_id"]:
-            if task["last_status"] not in {"queued", "waiting_quota", "launching"}:
+            if task["last_status"] == "launching":
+                # The first prompt is already frozen; a late addition would
+                # arrive after the worker started, not before.
+                raise ValueError(
+                    "Der Auftrag startet gerade; sende die Ergänzung in einer Minute mit derselben request_id erneut"
+                )
+            if task["last_status"] not in {"queued", "waiting_quota"}:
                 # An uncertain launch may own an unknown thread: no new work.
                 raise ValueError("Task has no active T3 conversation")
             # Kept durably and folded into the first prompt when the task starts.
@@ -772,7 +778,6 @@ class Dispatcher:
             task = self.store.task(task["task_key"])
             if task["last_status"] == "needs_user":
                 return
-        supplements.deliver_late(self, task)
         state = self.status(task["task_key"])
         from quota_recovery import recover
 
@@ -842,6 +847,9 @@ class Dispatcher:
                 (status, task["task_key"]),
             )
             self.store.db.commit()
+            if status in TERMINAL:
+                # A finished task is not observed again; its questions are moot.
+                requests.close(self, task["task_key"], "Auftrag beendet: " + status)
         if status in TERMINAL or status == "waiting":
             self.store.notify(
                 task,

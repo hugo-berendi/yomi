@@ -1,5 +1,6 @@
 """Bounded, idempotent requests to finish PR creation or fix CI."""
 
+import json
 import time
 import uuid
 
@@ -34,6 +35,13 @@ def request_followup(dispatcher, task, state, reason):
             + " Inspect actual state, address the blocker and finish the PR with exact-head checks. Do not duplicate issues or PRs, merge, deploy or weaken checks.",
             "attachments": [],
             "dispatchMode": {"type": "queue_after_active"},
+            # A pinned task re-asserts and reads back its model before the
+            # repair run, so it never continues under another configuration.
+            **(
+                {"modelSelection": pinned["modelSelection"]}
+                if (pinned := json.loads(task.get("payload") or "{}")).get("pinned")
+                else {}
+            ),
         },
     )
     # The previous run stays visible in T3 until the new one starts; remember

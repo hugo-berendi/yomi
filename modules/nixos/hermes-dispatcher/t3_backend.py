@@ -97,7 +97,7 @@ class T3Backend:
                         "requestId": request,
                     },
                 )
-                for request in listed.get("requestIds", [])[:5]
+                for request in listed.get("requestIds", [])[:10]
             ]
         if operation == "requests.respond":
             return self.native.call(

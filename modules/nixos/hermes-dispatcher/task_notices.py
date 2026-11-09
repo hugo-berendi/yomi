@@ -15,6 +15,13 @@ HEADLINES = {
     "cancelled": "Agent-Lauf wurde abgebrochen",
     "rolled_back": "Änderungen wurden zurückgerollt",
 }
+
+
+def fenced(value):
+    """Worker-controlled text in an event: it can never close the fence around it."""
+    return str(value).replace("<", "‹").replace(">", "›")
+
+
 # A finished agent run says nothing about the PR. Name what is still open.
 PENDING = {
     "missing": "kein PR verknüpft",
@@ -29,7 +36,7 @@ def format_notice(task, state, status, verdict):
     if state.get("url"):
         lines.append(state["url"])
     for link in state.get("pr_links", []):
-        lines.append("PR: " + str(link.get("url", link)))
+        lines.append("PR: " + fenced(link.get("url", link)))
     if verdict is not None:
         checked = verdict.get("checked") or []
         if checked:
@@ -49,7 +56,8 @@ def format_notice(task, state, status, verdict):
     reply = (state.get("latest_reply") or "").strip()
     if reply:
         # The worker's own summary, shortened; it is a claim, not evidence.
-        excerpt = reply[-1200:]
+        # Fenced: the worker cannot close the tag and speak as Hugo.
+        excerpt = fenced(reply[-1200:])
         lines.append(
             "Letzte Worker-Antwort (Auszug, unbestätigt):\n<worker_report>\n"
             + excerpt

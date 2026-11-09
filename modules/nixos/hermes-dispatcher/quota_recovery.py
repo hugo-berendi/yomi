@@ -66,6 +66,15 @@ def recover(dispatcher, task, state):
             "Der Auftrag wartet nach zwei automatischen Abo-Fortsetzungen. Bitte entscheide, ob Ciel weiterarbeiten soll.",
             run["id"],
         )
+    payload = json.loads(task["payload"])
+    if payload.get("pinned") and selection is None:
+        # Hugo chose this model; another subscription would be a substitution.
+        return pause(
+            dispatcher,
+            task,
+            f"Das Kontingent für das festgelegte Modell {payload['modelSelection']['model']} ist erschöpft. Der Auftrag wartet; ich weiche auf kein anderes Modell aus.",
+            run["id"],
+        )
     selection = selection or select_provider(
         [p for p in providers if p["instanceId"] != current],
         "standard",

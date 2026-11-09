@@ -1,12 +1,11 @@
 """Hugo's additions to a task that is still waiting for its T3 thread.
 
-They are stored durably and folded into the first prompt, so the worker sees
-them before it starts. An addition that arrives during the launch itself is
-sent to the new thread once its id is known, still exactly once.
+They are stored durably and folded into the first prompt in the same commit
+that freezes it for launch, so the worker sees them before it starts. Once a
+launch is under way, additions are refused with a retry hint instead.
 """
 
 import time
-import uuid
 
 
 def add(dispatcher, task, key, message):
@@ -45,27 +44,3 @@ def include(dispatcher, task, payload):
         "UPDATE supplements SET state='included' WHERE operation_key=?",
         [(r["operation_key"],) for r in rows],
     )
-
-
-def deliver_late(dispatcher, task):
-    for row in pending(dispatcher, task["task_key"]):
-        command = dispatcher.store.reserve(
-            "supplement:" + row["operation_key"], {"message": row["message"]}
-        )
-        dispatcher.rpc(
-            "orchestration.dispatchCommand",
-            {
-                "type": "message.dispatch",
-                "commandId": command,
-                "threadId": task["thread_id"],
-                "messageId": str(uuid.uuid5(uuid.NAMESPACE_URL, command)),
-                "text": "Ergänzung von Hugo zum laufenden Auftrag:\n" + row["message"],
-                "attachments": [],
-                "dispatchMode": {"type": "queue_after_active"},
-            },
-        )
-        dispatcher.store.db.execute(
-            "UPDATE supplements SET state='sent' WHERE operation_key=?",
-            (row["operation_key"],),
-        )
-        dispatcher.store.db.commit()
