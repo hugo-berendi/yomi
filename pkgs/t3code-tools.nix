@@ -4,7 +4,8 @@
 }: let
   agents = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
   codex = import ../home/features/cli/ai/codex-package.nix {inherit inputs pkgs;};
-  providers = [codex agents.claude-code agents.opencode2 agents.copilot-cli];
+  claudeCode = import ../home/features/cli/ai/claude-code-package.nix {inherit inputs pkgs;};
+  providers = [codex claudeCode agents.opencode2 agents.copilot-cli];
   t3 = inputs.t3code-nix.packages.${pkgs.stdenv.hostPlatform.system}.default.override {
     providerPackages = providers;
   };

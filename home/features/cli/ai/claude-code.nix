@@ -6,7 +6,7 @@
   ...
 }: let
   foundryResource = import ./foundry.nix;
-  claudeCode = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.claude-code;
+  claudeCode = import ./claude-code-package.nix {inherit inputs pkgs;};
   foundry = pkgs.writeShellApplication {
     name = "claude-foundry";
     runtimeInputs = [pkgs.coreutils];
