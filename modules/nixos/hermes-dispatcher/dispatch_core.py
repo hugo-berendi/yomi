@@ -10,6 +10,7 @@ from ciel_routing import choose
 from task_policy import task_prompt
 from provider_policy import codex_selection, exhausted, select_provider
 from model_selection import ModelNotEnforced, effort_of, matches, offered, requested
+from workspace_binding import WorkspaceNotBound, WorkspaceNotReady
 from matrix_rooms import private_room
 from pr_verification import verify
 from project_memory import project_facts
@@ -27,6 +28,10 @@ FOLLOWUP_GRACE = 900
 RUN_DONE = {"completed", "failed", "interrupted", "cancelled", "stopped", "error"}
 # Repeated launch failures end in a human decision instead of retrying forever.
 LAUNCH_ATTEMPTS = 6
+# T3 attaches a worktree within seconds; a checkout still missing after this is
+# a failed preparation, which T3 reports nowhere an idle thread could be asked.
+WORKSPACE_WAIT = 600
+WORKSPACE_POLL = 3
 STUCK_NOTICE_AFTER = 6
 
 
@@ -383,13 +388,15 @@ class Dispatcher:
         key = "reply:" + text(args.get("request_id"), 100)
         if task["last_status"] in {"stopped", "stopping"}:
             raise ValueError("Der Auftrag ist gestoppt; nichts gesendet")
+        if task["last_status"] == "launching":
+            # The first prompt is already frozen; a late addition would arrive
+            # after the worker started, not before. With a thread id this is a
+            # launch still waiting for its worktree: a message now would open
+            # a session in the wrong directory.
+            raise ValueError(
+                "Der Auftrag startet gerade; sende die Ergänzung in einer Minute mit derselben request_id erneut"
+            )
         if not task["thread_id"]:
-            if task["last_status"] == "launching":
-                # The first prompt is already frozen; a late addition would
-                # arrive after the worker started, not before.
-                raise ValueError(
-                    "Der Auftrag startet gerade; sende die Ergänzung in einer Minute mit derselben request_id erneut"
-                )
             if task["last_status"] not in {"queued", "waiting_quota"}:
                 # An uncertain launch may own an unknown thread: no new work.
                 raise ValueError("Task has no active T3 conversation")
@@ -469,8 +476,25 @@ class Dispatcher:
 
     # {{{ Launching
     def launch(self, task):
+        """Start the task; True once T3 accepted the first message, else False."""
         try:
             result = self.rpc("orchestration.launchThread", json.loads(task["payload"]))
+        except WorkspaceNotReady as exc:
+            return self.workspace_pending(task, exc)
+        except WorkspaceNotBound as exc:
+            self.store.db.execute(
+                "UPDATE tasks SET thread_id=?, thread_link=?, last_error=? WHERE task_key=?",
+                (exc.thread, exc.link, str(exc), task["task_key"]),
+            )
+            self.finish(
+                task,
+                "needs_user",
+                "Nicht gestartet: T3 hat einen anderen Worktree gesetzt als angefordert ("
+                + json.dumps(exc.stored, ensure_ascii=False)
+                + "). Es lief kein Agent.",
+            )
+            self.store.db.commit()
+            return False
         except ModelNotEnforced as exc:
             # The idle thread exists but never received the task. Keep its id so
             # no retry launches a second one, and let Hugo decide.
@@ -488,12 +512,36 @@ class Dispatcher:
                 + "). Es lief kein Agent.",
             )
             self.store.db.commit()
-            return
+            return False
         self.store.db.execute(
-            "UPDATE tasks SET thread_id=?, thread_link=?, last_status='preparing', failures=0, next_check=NULL, last_error=NULL WHERE task_key=?",
+            "UPDATE tasks SET thread_id=?, thread_link=?, last_status='preparing', failures=0, next_check=NULL, last_error=NULL, launch_since=NULL WHERE task_key=?",
             (result["threadId"], result.get("link"), task["task_key"]),
         )
         self.store.db.commit()
+        return True
+
+    def workspace_pending(self, task, exc):
+        """T3 has the thread but not yet its worktree: keep the thread, send nothing, look again soon."""
+        now = time.time()
+        since = task.get("launch_since") or now
+        # Keeping the id means a retry, a stop or a restart addresses this one thread.
+        self.store.db.execute(
+            "UPDATE tasks SET thread_id=?, thread_link=?, launch_since=?, last_error=? WHERE task_key=?",
+            (exc.thread, exc.link, since, str(exc), task["task_key"]),
+        )
+        if now - since > WORKSPACE_WAIT:
+            self.finish(
+                task,
+                "needs_user",
+                f"Nicht gestartet: T3 hat den Worktree nach {WORKSPACE_WAIT // 60} Minuten nicht zugewiesen. Es lief kein Agent; prüfe den Thread in T3.",
+            )
+        else:
+            self.store.db.execute(
+                "UPDATE tasks SET next_check=? WHERE task_key=?",
+                (now + WORKSPACE_POLL, task["task_key"]),
+            )
+        self.store.db.commit()
+        return False
 
     def tier_of(self, payload):
         efforts = {
@@ -774,10 +822,9 @@ class Dispatcher:
             return
         # launchThread has server receipts: retry exactly the stored operation after a lost reply.
         if task["last_status"] == "launching":
-            self.launch(task)
-            task = self.store.task(task["task_key"])
-            if task["last_status"] == "needs_user":
+            if not self.launch(task):
                 return
+            task = self.store.task(task["task_key"])
         state = self.status(task["task_key"])
         from quota_recovery import recover
 
