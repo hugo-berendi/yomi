@@ -1,22 +1,22 @@
 # Local speech-to-text for voice messages, run by Hermes' bundled faster-whisper.
 {pkgs}: let
-  revision = "536b0662742c02347bc0e980a01041f333bce120";
+  revision = "ebe41f70d5b6dfa9166e2c581c45c9c0cfc57b66";
   file = name: hash:
     pkgs.fetchurl {
-      url = "https://huggingface.co/Systran/faster-whisper-small/resolve/${revision}/${name}";
+      url = "https://huggingface.co/Systran/faster-whisper-base/resolve/${revision}/${name}";
       inherit hash;
     };
   # faster-whisper loads a directory path directly. Hermes' default would
   # download the model from Hugging Face during the first voice message, which
   # took about 30 s on inari and needs network access in the gateway sandbox.
-  model = pkgs.linkFarm "faster-whisper-small-${builtins.substring 0 7 revision}" [
+  model = pkgs.linkFarm "faster-whisper-base-${builtins.substring 0 7 revision}" [
     {
       name = "config.json";
-      path = file "config.json" "sha256-tVSWrHlAp65H0sAeq0Dt/YcB/uwSKdnM47QAFDg/uCg=";
+      path = file "config.json" "sha256-VqbYEQ0xHxnI8EceVigyx1J/FGtWcnW/yln898GE2po=";
     }
     {
       name = "model.bin";
-      path = file "model.bin" "sha256-PjBZIVBtiHKBYCPkwnPnXSQZ+4myTal7T+e84UFw1nE=";
+      path = file "model.bin" "sha256-0BwwFIgcnG8xM8GC89KIfrbKHHiadTjFwAcZaFegpqk=";
     }
     {
       name = "tokenizer.json";
@@ -32,17 +32,18 @@ in {
   settings = {
     enabled = true;
     provider = "local";
-    # Hermes ships stt.language = "en" because auto-detection misreads short
-    # English clips. That forces English decoding, so German speech came back as
-    # an English paraphrase. An empty value restores Whisper's own detection,
-    # which also keeps English voice notes working: forcing "de" instead
-    # produced a word error rate of 0.95 on an English test clip.
-    language = "";
+    # Hermes ships stt.language = "en", which forces English decoding, so German
+    # speech came back as an English paraphrase. Pin German instead of using
+    # auto-detection: detection costs about 58% more CPU per clip on the base
+    # model (22.4 s -> 35.5 s per 10 clips, single thread, quiet host). Base
+    # with "de" still passes English speech through mostly intact (4 of 5 test
+    # clips exact; one noisy clip was garbled).
+    language = "de";
     local = {
       model = toString model;
-      language = "";
-      # Hermes would otherwise probe for CUDA first. CTranslate2 resolves "auto"
-      # to int8 on this CPU anyway (same latency measured), so pin it.
+      language = "de";
+      # Pinned to skip Hermes' CUDA probe. "auto" resolves to int8 on this CPU
+      # and timed the same as int8 and float32.
       device = "cpu";
       compute_type = "int8";
       # Keep the loaded model resident; reloading costs about 2.5 s per cold start.

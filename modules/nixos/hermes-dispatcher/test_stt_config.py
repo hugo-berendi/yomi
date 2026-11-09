@@ -89,9 +89,9 @@ class SttConfigTests(unittest.TestCase):
         # as English text. If upstream drops the default, review stt.nix.
         self.assertEqual(self.resolve("local", self.defaults), "en")
 
-    def test_our_config_leaves_language_to_whisper_detection(self):
+    def test_our_config_decodes_german_not_english(self):
         merged = merge(self.defaults, self.ours)
-        self.assertIsNone(self.resolve("local", merged))
+        self.assertEqual(self.resolve("local", merged), "de")
 
     def test_model_is_a_prefetched_local_directory(self):
         # A bare size name triggers a Hugging Face download on the first message.
