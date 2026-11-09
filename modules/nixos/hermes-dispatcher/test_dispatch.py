@@ -78,7 +78,7 @@ class DispatchTests(unittest.TestCase):
                 "task_key": "event-123:1",
                 "project_id": "allowed",
                 "description": "Fix the menu",
-                "room_id": "!dm:example.org",
+                "room_id": "!" + "a" * 43,
             }
             self.assertEqual(len(dispatch.projects()), 1)
             with self.assertRaises(TimeoutError):

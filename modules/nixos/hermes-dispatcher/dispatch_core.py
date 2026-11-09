@@ -54,7 +54,9 @@ class Dispatcher:
             raise ValueError("Invalid task key")
         description = text(args.get("description"))
         room = self.verify_room(self.config, args.get("room_id"))
-        if not room.startswith("!") or ":" not in room:
+        # The homeserver already verified membership and encryption. Room v12
+        # identifiers have no domain suffix, so a colon is not required.
+        if not isinstance(room, str) or not room.startswith("!"):
             raise ValueError(
                 "A Matrix room ID is required for private completion delivery"
             )
