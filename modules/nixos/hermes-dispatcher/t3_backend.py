@@ -1,6 +1,7 @@
 """Policy-facing adapter: T3 controls use MCP; only quota/forge reads use RPC."""
 
 from model_selection import ModelNotEnforced, matches
+from workspace_binding import confirm
 
 SUPPLEMENT_READS = {
     "subscribeServerConfig",
@@ -45,13 +46,19 @@ class T3Backend:
                     "workspaceStrategy",
                 ]
             }
-            # Launch idle, read back the configuration T3 actually stored, and
-            # only then send the task. A thread whose model or effort differs
-            # from the request never starts a run.
+            # Launch idle, read back what T3 actually stored, and only then
+            # send the task: first the workspace (a worktree is attached some
+            # time after the thread exists, and attaching it later detaches an
+            # already open session), then model and effort. A thread whose
+            # workspace or configuration differs from the request never starts
+            # a run. Retries reuse the launch receipt and the start key.
             command = payload["commandId"]
             args["clientRequestId"] = command
             result = self.native.call("t3_thread_launch", args, key=command)
             thread = result["threadId"]
+            confirm(
+                self.native, thread, result.get("link"), payload["workspaceStrategy"]
+            )
             stored = self.native.call("t3_thread_configure", {"threadId": thread})
             if not matches(payload["modelSelection"], stored.get("modelSelection")):
                 raise ModelNotEnforced(thread, result.get("link"), stored)

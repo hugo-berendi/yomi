@@ -160,7 +160,7 @@
     cp ${./launcher.py} "$out/launcher.py"
     cp ${./matrix_bootstrap.py} "$out/matrix_bootstrap.py"
     cp ${./matrix_profile.py} "$out/matrix_profile.py"
-    ${lib.concatMapStringsSep "\n" (name: "cp ${./. + "/${name}.py"} \"$out/${name}.py\"") ["broker_client" "ciel_routing" "dispatch_core" "dispatch_service" "dispatch_store" "local_tools" "mcp_server" "t3_rpc" "t3_mcp" "t3_mcp_auth" "t3_backend" "task_policy" "provider_policy" "quota_recovery" "matrix_rooms" "pr_verification" "task_followup" "task_scheduler" "task_notices" "project_memory" "ciel_watch" "model_selection" "task_requests" "task_supplements" "task_solve"]}
+    ${lib.concatMapStringsSep "\n" (name: "cp ${./. + "/${name}.py"} \"$out/${name}.py\"") ["broker_client" "ciel_routing" "dispatch_core" "dispatch_service" "dispatch_store" "local_tools" "mcp_server" "t3_rpc" "t3_mcp" "t3_mcp_auth" "t3_backend" "task_policy" "provider_policy" "quota_recovery" "matrix_rooms" "pr_verification" "task_followup" "task_scheduler" "task_notices" "project_memory" "ciel_watch" "model_selection" "task_requests" "task_supplements" "task_solve" "workspace_binding"]}
   '';
 in {
   options.yomi.hermesDispatcher = {

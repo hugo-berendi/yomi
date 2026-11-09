@@ -24,6 +24,8 @@ TASK_COLUMNS = {
     "next_check": "REAL",
     "last_error": "TEXT",
     "observed_at": "REAL",
+    # First time a launch found T3's worktree not yet attached.
+    "launch_since": "REAL",
 }
 
 

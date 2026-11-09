@@ -58,6 +58,8 @@ class BackendTests(unittest.TestCase):
                             "options": [],
                         }
                     }
+                if name == "t3_thread_read":
+                    return {"thread": {"worktreePath": "/wt", "branch": None}}
                 return {
                     "threadId": "mcp:actual",
                     "link": "t3-thread://v2/env/mcp:actual",
@@ -81,14 +83,19 @@ class BackendTests(unittest.TestCase):
         # Launch idle, read the stored model back, then send the task.
         self.assertEqual(
             [c[0] for c in calls],
-            ["t3_thread_launch", "t3_thread_configure", "t3_thread_send"],
+            [
+                "t3_thread_launch",
+                "t3_thread_read",
+                "t3_thread_configure",
+                "t3_thread_send",
+            ],
         )
         self.assertEqual(calls[0][1]["clientRequestId"], "stable")
         self.assertNotIn("message", calls[0][1], "no run before the check")
         self.assertNotIn("threadId", calls[0][1])
-        self.assertEqual(calls[2][1]["message"], "Task")
-        self.assertEqual(calls[2][1]["threadId"], "mcp:actual")
-        self.assertEqual(calls[2][2], "stable:start")
+        self.assertEqual(calls[3][1]["message"], "Task")
+        self.assertEqual(calls[3][1]["threadId"], "mcp:actual")
+        self.assertEqual(calls[3][2], "stable:start")
 
     def test_launch_with_a_different_stored_model_never_sends_the_task(self):
         from t3_backend import T3Backend
@@ -107,6 +114,8 @@ class BackendTests(unittest.TestCase):
                             "model": "claude-fable-5-2",
                         }
                     }
+                if name == "t3_thread_read":
+                    return {"thread": {"worktreePath": "/wt", "branch": None}}
                 return {"threadId": "idle", "link": "t3://idle"}
 
         backend = T3Backend(Native(), None)
