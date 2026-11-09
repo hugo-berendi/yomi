@@ -14,6 +14,7 @@
   codex = import ../../../home/features/cli/ai/codex-package.nix {inherit inputs pkgs;};
   skills = import ./skills.nix {inherit pkgs lib inputs;};
   state = cfg.stateDirectory;
+  stt = import ./stt.nix {inherit pkgs;};
   routes = {
     routine = {
       model = "gpt-6-luna";
@@ -51,6 +52,7 @@
     };
     max_concurrent_sessions = 1;
     platform_toolsets.matrix = [];
+    stt = stt.settings;
     auxiliary =
       lib.recursiveUpdate
       (lib.genAttrs ["compression" "title_generation" "background_review" "vision" "web_extract"] (name: {
@@ -272,6 +274,7 @@ in {
         for site in ${hermes}/lib/python*/site-packages; do
           export CIEL_HERMES_SOURCE="$site"
         done
+        export CIEL_HERMES_SETTINGS=${settings}
         python3 -m unittest discover -p 'test_*.py' -v
         touch "$out"
       '';
