@@ -322,6 +322,7 @@ in {
           export CIEL_HERMES_SOURCE="$site"
         done
         export CIEL_HERMES_SETTINGS=${settings}
+        export CIEL_LAUNCH_SETTINGS=${launchSettings}
         python3 -m unittest discover -p 'test_*.py' -v
         touch "$out"
       '';
