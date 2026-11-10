@@ -73,3 +73,79 @@ new = """        # Release this instance's Codex writer before the replacement r
 if source.count(old) != 1:
     raise SystemExit("Hermes cache teardown changed; lifecycle patch needs review")
 path.write_text(source.replace(old, new, 1))
+
+# The Codex app-server reports each finished agentMessage through the interim callback,
+# which posts it as commentary or closes the stream segment. Both skip the stream
+# consumer's silence hold, so an internal broker event answered with the bare silence
+# marker reached Matrix before the whole-response filter ran. Drop it at the callback,
+# with the same predicate and the same internal-event gate the final filter uses.
+path = root / "gateway/run_turn_runner.py"
+source = path.read_text()
+old = """        def interim_assistant_cb(text: str, *, already_streamed: bool = False) -> None:
+            if not ctx._run_still_current():
+                return
+"""
+new = (
+    old
+    + """            from gateway.response_filters import (
+                is_intentional_silence_response, is_machinery_display_kind)
+            if (is_machinery_display_kind(ctx.persist_user_display_kind)
+                    and is_intentional_silence_response(text)):
+                if already_streamed and stream_consumer is not None:
+                    # The held deltas sit in the consumer; a plain segment break would
+                    # flush them, so ask for a break that discards exactly the marker.
+                    stream_consumer.on_silent_segment_break()
+                return
+"""
+)
+if source.count(old) != 1:
+    raise SystemExit("Hermes interim callback changed; silence patch needs review")
+path.write_text(source.replace(old, new, 1))
+
+# A dropped, already streamed marker stays in the consumer's buffer. Flushed at a plain
+# segment break it would be sent, and left there it would prefix the next message of the
+# turn ("[SILENT]<reply>", no tool boundary between them). The callback queues a break
+# of its own that discards a buffer holding exactly the marker before the tick can push
+# it. The intent travels in the queue item, so an earlier tool-boundary break cannot
+# consume it.
+path = root / "gateway/stream_consumer.py"
+source = path.read_text()
+for old, new in (
+    (
+        "_NEW_SEGMENT = object()\n",
+        "_NEW_SEGMENT = object()\n_SILENT_SEGMENT = object()\n",
+    ),
+    (
+        """    def on_segment_break(self) -> None:
+        \"\"\"Finalize the current stream segment and start a fresh message.\"\"\"
+        self._queue.put(_NEW_SEGMENT)
+""",
+        """    def on_segment_break(self) -> None:
+        \"\"\"Finalize the current stream segment and start a fresh message.\"\"\"
+        self._queue.put(_NEW_SEGMENT)
+
+    def on_silent_segment_break(self) -> None:
+        \"\"\"Segment break that discards a buffer holding only a silence marker.\"\"\"
+        self._queue.put(_SILENT_SEGMENT)
+""",
+    ),
+    (
+        """            if item is _NEW_SEGMENT:
+                tick.got_segment_break = True
+                return tick
+""",
+        """            if item is _NEW_SEGMENT:
+                tick.got_segment_break = True
+                return tick
+            if item is _SILENT_SEGMENT:
+                if _is_intentional_silence_response(self._clean_for_display(self._accumulated)):
+                    self._accumulated = self._stream_ledger = ""
+                tick.got_segment_break = True
+                return tick
+""",
+    ),
+):
+    if source.count(old) != 1:
+        raise SystemExit("Hermes segment queue changed; silence patch needs review")
+    source = source.replace(old, new, 1)
+path.write_text(source)
