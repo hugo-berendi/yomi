@@ -211,7 +211,8 @@ class VoiceConfigTests(unittest.TestCase):
         script = Path(provider["command"].split()[0])
         self.assertTrue(script.is_file())
         body = script.read_text()
-        self.assertIn("de_DE-thorsten-high.onnx", body)
+        self.assertIn("de_DE-kerstin-low.onnx", body)
+        self.assertNotIn("thorsten", body)
         self.assertIn("libopus", body)
         self.assertNotIn("http", body)
 
