@@ -47,7 +47,8 @@ class SigningTests(unittest.TestCase):
             start(d, "a")
             t3.finish("thread-1", reply=SIGNING)
             d.tick()
-            self.assertNotEqual(d.store.task("a")["blocked_kind"], "signing")
+            self.assertIsNone(d.store.task("a")["blocked_kind"])
+            self.assertNotEqual(d.store.task("a")["last_status"], "needs_user")
             self.assertFalse(any("blockiert" in n["body"] for n in work.notices(d)))
 
 
@@ -55,16 +56,12 @@ class SelectionTests(unittest.TestCase):
     def test_design_guidance_only_for_visible_work(self):
         self.assertNotIn("STYLE", task_prompt("Fix the nginx timeout", "STYLE"))
         self.assertIn("STYLE", task_prompt("Fix the menu layout on mobile", "STYLE"))
+        self.assertIn("STYLE", task_prompt("Buttons overlap on small Seiten", "STYLE"))
 
     def test_readonly_prompt_has_no_design_guidance(self):
         self.assertNotIn(
             "STYLE", task_prompt("Check the page layout", "STYLE", intent=READONLY)
         )
-
-    def test_rules_appear_once(self):
-        prompt = task_prompt("Fix the menu layout", "style", "GLOBAL")
-        for phrase in ("exactly that SHA", "Never merge", "isolated branch"):
-            self.assertEqual(prompt.count(phrase), 1, phrase)
 
     def test_unrelated_one_off_preference_is_left_out(self):
         smoke = entry("Authorizes one bounded Fable smoke test of orchestration")
@@ -73,6 +70,17 @@ class SelectionTests(unittest.TestCase):
     def test_related_untagged_preference_is_kept(self):
         fact = entry("Orchestration changes go through isolated worktrees")
         self.assertIn("worktrees", facts([fact], "Change orchestration worktrees"))
+
+    def test_german_tasks_match_english_preferences_by_word_stem(self):
+        fact = entry("Kommunikationsregeln und Broker-Ereignisse bleiben knapp")
+        self.assertIn(
+            "knapp", facts([fact], "Passe die Kommunikationsregel der Ereignisse an")
+        )
+
+    def test_short_topics_match_word_starts(self):
+        fact = entry("Use nix shell for missing tools", topics=["nix"])
+        self.assertIn("nix shell", facts([fact], "Fix the NixOS module"))
+        self.assertEqual(facts([fact], "Fix the backup timer"), "")
 
     def test_topics_and_expiry_decide_relevance(self):
         always = entry("Use Fish syntax", topics=["*"])

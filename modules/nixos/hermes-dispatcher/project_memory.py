@@ -5,11 +5,16 @@ import re
 from datetime import date
 from pathlib import Path
 
-WORD = re.compile(r"[a-zäöüß][a-zäöüß0-9-]{4,}", re.I)
+WORD = re.compile(r"[a-zäöüß][a-zäöüß0-9]+", re.I)
 
 
 def _words(text):
-    return {w.lower() for w in WORD.findall(text or "")}
+    return [w.lower() for w in WORD.findall(text or "")]
+
+
+def _stems(text):
+    """Distinctive words cut to five letters, so plurals and German endings still match."""
+    return {w[:5] for w in _words(text) if len(w) >= 5}
 
 
 def relevant(entry, description, today=None):
@@ -25,11 +30,13 @@ def relevant(entry, description, today=None):
     if isinstance(expires, str) and expires < (today or date.today()).isoformat():
         return False
     topics = entry.get("topics")
-    task = _words(description)
     if isinstance(topics, list) and topics:
         names = {str(t).lower() for t in topics}
-        return "*" in names or bool(task & names)
-    return len(task & _words(entry["fact"])) >= 2
+        # A topic matches the start of a task word: "nix" finds "nixos", "layout" finds "layouts".
+        return "*" in names or any(
+            w.startswith(n) for w in _words(description) for n in names
+        )
+    return len(_stems(description) & _stems(entry["fact"])) >= 2
 
 
 def project_facts(config, description="", maximum=6000):
