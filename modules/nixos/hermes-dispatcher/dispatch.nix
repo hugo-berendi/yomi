@@ -41,7 +41,8 @@
   });
   codexConfig = (pkgs.formats.toml {}).generate "ciel-codex.toml" {
     default_permissions = ":read-only";
-    approval_policy = "never";
+    approval_policy = "on-request";
+    features.tool_call_mcp_elicitation = true;
     # Codex runs commands as `/bin/sh -lc` by default. On NixOS the login
     # profile replaces PATH with the system and per-user profiles, which drops
     # the launcher's file and pdftotext ("file: command not found" in Matrix
@@ -52,13 +53,9 @@
       args = ["${launcherSource}/mcp_server.py" "${localConfig}"];
       startup_timeout_sec = 15;
       tool_timeout_sec = 60;
-      # Matrix has no Codex approval dialog. Hugo authorized these bounded
-      # operations; keep shell/filesystem approvals separate from this server.
-      # ciel_task_answer cannot grant a T3 permission: T3's input-request
-      # interface refuses approvals, which stay with Hugo in T3.
-      tools = lib.genAttrs ["ciel_start_task" "ciel_task_reply" "ciel_stop_task" "ciel_memory_write" "ciel_task_answer" "ciel_task_solve"] (_: {
-        approval_mode = "approve";
-      });
+      # Read-only calls remain available; every write needs a one-shot owner
+      # decision. Never persist session or tool-wide grants from Matrix.
+      default_tools_approval_mode = "writes";
     };
   };
 in {
