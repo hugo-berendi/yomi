@@ -62,6 +62,9 @@
     };
     max_concurrent_sessions = 1;
     platform_toolsets.matrix = [];
+    # Webhook turns get no Hermes tools either; Codex-side limits are in
+    # ciel_webhook_policy.py.
+    platform_toolsets.webhook = [];
     # The Matrix plugin registers display tier "medium", which posts a bubble
     # for every new tool call. Hugo reads Ciel's answers, not her tool log.
     # This gate covers tool bubbles only: clarify prompts, approvals and
@@ -98,6 +101,26 @@
     };
     skills.external_dirs = ["${skills.bundle}"];
   });
+  # {{{ Alert webhook
+  # Routes for the inari alert router (hosts/nixos/inari/services/n8n). The
+  # launcher adds the signing secret and the verified private room at start.
+  #
+  # mirror_to_session stays off: Hermes would write the delivered text into
+  # Hugo's chat session as a user turn, giving text derived from untrusted
+  # logs Hugo's authority over Ciel's task tools.
+  alertWebhook = {
+    inherit (cfg.alertWebhook) port;
+    rateLimit = 20;
+    maxBodyBytes = 65536;
+    routes = {
+      alert-triage.prompt = import ./alert-prompt.nix;
+      alert-notice = {
+        deliver_only = true;
+        prompt = "{message}";
+      };
+    };
+  };
+  # }}}
   instructions = import ./instructions.nix {
     inherit pkgs skills;
     inherit (cfg.matrix) displayName;
@@ -133,6 +156,10 @@
     skills = skills.bundle;
     inherit (skills) catalog;
     configuration = settings;
+    alertWebhook =
+      if cfg.alertWebhook.enable
+      then alertWebhook
+      else null;
     path = toolPath;
     codex = lib.getExe codex;
     hermes = lib.getExe hermes;
@@ -173,10 +200,24 @@
     cp ${./launcher.py} "$out/launcher.py"
     cp ${./matrix_bootstrap.py} "$out/matrix_bootstrap.py"
     cp ${./matrix_profile.py} "$out/matrix_profile.py"
-    ${lib.concatMapStringsSep "\n" (name: "cp ${./. + "/${name}.py"} \"$out/${name}.py\"") ["broker_client" "ciel_routing" "dispatch_core" "dispatch_service" "dispatch_store" "local_tools" "mcp_server" "t3_rpc" "t3_mcp" "t3_mcp_auth" "t3_backend" "task_policy" "provider_policy" "quota_recovery" "matrix_rooms" "pr_verification" "task_followup" "task_scheduler" "task_notices" "project_memory" "ciel_watch" "runtime_approvals" "model_selection" "task_requests" "task_supplements" "task_solve" "task_blockers" "workspace_binding" "matrix_threads" "ciel_voice"]}
+    ${lib.concatMapStringsSep "\n" (name: "cp ${./. + "/${name}.py"} \"$out/${name}.py\"") ["broker_client" "ciel_routing" "dispatch_core" "dispatch_service" "dispatch_store" "local_tools" "mcp_server" "t3_rpc" "t3_mcp" "t3_mcp_auth" "t3_backend" "task_policy" "provider_policy" "quota_recovery" "matrix_rooms" "pr_verification" "task_followup" "task_scheduler" "task_notices" "project_memory" "ciel_watch" "runtime_approvals" "model_selection" "task_requests" "task_supplements" "task_solve" "task_blockers" "workspace_binding" "matrix_threads" "ciel_voice" "alert_webhook"]}
   '';
 in {
   options.yomi.hermesDispatcher = {
+    alertWebhook = {
+      enable = lib.mkEnableOption "the loopback webhook through which the alert router sends triage requests";
+      port = lib.mkOption {
+        type = lib.types.port;
+        description = "Loopback port of Hermes' webhook platform.";
+      };
+      secretFile = lib.mkOption {
+        type = lib.types.str;
+        description = ''
+          Runtime file holding the HMAC secret shared with the alert router,
+          delivered to the gateway as a systemd credential.
+        '';
+      };
+    };
     t3.selectableModels = lib.mkOption {
       type = lib.types.attrsOf (lib.types.attrsOf (lib.types.listOf (lib.types.enum ["low" "medium" "high"])));
       default = {
@@ -300,6 +341,7 @@ in {
         common
         // {
           ExecStart = "${launcher}/bin/hermes-dispatcher gateway";
+          LoadCredential = lib.optional cfg.alertWebhook.enable "alert-webhook:${cfg.alertWebhook.secretFile}";
           InaccessiblePaths = ["${state}/dispatch"];
         };
     };

@@ -52,6 +52,10 @@ in
       configuration = self.nixosConfigurations.inari;
     };
     n8n-notifications = import ../tests/n8n-notifications.nix {inherit pkgs;};
+    hermes-alert-webhook = import ../tests/hermes-alert-webhook.nix {
+      inherit pkgs;
+      configuration = self.nixosConfigurations.inari;
+    };
     custom-options = import ../tests/options.nix {
       inherit pkgs;
       configurations = self.nixosConfigurations;
