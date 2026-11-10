@@ -70,7 +70,8 @@ def main():
             "default_permissions"
         ]
         assert profile == ":read-only", profile
-        fixture = root / "fixture.pdf"
+        fixture = root / "hermes/cache/documents/native-inputs/fixture.pdf"
+        fixture.parent.mkdir(parents=True)
         fixture.write_bytes(pdf_fixture())
         secret = root / "unrelated-secret"
         secret.write_text("synthetic forbidden value")
