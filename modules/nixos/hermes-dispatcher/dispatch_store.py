@@ -6,6 +6,8 @@ import sqlite3
 import time
 import uuid
 
+from matrix_threads import ensure_schema, root_of_task
+
 TASK_COLUMNS = {
     "stop_command": "TEXT",
     "verification": "TEXT",
@@ -35,6 +37,8 @@ TASK_COLUMNS = {
     "blocked_kind": "TEXT",
     "blocked_fingerprint": "TEXT",
     "blocked_generation": "INTEGER NOT NULL DEFAULT 0",
+    # Key of the Matrix thread (matrix_threads) this task's events belong to.
+    "thread_key": "TEXT",
 }
 
 
@@ -47,6 +51,8 @@ NOTICE_COLUMNS = {
     # Queue and hand-off times, so the delay from observation to wake is measurable.
     "created_at": "REAL",
     "delivered_at": "REAL",
+    # Event ID of the Matrix thread root the notice belongs to, if any.
+    "thread_root": "TEXT",
 }
 WAKE_FALLBACK = 600
 
@@ -89,6 +95,7 @@ class Store:
         self.db.execute(
             "CREATE UNIQUE INDEX IF NOT EXISTS notices_dedup ON notices(dedup_key) WHERE dedup_key IS NOT NULL"
         )
+        ensure_schema(self.db)
         self.db.commit()
 
     def seen(self, key):
@@ -117,8 +124,15 @@ class Store:
     def notify(self, task, dedup_key, body):
         """Queue one owner-DM notice; the same event never queues twice."""
         cursor = self.db.execute(
-            "INSERT OR IGNORE INTO notices(task_key,room_id,body,dedup_key,created_at) VALUES(?,?,?,?,?)",
-            (task["task_key"], task["room_id"], body, dedup_key, time.time()),
+            "INSERT OR IGNORE INTO notices(task_key,room_id,body,dedup_key,created_at,thread_root) VALUES(?,?,?,?,?,?)",
+            (
+                task["task_key"],
+                task["room_id"],
+                body,
+                dedup_key,
+                time.time(),
+                root_of_task(self.db, task),
+            ),
         )
         self.db.commit()
         return cursor.rowcount == 1

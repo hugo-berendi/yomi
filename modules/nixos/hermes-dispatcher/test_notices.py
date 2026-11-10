@@ -141,8 +141,8 @@ class FakeAdapter:
         self._client, self.sent, self.fail = FakeClient(members), [], fail
         self.woken = []
 
-    async def send(self, room, body):
-        self.sent.append((room, body))
+    async def send(self, room, body, metadata=None):
+        self.sent.append((room, body) if not metadata else (room, body, metadata))
         return SimpleNamespace(success=not self.fail)
 
 

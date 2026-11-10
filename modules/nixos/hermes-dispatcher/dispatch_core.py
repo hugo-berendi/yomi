@@ -16,6 +16,7 @@ from pr_verification import FORGE_UNREADABLE, verify
 from project_memory import project_facts
 from task_followup import request_followup
 from dispatch_store import WAKE_FALLBACK, command_id
+import matrix_threads
 from task_notices import event_key, fenced, format_notice
 import task_requests as requests
 import task_supplements as supplements
@@ -127,6 +128,10 @@ class Dispatcher:
             raise ValueError(
                 "A Matrix room ID is required for private completion delivery"
             )
+        thread_key = args.get("thread_key")
+        if thread_key is not None:
+            # Only an open thread of this very room; its root is looked up, never passed in.
+            matrix_threads.root_for(self.store.db, thread_key, room)
         project_id = args.get("project_id")
         if not any(p["id"] == project_id for p in self.projects()):
             raise ValueError("Project is not registered and authorized for Ciel")
@@ -169,7 +174,7 @@ class Dispatcher:
                 },
             }
             self.store.db.execute(
-                "INSERT INTO tasks(task_key,payload,thread_id,room_id,last_status,description,depends_on,serial_group,intent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO tasks(task_key,payload,thread_id,room_id,last_status,description,depends_on,serial_group,intent,thread_key) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (
                     key,
                     json.dumps(payload),
@@ -180,6 +185,7 @@ class Dispatcher:
                     json.dumps(depends_on),
                     group,
                     intent,
+                    thread_key,
                 ),
             )
             self.store.db.commit()
@@ -1051,6 +1057,7 @@ class Dispatcher:
                     "room_id": r["room_id"],
                     "body": r["body"],
                     "task_key": r["task_key"],
+                    "thread_root": r["thread_root"],
                     "age": round(time.time() - r["created_at"], 1)
                     if r["created_at"]
                     else None,
@@ -1065,6 +1072,17 @@ class Dispatcher:
                     "SELECT * FROM notices WHERE delivered=0 ORDER BY id LIMIT 10"
                 )
             ]
+        if operation == "thread_open":
+            room = self.verify_room(self.config, args.get("room_id"))
+            return matrix_threads.open_thread(self.store.db, room, args)
+        if operation == "thread_status":
+            return matrix_threads.status(self.store.db, args.get("thread_key"))
+        if operation == "thread_requests":
+            return matrix_threads.pending(self.store.db)
+        if operation == "thread_created":
+            return matrix_threads.created(
+                self.store.db, args.get("thread_key"), args.get("event_id")
+            )
         if operation == "wake_failed":
             self.store.db.execute(
                 "UPDATE notices SET wake_failed_since=COALESCE(wake_failed_since, ?) WHERE id=?",

@@ -52,8 +52,12 @@ async def owner_only(adapter, room, owner):
     }
 
 
-async def owner_source(adapter, room, owner):
-    """The same session source an inbound DM message from Hugo would produce."""
+async def owner_source(adapter, room, owner, thread_root=None):
+    """The same session source an inbound DM message from Hugo would produce.
+
+    With a thread root it is the source of a message inside that Matrix thread,
+    so the wake lands in the thread's own session and Ciel's answer is posted
+    into the thread, exactly like a reply to Hugo's in-thread message."""
     identity = await adapter._resolve_room_identity(room)
     is_dm = await adapter._is_dm_room(room)
     return adapter.build_source(
@@ -63,14 +67,40 @@ async def owner_source(adapter, room, owner):
         user_id=owner,
         chat_topic=identity.room_topic,
         guild_id=identity.server_name,
+        thread_id=thread_root,
+        parent_chat_id=room if thread_root else None,
     )
 
 
-async def default_wake(adapter, room, owner, text):
+async def default_wake(adapter, room, owner, text, thread_root=None):
     from gateway.wake import deliver_wake
 
-    source = await owner_source(adapter, room, owner)
+    source = await owner_source(adapter, room, owner, thread_root)
     await deliver_wake(adapter, text=text, source=source)
+
+
+async def open_threads(adapter, path, owner, call=broker_call):
+    """Post the root message of each requested thread in the owner-only DM.
+
+    The root is posted with the gateway's own encrypted session. A crash between
+    the post and the report would post a second root on retry, which is a stray
+    message, never a mixed-up thread: tasks use only the root the broker records.
+    """
+    for request in await asyncio.to_thread(call, path, "thread_requests"):
+        if not await owner_only(adapter, request["room_id"], owner):
+            log.warning(
+                "Thread %s withheld: room is not the owner-only DM",
+                request["thread_key"],
+            )
+            continue
+        root = await adapter.create_handoff_thread(request["room_id"], request["title"])
+        if root:
+            await asyncio.to_thread(
+                call,
+                path,
+                "thread_created",
+                {"thread_key": request["thread_key"], "event_id": root},
+            )
 
 
 async def deliver(
@@ -83,6 +113,7 @@ async def deliver(
     per state, so a repeat cannot snowball into a message loop.
     """
     withheld = {} if withheld is None else withheld
+    await open_threads(adapter, path, owner, call)
     for stale in [i for i, until in withheld.items() if until <= time.monotonic()]:
         del withheld[stale]
     for notice in await asyncio.to_thread(call, path, "notices"):
@@ -97,11 +128,19 @@ async def deliver(
         accepted = time.monotonic()
         if notice.get("mode", "wake") == "wake":
             try:
+                # Only a threaded notice passes the root, so a wake hook that
+                # predates threads keeps working for ordinary notices.
+                extra = (
+                    {"thread_root": notice["thread_root"]}
+                    if notice.get("thread_root")
+                    else {}
+                )
                 await wake(
                     adapter,
                     notice["room_id"],
                     owner,
                     PREAMBLE + notice["body"] + GUIDANCE,
+                    **extra,
                 )
             except asyncio.CancelledError:
                 raise
@@ -125,7 +164,13 @@ async def deliver(
                 call, path, "ack", {"id": notice["id"], "as": "wake"}
             )
             continue
-        result = await adapter.send(notice["room_id"], notice["body"])
+        result = await adapter.send(
+            notice["room_id"],
+            notice["body"],
+            metadata={"thread_id": notice["thread_root"]}
+            if notice.get("thread_root")
+            else None,
+        )
         if result.success:
             await asyncio.to_thread(
                 call, path, "ack", {"id": notice["id"], "as": "text"}
