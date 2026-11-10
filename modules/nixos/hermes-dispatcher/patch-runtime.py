@@ -150,6 +150,60 @@ for old, new in (
     source = source.replace(old, new, 1)
 path.write_text(source)
 
+
+# Keep approvals at the JSON-RPC consumer; the model cannot answer its own prompt.
+def replace_once(relative, old, new):
+    path = root / relative
+    source = path.read_text()
+    if source.count(old) != 1:
+        raise SystemExit(f"Hermes approval boundary changed: {relative}")
+    path.write_text(source.replace(old, new, 1))
+
+
+replace_once(
+    "agent/transports/codex_app_server_session.py",
+    '        method = req.get("method", "")\n        rid = req.get("id")',
+    """        method = req.get("method", "")
+        if method == "mcpServer/elicitation/request":
+            from agent.runtime_approvals import runtime_approval
+            response = runtime_approval(self, req)
+            if response is not None:
+                client.respond(req.get("id"), response)
+            return
+        rid = req.get("id")""",
+)
+replace_once(
+    "agent/transports/codex_app_server.py",
+    "    def _dispatch(self, msg: dict) -> None:\n",
+    """    def _dispatch(self, msg: dict) -> None:
+        from agent.runtime_approvals import observe
+        observe(self, msg)
+""",
+)
+replace_once(
+    "plugins/platforms/matrix/adapter.py",
+    "        self._wire_plugin_handlers(self._client)  # plugin-registered native handlers",
+    """        from agent.runtime_approvals import connect
+        connect(self)
+        self._wire_plugin_handlers(self._client)  # plugin-registered native handlers""",
+)
+replace_once(
+    "plugins/platforms/matrix/adapter.py",
+    "    async def disconnect(self) -> None:\n        self._closing = True",
+    """    async def disconnect(self) -> None:
+        from agent.runtime_approvals import disconnect
+        disconnect(self)
+        self._closing = True""",
+)
+replace_once(
+    "plugins/platforms/matrix/adapter.py",
+    "        for handler in (self._handle_approval_reaction, self._handle_model_picker_reaction,",
+    """        from agent.runtime_approvals import reaction
+        if await reaction(self, room_id, reacts_to, key, sender):
+            return
+        for handler in (self._handle_approval_reaction, self._handle_model_picker_reaction,""",
+)
+
 # Voice reply: Ciel opens a reply with [[voice]] to have it spoken. The marker has to be
 # gone before any later step sees the text, and a spoken reply must not also go out as
 # text, so the decision sits at the head of final delivery. A failure returns the text.
