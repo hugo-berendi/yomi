@@ -203,3 +203,38 @@ replace_once(
             return
         for handler in (self._handle_approval_reaction, self._handle_model_picker_reaction,""",
 )
+
+# Voice reply: Ciel opens a reply with [[voice]] to have it spoken. The marker has to be
+# gone before any later step sees the text, and a spoken reply must not also go out as
+# text, so the decision sits at the head of final delivery. A failure returns the text.
+path = root / "gateway/run_turn_persistence.py"
+source = path.read_text()
+old = """        adapter = self._delivery_adapter_for(source)
+        # Auto voice reply (TTS audio before the text) unless streaming TTS already delivered audio."""
+new = """        if not agent_result.get("already_sent"):
+            from agent.ciel_voice import prepare_reply
+            response = await prepare_reply(self, event, response)
+            if response is None:
+                return None
+        adapter = self._delivery_adapter_for(source)
+        # Auto voice reply (TTS audio before the text) unless streaming TTS already delivered audio."""
+if source.count(old) != 1:
+    raise SystemExit("Hermes final delivery changed; voice patch needs review")
+path.write_text(source.replace(old, new, 1))
+
+# The queued-follow-up lane sends the finished reply itself, before the hook above runs,
+# so a marked reply would reach Hugo as text with the marker in it. Strip it there; that
+# lane stays text-only.
+path = root / "gateway/run_turn.py"
+source = path.read_text()
+old = """        first_response = _delivery_result.get("final_response", "")
+"""
+new = (
+    old
+    + """        from agent.ciel_voice import split_marker
+        first_response = split_marker(first_response)[1]
+"""
+)
+if source.count(old) != 1:
+    raise SystemExit("Hermes queued first response changed; voice patch needs review")
+path.write_text(source.replace(old, new, 1))

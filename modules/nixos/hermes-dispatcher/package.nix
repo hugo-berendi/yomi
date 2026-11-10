@@ -11,8 +11,10 @@ upstream.overridePythonAttrs (old: {
       cp ${./ciel_watch.py} agent/ciel_watch.py
       cp ${./runtime_approvals.py} agent/runtime_approvals.py
       cp ${./broker_client.py} agent/ciel_broker_client.py
+      cp ${./ciel_voice.py} agent/ciel_voice.py
+      cp ${./ciel_voice_tts.py} agent/ciel_voice_tts.py
     '';
-  pythonImportsCheck = (old.pythonImportsCheck or []) ++ ["agent.ciel_routing"];
+  pythonImportsCheck = (old.pythonImportsCheck or []) ++ ["agent.ciel_routing" "agent.ciel_voice" "agent.ciel_voice_tts"];
   postInstall = let
     original = old.postInstall or "";
     sourceCopy = "cp -r ${builtins.unsafeDiscardStringContext (toString old.src)}/plugins ";
