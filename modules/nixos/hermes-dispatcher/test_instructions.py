@@ -106,8 +106,11 @@ class InstructionTests(unittest.TestCase):
         self.assertRegex(self.text, r"only through ciel_start_task")
 
     def test_style_limits_are_kept(self):
+        # Pinned to the personality block, so the same words elsewhere in the
+        # prompt cannot satisfy the check.
+        block = self.text.split("<personality>", 1)[1].split("</personality>", 1)[0]
         for pattern in STYLE_LIMITS:
-            self.assertRegex(self.text, pattern)
+            self.assertRegex(block, pattern)
 
     def test_no_stale_style_wording(self):
         for pattern in STALE_STYLE:
@@ -122,7 +125,13 @@ class InstructionTests(unittest.TestCase):
         # The honest answer admits uncertainty and claims no inner state.
         self.assertIn("weiß ich nicht", question)
         self.assertIn("kein Gefühl", question)
-        self.assertNotRegex(question, r"\bich (freue|fühle|bin traurig|vermisse)\b")
+        claim = r"\bich (freue|fühle|vermisse|bin (traurig|begeistert|glücklich|froh|verletzt))\b"
+        self.assertNotRegex(question, claim)
+        # A venting message is not an order: the example offers a task and does
+        # not promise to start investigating.
+        frust = examples.split("Schon wieder kaputt", 1)[1].split("Hugo:", 1)[0]
+        self.assertIn("Soll ich", frust)
+        self.assertNotIn("melde mich", frust)
 
 
 if __name__ == "__main__":
