@@ -24,9 +24,11 @@ MAX_CHARS = 700
 UNSPEAKABLE = re.compile(
     r"```|`|https?://|www\.|MEDIA:|^\s*(?:[-*]|\d+[.)])\s", re.MULTILINE
 )
-LEDGER_SIZE = 200
+LEDGER_SIZE = 2000
 
 _in_flight: set[str] = set()
+# Also kept in memory, so a failing ledger write cannot re-open an event within this process.
+_spoken: set[str] = set()
 
 
 def split_marker(response: str) -> tuple[bool, str]:
@@ -118,22 +120,25 @@ async def _speak(runner, event, text: str, synthesize) -> bool:
 async def prepare_reply(runner, event, response, *, synthesize=None, ledger=None):
     """The text still to be sent: the reply without its marker, or None once spoken."""
     wants_voice, text = split_marker(response)
+    path = Path(ledger) if ledger else ledger_path()
+    key = str(getattr(event, "message_id", None))
+    # A replayed inbound event must not be answered again once its reply went out
+    # as audio, whatever the new attempt decided: that would be a second reply.
+    if getattr(event, "message_id", None) and (
+        key in _in_flight or key in _spoken or key in _read(path)
+    ):
+        return None
     if not wants_voice:
         return response
     if not _eligible(event, text):
         return text
     if synthesize is None:
         from agent.ciel_voice_tts import synthesize_german as synthesize
-    path = Path(ledger) if ledger else ledger_path()
-    key = str(event.message_id)
-    # A replayed inbound event must not speak twice, and must not fall back to
-    # text for something already delivered as audio.
-    if key in _in_flight or key in _read(path):
-        return None
     _in_flight.add(key)
     try:
         if not await _speak(runner, event, text, synthesize):
             return text
+        _spoken.add(key)
         with suppress(OSError):
             _record(path, key)
         with suppress(Exception):

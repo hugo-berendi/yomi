@@ -57,6 +57,7 @@ class Runner:
 
 class VoiceTests(unittest.TestCase):
     def setUp(self):
+        ciel_voice._spoken.clear()
         self.dir = tempfile.TemporaryDirectory()
         self.addCleanup(self.dir.cleanup)
         self.ledger = Path(self.dir.name) / "ledger.json"
@@ -110,6 +111,21 @@ class VoiceTests(unittest.TestCase):
         out, adapter, _ = self.run_reply("[[voice]] Gern.", ev=event("$e2"))
         self.assertIsNone(out)
         self.assertEqual(len(adapter.sent), 1)
+
+    def test_replay_with_a_different_answer_stays_silent_once_spoken(self):
+        self.run_reply("[[voice]] Gern.")
+        out, adapter, _ = self.run_reply("Gern, als Text.")
+        self.assertIsNone(out)
+        self.assertEqual(adapter.sent, [])
+
+    def test_unwritable_ledger_does_not_reopen_the_event(self):
+        blocker = Path(self.dir.name) / "blocker"
+        blocker.write_text("a file where the ledger directory should be")
+        self.ledger = blocker / "ledger.json"
+        self.run_reply("[[voice]] Gern.")
+        out, adapter, _ = self.run_reply("[[voice]] Gern.")
+        self.assertIsNone(out)
+        self.assertEqual(adapter.sent, [])
 
     def test_tts_failure_falls_back_to_text_and_can_retry(self):
 

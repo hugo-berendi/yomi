@@ -167,3 +167,20 @@ new = """        if not agent_result.get("already_sent"):
 if source.count(old) != 1:
     raise SystemExit("Hermes final delivery changed; voice patch needs review")
 path.write_text(source.replace(old, new, 1))
+
+# The queued-follow-up lane sends the finished reply itself, before the hook above runs,
+# so a marked reply would reach Hugo as text with the marker in it. Strip it there; that
+# lane stays text-only.
+path = root / "gateway/run_turn.py"
+source = path.read_text()
+old = """        first_response = _delivery_result.get("final_response", "")
+"""
+new = (
+    old
+    + """        from agent.ciel_voice import split_marker
+        first_response = split_marker(first_response)[1]
+"""
+)
+if source.count(old) != 1:
+    raise SystemExit("Hermes queued first response changed; voice patch needs review")
+path.write_text(source.replace(old, new, 1))
