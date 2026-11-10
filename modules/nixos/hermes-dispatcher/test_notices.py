@@ -33,7 +33,9 @@ class NoticeTests(unittest.TestCase):
         self.t3.finish("thread-1")
         for _ in range(3):
             self.d.tick()
-        (notice,) = self.work.notices(self.d)
+        ended, notice = self.work.notices(self.d)
+        self.assertIn("PR-Prüfung steht aus", ended["body"])
+        self.assertNotIn("grün", ended["body"].replace("nicht grün", ""))
         self.assertEqual(notice["room_id"], ROOM)
         self.assertIn("abc123", notice["body"])
         self.assertIn("https://github.com/o/r/pull/1", notice["body"])
@@ -48,7 +50,8 @@ class NoticeTests(unittest.TestCase):
         self.t3.pull_requests["detail"]["checks"] = []
         self.t3.finish("thread-1")
         self.d.tick()
-        (body,) = self.bodies()
+        ended, body = self.bodies()
+        self.assertIn("PR-Prüfung steht aus", ended)
         self.assertIn("Hugos Entscheidung ist nötig", body)
         self.assertIn(
             "Noch offen: PR/CI konnte nicht unabhängig bestätigt werden", body

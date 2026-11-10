@@ -6,6 +6,8 @@ available through ciel_task_status and ciel_task_history.
 """
 
 HEADLINES = {
+    "verifying": "Agent-Lauf beendet, PR-Prüfung steht aus (noch kein Ergebnis, nicht grün)",
+    "completed": "Agent-Lauf beendet (Nur-Lesen-Test, kein PR erwartet)",
     "ready": "PR grün auf dem geprüften Head, noch nicht gemergt",
     "merged": "PR ist gemergt",
     "needs_user": "Hugos Entscheidung ist nötig",
@@ -44,6 +46,11 @@ def format_notice(task, state, status, verdict):
                 "Geprüfter Head: "
                 + ", ".join(str(p.get("head", "?"))[:12] for p in checked)
             )
+        if verdict["state"] == "not_required":
+            lines.append(
+                "Kein PR, Commit oder CI verlangt, daher nichts davon geprüft; "
+                "das Ergebnis ist die Worker-Antwort unten und unbestätigt."
+            )
         if verdict["state"] in PENDING:
             reason = verdict.get("reason")
             lines.append(
@@ -51,6 +58,10 @@ def format_notice(task, state, status, verdict):
                 + PENDING[verdict["state"]]
                 + (f" ({reason})" if reason else "")
             )
+    elif status == "verifying":
+        lines.append(
+            "Die Forge-Prüfung läuft getrennt; ihr Ergebnis folgt als eigenes Ereignis."
+        )
     elif status in {"failed", "interrupted", "cancelled", "waiting"}:
         lines.append("Kein Ergebnis geprüft; der Worktree bleibt erhalten.")
     reply = (state.get("latest_reply") or "").strip()

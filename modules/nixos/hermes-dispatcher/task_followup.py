@@ -4,8 +4,16 @@ import json
 import time
 import uuid
 
+from task_policy import READONLY
+
 
 def request_followup(dispatcher, task, state, reason):
+    if task.get("intent") == READONLY:
+        # No PR was asked for, so a missing one is not a defect to repair.
+        return False
+    if task.get("blocked_fingerprint"):
+        # Parked on a blocker only Hugo can lift; no run repairs that.
+        return False
     prefix = "finish:" + task["task_key"] + ":"
     previous = dispatcher.store.db.execute(
         "SELECT COUNT(*) FROM commands WHERE substr(operation_key,1,?)=?",

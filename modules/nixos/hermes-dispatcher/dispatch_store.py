@@ -3,6 +3,7 @@
 import hashlib
 import json
 import sqlite3
+import time
 import uuid
 
 TASK_COLUMNS = {
@@ -26,6 +27,14 @@ TASK_COLUMNS = {
     "observed_at": "REAL",
     # First time a launch found T3's worktree not yet attached.
     "launch_since": "REAL",
+    # What the task owes Hugo: implementation_pr (default, also for rows from
+    # before this column) or readonly_test (no PR, commit or CI expected).
+    "intent": "TEXT NOT NULL DEFAULT 'implementation_pr'",
+    # A blocker only Hugo can lift (task_blockers). Same fingerprint, no new notice;
+    # the generation counts authorized answers so a recurrence after one is news.
+    "blocked_kind": "TEXT",
+    "blocked_fingerprint": "TEXT",
+    "blocked_generation": "INTEGER NOT NULL DEFAULT 0",
 }
 
 
@@ -35,6 +44,9 @@ NOTICE_COLUMNS = {
     # WAKE_FALLBACK seconds of failed wakes it goes to Hugo as plain text.
     "wake_failed_since": "REAL",
     "delivered_as": "TEXT",
+    # Queue and hand-off times, so the delay from observation to wake is measurable.
+    "created_at": "REAL",
+    "delivered_at": "REAL",
 }
 WAKE_FALLBACK = 600
 
@@ -105,8 +117,8 @@ class Store:
     def notify(self, task, dedup_key, body):
         """Queue one owner-DM notice; the same event never queues twice."""
         cursor = self.db.execute(
-            "INSERT OR IGNORE INTO notices(task_key,room_id,body,dedup_key) VALUES(?,?,?,?)",
-            (task["task_key"], task["room_id"], body, dedup_key),
+            "INSERT OR IGNORE INTO notices(task_key,room_id,body,dedup_key,created_at) VALUES(?,?,?,?,?)",
+            (task["task_key"], task["room_id"], body, dedup_key, time.time()),
         )
         self.db.commit()
         return cursor.rowcount == 1

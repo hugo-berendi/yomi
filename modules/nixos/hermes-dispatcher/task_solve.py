@@ -8,6 +8,7 @@ stays stopped. Activation is Hugo's step and is never inferred.
 import json
 
 from pr_verification import verify
+from task_policy import READONLY
 
 # What a broker state means for Hugo, kept apart from "solved".
 STAGES = {
@@ -20,6 +21,7 @@ STAGES = {
     "waiting": "wartet auf Eingabe",
     "waiting_followup": "Implementierung fertig, Nacharbeit wartet auf Slot",
     "verifying": "Implementierung fertig, PR-Prüfung läuft",
+    "completed": "Lauf beendet, kein PR erwartet (Nur-Lesen-Test)",
     "ready": "PR reviewbereit, nicht gemergt",
     "merged": "gemergt, Aktivierung nicht beobachtet",
     "needs_user": "wartet auf Hugos Entscheidung",
@@ -68,6 +70,13 @@ def solve(dispatcher, args):
         raise ValueError("Der Auftrag wurde bewusst gestoppt und bleibt gestoppt")
     if not task["thread_id"]:
         raise ValueError("Der Auftrag hat noch keinen T3-Thread")
+    if task.get("intent") == READONLY:
+        return {
+            "task_key": key,
+            "solved": False,
+            "stage": STAGES.get(task["last_status"], task["last_status"]),
+            "blockers": ["Nur-Lesen-Test ohne PR: es gibt keinen Nachweis zu prüfen"],
+        }
     state = dispatcher.status(key)
     if state.get("settled"):
         return {"task_key": key, "solved": True, "already": True}
