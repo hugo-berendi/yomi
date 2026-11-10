@@ -43,6 +43,8 @@ def collect_events(database, editor_url):
         events.append(
             {
                 "source": "automation",
+                "host": "inari",
+                "service": "n8n",
                 "severity": "warning",
                 "title": f"n8n workflow {'failed' if failed else 'recovered'}: {name}",
                 "message": f"The scheduled workflow {name} {'failed' if failed else 'completed successfully after a failure'}. Review its execution in n8n: {editor_url.rstrip('/')}/workflow/{row['workflow_id']}",
@@ -129,6 +131,11 @@ def handle_unavailable(path, now):
     }
     # Persist the count first so a failing ntfy send does not reset the streak.
     atomic_json(path, state)
+    # The monitoring watchdog publishes straight to ntfy when the router is
+    # down. Once the legacy paths are retired, this one stays quiet so the
+    # same outage does not arrive twice.
+    if os.environ.get("DIRECT_NTFY_FALLBACK", "true") == "false":
+        return
     if failures >= FAILURES_BEFORE_ALERT and now.timestamp() - last >= 86400:
         send_ntfy(
             "[CRIT] n8n monitoring unavailable",

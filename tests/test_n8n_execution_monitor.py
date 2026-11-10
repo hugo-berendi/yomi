@@ -189,6 +189,21 @@ class ExecutionMonitorTests(unittest.TestCase):
         self.assertEqual(sent[0][2], "secret-token")
         self.assertTrue(state.exists())
 
+    def test_retired_fallback_leaves_router_outages_to_the_watchdog(self):
+        state = self.path.with_name("receipt.json")
+        sent = []
+        monitor.post_ntfy = lambda *args: sent.append(args)
+        args = self.failing_args(state)
+        with patch.dict(
+            "os.environ", {**self.NTFY_ENV, "DIRECT_NTFY_FALLBACK": "false"}
+        ):
+            for _ in range(4):
+                self.assertEqual(monitor.main(args), 1)
+        self.assertEqual(sent, [], "the watchdog owns the direct push")
+        self.assertEqual(
+            json.loads(state.read_text())["failures"], 4, "streak still counted"
+        )
+
     def test_recovery_after_unnotified_outage_sends_nothing_and_resets_count(self):
         state = self.path.with_name("receipt.json")
         self.workflow("healthy", "Healthy workflow")

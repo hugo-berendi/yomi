@@ -20,6 +20,7 @@
       ./services/llama-cpp
       ./services/karakeep.nix
       ./services/n8n
+      ./services/alerting
       ./services/proton-mail-sorter
       ./services/diabetes
       ./services/protonmail-bridge

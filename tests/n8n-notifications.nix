@@ -20,5 +20,7 @@ in
     node ${./n8n-output-policy.cjs} ${workflows}
     export N8N_EXECUTION_MONITOR=${../hosts/nixos/inari/services/n8n/execution-monitor.py}
     python ${./test_n8n_execution_monitor.py}
+    export MONITORING_WATCHDOG=${../hosts/nixos/inari/services/alerting/watchdog.py}
+    python ${./test_monitoring_watchdog.py}
     touch "$out"
   ''
