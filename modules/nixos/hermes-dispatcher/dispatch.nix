@@ -38,7 +38,7 @@
     taste = import ./personality.nix;
   });
   codexConfig = (pkgs.formats.toml {}).generate "ciel-codex.toml" {
-    sandbox_mode = "workspace-write";
+    default_permissions = ":read-only";
     approval_policy = "never";
     mcp_servers.ciel = {
       command = "${pkgs.python3}/bin/python3";

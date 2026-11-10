@@ -1,0 +1,42 @@
+--- a/linux-sandbox/src/linux_run_main.rs
++++ b/linux-sandbox/src/linux_run_main.rs
+@@ -1106,10 +1106,38 @@
+
+ fn is_proc_mount_failure(stderr: &str) -> bool {
+     stderr.contains("Can't mount proc")
+-        && stderr.contains("/newroot/proc")
++        && (stderr.contains("on /newroot/proc:") || stderr.contains("on /proc:"))
+         && (stderr.contains("Invalid argument")
+             || stderr.contains("Operation not permitted")
+             || stderr.contains("Permission denied"))
++}
++
++#[cfg(test)]
++mod proc_mount_failure_tests {
++    use super::is_proc_mount_failure;
++
++    #[test]
++    fn recognizes_vendored_and_external_bubblewrap_proc_errors() {
++        for path in ["/proc", "/newroot/proc"] {
++            for reason in ["Operation not permitted", "Permission denied", "Invalid argument"] {
++                assert!(is_proc_mount_failure(&format!(
++                    "bwrap: Can't mount proc on {path}: {reason}\n"
++                )));
++            }
++        }
++    }
++
++    #[test]
++    fn does_not_retry_unrelated_mount_or_network_errors() {
++        for message in [
++            "bwrap: Can't mount proc on /proc-other: Operation not permitted",
++            "bwrap: Can't mount tmpfs on /proc: Operation not permitted",
++            "bwrap: Can't mount proc on /proc: No such file or directory",
++            "bwrap: loopback: Failed to create NETLINK_ROUTE socket: Address family not supported by protocol",
++        ] {
++            assert!(!is_proc_mount_failure(message));
++        }
++    }
+ }
+
+ struct InnerSeccompCommandArgs<'a> {
