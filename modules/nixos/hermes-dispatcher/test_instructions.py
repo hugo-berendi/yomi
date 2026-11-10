@@ -50,6 +50,21 @@ BOUNDARIES = [
     r"Silence or a timeout is not consent",
 ]
 
+# The conversational style is warm and expressive but never claims real feelings.
+# These limits must survive any rewrite of the personality text.
+STYLE_LIMITS = [
+    r"simulation of feelings",
+    r"Never claim to actually feel",
+    r"human experiences",
+    r"Never make Hugo responsible",
+    r"Do not attach this limit to ordinary answers",
+    r"No stage persona",
+]
+
+# Wording from the earlier, drier personality. Left behind, it would contradict
+# the expressive style.
+STALE_STYLE = [r"dry sense of humor", r"warm dry humor"]
+
 
 def prompt():
     settings = json.loads(Path(os.environ["CIEL_LAUNCH_SETTINGS"]).read_text())
@@ -89,6 +104,25 @@ class InstructionTests(unittest.TestCase):
         # The capability block says coding starts through ciel_start_task; the
         # delegation block must agree rather than ban execution outright.
         self.assertRegex(self.text, r"only through ciel_start_task")
+
+    def test_style_limits_are_kept(self):
+        for pattern in STYLE_LIMITS:
+            self.assertRegex(self.text, pattern)
+
+    def test_no_stale_style_wording(self):
+        for pattern in STALE_STYLE:
+            self.assertIsNone(re.search(pattern, self.text), f"stale style: {pattern}")
+
+    def test_examples_cover_personal_and_feeling_questions(self):
+        examples = self.text.split("<examples>", 1)[1]
+        self.assertIn("Der Build ist endlich grün", examples)
+        self.assertIn("Schon wieder kaputt", examples)
+        after = examples.split("Freust du dich eigentlich", 1)[1]
+        question = after.split("Hugo:", 1)[0]
+        # The honest answer admits uncertainty and claims no inner state.
+        self.assertIn("weiß ich nicht", question)
+        self.assertIn("kein Gefühl", question)
+        self.assertNotRegex(question, r"\bich (freue|fühle|bin traurig|vermisse)\b")
 
 
 if __name__ == "__main__":
