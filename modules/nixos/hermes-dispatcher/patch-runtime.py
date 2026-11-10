@@ -91,9 +91,35 @@ new = (
                 is_intentional_silence_response, is_machinery_display_kind)
             if (is_machinery_display_kind(ctx.persist_user_display_kind)
                     and is_intentional_silence_response(text)):
+                if already_streamed and stream_consumer is not None:
+                    # The held deltas sit in the consumer; closing the segment would flush
+                    # them, so mark them for discard and end the segment instead.
+                    stream_consumer._discard_silence_at_break = True
+                    stream_consumer.on_segment_break()
                 return
 """
 )
 if source.count(old) != 1:
     raise SystemExit("Hermes interim callback changed; silence patch needs review")
+path.write_text(source.replace(old, new, 1))
+
+# A dropped, already streamed marker stays in the consumer's buffer. Flushed at the
+# segment break it would be sent, and left there it would prefix the next message of the
+# turn ("[SILENT]<reply>", no tool boundary between them). The break the callback asks
+# for now discards a buffer that is exactly the marker, before the tick can push it.
+path = root / "gateway/stream_consumer.py"
+source = path.read_text()
+old = """            if item is _NEW_SEGMENT:
+                tick.got_segment_break = True
+                return tick
+"""
+new = """            if item is _NEW_SEGMENT:
+                if self.__dict__.pop("_discard_silence_at_break", False) and (
+                        _is_intentional_silence_response(self._clean_for_display(self._accumulated))):
+                    self._accumulated = self._stream_ledger = ""
+                tick.got_segment_break = True
+                return tick
+"""
+if source.count(old) != 1:
+    raise SystemExit("Hermes segment queue changed; silence patch needs review")
 path.write_text(source.replace(old, new, 1))

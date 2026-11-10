@@ -142,7 +142,7 @@ class SilenceBeforeFallbackTests(unittest.TestCase):
 
         cls.gateway = Gateway()
 
-    def shape(self, final, kind, *, api_calls=1, reply_expected=None):
+    def shape(self, final, kind, *, api_calls=1, reply_expected=None, terminal=False):
         """What the gateway decides for a completed Codex turn: (text, intentional silence)."""
         # The result shape agent/codex_runtime._turn_result gives a finished turn.
         result = {
@@ -154,6 +154,11 @@ class SilenceBeforeFallbackTests(unittest.TestCase):
             "interrupted": False,
             "error": None,
         }
+        if terminal is not False:
+            # A queued chain: the merged result carries the last turn's origin, which
+            # owns the silence verdict, while the chain was opened by `kind`.
+            result["queued_terminal_display_kind"] = terminal
+            result["queued_terminal_reply_expected"] = None
         source = SimpleNamespace(chat_id="!room", platform="matrix")
         entry = SimpleNamespace(session_id="s1")
         response, silent, _ = asyncio.run(
@@ -217,6 +222,23 @@ class SilenceBeforeFallbackTests(unittest.TestCase):
     def test_hugos_reply_mentioning_the_marker_is_delivered(self):
         text = f"Das Kürzel {MARKER} nutze ich nur für Broker-Ereignisse."
         self.assertEqual(self.shape(text, None), (text, False))
+
+    def test_chain_opened_by_hugo_ends_silently_on_an_internal_event(self):
+        delivered, silent = self.shape(MARKER, None, terminal=INTERNAL)
+        self.assertTrue(silent)
+        self.assertFalse(delivered)
+        self.assertEqual(self.gateway.transport, [])
+
+    def test_chain_opened_by_hugo_keeps_a_real_internal_reply(self):
+        text = "Der Worker braucht eine Freigabe."
+        self.assertEqual(self.shape(text, None, terminal=INTERNAL), (text, False))
+
+    def test_chain_opened_internally_ends_on_hugos_message_visibly(self):
+        # The terminal turn answers Hugo: a bare marker or missing output is shown.
+        self.assertEqual(
+            self.shape(MARKER, INTERNAL, terminal=None), (UNEXPECTED_SILENCE, False)
+        )
+        self.assertEqual(self.shape("", INTERNAL, terminal=None), (NO_RESPONSE, False))
 
 
 if __name__ == "__main__":

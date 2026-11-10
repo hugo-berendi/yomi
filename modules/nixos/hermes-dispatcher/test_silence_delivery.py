@@ -68,12 +68,15 @@ class InterimCallbackTests(unittest.TestCase):
         return consumer.calls
 
     def test_internal_event_marker_is_not_forwarded(self):
-        for streamed in (False, True):
-            with self.subTest(already_streamed=streamed):
-                self.assertEqual(self.run_callback(INTERNAL, MARKER, streamed), [])
-                self.assertEqual(
-                    self.run_callback(INTERNAL, f"\n{MARKER}\n", streamed), []
-                )
+        for text in (MARKER, f"\n{MARKER}\n"):
+            with self.subTest(text=text):
+                # Never posted as commentary, and nothing for the consumer to flush.
+                self.assertEqual(self.run_callback(INTERNAL, text, False), [])
+                consumer = RecordingConsumer()
+                interim_callback(INTERNAL, consumer)(text, already_streamed=True)
+                # The held deltas are discarded at the segment break, not flushed.
+                self.assertEqual(consumer.calls, [("segment_break",)])
+                self.assertTrue(consumer._discard_silence_at_break)
 
     def test_internal_event_with_a_real_message_is_forwarded(self):
         calls = self.run_callback(INTERNAL, "Der Worker braucht eine Freigabe.", False)
@@ -137,7 +140,8 @@ def stream_consumer_types():
 class CodexRouteDeliveryTests(unittest.TestCase):
     """The real stream consumer fed the way the Codex app-server feeds it."""
 
-    def deliver(self, kind, deltas, final, already_streamed):
+    def play(self, kind, steps):
+        """Feed one turn: ("delta", text) streams, ("item", text, streamed) completes a message."""
         consumer_type, config = stream_consumer_types()
         from unittest.mock import AsyncMock, MagicMock
 
@@ -157,19 +161,27 @@ class CodexRouteDeliveryTests(unittest.TestCase):
             task = asyncio.create_task(consumer.run())
             await asyncio.sleep(0.1)
             callback = interim_callback(kind, consumer)
-            for delta in deltas:
-                consumer.on_delta(delta)
-            callback(final, already_streamed=already_streamed)
-            await asyncio.sleep(0.4)
+            for step in steps:
+                if step[0] == "delta":
+                    consumer.on_delta(step[1])
+                else:
+                    callback(step[1], already_streamed=step[2])
+                await asyncio.sleep(0.15)
+            await asyncio.sleep(0.3)
             consumer.finish()
             await asyncio.wait_for(task, 5)
 
         asyncio.run(turn())
+        # Every text that reached the transport, in order; later edits supersede sends.
         return [
             call.kwargs.get("content")
             for mock in (adapter.send, adapter.edit_message)
             for call in mock.call_args_list
         ]
+
+    def deliver(self, kind, deltas, final, already_streamed):
+        steps = [("delta", d) for d in deltas]
+        return self.play(kind, [*steps, ("item", final, already_streamed)])
 
     def test_marker_reaches_no_room_on_either_codex_shape(self):
         # Deltas then the completed item, and the completed item alone.
@@ -186,6 +198,59 @@ class CodexRouteDeliveryTests(unittest.TestCase):
         # Reproduces the old behaviour for non-internal turns on purpose: the gate
         # must not widen beyond internal events.
         self.assertEqual(self.deliver(None, [MARKER], MARKER, True), [MARKER])
+
+    def test_reply_right_after_a_dropped_marker_is_sent_clean(self):
+        # Two agent messages with no tool boundary: the marker first, then a real reply.
+        reply = "Rückfrage: soll der Worker weitermachen?"
+        sent = self.play(
+            INTERNAL,
+            [
+                ("delta", MARKER),
+                ("item", MARKER, True),
+                ("delta", reply),
+                ("item", reply, True),
+            ],
+        )
+        self.assertTrue(sent)
+        self.assertFalse([s for s in sent if MARKER in s], sent)
+        self.assertEqual(sent[-1], reply)
+
+    def test_marker_right_after_a_reply_is_not_appended(self):
+        reply = "Der Worker ist fertig."
+        sent = self.play(
+            INTERNAL,
+            [
+                ("delta", reply),
+                ("item", reply, True),
+                ("delta", MARKER),
+                ("item", MARKER, True),
+            ],
+        )
+        self.assertEqual(sent[-1], reply)
+        self.assertFalse([s for s in sent if MARKER in s], sent)
+
+    def test_quoted_marker_in_a_reply_survives(self):
+        text = f"Ich habe \`{MARKER}\` bewusst nicht gesendet."
+        sent = self.play(INTERNAL, [("delta", text), ("item", text, True)])
+        self.assertEqual(sent[-1], text)
+
+    def test_chain_of_hugo_turn_then_silenced_internal_turn(self):
+        # A queued chain runs one turn context, consumer and callback per message.
+        reply = "Ich schaue es mir an."
+        first = self.play(None, [("delta", reply), ("item", reply, True)])
+        second = self.play(INTERNAL, [("delta", MARKER), ("item", MARKER, True)])
+        self.assertEqual(first[-1], reply)
+        self.assertEqual(second, [])
+
+    def test_hugos_message_quoting_the_marker_is_answered_in_full(self):
+        text = f"Das Kürzel {MARKER} nutze ich nur intern."
+        sent = self.play(None, [("delta", text), ("item", text, True)])
+        self.assertEqual(sent[-1], text)
+
+    def test_owner_turn_keeps_marker_and_reply_apart_from_the_gate(self):
+        # No internal origin: nothing is dropped or discarded by the new code.
+        sent = self.play(None, [("delta", MARKER), ("item", MARKER, True)])
+        self.assertEqual(sent, [MARKER])
 
 
 if __name__ == "__main__":
