@@ -100,6 +100,8 @@
     inherit pkgs skills;
     inherit (cfg.matrix) displayName;
   };
+  # Codex commands inherit this PATH; the sandbox test checks the same value.
+  toolPath = lib.makeBinPath [hermes codex pkgs.coreutils pkgs.git pkgs.file pkgs.poppler-utils];
   launchSettings = pkgs.writeText "hermes-dispatcher-launch.json" (builtins.toJSON {
     stateDirectory = state;
     inherit instructions;
@@ -129,7 +131,7 @@
     skills = skills.bundle;
     inherit (skills) catalog;
     configuration = settings;
-    path = lib.makeBinPath [hermes codex pkgs.coreutils pkgs.git pkgs.file pkgs.poppler-utils];
+    path = toolPath;
     codex = lib.getExe codex;
     hermes = lib.getExe hermes;
   });
@@ -327,8 +329,7 @@ in {
       serviceConfig = builtins.removeAttrs common ["User" "Group" "ReadWritePaths" "Restart" "RestartSec" "TimeoutStopSec" "KillMode"];
       codex = lib.getExe codex;
       inherit (dispatch) codexConfig;
-      file = lib.getExe pkgs.file;
-      pdftotext = "${pkgs.poppler-utils}/bin/pdftotext";
+      path = toolPath;
       python = lib.getExe pkgs.python3;
     });
   };

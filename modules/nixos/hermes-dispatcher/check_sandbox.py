@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import pwd
+import shlex
 import shutil
 import socket
 import subprocess
@@ -13,13 +14,18 @@ import tempfile
 import tomllib
 
 
+FIXTURE_TEXT = "Ciel synthetic attachment: Prüfung, Größe, Übung, Äpfel"
+
+
 def pdf_fixture():
-    stream = b"BT /F1 12 Tf 20 100 Td (Ciel synthetic attachment fixture) Tj ET"
+    # Standard 14 fonts with WinAnsiEncoding map these cp1252 bytes to umlauts.
+    text = FIXTURE_TEXT.encode("cp1252")
+    stream = b"BT /F1 12 Tf 20 100 Td (" + text + b") Tj ET"
     objects = [
         b"<< /Type /Catalog /Pages 2 0 R >>",
         b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
         b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 300 150] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
-        b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+        b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>",
         b"<< /Length "
         + str(len(stream)).encode()
         + b" >>\nstream\n"
@@ -66,11 +72,18 @@ def main():
         codex_home = root / "codex"
         codex_home.mkdir()
         shutil.copyfile(settings["codexConfig"], codex_home / "config.toml")
-        profile = tomllib.loads((codex_home / "config.toml").read_text())[
-            "default_permissions"
-        ]
+        codex_config = tomllib.loads((codex_home / "config.toml").read_text())
+        profile = codex_config["default_permissions"]
         assert profile == ":read-only", profile
-        fixture = root / "hermes/cache/documents/native-inputs/fixture.pdf"
+        # Codex wraps model commands as `/bin/sh -lc` unless login shells are off.
+        shell = [
+            "/bin/sh",
+            "-lc" if codex_config.get("allow_login_shell", True) else "-c",
+        ]
+        fixture = (
+            root
+            / "hermes/cache/documents/native-inputs/Synthetic attachment fixture.pdf"
+        )
         fixture.parent.mkdir(parents=True)
         fixture.write_bytes(pdf_fixture())
         secret = root / "unrelated-secret"
@@ -78,7 +91,7 @@ def main():
         config_hash = hashlib.sha256(args.config.read_bytes()).hexdigest()
         results = []
 
-        def sandbox(name, command):
+        def sandbox(name, command, expected_exit=0):
             invocation = [
                 "sudo",
                 "-n",
@@ -104,7 +117,7 @@ def main():
             invocation += [
                 "--setenv=HOME=" + str(home),
                 "--setenv=CODEX_HOME=" + str(codex_home),
-                "--setenv=PATH=" + os.path.dirname(settings["python"]),
+                "--setenv=PATH=" + settings["path"],
                 args.codex or settings["codex"],
                 "sandbox",
                 "--permission-profile",
@@ -115,21 +128,29 @@ def main():
                 *command,
             ]
             result = subprocess.run(
-                invocation, capture_output=True, text=True, timeout=60
+                invocation,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                timeout=60,
             )
             results.append({"name": name, "exit_code": result.returncode})
-            if result.returncode:
+            if result.returncode != expected_exit:
                 raise AssertionError(
                     f"{name}: exit {result.returncode}\n{result.stderr}"
                 )
             return result.stdout
 
-        assert "PDF document" in sandbox(
-            "file", [settings["file"], "--brief", str(fixture)]
+        quoted = shlex.quote(str(fixture))
+        # Reproduces the reported failure: the NixOS login profile replaces PATH.
+        sandbox(
+            "login-shell-path",
+            ["/bin/sh", "-lc", "command -v file pdftotext"],
+            expected_exit=1,
         )
-        assert "Ciel synthetic attachment fixture" in sandbox(
-            "extract", [settings["pdftotext"], str(fixture), "-"]
-        )
+        assert "PDF document" in sandbox("file", [*shell, f"file --brief {quoted}"])
+        extracted = sandbox("extract", [*shell, f"pdftotext {quoted} -"])
+        assert extracted.strip() == FIXTURE_TEXT, extracted
         # Test writes both inside the service's writable state and outside the cwd.
         # The outer unit allows them; Codex's read-only policy must reject them.
         # A reachable guest loopback listener makes a network escape observable.
