@@ -261,3 +261,18 @@ if source.count(old) != 1:
         "Hermes interim response callback changed; voice patch needs review"
     )
 path.write_text(source.replace(old, new, 1))
+
+# The voice decision needs the complete reply. Even if streaming is enabled in
+# config later, Matrix DMs must not expose token buffers before that decision.
+source = path.read_text()
+old = """        want_stream_deltas = not held and not ctx.scheduled_heartbeat and scfg.enabled_for(plat_streaming)"""
+new = (
+    old
+    + """
+        if (getattr(ctx.source.platform, "value", None) == "matrix"
+                and getattr(ctx.source, "chat_type", None) == "dm"):
+            want_stream_deltas = False"""
+)
+if source.count(old) != 1:
+    raise SystemExit("Hermes stream setup changed; voice patch needs review")
+path.write_text(source.replace(old, new, 1))

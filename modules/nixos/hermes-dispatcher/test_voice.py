@@ -209,6 +209,74 @@ class VoiceTests(unittest.TestCase):
     @unittest.skipUnless(
         os.environ.get("CIEL_HERMES_SOURCE"), "Requires built Hermes source"
     )
+    def test_matrix_dm_cannot_stream_tokens_before_voice_decision(self):
+        import ast
+        import sys
+        from unittest.mock import patch
+
+        path = Path(os.environ["CIEL_HERMES_SOURCE"]) / "gateway/run_turn_runner.py"
+        method = next(
+            n
+            for n in ast.walk(ast.parse(path.read_text()))
+            if isinstance(n, ast.FunctionDef) and n.name == "_setup_stream_consumer"
+        )
+        namespace = {
+            "Optional": __import__("typing").Optional,
+            "stream_held": lambda: False,
+            "Platform": SimpleNamespace(LOCAL="local"),
+            "_finite_viewer_turn": lambda: False,
+        }
+        exec(
+            compile(
+                ast.fix_missing_locations(ast.Module(body=[method], type_ignores=[])),
+                str(path),
+                "exec",
+            ),
+            namespace,
+        )
+        consumer = SimpleNamespace()
+        context = SimpleNamespace(
+            mute_notification_reply=False,
+            streaming_tts_consumer_holder=[None],
+            resolve_display_setting=lambda *args: True,
+            user_config={},
+            source=event().source,
+            scheduled_heartbeat=False,
+            interim_assistant_messages_enabled=True,
+            _status_thread_metadata={},
+            progress_queue=None,
+            event_message_id="$anchor",
+            _run_still_current=lambda: True,
+            stream_consumer_holder=[None],
+        )
+        runner = SimpleNamespace(
+            config=SimpleNamespace(
+                streaming=SimpleNamespace(enabled_for=lambda setting: True)
+            ),
+            _delivery_adapter_for=lambda source: SimpleNamespace(),
+            _build_stream_consumer_config=lambda *args, **kwargs: (None, None),
+        )
+        with patch.dict(
+            sys.modules,
+            {
+                "gateway.stream_consumer": SimpleNamespace(
+                    GatewayStreamConsumer=lambda **kwargs: consumer
+                )
+            },
+        ):
+            result = namespace["_setup_stream_consumer"](
+                SimpleNamespace(_ctx=context, _runner=runner, _approval_owner=None),
+                "matrix",
+            )
+        self.assertFalse(consumer.stream_deltas_enabled)
+        self.assertIsNone(
+            result[1],
+            "Matrix DM must not receive token callbacks before the voice decision",
+        )
+
+    @unittest.skipUnless(
+        os.environ.get("CIEL_HERMES_SOURCE"), "Requires built Hermes source"
+    )
     def test_codex_interim_voice_waits_for_final_audio_delivery(self):
         import ast
         import sys
@@ -244,10 +312,12 @@ class VoiceTests(unittest.TestCase):
             sys.modules,
             {"agent.ciel_voice": ciel_voice, "gateway.response_filters": filters},
         ):
-            namespace["interim_assistant_cb"](
-                "[[voice]]Hey Hugo, hier ist deine Testsprachnachricht."
-            )
-            self.assertEqual(sent, [], "interim delivery bypassed final TTS")
+            for already_streamed in (False, True):
+                namespace["interim_assistant_cb"](
+                    "[[voice]]Hey Hugo, hier ist deine Testsprachnachricht.",
+                    already_streamed=already_streamed,
+                )
+                self.assertEqual(sent, [], "interim delivery bypassed final TTS")
             namespace["interim_assistant_cb"]("Eine gewöhnliche Textantwort.")
             self.assertEqual(sent, ["Eine gewöhnliche Textantwort."])
         out, adapter, _ = self.run_reply(
