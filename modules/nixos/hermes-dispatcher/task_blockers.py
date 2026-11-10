@@ -46,10 +46,12 @@ NEXT_STEP = {
 }
 
 
-def detect(reply):
+def detect(reply, signing=True):
     """(kind, fingerprint) for a reported blocker, else None. Case and digits are ignored."""
     text = (reply or "").lower()
     for kind, pattern in PATTERNS:
+        if kind == "signing" and not signing:
+            continue  # inari commits unsigned by Hugo's standing permission
         hits = sorted(set(re.findall(pattern, text)))
         if hits:
             digest = hashlib.sha256((kind + "|" + "|".join(hits)).encode()).hexdigest()

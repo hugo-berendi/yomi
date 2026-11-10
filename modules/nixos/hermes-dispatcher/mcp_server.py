@@ -153,7 +153,7 @@ TOOLS = [
     ),
     tool(
         "ciel_memory_write",
-        "Replace curated English memory entries after reading them. Facts need source and date; never save secrets or foreign conversations.",
+        "Replace curated English memory entries after reading them. Facts need source and date, and may carry topics (task words that make them apply, the word * for all tasks) and expires (ISO date) so a one-off does not reach unrelated tasks; never save secrets or foreign conversations.",
         {
             "kind": {"enum": ["preferences", "projects"]},
             "etag": STRING,
