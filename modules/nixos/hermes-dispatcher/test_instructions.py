@@ -133,6 +133,17 @@ class InstructionTests(unittest.TestCase):
         self.assertIn("Soll ich", frust)
         self.assertNotIn("melde mich", frust)
 
+    def test_voice_choice_is_optional_and_keeps_text_cases(self):
+        from ciel_voice import MARKER
+
+        self.assertTrue(MARKER.match("[[voice]] hallo"))
+        self.assertIn("[[voice]]", self.text)
+        self.assertRegex(self.text, r"nie Pflicht")
+        for text_case in ("Code", "Links", "genaue Statusmeldungen"):
+            self.assertIn(text_case, self.text)
+        self.assertRegex(self.text, r"ausdrücklich, gilt das")
+        self.assertRegex(self.text, r"automatisch als Text")
+
 
 if __name__ == "__main__":
     unittest.main()

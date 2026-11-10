@@ -24,6 +24,7 @@
   skills = import ./skills.nix {inherit pkgs lib inputs;};
   state = cfg.stateDirectory;
   stt = import ./stt.nix {inherit pkgs;};
+  speech = import ./speech.nix {inherit pkgs;};
   routes = {
     routine = {
       model = "gpt-6-luna";
@@ -67,6 +68,7 @@
     # subagent failure notices take separate paths and stay visible.
     display.platforms.matrix.tool_progress = "off";
     stt = stt.settings;
+    tts = speech.settings;
     auxiliary =
       lib.recursiveUpdate
       (lib.genAttrs ["compression" "title_generation" "background_review" "vision" "web_extract"] (name: {
@@ -101,7 +103,7 @@
     inherit (cfg.matrix) displayName;
   };
   # Codex commands inherit this PATH; the sandbox test checks the same value.
-  toolPath = lib.makeBinPath [hermes codex pkgs.coreutils pkgs.git pkgs.file pkgs.poppler-utils];
+  toolPath = lib.makeBinPath [hermes codex pkgs.coreutils pkgs.git pkgs.file pkgs.poppler-utils pkgs.ffmpeg-headless];
   launchSettings = pkgs.writeText "hermes-dispatcher-launch.json" (builtins.toJSON {
     stateDirectory = state;
     inherit instructions;
@@ -171,7 +173,7 @@
     cp ${./launcher.py} "$out/launcher.py"
     cp ${./matrix_bootstrap.py} "$out/matrix_bootstrap.py"
     cp ${./matrix_profile.py} "$out/matrix_profile.py"
-    ${lib.concatMapStringsSep "\n" (name: "cp ${./. + "/${name}.py"} \"$out/${name}.py\"") ["broker_client" "ciel_routing" "dispatch_core" "dispatch_service" "dispatch_store" "local_tools" "mcp_server" "t3_rpc" "t3_mcp" "t3_mcp_auth" "t3_backend" "task_policy" "provider_policy" "quota_recovery" "matrix_rooms" "pr_verification" "task_followup" "task_scheduler" "task_notices" "project_memory" "ciel_watch" "model_selection" "task_requests" "task_supplements" "task_solve" "task_blockers" "workspace_binding" "matrix_threads"]}
+    ${lib.concatMapStringsSep "\n" (name: "cp ${./. + "/${name}.py"} \"$out/${name}.py\"") ["broker_client" "ciel_routing" "dispatch_core" "dispatch_service" "dispatch_store" "local_tools" "mcp_server" "t3_rpc" "t3_mcp" "t3_mcp_auth" "t3_backend" "task_policy" "provider_policy" "quota_recovery" "matrix_rooms" "pr_verification" "task_followup" "task_scheduler" "task_notices" "project_memory" "ciel_watch" "model_selection" "task_requests" "task_supplements" "task_solve" "task_blockers" "workspace_binding" "matrix_threads" "ciel_voice"]}
   '';
 in {
   options.yomi.hermesDispatcher = {
