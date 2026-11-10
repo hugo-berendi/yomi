@@ -143,6 +143,7 @@ def main():
 
         quoted = shlex.quote(str(fixture))
         # Reproduces the reported failure: the NixOS login profile replaces PATH.
+        # Holds only while the guest system profile lacks file and poppler-utils.
         sandbox(
             "login-shell-path",
             ["/bin/sh", "-lc", "command -v file pdftotext"],
