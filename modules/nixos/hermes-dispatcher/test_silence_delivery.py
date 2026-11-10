@@ -59,6 +59,9 @@ class RecordingConsumer:
     def on_segment_break(self):
         self.calls.append(("segment_break",))
 
+    def on_silent_segment_break(self):
+        self.calls.append(("silent_segment_break",))
+
 
 @unittest.skipUnless(SOURCE, "Requires built Hermes source")
 class InterimCallbackTests(unittest.TestCase):
@@ -75,8 +78,7 @@ class InterimCallbackTests(unittest.TestCase):
                 consumer = RecordingConsumer()
                 interim_callback(INTERNAL, consumer)(text, already_streamed=True)
                 # The held deltas are discarded at the segment break, not flushed.
-                self.assertEqual(consumer.calls, [("segment_break",)])
-                self.assertTrue(consumer._discard_silence_at_break)
+                self.assertEqual(consumer.calls, [("silent_segment_break",)])
 
     def test_internal_event_with_a_real_message_is_forwarded(self):
         calls = self.run_callback(INTERNAL, "Der Worker braucht eine Freigabe.", False)
@@ -140,7 +142,7 @@ def stream_consumer_types():
 class CodexRouteDeliveryTests(unittest.TestCase):
     """The real stream consumer fed the way the Codex app-server feeds it."""
 
-    def play(self, kind, steps):
+    def play(self, kind, steps, pause=0.15):
         """Feed one turn: ("delta", text) streams, ("item", text, streamed) completes a message."""
         consumer_type, config = stream_consumer_types()
         from unittest.mock import AsyncMock, MagicMock
@@ -164,9 +166,12 @@ class CodexRouteDeliveryTests(unittest.TestCase):
             for step in steps:
                 if step[0] == "delta":
                     consumer.on_delta(step[1])
+                elif step[0] == "break":
+                    consumer.on_segment_break()
                 else:
                     callback(step[1], already_streamed=step[2])
-                await asyncio.sleep(0.15)
+                if pause:
+                    await asyncio.sleep(pause)
             await asyncio.sleep(0.3)
             consumer.finish()
             await asyncio.wait_for(task, 5)
@@ -212,6 +217,24 @@ class CodexRouteDeliveryTests(unittest.TestCase):
             ],
         )
         self.assertTrue(sent)
+        self.assertFalse([s for s in sent if MARKER in s], sent)
+        self.assertEqual(sent[-1], reply)
+
+    def test_tool_boundary_queued_before_the_marker_cannot_spend_the_discard(self):
+        # A tool-boundary break sits in the queue ahead of the marker deltas and is
+        # drained first; the discard must still reach the marker that follows it.
+        reply = "Rückfrage: soll der Worker weitermachen?"
+        sent = self.play(
+            INTERNAL,
+            [
+                ("break",),
+                ("delta", MARKER),
+                ("item", MARKER, True),
+                ("delta", reply),
+                ("item", reply, True),
+            ],
+            pause=0,
+        )
         self.assertFalse([s for s in sent if MARKER in s], sent)
         self.assertEqual(sent[-1], reply)
 

@@ -92,10 +92,9 @@ new = (
             if (is_machinery_display_kind(ctx.persist_user_display_kind)
                     and is_intentional_silence_response(text)):
                 if already_streamed and stream_consumer is not None:
-                    # The held deltas sit in the consumer; closing the segment would flush
-                    # them, so mark them for discard and end the segment instead.
-                    stream_consumer._discard_silence_at_break = True
-                    stream_consumer.on_segment_break()
+                    # The held deltas sit in the consumer; a plain segment break would
+                    # flush them, so ask for a break that discards exactly the marker.
+                    stream_consumer.on_silent_segment_break()
                 return
 """
 )
@@ -103,23 +102,50 @@ if source.count(old) != 1:
     raise SystemExit("Hermes interim callback changed; silence patch needs review")
 path.write_text(source.replace(old, new, 1))
 
-# A dropped, already streamed marker stays in the consumer's buffer. Flushed at the
+# A dropped, already streamed marker stays in the consumer's buffer. Flushed at a plain
 # segment break it would be sent, and left there it would prefix the next message of the
-# turn ("[SILENT]<reply>", no tool boundary between them). The break the callback asks
-# for now discards a buffer that is exactly the marker, before the tick can push it.
+# turn ("[SILENT]<reply>", no tool boundary between them). The callback queues a break
+# of its own that discards a buffer holding exactly the marker before the tick can push
+# it. The intent travels in the queue item, so an earlier tool-boundary break cannot
+# consume it.
 path = root / "gateway/stream_consumer.py"
 source = path.read_text()
-old = """            if item is _NEW_SEGMENT:
+for old, new in (
+    (
+        "_NEW_SEGMENT = object()\n",
+        "_NEW_SEGMENT = object()\n_SILENT_SEGMENT = object()\n",
+    ),
+    (
+        """    def on_segment_break(self) -> None:
+        \"\"\"Finalize the current stream segment and start a fresh message.\"\"\"
+        self._queue.put(_NEW_SEGMENT)
+""",
+        """    def on_segment_break(self) -> None:
+        \"\"\"Finalize the current stream segment and start a fresh message.\"\"\"
+        self._queue.put(_NEW_SEGMENT)
+
+    def on_silent_segment_break(self) -> None:
+        \"\"\"Segment break that discards a buffer holding only a silence marker.\"\"\"
+        self._queue.put(_SILENT_SEGMENT)
+""",
+    ),
+    (
+        """            if item is _NEW_SEGMENT:
                 tick.got_segment_break = True
                 return tick
-"""
-new = """            if item is _NEW_SEGMENT:
-                if self.__dict__.pop("_discard_silence_at_break", False) and (
-                        _is_intentional_silence_response(self._clean_for_display(self._accumulated))):
+""",
+        """            if item is _NEW_SEGMENT:
+                tick.got_segment_break = True
+                return tick
+            if item is _SILENT_SEGMENT:
+                if _is_intentional_silence_response(self._clean_for_display(self._accumulated)):
                     self._accumulated = self._stream_ledger = ""
                 tick.got_segment_break = True
                 return tick
-"""
-if source.count(old) != 1:
-    raise SystemExit("Hermes segment queue changed; silence patch needs review")
-path.write_text(source.replace(old, new, 1))
+""",
+    ),
+):
+    if source.count(old) != 1:
+        raise SystemExit("Hermes segment queue changed; silence patch needs review")
+    source = source.replace(old, new, 1)
+path.write_text(source)
