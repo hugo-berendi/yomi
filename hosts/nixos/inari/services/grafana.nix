@@ -61,7 +61,12 @@
     noDataState = "Alerting";
     execErrState = "Alerting";
     for = "15m";
-    labels.severity = "warning";
+    # service (and host) let the alert router merge reports of one outage.
+    labels = {
+      severity = "warning";
+      service = "restic";
+      inherit host;
+    };
     annotations.summary = "No successful ${backup} run on ${host} within ${toString (maxAge / 3600)} hours.";
   };
 
@@ -322,7 +327,11 @@ in {
                   noDataState = "OK";
                   execErrState = "Alerting";
                   for = "15m";
-                  labels.severity = "warning";
+                  # service (and host) let the alert router merge reports of one outage.
+                  labels = {
+                    severity = "warning";
+                    service = "restic";
+                  };
                   annotations.summary = "The latest {{ $labels.backup }} snapshot on {{ $labels.host }} covers less than half the bytes of its largest in eight days. Check that its paths were mounted.";
                 }
                 {
@@ -407,7 +416,11 @@ in {
                   noDataState = "OK";
                   execErrState = "Alerting";
                   for = "10m";
-                  labels.severity = "warning";
+                  # service (and host) let the alert router merge reports of one outage.
+                  labels = {
+                    severity = "warning";
+                    service = "storage";
+                  };
                   annotations.summary = "{{ $labels.mountpoint }} on {{ $labels.instance }} has less than 10% free space.";
                 }
                 {
@@ -449,7 +462,11 @@ in {
                   noDataState = "OK";
                   execErrState = "Alerting";
                   for = "1m";
-                  labels.severity = "critical";
+                  # service (and host) let the alert router merge reports of one outage.
+                  labels = {
+                    severity = "critical";
+                    service = "zfs";
+                  };
                   annotations.summary = "ZFS pool {{ $labels.pool }} is not ONLINE.";
                 }
                 {
@@ -491,7 +508,11 @@ in {
                   noDataState = "OK";
                   execErrState = "Alerting";
                   for = "1m";
-                  labels.severity = "critical";
+                  # service (and host) let the alert router merge reports of one outage.
+                  labels = {
+                    severity = "critical";
+                    service = "storage";
+                  };
                   annotations.summary = "SMART health check is failing for {{ $labels.device }}.";
                 }
               ];

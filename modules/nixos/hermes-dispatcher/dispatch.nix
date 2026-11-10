@@ -53,9 +53,12 @@
       args = ["${launcherSource}/mcp_server.py" "${localConfig}"];
       startup_timeout_sec = 15;
       tool_timeout_sec = 60;
-      # Read-only calls remain available; every write needs a one-shot owner
-      # decision. Never persist session or tool-wide grants from Matrix.
+      # In Codex 0.167.0, writes mode disables remembered approvals. Keep it
+      # for unselected tools; explicit grants use Codex's native per-tool policy.
       default_tools_approval_mode = "writes";
+      tools = lib.genAttrs (lib.attrByPath [cfg.matrix.allowedUser cfg.matrix.userId] [] cfg.toolApprovals) (_: {
+        approval_mode = "approve";
+      });
     };
   };
 in {

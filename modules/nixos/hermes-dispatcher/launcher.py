@@ -118,7 +118,12 @@ def main():
         )
         return
     config = state / "hermes/config.yaml"
-    atomic_text(config, Path(settings["configuration"]).read_text())
+    if action == "gateway":
+        from alert_webhook import gateway_configuration
+
+        atomic_text(config, json.dumps(gateway_configuration(settings, state)))
+    else:
+        atomic_text(config, Path(settings["configuration"]).read_text())
     atomic_text(state / "codex/config.toml", Path(settings["codexConfig"]).read_text())
     memory = state / "home/memory"
     memory.mkdir(mode=0o700, exist_ok=True)

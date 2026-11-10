@@ -12,18 +12,22 @@
     )
     ++ lib.attrValues config.yomi.cloudflared.at;
   monitored = lib.filter (e: e.enable && e.monitor.enable) endpoints;
+  # Gatus mails every outage itself, and the service-status workflow pushes
+  # the same outage through the alert router. Once the router path has been
+  # checked (yomi.alerting.retireLegacyChannels), the mail goes.
+  mail = !config.yomi.alerting.retireLegacyChannels;
+  mailAlert = name:
+    lib.optional mail {
+      type = "email";
+      failure-threshold = 3;
+      success-threshold = 2;
+      send-on-resolved = true;
+      description = "${name} is down";
+    };
   mkEndpoint = e: {
     inherit (e.monitor) name group interval conditions;
     url = e.url + e.monitor.path;
-    alerts = [
-      {
-        type = "email";
-        failure-threshold = 3;
-        success-threshold = 2;
-        send-on-resolved = true;
-        description = "${e.monitor.name} is down";
-      }
-    ];
+    alerts = mailAlert e.monitor.name;
   };
   mkInternalHttp = name: realPort: path: {
     inherit name;
@@ -31,15 +35,7 @@
     url = "http://127.0.0.1:${toString realPort}${path}";
     interval = "30s";
     conditions = ["[STATUS] == 200"];
-    alerts = [
-      {
-        type = "email";
-        failure-threshold = 3;
-        success-threshold = 2;
-        send-on-resolved = true;
-        description = "${name} is down";
-      }
-    ];
+    alerts = mailAlert name;
   };
 in {
   yomi.cloudflared.at = lib.genAttrs ["pocket-id" "immich-share" "cloud" "media" "request-media" "search" "bin" "git"] (name: {
@@ -90,7 +86,7 @@ in {
       };
 
       # {{{ Email alerting via no-reply migadu SMTP
-      alerting.email = {
+      alerting.email = lib.mkIf mail {
         from = "no-reply@tengu.hugo-berendi.de";
         username = "no-reply@tengu.hugo-berendi.de";
         host = "smtp.migadu.com";
