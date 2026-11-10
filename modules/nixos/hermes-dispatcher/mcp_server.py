@@ -6,6 +6,7 @@ import sys
 
 from broker_client import broker_call
 from local_tools import LocalTools
+from matrix_threads import open_and_wait
 
 
 def tool(name, description, properties=None, required=None):
@@ -56,7 +57,7 @@ TOOLS = [
     tool("ciel_projects", "List registered T3 repositories authorized for Ciel."),
     tool(
         "ciel_start_task",
-        "Queue one authorized coding problem through T3. Reuse task_key on retries. Stops before merge/deploy. intent defaults to implementation_pr (PR with exact-head checks and review is required); pass readonly_test only when Hugo explicitly asked for a test or inspection that must change nothing: the worker then makes no commit, PR or CI run and the task ends with its observed outcome, unverified by the forge. Omit room_id to discover the unique encrypted owner DM automatically. Independent tasks run in parallel, each in its own worktree, up to the broker's slot limit; the rest queue and start by themselves. Set depends_on (task keys that must be ready or merged first) or a shared serial_group (never run together) when tasks touch the same work. Pass provider, model and effort together only when Hugo chose them; the task then never runs under another model or effort and waits instead of substituting. Events (questions, completion, failure) reach you automatically as internal events; no watching or polling is needed.",
+        "Queue one authorized coding problem through T3. Reuse task_key on retries. Stops before merge/deploy. intent defaults to implementation_pr (PR with exact-head checks and review is required); pass readonly_test only when Hugo explicitly asked for a test or inspection that must change nothing: the worker then makes no commit, PR or CI run and the task ends with its observed outcome, unverified by the forge. Pass thread_key (from ciel_thread_open) to keep this task's events in that Matrix thread; without it they go to the main chat. Omit room_id to discover the unique encrypted owner DM automatically. Independent tasks run in parallel, each in its own worktree, up to the broker's slot limit; the rest queue and start by themselves. Set depends_on (task keys that must be ready or merged first) or a shared serial_group (never run together) when tasks touch the same work. Pass provider, model and effort together only when Hugo chose them; the task then never runs under another model or effort and waits instead of substituting. Events (questions, completion, failure) reach you automatically as internal events; no watching or polling is needed.",
         {
             **{
                 k: STRING
@@ -66,6 +67,7 @@ TOOLS = [
                     "description",
                     "room_id",
                     "serial_group",
+                    "thread_key",
                 ]
             },
             "depends_on": {"type": "array", "items": STRING},
@@ -73,6 +75,12 @@ TOOLS = [
             **MODEL,
         },
         ["project_id", "task_key", "description"],
+    ),
+    tool(
+        "ciel_thread_open",
+        "Open a Matrix thread in Hugo's private DM for one concrete topic (monitoring, a single fix). Do this only when a bounded task starts; ordinary conversation stays in the main chat. Reuse thread_key on retries. Hugo's replies inside the thread reach you in a separate session for that thread and your answers there stay in it; pass the key to ciel_start_task so its events return to the same thread. Threads exist only in the encrypted owner DM, and T3 worker threads are unrelated to them.",
+        {"thread_key": STRING, "title": STRING, "room_id": STRING},
+        ["thread_key", "title"],
     ),
     tool(
         "ciel_task_requests",
@@ -237,7 +245,11 @@ def main():
                 ):
                     raise ValueError("Unknown tool or invalid arguments")
                 value = (
-                    broker_call(config["socket"], OPERATIONS[name], args)
+                    open_and_wait(
+                        lambda op, a: broker_call(config["socket"], op, a), args
+                    )
+                    if name == "ciel_thread_open"
+                    else broker_call(config["socket"], OPERATIONS[name], args)
                     if name in OPERATIONS
                     else local.handle(name, args)
                 )
