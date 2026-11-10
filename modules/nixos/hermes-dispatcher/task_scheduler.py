@@ -29,7 +29,9 @@ NO_SLOT = TERMINAL | {
     "quota_paused",
     "waiting",
 }
-SATISFIED = {"ready", "merged"}
+# A finished read-only task persists as `completed`; it owes no PR, so a task
+# that depends on it may start.
+SATISFIED = {"ready", "merged", "completed"}
 DEAD = {"failed", "cancelled", "interrupted", "rolled_back", "stopped"}
 # Seconds between reads of one task's T3 state. A question or a finished run
 # is seen at most this long after T3 reports it; two tasks cost two reads

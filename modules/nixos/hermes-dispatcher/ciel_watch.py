@@ -83,6 +83,8 @@ async def deliver(
     per state, so a repeat cannot snowball into a message loop.
     """
     withheld = {} if withheld is None else withheld
+    for stale in [i for i, until in withheld.items() if until <= time.monotonic()]:
+        del withheld[stale]
     for notice in await asyncio.to_thread(call, path, "notices"):
         if withheld.get(notice["id"], 0) > time.monotonic():
             continue

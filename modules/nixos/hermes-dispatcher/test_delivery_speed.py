@@ -130,6 +130,18 @@ class ReadonlyIntentTests(Case):
             "reviewable PR", self.t3.launches[-1]["initialMessage"]["text"]
         )
 
+    def test_a_task_may_depend_on_a_finished_readonly_task(self):
+        start(self.d, "a", **READONLY)
+        start(self.d, "b", depends_on=["a"])
+        self.assertEqual(self.d.store.task("b")["last_status"], "queued")
+        self.t3.finish("thread-1")
+        self.d.tick()
+        self.d.tick()
+        self.assertEqual(self.d.store.task("a")["last_status"], "completed")
+        self.assertIn(
+            self.d.store.task("b")["last_status"], {"launching", "preparing", "running"}
+        )
+
     def test_row_from_before_the_column_counts_as_implementation(self):
         self.d.store.db.execute(
             "INSERT INTO tasks(task_key,payload,room_id,last_status) VALUES('old','{}','!r','running')"
