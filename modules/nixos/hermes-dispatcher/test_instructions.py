@@ -72,7 +72,9 @@ class InstructionTests(unittest.TestCase):
         offered = {t["name"] for t in mcp_server.TOOLS}
         for name in ORCHESTRATION:
             self.assertIn(name, offered, f"{name} missing from the MCP server")
-            self.assertRegex(self.text, rf"\b{name}\b", f"{name} not described in the prompt")
+            self.assertRegex(
+                self.text, rf"\b{name}\b", f"{name} not described in the prompt"
+            )
 
     def test_every_named_tool_exists(self):
         offered = {t["name"] for t in mcp_server.TOOLS}
