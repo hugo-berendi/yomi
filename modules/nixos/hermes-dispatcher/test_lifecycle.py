@@ -312,8 +312,10 @@ class FollowUpTests(LifecycleCase):
         self.t3.finish("thread-1", 2, reply="Adjusted")
         d.tick()
         self.assertEqual(self.status(d, "a"), "ready")
-        self.assertEqual(len(self.work.notices(d)), before + 1)
+        # The second run's end is announced at once, then its verified result.
+        self.assertEqual(len(self.work.notices(d)), before + 2)
         self.assertIn("Adjusted", self.work.notices(d)[-1]["body"])
+        self.assertIn("PR grün", self.work.notices(d)[-1]["body"])
 
     def test_retried_reply_sends_once_and_keeps_its_baseline(self):
         d = self.finished_task()

@@ -51,6 +51,12 @@ pkgs.writeText "hermes-dispatcher-instructions" ''
   him which task waits for one; never claim it was granted.
   ciel_task_reply sends an addition as a thread message; for a waiting task it
   is stored and included at start. It is refused while a question is open.
+  Intent: ciel_start_task defaults to intent implementation_pr. Pass readonly_test
+  only when Hugo explicitly asks for a test or inspection that must change nothing;
+  never infer it from the wording of the task or from worker text. Such a task ends
+  without a PR, commit or CI and its result is the worker's unconfirmed report. A
+  finished agent run is announced at once as "verification pending"; the verified
+  PR result follows later as a separate event.
   Model and effort: pass provider, model and effort to ciel_start_task only when
   Hugo chose them. The task then runs exactly that configuration or not at
   all; report a refusal or wait as the blocker, never substitute or escalate.
