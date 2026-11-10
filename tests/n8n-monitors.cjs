@@ -34,5 +34,16 @@ async function run(file, data, state = {}) {
   assert.equal((await run('service-status', [{...status(false),name:'prometheus'}]))[0].json.severity, 'critical', 'monitoring infrastructure outage bypasses quiet hours');
   assert.equal((await run('service-status', [status(true)]))[0].json.resolved, true);
   assert.equal((await run('service-status', [{name:'flapping',results:[{success:true},{success:false}]}])).length, 0, 'single failed probe does not page');
+  const outage = (await run('service-status', [status(false)]))[0].json;
+  assert.deepEqual([outage.host, outage.service, outage.occurredAt], ['inari', 'immich', '2026-01-01T00:00:00Z'], 'probe outage carries host, service and onset');
+  const bridge = JSON.parse(fs.readFileSync(path.join(root, 'grafana-bridge.json')));
+  const translate = bridge.nodes.find(n => n.name === 'Translate to spine format').parameters.jsCode;
+  const grafana = (body) => vm.runInNewContext(`(function(){\n${translate}\n})()`, {$input: {first: () => ({json: {body}})}});
+  const [fired] = grafana({status: 'firing', alerts: [{status: 'firing', fingerprint: 'f1', startsAt: '2026-01-01T10:00:00Z',
+    endsAt: '0001-01-01T00:00:00Z', valueString: '[ var=A value=1 ]',
+    labels: {alertname: 'ZFS pool degraded', severity: 'critical', service: 'zfs', pool: 'raid5pool'}, annotations: {summary: 'degraded'}}]});
+  assert.deepEqual([fired.json.host, fired.json.service, fired.json.occurredAt, fired.json.labels.pool], ['inari', 'zfs', '2026-01-01T10:00:00Z', 'raid5pool'], 'Grafana alert carries unified fields');
+  const [cleared] = grafana({status: 'resolved', alerts: [{status: 'resolved', fingerprint: 'f1', endsAt: '2026-01-01T11:00:00Z', labels: {alertname: 'Prometheus target down', job: 'loki'}}]});
+  assert.deepEqual([cleared.json.service, cleared.json.resolved, cleared.json.occurredAt], ['loki', true, '2026-01-01T11:00:00Z'], 'scrape job names the service, all-clear has its end time');
   console.log('CI and service monitor policy passed');
 })().catch(error => {console.error(error);process.exitCode=1;});
