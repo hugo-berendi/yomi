@@ -11,11 +11,22 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import os
 import re
 import tempfile
 from contextlib import suppress
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
+
+
+def failed_voice_text(text: str) -> str:
+    return (
+        "Audio konnte nicht zugestellt werden. Hier ist die Antwort als Text:\n\n"
+        + text
+    )
+
 
 MARKER = re.compile(r"\A\s*\[\[voice\]\][ \t]*\n?", re.IGNORECASE)
 # Speech is for short conversational replies. Code, links and exact output read
@@ -86,6 +97,7 @@ def _record(path: Path, key: str) -> None:
 async def _speak(runner, event, text: str, synthesize) -> bool:
     """Synthesize and send; True only when the platform confirmed the upload."""
     paths: list[str] = []
+    stage = "synthesis"
     try:
         result = json.loads(await asyncio.to_thread(synthesize, text))
         paths = [
@@ -94,10 +106,15 @@ async def _speak(runner, event, text: str, synthesize) -> bool:
         paths = [p for p in paths if os.path.isfile(p)]
         # A long reply split into several files could half-deliver; send text instead.
         if not result.get("success") or len(paths) != 1:
+            logger.warning(
+                "Ciel voice synthesis produced no single deliverable audio file"
+            )
             return False
+        stage = "matrix delivery"
         adapter = runner._delivery_adapter_for(event.source)
         send = getattr(adapter, "send_voice", None)
         if not callable(send):
+            logger.warning("Ciel voice adapter has no send_voice method")
             return False
         anchor = runner._reply_anchor_for_event(event)
         meta = dict(runner._thread_metadata_for_source(event.source, anchor) or {})
@@ -108,8 +125,13 @@ async def _speak(runner, event, text: str, synthesize) -> bool:
             reply_to=anchor,
             metadata=meta,
         )
-        return bool(getattr(sent, "success", False))
-    except Exception:
+        success = bool(getattr(sent, "success", False))
+        if not success:
+            logger.warning("Ciel voice Matrix delivery was not confirmed")
+        return success
+    except Exception as exc:
+        # Do not log provider errors or tracebacks: they may contain the private reply.
+        logger.warning("Ciel voice %s failed (%s)", stage, type(exc).__name__)
         return False
     finally:
         for path in paths:
@@ -137,7 +159,7 @@ async def prepare_reply(runner, event, response, *, synthesize=None, ledger=None
     _in_flight.add(key)
     try:
         if not await _speak(runner, event, text, synthesize):
-            return text
+            return failed_voice_text(text)
         _spoken.add(key)
         with suppress(OSError):
             _record(path, key)

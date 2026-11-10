@@ -133,25 +133,33 @@ class VoiceTests(unittest.TestCase):
             return json.dumps({"success": False, "error": "no piper"})
 
         out, adapter, _ = self.run_reply("[[voice]] Gern.", synth=bad)
-        self.assertEqual(out, "Gern.")
+        self.assertEqual(out, ciel_voice.failed_voice_text("Gern."))
         self.assertEqual(adapter.sent, [])
 
         def crash(text):
             raise RuntimeError("boom")
 
         out, _, _ = self.run_reply("[[voice]] Gern.", synth=crash)
-        self.assertEqual(out, "Gern.")
+        self.assertEqual(out, ciel_voice.failed_voice_text("Gern."))
         # Nothing was recorded, so a later attempt may still speak.
         out, adapter, _ = self.run_reply("[[voice]] Gern.")
         self.assertIsNone(out)
         self.assertEqual(len(adapter.sent), 1)
+
+    def test_failed_test_voice_does_not_claim_successful_audio_delivery(self):
+        spoken = "Hey Hugo, hier ist deine Testsprachnachricht. Wenn du das hörst, klappt die Sprachausgabe."
+        for outcome in (False, RuntimeError("matrix down")):
+            out, _, _ = self.run_reply("[[voice]]" + spoken, adapter=Adapter(outcome))
+            self.assertIn("Audio konnte nicht zugestellt werden", out)
+            self.assertTrue(out.endswith(spoken))
+            self.assertFalse(self.ledger.exists())
 
     def test_send_failure_falls_back_to_text(self):
         for outcome in (False, RuntimeError("matrix down")):
             out, adapter, _ = self.run_reply(
                 "[[voice]] Gern.", adapter=Adapter(outcome)
             )
-            self.assertEqual(out, "Gern.")
+            self.assertEqual(out, ciel_voice.failed_voice_text("Gern."))
             self.assertEqual(len(adapter.sent), 1)
         self.assertFalse(self.ledger.exists())
         self.assertTrue(all(not os.path.exists(p) for _, p in self.made))
@@ -195,8 +203,58 @@ class VoiceTests(unittest.TestCase):
             return json.dumps({"success": True, "file_paths": paths})
 
         out, adapter, _ = self.run_reply("[[voice]] Gern.", synth=two)
-        self.assertEqual(out, "Gern.")
+        self.assertEqual(out, ciel_voice.failed_voice_text("Gern."))
         self.assertEqual(adapter.sent, [])
+
+    @unittest.skipUnless(
+        os.environ.get("CIEL_HERMES_SOURCE"), "Requires built Hermes source"
+    )
+    def test_codex_interim_voice_waits_for_final_audio_delivery(self):
+        import ast
+        import sys
+        from unittest.mock import patch
+
+        path = Path(os.environ["CIEL_HERMES_SOURCE"]) / "gateway/run_turn_runner.py"
+        tree = ast.parse(path.read_text())
+        callback = next(
+            n
+            for n in ast.walk(tree)
+            if isinstance(n, ast.FunctionDef) and n.name == "interim_assistant_cb"
+        )
+        namespace = {
+            "ctx": SimpleNamespace(
+                _run_still_current=lambda: True,
+                source=event().source,
+                persist_user_display_kind="human",
+            ),
+            "local_viewer_route": False,
+            "stts": None,
+            "stream_consumer": SimpleNamespace(
+                on_commentary=lambda text: sent.append(text)
+            ),
+        }
+        module = ast.fix_missing_locations(ast.Module(body=[callback], type_ignores=[]))
+        exec(compile(module, str(path), "exec"), namespace)
+        filters = SimpleNamespace(
+            is_intentional_silence_response=lambda text: False,
+            is_machinery_display_kind=lambda kind: False,
+        )
+        sent = []
+        with patch.dict(
+            sys.modules,
+            {"agent.ciel_voice": ciel_voice, "gateway.response_filters": filters},
+        ):
+            namespace["interim_assistant_cb"](
+                "[[voice]]Hey Hugo, hier ist deine Testsprachnachricht."
+            )
+            self.assertEqual(sent, [], "interim delivery bypassed final TTS")
+            namespace["interim_assistant_cb"]("Eine gewöhnliche Textantwort.")
+            self.assertEqual(sent, ["Eine gewöhnliche Textantwort."])
+        out, adapter, _ = self.run_reply(
+            "[[voice]]Hey Hugo, hier ist deine Testsprachnachricht."
+        )
+        self.assertIsNone(out)
+        self.assertEqual(len(adapter.sent), 1)
 
 
 @unittest.skipUnless(SETTINGS, "Requires the built Hermes settings")

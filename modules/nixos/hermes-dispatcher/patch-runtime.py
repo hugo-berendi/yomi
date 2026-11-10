@@ -238,3 +238,26 @@ new = (
 if source.count(old) != 1:
     raise SystemExit("Hermes queued first response changed; voice patch needs review")
 path.write_text(source.replace(old, new, 1))
+
+# Codex app-server also emits final answers as interim assistant messages even
+# without token streaming. Hold voice-marked replies for final delivery, or the
+# consumer sends literal text and already_sent bypasses prepare_reply entirely.
+path = root / "gateway/run_turn_runner.py"
+source = path.read_text()
+old = """        def interim_assistant_cb(text: str, *, already_streamed: bool = False) -> None:
+            if not ctx._run_still_current():
+                return"""
+new = (
+    old
+    + """
+            from agent.ciel_voice import split_marker
+            if (getattr(ctx.source.platform, "value", None) == "matrix"
+                    and getattr(ctx.source, "chat_type", None) == "dm"
+                    and split_marker(text)[0]):
+                return"""
+)
+if source.count(old) != 1:
+    raise SystemExit(
+        "Hermes interim response callback changed; voice patch needs review"
+    )
+path.write_text(source.replace(old, new, 1))
