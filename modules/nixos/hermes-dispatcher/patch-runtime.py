@@ -149,3 +149,21 @@ for old, new in (
         raise SystemExit("Hermes segment queue changed; silence patch needs review")
     source = source.replace(old, new, 1)
 path.write_text(source)
+
+# Voice reply: Ciel opens a reply with [[voice]] to have it spoken. The marker has to be
+# gone before any later step sees the text, and a spoken reply must not also go out as
+# text, so the decision sits at the head of final delivery. A failure returns the text.
+path = root / "gateway/run_turn_persistence.py"
+source = path.read_text()
+old = """        adapter = self._delivery_adapter_for(source)
+        # Auto voice reply (TTS audio before the text) unless streaming TTS already delivered audio."""
+new = """        if not agent_result.get("already_sent"):
+            from agent.ciel_voice import prepare_reply
+            response = await prepare_reply(self, event, response)
+            if response is None:
+                return None
+        adapter = self._delivery_adapter_for(source)
+        # Auto voice reply (TTS audio before the text) unless streaming TTS already delivered audio."""
+if source.count(old) != 1:
+    raise SystemExit("Hermes final delivery changed; voice patch needs review")
+path.write_text(source.replace(old, new, 1))
