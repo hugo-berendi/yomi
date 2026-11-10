@@ -44,6 +44,11 @@ required checks for exactly that SHA. No checks is not green; report repositorie
 as such. Handle review findings and resolve addressed threads with a brief reason. Include
 relevant annotated screenshots for visible UI issues and before/after screenshots on UI PRs.
 Preserve existing uncommitted work. Use the repository's isolated test workflow for heavy tests.
+Signing: Hugo's smartcard exists only on amaterasu, never on inari. Where the signing key is
+missing, prepare the change uncommitted, keep the diff in the worktree, do not forward a card or
+agent, do not read or copy secret keys, do not try PINs, do not disable signing and do not commit
+unsigned. Report once that signing must be handed to amaterasu, then end; Ciel will not continue
+you automatically.
 Never merge, deploy, activate NixOS, weaken checks, force-push or delete branches/worktrees.
 Use proportionate cheaper subagents only for independent bounded work. Avoid duplicate
 investigations, nested delegation and unmeasured claims about subscription savings.

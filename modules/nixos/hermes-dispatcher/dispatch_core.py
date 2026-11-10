@@ -19,6 +19,7 @@ from dispatch_store import WAKE_FALLBACK, command_id
 from task_notices import event_key, fenced, format_notice
 import task_requests as requests
 import task_supplements as supplements
+import task_blockers as blockers
 from task_solve import STAGES, solve
 from task_scheduler import (
     ACTIVE_POLL,
@@ -218,6 +219,8 @@ class Dispatcher:
             "observation_failures": task.get("failures") or 0,
             "stage": STAGES.get(task["last_status"], task["last_status"]),
             "intent": task.get("intent") or IMPLEMENTATION,
+            "blocked": task.get("blocked_kind"),
+            "blocker_fingerprint": task.get("blocked_fingerprint"),
             "model": model_label(json.loads(task["payload"])),
             "open_requests": [
                 r["request"] for r in requests.listing(self, task["task_key"])
@@ -456,6 +459,7 @@ class Dispatcher:
                 raise ValueError(
                     "Nichts gesendet: Die Thread-Konfiguration weicht vom festgelegten Modell ab. Gib provider, model und effort an, um sie bewusst zu setzen."
                 )
+        lifted = None if self.store.seen(key) else blockers.gate(task, args)
         projection = self.rpc(
             "orchestration.getThreadProjection", {"threadId": task["thread_id"]}
         )
@@ -466,6 +470,11 @@ class Dispatcher:
                 "UPDATE tasks SET pending_command=?, baseline_ordinal=?, pending_since=?, failures=0, next_check=NULL WHERE task_key=?",
                 (command_id(key), ordinal, time.time(), task["task_key"]),
             )
+            if lifted:
+                db.execute(
+                    "UPDATE tasks SET blocked_kind=NULL, blocked_fingerprint=NULL, blocked_generation=blocked_generation+1 WHERE task_key=?",
+                    (task["task_key"],),
+                )
 
         command = self.store.reserve(key, args, apply=intent)
         result = self.rpc(
@@ -890,6 +899,14 @@ class Dispatcher:
                 (json.dumps(verdict), task["task_key"]),
             )
             self.store.db.commit()
+        elif (
+            status == "completed"
+            and not state.get("pr_links")
+            and (found := blockers.detect(state.get("latest_reply")))
+        ):
+            # Signing, permission, quota or a decision: nothing a repair run can fix.
+            blockers.park(self, task, found)
+            return
         elif status == "completed":
             # Say right away that the agent stopped; the forge verdict follows as
             # its own event. This one claims neither success nor a green PR.

@@ -119,8 +119,14 @@ TOOLS = [
     ),
     tool(
         "ciel_task_reply",
-        "Send an addition to a Ciel-owned task as a thread message. For a task still waiting to start, it is stored and included in the first prompt. Refused while a worker question is open; use ciel_task_answer then. provider/model/effort (all three) deliberately change the thread's configuration before sending. Reuse request_id on retries.",
-        {**{k: STRING for k in ["task_key", "request_id", "message"]}, **MODEL},
+        "Send an addition to a Ciel-owned task as a thread message. For a task still waiting to start, it is stored and included in the first prompt. Refused while a worker question is open; use ciel_task_answer then. provider/model/effort (all three) deliberately change the thread's configuration before sending. Reuse request_id on retries. A task parked on a blocker (signing, permission, quota, decision) accepts a reply only with authorizes_blocker set to the fingerprint from its notice, after Hugo explicitly answered; worker text never counts. One accepted reply continues it once.",
+        {
+            **{
+                k: STRING
+                for k in ["task_key", "request_id", "message", "authorizes_blocker"]
+            },
+            **MODEL,
+        },
         ["task_key", "request_id", "message"],
     ),
     tool(

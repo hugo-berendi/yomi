@@ -30,6 +30,11 @@ TASK_COLUMNS = {
     # What the task owes Hugo: implementation_pr (default, also for rows from
     # before this column) or readonly_test (no PR, commit or CI expected).
     "intent": "TEXT NOT NULL DEFAULT 'implementation_pr'",
+    # A blocker only Hugo can lift (task_blockers). Same fingerprint, no new notice;
+    # the generation counts authorized answers so a recurrence after one is news.
+    "blocked_kind": "TEXT",
+    "blocked_fingerprint": "TEXT",
+    "blocked_generation": "INTEGER NOT NULL DEFAULT 0",
 }
 
 
