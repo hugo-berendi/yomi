@@ -21,6 +21,22 @@ if source.count(old) != 1:
     raise SystemExit("Hermes Codex turn boundary changed; routing patch needs review")
 path.write_text(source.replace(old, new, 1))
 
+old = """    agent._codex_session = CodexAppServerSession(
+        cwd=getattr(agent, "session_cwd", None) or str(resolve_agent_cwd()), approval_callback=approval_callback,"""
+new = """    # Webhook turns (alert triage) run without Ciel's task tools or a shell.
+    from agent.ciel_webhook_policy import client_factory as ciel_client_factory
+    from agent.transports.codex_app_server import CodexAppServerClient as CielCodexClient
+    ciel_factory = ciel_client_factory(agent, CielCodexClient)
+    agent._codex_session = CodexAppServerSession(
+        **({"client_factory": ciel_factory} if ciel_factory else {}),
+        cwd=getattr(agent, "session_cwd", None) or str(resolve_agent_cwd()), approval_callback=approval_callback,"""
+source = path.read_text()
+if source.count(old) != 1:
+    raise SystemExit(
+        "Hermes Codex session construction changed; webhook policy patch needs review"
+    )
+path.write_text(source.replace(old, new, 1))
+
 path = root / "plugins/platforms/matrix/adapter.py"
 source = path.read_text()
 old = """        self._wire_plugin_handlers(self._client)  # plugin-registered native handlers
