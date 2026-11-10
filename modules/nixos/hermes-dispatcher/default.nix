@@ -255,6 +255,22 @@ in {
       description = "Explicit registered T3 repository IDs Ciel may launch coding tasks in.";
     };
     enable = lib.mkEnableOption "the subscription-only Hermes coding intake pilot";
+    toolApprovals = lib.mkOption {
+      type = lib.types.attrsOf (lib.types.attrsOf (lib.types.listOf (lib.types.strMatching "ciel_[a-z_]+")));
+      default = {};
+      example = {
+        "@owner:example.org"."@ciel:example.org" = ["ciel_thread_open"];
+      };
+      description = ''
+        Native Codex tool approvals, keyed by the exact Matrix owner and bot IDs.
+        Add only concrete tools Hugo explicitly selected for permanent approval.
+        Other tools retain writes approval mode. Remove an entry to revoke it;
+        activate the configuration and restart Hermes to apply either change.
+        This only controls runtime prompts, never authorization for an action.
+        The managed Codex config is replaced on startup, so edit this option
+        rather than the generated config.toml. Matrix reactions remain one-shot.
+      '';
+    };
     user = lib.mkOption {
       type = lib.types.str;
       default = config.yomi.pilot.name;

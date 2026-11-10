@@ -130,6 +130,23 @@ class LauncherTests(unittest.TestCase):
                 (state / "codex/AGENTS.md").read_text(),
                 (state / "hermes/SOUL.md").read_text(),
             )
+            # Start a fresh launcher process each time: selected grants survive
+            # restart, and removing them replaces stale grants in CODEX_HOME.
+            policy = root / "policy.toml"
+            launch_settings = json.loads(settings.read_text())
+            launch_settings["codexConfig"] = str(policy)
+            settings.write_text(json.dumps(launch_settings))
+            base = '[mcp_servers.ciel]\ndefault_tools_approval_mode = "writes"\n'
+            selected = (
+                base
+                + '[mcp_servers.ciel.tools.ciel_thread_open]\napproval_mode = "approve"\n'
+            )
+            for desired in (selected, selected, base):
+                policy.write_text(desired)
+                subprocess.run(
+                    [*command, "gateway"], check=True, capture_output=True, text=True
+                )
+                self.assertEqual((state / "codex/config.toml").read_text(), desired)
             (state / "codex/auth.json").write_text(
                 '{"auth_mode":"apikey","OPENAI_API_KEY":"not-a-real-key"}'
             )

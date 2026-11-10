@@ -3,7 +3,7 @@ on:
   push:
   workflow_dispatch:
 concurrency:
-  group: check-nixos-flake
+  group: check-nixos-flake-${{ github.ref }}
   cancel-in-progress: true
 jobs:
   check:
