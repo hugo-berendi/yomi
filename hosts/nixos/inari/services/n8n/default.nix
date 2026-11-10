@@ -18,6 +18,12 @@
   # runs without one and ntfy answers 403.
   hasNtfyToken = builtins.match ".*[[:space:]]*n8n_ntfy_token:.*" (builtins.readFile ../../secrets.yaml) != null;
   n8n = lib.getExe' config.services.n8n.package "n8n";
+  # The router loads its Hermes triage target from beside itself.
+  alertRouter = pkgs.runCommand "n8n-alert-router" {} ''
+    mkdir $out
+    cp ${./alert-router.cjs} $out/alert-router.cjs
+    cp ${./alert-triage.cjs} $out/alert-triage.cjs
+  '';
 
   # {{{ Workflow import
   # n8n keeps workflows in its own sqlite database, so they are invisible to
@@ -319,7 +325,7 @@ in {
         PORT = toString config.yomi.ports.n8n-alert-router;
       };
       serviceConfig = {
-        ExecStart = "${pkgs.nodejs}/bin/node ${./alert-router.cjs}";
+        ExecStart = "${pkgs.nodejs}/bin/node ${alertRouter}/alert-router.cjs";
         EnvironmentFile = config.sops.templates."n8n-alert-router.env".path;
         DynamicUser = true;
         StateDirectory = "n8n-alert-router";

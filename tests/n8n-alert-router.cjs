@@ -87,7 +87,7 @@ async function setup(now, options = {}) {
   ctx = await setup('2026-01-05T22:00:00Z');
   await ctx.router.submit([alert()]);
   const beforeRestart = JSON.parse(await fs.readFile(ctx.statePath, 'utf8'));
-  assert.equal(beforeRestart.alerts.backup.pending, true, 'quiet-hour pending item is persisted across restart');
+  assert.equal(beforeRestart.alerts.backup.ntfy.pending, true, 'quiet-hour pending item is persisted across restart');
   ctx.router = createRouter({statePath:ctx.statePath,env:{NTFY_TOPIC:'test',NTFY_URL:'http://ntfy',NTFY_TOKEN:'fixture'},now:instant('2026-01-06T06:00:00Z'),httpRequest:async req=>{ctx.sent.push(req.body);return {};}});
   assert.equal((await ctx.router.submit([])).sent, 1, 'restarted router drains persisted morning item');
 
@@ -96,7 +96,7 @@ async function setup(now, options = {}) {
   ctx = await setup('2026-01-05T10:00:00Z');
   ctx.router = createRouter({statePath:ctx.statePath,env:{NTFY_TOPIC:'test',NTFY_URL:'http://ntfy',NTFY_TOKEN:'fixture'},now:instant('2026-01-05T10:00:00Z'),httpRequest:async () => {
     const onDisk = JSON.parse(await fs.readFile(ctx.statePath, 'utf8'));
-    assert.equal(onDisk.alerts.backup?.pending, true, 'alert persisted before publish');
+    assert.equal(onDisk.alerts.backup?.ntfy.pending, true, 'alert persisted before publish');
     throw new Error('ntfy down');
   }});
   await ctx.router.submit([alert()]);
