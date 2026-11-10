@@ -1,5 +1,7 @@
 """Read CI/review evidence through T3's forge adapters, never trust an agent's green claim."""
 
+from concurrent.futures import ThreadPoolExecutor
+import json
 from urllib.parse import urlsplit
 
 
@@ -93,3 +95,48 @@ def verify(rpc, project_id, links):
         "state": "merged" if all(p["merged"] for p in checked) else "ready",
         "checked": checked,
     }
+
+
+FORGE_UNREADABLE = {
+    "state": "unverified",
+    "reason": "PR/CI-Status konnte nicht unabhängig über die Forge abgerufen werden.",
+}
+
+
+def safe_verdict(rpc, project_id, links):
+    """A forge failure is an unverified result, never a crash and never a green one."""
+    try:
+        return verify(rpc, project_id, links)
+    except Exception:
+        return dict(FORGE_UNREADABLE)
+
+
+class AsyncVerifier:
+    """Forge reads on worker threads, so a slow forge never stalls observation.
+
+    Workers do no database work: they get a project and links and return a
+    verdict. The observation loop polls for it. Pending work is in memory only;
+    a restart finds the task still `verifying` and asks again.
+    """
+
+    def __init__(self, rpc, workers=2):
+        self.rpc = rpc
+        self.executor = ThreadPoolExecutor(max_workers=workers)
+        self.jobs = {}
+
+    def poll(self, key, project_id, links):
+        """The verdict once a job for exactly these links finished, else None."""
+        signature = json.dumps([project_id, links], sort_keys=True, default=str)
+        job = self.jobs.get(key)
+        if job is not None and job[0] != signature:
+            job = None  # The links changed; that answer would describe an old PR.
+        if job is None:
+            self.jobs[key] = (
+                signature,
+                self.executor.submit(safe_verdict, self.rpc, project_id, links),
+            )
+            return None
+        if not job[1].done():
+            return None
+        del self.jobs[key]
+        return job[1].result()

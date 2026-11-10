@@ -29,8 +29,18 @@ NO_SLOT = TERMINAL | {
     "quota_paused",
     "waiting",
 }
-SATISFIED = {"ready", "merged"}
+# A finished read-only task persists as `completed`; it owes no PR, so a task
+# that depends on it may start.
+SATISFIED = {"ready", "merged", "completed"}
 DEAD = {"failed", "cancelled", "interrupted", "rolled_back", "stopped"}
+# Seconds between reads of one task's T3 state. A question or a finished run
+# is seen at most this long after T3 reports it; two tasks cost two reads
+# per interval, bounded by the slot limit.
+ACTIVE_POLL = 5
+# How often the service loop wakes to see which tasks are due.
+TICK = 2
+# Starting queued work looks up projects and quota; it need not run every pass.
+FILL_EVERY = 15
 DEFAULT_LIMIT = 2
 MAX_LIMIT = 4
 

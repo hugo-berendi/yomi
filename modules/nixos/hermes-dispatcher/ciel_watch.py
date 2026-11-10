@@ -10,13 +10,20 @@ woken for the broker's fallback window, the plain text goes to Hugo instead.
 import asyncio
 import logging
 import os
+import time
 
 try:
     from agent.ciel_broker_client import broker_call
 except ImportError:  # unit tests run outside the Hermes tree
     from broker_client import broker_call
 
-POLL = 30
+# The broker read is a local socket call and one SQLite query, so a short
+# interval costs nothing; it is what bounds the wake after the broker queued it.
+POLL = 2
+# A notice for a room that is not the owner DM is rechecked this rarely.
+WITHHELD_RETRY = 60
+# A failed wake is retried at this pace until the broker's fallback sends text.
+WAKE_RETRY = 10
 MAX_BACKOFF = 300
 log = logging.getLogger(__name__)
 
@@ -66,19 +73,28 @@ async def default_wake(adapter, room, owner, text):
     await deliver_wake(adapter, text=text, source=source)
 
 
-async def deliver(adapter, path, owner, call=broker_call, wake=default_wake):
+async def deliver(
+    adapter, path, owner, call=broker_call, wake=default_wake, withheld=None
+):
     """Deliver each pending event once to the owner-only DM, then acknowledge it.
 
     Delivery is at-least-once: a crash between hand-off and acknowledgement
     repeats the event after restart. Dedup keys in the broker keep one event
     per state, so a repeat cannot snowball into a message loop.
     """
+    withheld = {} if withheld is None else withheld
+    for stale in [i for i, until in withheld.items() if until <= time.monotonic()]:
+        del withheld[stale]
     for notice in await asyncio.to_thread(call, path, "notices"):
+        if withheld.get(notice["id"], 0) > time.monotonic():
+            continue
         if not await owner_only(adapter, notice["room_id"], owner):
             log.warning(
                 "Ciel notice %s withheld: room is not the owner-only DM", notice["id"]
             )
+            withheld[notice["id"]] = time.monotonic() + WITHHELD_RETRY
             continue
+        accepted = time.monotonic()
         if notice.get("mode", "wake") == "wake":
             try:
                 await wake(
@@ -96,7 +112,15 @@ async def deliver(adapter, path, owner, call=broker_call, wake=default_wake):
                     type(exc).__name__,
                 )
                 await asyncio.to_thread(call, path, "wake_failed", {"id": notice["id"]})
+                withheld[notice["id"]] = time.monotonic() + WAKE_RETRY
                 continue
+            # Where each second goes: queued in the broker, then accepted by the session.
+            log.info(
+                "Ciel notice %s: %ss in the broker queue, wake accepted in %.1fs",
+                notice["id"],
+                notice.get("age"),
+                time.monotonic() - accepted,
+            )
             await asyncio.to_thread(
                 call, path, "ack", {"id": notice["id"], "as": "wake"}
             )
@@ -114,9 +138,10 @@ async def watch(adapter):
     if not path or not owner or "," in owner:
         return
     delay = POLL
+    withheld = {}
     while True:
         try:
-            await deliver(adapter, path, owner)
+            await deliver(adapter, path, owner, withheld=withheld)
             delay = POLL
         except asyncio.CancelledError:
             raise

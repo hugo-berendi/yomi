@@ -7,12 +7,12 @@ import time
 import uuid
 
 from ciel_routing import choose
-from task_policy import task_prompt
+from task_policy import IMPLEMENTATION, INTENTS, READONLY, task_prompt
 from provider_policy import codex_selection, exhausted, select_provider
 from model_selection import ModelNotEnforced, effort_of, matches, offered, requested
 from workspace_binding import WorkspaceNotBound, WorkspaceNotReady
 from matrix_rooms import private_room
-from pr_verification import verify
+from pr_verification import FORGE_UNREADABLE, verify
 from project_memory import project_facts
 from task_followup import request_followup
 from dispatch_store import WAKE_FALLBACK, command_id
@@ -20,7 +20,15 @@ from task_notices import event_key, fenced, format_notice
 import task_requests as requests
 import task_supplements as supplements
 from task_solve import STAGES, solve
-from task_scheduler import TERMINAL, backoff, blocker, holds_slot, limit
+from task_scheduler import (
+    ACTIVE_POLL,
+    FILL_EVERY,
+    TERMINAL,
+    backoff,
+    blocker,
+    holds_slot,
+    limit,
+)
 
 # A follow-up whose run never appears must not hold a slot forever.
 FOLLOWUP_GRACE = 900
@@ -73,8 +81,12 @@ def key_list(value):
 
 
 class Dispatcher:
-    def __init__(self, config, store, rpc, verify_room=private_room):
+    def __init__(self, config, store, rpc, verify_room=private_room, verifier=None):
         self.config, self.store, self.rpc = config, store, rpc
+        # Forge reads can take minutes. A verifier with poll() runs them off the
+        # observation loop; without one they run inline, as the tests expect.
+        self.verifier = verifier
+        self.filled_at = 0.0
         self.verify_room = verify_room
         self.slots = limit(config)
 
@@ -94,6 +106,11 @@ class Dispatcher:
         if not re.fullmatch(r"[a-zA-Z0-9_.:-]+", key):
             raise ValueError("Invalid task key")
         description = text(args.get("description"))
+        # Intent is only ever what the caller states. Worker text or the wording
+        # of the description never switches a task to the lighter read-only path.
+        intent = args.get("intent", IMPLEMENTATION)
+        if intent not in INTENTS:
+            raise ValueError("intent muss implementation_pr oder readonly_test sein")
         depends_on = key_list(args.get("depends_on"))
         group = args.get("serial_group")
         if group is not None and not re.fullmatch(
@@ -145,10 +162,13 @@ class Dispatcher:
                     "baseRef": "HEAD",
                     "branch": "ciel/" + thread_id[:12],
                 },
-                "initialMessage": {"text": self.prompt(description), "attachments": []},
+                "initialMessage": {
+                    "text": self.prompt(description, intent),
+                    "attachments": [],
+                },
             }
             self.store.db.execute(
-                "INSERT INTO tasks(task_key,payload,thread_id,room_id,last_status,description,depends_on,serial_group) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO tasks(task_key,payload,thread_id,room_id,last_status,description,depends_on,serial_group,intent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (
                     key,
                     json.dumps(payload),
@@ -158,18 +178,20 @@ class Dispatcher:
                     description,
                     json.dumps(depends_on),
                     group,
+                    intent,
                 ),
             )
             self.store.db.commit()
         self.advance(key)
         return self.summary(self.store.task(key))
 
-    def prompt(self, description):
+    def prompt(self, description, intent=IMPLEMENTATION):
         return task_prompt(
             description,
             self.config["taste"],
             self.config.get("globalRules", ""),
             project_facts(self.config),
+            intent,
         )
 
     # }}}
@@ -195,6 +217,7 @@ class Dispatcher:
             "last_error": task.get("last_error"),
             "observation_failures": task.get("failures") or 0,
             "stage": STAGES.get(task["last_status"], task["last_status"]),
+            "intent": task.get("intent") or IMPLEMENTATION,
             "model": model_label(json.loads(task["payload"])),
             "open_requests": [
                 r["request"] for r in requests.listing(self, task["task_key"])
@@ -568,7 +591,9 @@ class Dispatcher:
             )
             description = found.group(1) if found else None
         if description:
-            payload["initialMessage"]["text"] = self.prompt(description)
+            payload["initialMessage"]["text"] = self.prompt(
+                description, task.get("intent") or IMPLEMENTATION
+            )
 
     def fill_slots(self, raise_for=None):
         """Start eligible queued tasks, in order, until the slot bound is reached."""
@@ -853,15 +878,49 @@ class Dispatcher:
             # T3's own run states must not be mistaken for this broker's queue.
             status = "preparing"
         verdict = None
-        if status == "completed":
-            try:
-                project_id = json.loads(task["payload"])["projectId"]
-                verdict = verify(self.rpc, project_id, state.get("pr_links", []))
-            except Exception:
-                verdict = {
-                    "state": "unverified",
-                    "reason": "PR/CI-Status konnte nicht unabhängig über die Forge abgerufen werden.",
-                }
+        if status == "completed" and task.get("intent") == READONLY:
+            # Hugo asked for no change: the observed outcome is the result. No PR,
+            # commit or CI exists to check, so none is claimed or demanded.
+            verdict = {
+                "state": "not_required",
+                "reason": "Nur-Lesen-Test: kein PR, Commit oder CI verlangt.",
+            }
+            self.store.db.execute(
+                "UPDATE tasks SET verification=? WHERE task_key=?",
+                (json.dumps(verdict), task["task_key"]),
+            )
+            self.store.db.commit()
+        elif status == "completed":
+            # Say right away that the agent stopped; the forge verdict follows as
+            # its own event. This one claims neither success nor a green PR.
+            self.store.notify(
+                task,
+                event_key(task, "verifying", state, None),
+                format_notice(task, state, "verifying", None),
+            )
+            verdict = self.verdict_for(task, state)
+            if verdict is None:
+                # Forge reads are still running off-loop. Keep the task where it
+                # is (a `ready` one stays ready) and look again shortly.
+                if task["last_status"] not in {"verifying", "ready"}:
+                    self.store.db.execute(
+                        "UPDATE tasks SET last_status='verifying', verification=? WHERE task_key=?",
+                        (
+                            json.dumps(
+                                {
+                                    "state": "pending",
+                                    "reason": "Prüfung läuft noch.",
+                                }
+                            ),
+                            task["task_key"],
+                        ),
+                    )
+                self.store.db.execute(
+                    "UPDATE tasks SET next_check=? WHERE task_key=?",
+                    (time.time() + ACTIVE_POLL, task["task_key"]),
+                )
+                self.store.db.commit()
+                return
             # A repair run needs a slot like any other run.
             deferred = (
                 verdict["state"] in {"missing", "failed"} and self.used() >= self.slots
@@ -904,11 +963,36 @@ class Dispatcher:
                 format_notice(task, state, status, verdict),
             )
 
-    def tick(self):
-        """Observe every task independently, then hand freed slots to queued work."""
-        for row in self.tasks():
-            self.observe(dict(row))
-        self.fill_slots()
+    def verdict_for(self, task, state):
+        """Forge evidence for a finished run; None while an off-loop read is pending."""
+        project_id = json.loads(task["payload"])["projectId"]
+        links = state.get("pr_links", [])
+        if self.verifier is not None:
+            return self.verifier.poll(task["task_key"], project_id, links)
+        try:
+            return verify(self.rpc, project_id, links)
+        except Exception:
+            return dict(FORGE_UNREADABLE)
+
+    def tick(self, paced=False):
+        """Observe every task independently, then hand freed slots to queued work.
+
+        Paced, the service loop calls this every couple of seconds: a task is read
+        at most every ACTIVE_POLL seconds, longest-unread first so one slow or
+        failing task cannot keep the others waiting, and queued work is looked at
+        every FILL_EVERY seconds. Unpaced, everything runs once (tests, one-offs).
+        """
+        now = time.time()
+        rows = [dict(r) for r in self.tasks()]
+        if paced:
+            rows.sort(key=lambda t: t.get("observed_at") or 0)
+        for task in rows:
+            if paced and now - (task.get("observed_at") or 0) < ACTIVE_POLL:
+                continue
+            self.observe(task)
+        if not paced or time.time() - self.filled_at >= FILL_EVERY:
+            self.filled_at = time.time()
+            self.fill_slots()
 
     # }}}
 
@@ -944,6 +1028,9 @@ class Dispatcher:
                     "room_id": r["room_id"],
                     "body": r["body"],
                     "task_key": r["task_key"],
+                    "age": round(time.time() - r["created_at"], 1)
+                    if r["created_at"]
+                    else None,
                     # Ciel acts on events herself; Hugo gets the text only if
                     # her session cannot be woken for WAKE_FALLBACK seconds.
                     "mode": "text"
@@ -964,8 +1051,8 @@ class Dispatcher:
             return {"recorded": True}
         if operation == "ack":
             self.store.db.execute(
-                "UPDATE notices SET delivered=1, delivered_as=? WHERE id=?",
-                (args.get("as", "text"), int(args["id"])),
+                "UPDATE notices SET delivered=1, delivered_as=?, delivered_at=? WHERE id=?",
+                (args.get("as", "text"), time.time(), int(args["id"])),
             )
             self.store.db.commit()
             return {"acknowledged": True}
