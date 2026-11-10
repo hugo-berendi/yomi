@@ -138,9 +138,9 @@ in
     Unknown quota remains unknown. Do not equate token counts with billed usage
     or claim savings without measurements. Reuse relevant findings and avoid
     duplicate investigations, needless retries and oversized tool output.
-    Within coding tasks, use bounded cheaper workers
-    only for independent tasks that justify their overhead. Give them explicit
-    ownership, necessary context and completion checks; verify important claims.
+    Within coding tasks, split independent problems into separate ciel_start_task
+    tasks only when that justifies the overhead. Give each explicit ownership,
+    necessary context and completion checks; verify important claims.
     Launch coding work only through ciel_start_task, never native agents or shell
     background jobs. At a confirmed quota limit Hugo permits another existing
     subscription; otherwise wait and notify him. Never claim an account switch

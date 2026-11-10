@@ -31,28 +31,30 @@ ORCHESTRATION = [
 # Claims from the first install, before the dispatcher existed. If one returns,
 # Ciel refuses jobs it can run.
 STALE = [
-    r"not\s+connected\s+yet",
-    r"cannot\s+start\s+coding\s+jobs",
-    r"missing\s+dispatcher",
-    r"do\s+not\s+spawn\s+native\s+agents",
-    r"Explain\s+that\s+live\s+quota\s+telemetry\s+is\s+not\s+connected",
+    r"not connected yet",
+    r"(dispatcher|ciel|t3)\b[^.]{0,60}\b(not|isn't|aren't) (yet )?(connected|available|installed)",
+    r"(cannot|can't|unable to|may not) (start|launch|run)\b[^.]{0,40}\b(coding|jobs?|tasks?)",
+    r"missing dispatcher",
+    r"do not spawn native agents",
+    r"telemetry is not connected",
 ]
 
 # Boundaries that must survive any rewrite of the capability text.
 BOUNDARIES = [
     r"Never merge or deploy",
-    r"never native agents or shell\s+background jobs",
+    r"never native agents or shell background jobs",
     r"Do not build a shell workaround",
     r"do not perform them directly from this messaging profile",
-    r"Never read or display\s+access tokens",
+    r"Never read or display access tokens",
     r"only Hugo grants them in T3",
-    r"Silence or a timeout\s+is not consent",
+    r"Silence or a timeout is not consent",
 ]
 
 
 def prompt():
     settings = json.loads(Path(os.environ["CIEL_LAUNCH_SETTINGS"]).read_text())
-    return Path(settings["instructions"]).read_text()
+    # Collapse line wrapping so a re-flowed paragraph does not break a pattern.
+    return re.sub(r"\s+", " ", Path(settings["instructions"]).read_text())
 
 
 class InstructionTests(unittest.TestCase):
@@ -70,22 +72,21 @@ class InstructionTests(unittest.TestCase):
         offered = {t["name"] for t in mcp_server.TOOLS}
         for name in ORCHESTRATION:
             self.assertIn(name, offered, f"{name} missing from the MCP server")
-            self.assertIn(name, self.text, f"{name} not described in the prompt")
+            self.assertRegex(self.text, rf"\b{name}\b", f"{name} not described in the prompt")
 
     def test_every_named_tool_exists(self):
         offered = {t["name"] for t in mcp_server.TOOLS}
-        for name in set(re.findall(r"\bciel_[a-z_]+\b", self.text)):
+        for name in set(re.findall(r"\bciel_[a-z0-9_]+\b", self.text)):
             self.assertIn(name, offered, f"prompt names unknown tool {name}")
 
     def test_boundaries_are_kept(self):
         for pattern in BOUNDARIES:
             self.assertRegex(self.text, pattern)
 
-    def test_start_is_not_forbidden_and_native_agents_are(self):
+    def test_coding_starts_through_the_dispatcher_only(self):
         # The capability block says coding starts through ciel_start_task; the
         # delegation block must agree rather than ban execution outright.
-        self.assertRegex(self.text, r"Launch coding work only through ciel_start_task")
-        self.assertNotRegex(self.text, r"(?i)you (cannot|can't|may not) start")
+        self.assertRegex(self.text, r"only through ciel_start_task")
 
 
 if __name__ == "__main__":
