@@ -11,7 +11,16 @@
     inherit pkgs;
     upstream = inputs.llm-agents.packages.${system}.hermes-agent;
   };
-  codex = import ../../../home/features/cli/ai/codex-package.nix {inherit inputs pkgs;};
+  codex = import ../../../home/features/cli/ai/codex-package.nix {
+    inherit inputs pkgs;
+    # ProtectKernelTunables masks proc subtrees. Keep that protection and let
+    # Codex's existing proc fallback recognize external bubblewrap 0.12 too.
+    codex = inputs.llm-agents.packages.${system}.codex.overrideAttrs (old: {
+      patches = (old.patches or []) ++ [./codex-proc-fallback.patch];
+      doCheck = true;
+      cargoTestFlags = ["--package" "codex-linux-sandbox" "proc_mount_failure_tests"];
+    });
+  };
   skills = import ./skills.nix {inherit pkgs lib inputs;};
   state = cfg.stateDirectory;
   stt = import ./stt.nix {inherit pkgs;};
@@ -120,7 +129,7 @@
     skills = skills.bundle;
     inherit (skills) catalog;
     configuration = settings;
-    path = lib.makeBinPath [hermes codex pkgs.coreutils pkgs.git];
+    path = lib.makeBinPath [hermes codex pkgs.coreutils pkgs.git pkgs.file pkgs.poppler-utils];
     codex = lib.getExe codex;
     hermes = lib.getExe hermes;
   });
@@ -129,7 +138,7 @@
       exec ${pkgs.python3}/bin/python3 ${launcherSource}/launcher.py ${launchSettings} "$@"
     '').overrideAttrs (_: {
       passthru = {
-        inherit hermes settings launchSettings;
+        inherit hermes codex settings launchSettings;
         inherit (dispatch) brokerConfig codexConfig localConfig;
       };
     });
@@ -314,5 +323,13 @@ in {
         python3 -m unittest discover -p 'test_*.py' -v
         touch "$out"
       '';
+    system.build.hermes-sandbox-test-config = pkgs.writeText "hermes-sandbox-test.json" (builtins.toJSON {
+      serviceConfig = builtins.removeAttrs common ["User" "Group" "ReadWritePaths" "Restart" "RestartSec" "TimeoutStopSec" "KillMode"];
+      codex = lib.getExe codex;
+      inherit (dispatch) codexConfig;
+      file = lib.getExe pkgs.file;
+      pdftotext = "${pkgs.poppler-utils}/bin/pdftotext";
+      python = lib.getExe pkgs.python3;
+    });
   };
 }

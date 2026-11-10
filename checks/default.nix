@@ -73,6 +73,10 @@ in
     diabetes = self.nixosConfigurations.inari.config.system.build.diabetes-tests;
     proton-mail-sorter = self.nixosConfigurations.inari.config.system.build.proton-mail-sorter-tests;
     hermes-dispatcher = self.nixosConfigurations.inari.config.system.build.hermes-dispatcher-tests;
+    hermes-sandbox = import ../tests/hermes-sandbox.nix {
+      inherit pkgs;
+      configuration = self.nixosConfigurations.inari;
+    };
     dns-zones = dnsPackages.octodns-zones;
     dns-sync = dnsPackages.octodns-sync;
   }
