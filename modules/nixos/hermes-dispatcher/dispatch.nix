@@ -35,7 +35,9 @@
     selectableModels = cfg.t3.selectableModels;
     # Queued tasks read project preferences from here when they start.
     memoryDirectory = "${state}/home/memory";
-    taste = import ./personality.nix;
+    inherit ((import ./personality.nix)) taste;
+    # Inari has no smartcard; Hugo allows unsigned commits and PRs from here.
+    allowUnsignedCommits = config.networking.hostName == "inari";
   });
   codexConfig = (pkgs.formats.toml {}).generate "ciel-codex.toml" {
     default_permissions = ":read-only";

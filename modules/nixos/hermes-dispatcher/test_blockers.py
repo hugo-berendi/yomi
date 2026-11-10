@@ -5,7 +5,6 @@ import unittest
 from unittest.mock import patch
 
 import task_blockers
-from task_policy import task_prompt
 from test_support import Clock, FakeT3, Workspace, make_dispatcher, start
 
 SIGNING = "Commit nicht möglich: gpg: skipped key: No secret key. Signing failed."
@@ -178,12 +177,6 @@ class BlockerTests(Case):
 
 
 class SigningPolicyTests(unittest.TestCase):
-    def test_implementation_prompt_keeps_signing_on_amaterasu_only(self):
-        prompt = task_prompt("x", "p")
-        for phrase in ("only on amaterasu, never on inari", "do not commit\nunsigned"):
-            self.assertIn(phrase, prompt)
-        self.assertIn("do not disable signing", prompt)
-
     def test_the_blocked_notice_never_offers_a_workaround(self):
         text = task_blockers.NEXT_STEP["signing"]
         self.assertIn("kein unsignierter Commit", text)

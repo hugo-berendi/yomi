@@ -144,6 +144,7 @@ class SlotTests(LifecycleCase):
             [
                 {
                     "fact": "Yomi changes need neither PR nor issue",
+                    "topics": ["*"],
                     "source": "Hugo",
                     "date": "2026-11-09",
                 }
@@ -264,7 +265,14 @@ class MigrationTests(LifecycleCase):
         d = self.dispatcher(
             memory=projects_file(
                 self.work.root,
-                [{"fact": "Fact", "source": "Hugo", "date": "2026-11-09"}],
+                [
+                    {
+                        "fact": "Fact",
+                        "source": "Hugo",
+                        "date": "2026-11-09",
+                        "topics": ["*"],
+                    }
+                ],
             )
         )
         d.tick()

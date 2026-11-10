@@ -191,8 +191,9 @@ class Dispatcher:
             description,
             self.config["taste"],
             self.config.get("globalRules", ""),
-            project_facts(self.config),
+            project_facts(self.config, description),
             intent,
+            bool(self.config.get("allowUnsignedCommits")),
         )
 
     # }}}
@@ -902,7 +903,12 @@ class Dispatcher:
         elif (
             status == "completed"
             and not state.get("pr_links")
-            and (found := blockers.detect(state.get("latest_reply")))
+            and (
+                found := blockers.detect(
+                    state.get("latest_reply"),
+                    signing=not self.config.get("allowUnsignedCommits"),
+                )
+            )
         ):
             # Signing, permission, quota or a decision: nothing a repair run can fix.
             blockers.park(self, task, found)
