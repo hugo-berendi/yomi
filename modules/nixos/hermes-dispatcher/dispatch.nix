@@ -40,6 +40,11 @@
   codexConfig = (pkgs.formats.toml {}).generate "ciel-codex.toml" {
     default_permissions = ":read-only";
     approval_policy = "never";
+    # Codex runs commands as `/bin/sh -lc` by default. On NixOS the login
+    # profile replaces PATH with the system and per-user profiles, which drops
+    # the launcher's file and pdftotext ("file: command not found" in Matrix
+    # document analysis). Non-login commands inherit the launcher's PATH.
+    allow_login_shell = false;
     mcp_servers.ciel = {
       command = "${pkgs.python3}/bin/python3";
       args = ["${launcherSource}/mcp_server.py" "${localConfig}"];
