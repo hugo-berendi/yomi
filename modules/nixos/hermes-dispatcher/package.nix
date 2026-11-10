@@ -23,6 +23,7 @@ upstream.overridePythonAttrs (old: {
     + ''
       cmp agent/ciel_routing.py "$out"/lib/python*/site-packages/agent/ciel_routing.py
       cmp gateway/session_execution.py "$out"/lib/python*/site-packages/gateway/session_execution.py
+      cmp gateway/run_turn_runner.py "$out"/lib/python*/site-packages/gateway/run_turn_runner.py
       cmp plugins/platforms/matrix/adapter.py "$out/share/hermes/plugins/platforms/matrix/adapter.py"
       CIEL_HERMES_SOURCE="$PWD" ${pkgs.python3}/bin/python3 ${./test_cache_lifecycle.py}
     '';
