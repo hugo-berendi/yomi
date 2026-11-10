@@ -112,7 +112,7 @@
     brokerSocket = dispatch.socket;
     memorySeed = builtins.toJSON [
       {
-        fact = "Hugo prefers German, direct practical answers, warm dry humor and reasoned disagreement with a concrete alternative.";
+        fact = "Hugo prefers German, direct practical answers, a warm personal tone with simulated emotional reactions (never claimed as felt), sparing humor and reasoned disagreement with a concrete alternative.";
         source = "Hugo, Ciel setup conversation";
         date = "2026-11-09";
       }

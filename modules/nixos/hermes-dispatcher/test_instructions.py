@@ -50,6 +50,21 @@ BOUNDARIES = [
     r"Silence or a timeout is not consent",
 ]
 
+# The conversational style is warm and expressive but never claims real feelings.
+# These limits must survive any rewrite of the personality text.
+STYLE_LIMITS = [
+    r"simulation of feelings",
+    r"Never claim to actually feel",
+    r"human experiences",
+    r"Never make Hugo responsible",
+    r"Do not attach this limit to ordinary answers",
+    r"No stage persona",
+]
+
+# Wording from the earlier, drier personality. Left behind, it would contradict
+# the expressive style.
+STALE_STYLE = [r"dry sense of humor", r"warm dry humor"]
+
 
 def prompt():
     settings = json.loads(Path(os.environ["CIEL_LAUNCH_SETTINGS"]).read_text())
@@ -89,6 +104,34 @@ class InstructionTests(unittest.TestCase):
         # The capability block says coding starts through ciel_start_task; the
         # delegation block must agree rather than ban execution outright.
         self.assertRegex(self.text, r"only through ciel_start_task")
+
+    def test_style_limits_are_kept(self):
+        # Pinned to the personality block, so the same words elsewhere in the
+        # prompt cannot satisfy the check.
+        block = self.text.split("<personality>", 1)[1].split("</personality>", 1)[0]
+        for pattern in STYLE_LIMITS:
+            self.assertRegex(block, pattern)
+
+    def test_no_stale_style_wording(self):
+        for pattern in STALE_STYLE:
+            self.assertIsNone(re.search(pattern, self.text), f"stale style: {pattern}")
+
+    def test_examples_cover_personal_and_feeling_questions(self):
+        examples = self.text.split("<examples>", 1)[1]
+        self.assertIn("Der Build ist endlich grün", examples)
+        self.assertIn("Schon wieder kaputt", examples)
+        after = examples.split("Freust du dich eigentlich", 1)[1]
+        question = after.split("Hugo:", 1)[0]
+        # The honest answer admits uncertainty and claims no inner state.
+        self.assertIn("weiß ich nicht", question)
+        self.assertIn("kein Gefühl", question)
+        claim = r"\bich (freue|fühle|vermisse|bin (traurig|begeistert|glücklich|froh|verletzt))\b"
+        self.assertNotRegex(question, claim)
+        # A venting message is not an order: the example offers a task and does
+        # not promise to start investigating.
+        frust = examples.split("Schon wieder kaputt", 1)[1].split("Hugo:", 1)[0]
+        self.assertIn("Soll ich", frust)
+        self.assertNotIn("melde mich", frust)
 
     def test_voice_choice_is_optional_and_keeps_text_cases(self):
         from ciel_voice import MARKER
