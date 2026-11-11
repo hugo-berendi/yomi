@@ -1702,11 +1702,11 @@
         "nixpkgs": "nixpkgs_4"
       },
       "locked": {
-        "lastModified": 1794306382,
-        "narHash": "sha256-/8YrO0PQj20mryZv8yEPcEGy/MgcN0WlAaNDowemRGg=",
+        "lastModified": 1794428094,
+        "narHash": "sha256-D5PgrwK+89fP3PIdxy6SsFqFyTGBN7oJ1a20srD+YiY=",
         "ref": "refs/heads/main",
-        "rev": "5465d91615cca6be2907339ce4247f649774bee0",
-        "revCount": 11,
+        "rev": "86990e7cd4ab66f5eabe7852638b0c7091ee8cc3",
+        "revCount": 15,
         "type": "git",
         "url": "https://git.hugo-berendi.de/hugo-berendi/t3code-nix.git"
       },
