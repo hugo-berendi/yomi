@@ -19,9 +19,11 @@ in {
       # The filesystem watcher picks up new downloads within seconds; the
       # hourly scan only catches what it misses.
       Scanner.Schedule = "@every 1h";
-      # Playlist files written next to the music (the Spotify sync's .m3u)
-      # are imported and kept in step on every scan.
+      # The Spotify sync's .m3u files are imported and kept in step on every
+      # scan. Only from playlists/: album folders from Soulseek often carry
+      # the uploader's own .m3u, which would turn up as a playlist each.
       AutoImportPlaylists = true;
+      PlaylistsPath = "playlists";
       EnableInsightsCollector = false;
     };
   };
