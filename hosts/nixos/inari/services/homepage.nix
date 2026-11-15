@@ -233,14 +233,15 @@ in {
             };
           }
           {
-            Transmission = {
-              icon = "transmission.svg";
+            qBittorrent = {
+              icon = "qbittorrent.svg";
               href = "https://torrent.hugo-berendi.de";
               description = "Torrent client";
+              # Straight to qBittorrent over the VPN bridge, which it trusts
+              # without a password; qui in front of it has its own login.
               widget = {
-                type = "transmission";
-                url = "https://torrent.hugo-berendi.de";
-                rpcUrl = config.nixarr.transmission.extraSettings."rpc-url";
+                type = "qbittorrent";
+                url = "http://192.168.15.1:${toString config.yomi.ports.qbittorrent_ui}";
               };
             };
           }

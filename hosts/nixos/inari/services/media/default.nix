@@ -8,6 +8,7 @@
     ./radarr.nix
     ./readarr.nix
     ./transmission.nix
+    ./qbittorrent.nix
     ./jellyseerr.nix
     ./jellyfin.nix
     ./prowlarr.nix

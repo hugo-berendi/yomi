@@ -1,15 +1,12 @@
 {config, ...}: {
-  # {{{ reverse proxy
-  yomi.nginx.at.torrent = {
-    port = config.yomi.ports.transmission_ui;
-    proxyAddress = "192.168.15.1";
-  };
-  # }}}
+  # Kept only until its torrents have moved to qBittorrent (qbittorrent.nix).
+  # torrent.<domain> now serves qui; the migration reaches this RPC directly
+  # at 192.168.15.1.
   sops.secrets.transmission_credentialsFile.sopsFile = ../../secrets.yaml;
   #{{{ settings
   nixarr.transmission = {
     enable = true;
-    uiPort = config.yomi.nginx.at.torrent.port;
+    uiPort = config.yomi.ports.transmission_ui;
     peerPort = config.yomi.ports.transmission_peer;
     flood.enable = true;
     credentialsFile = config.sops.secrets.transmission_credentialsFile.path;
@@ -30,7 +27,7 @@
       # Ensure the expected RPC path works when proxied
       "rpc-url" = "/transmission/";
       # Keep RPC on the same port as the UI
-      "rpc-port" = config.yomi.nginx.at.torrent.port;
+      "rpc-port" = config.yomi.ports.transmission_ui;
     };
     vpn.enable = true;
   };

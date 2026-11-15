@@ -95,6 +95,9 @@
     syncthing = lib.mkDefault 8480;
     transmission_peer = 51820;
     transmission_ui = lib.mkDefault 8482;
+    qbittorrent_peer = lib.mkDefault 8518;
+    qbittorrent_ui = lib.mkDefault 8516;
+    qui = lib.mkDefault 8517;
     vaultwarden = lib.mkDefault 8484;
     audiobookshelf = lib.mkDefault 8493;
     gatus = lib.mkDefault 8494;
