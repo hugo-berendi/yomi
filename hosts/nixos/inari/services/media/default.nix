@@ -4,9 +4,7 @@
     ./vpn.nix
     ./bazarr.nix
     ./sonarr.nix
-    ./lidarr.nix
     ./radarr.nix
-    ./readarr.nix
     ./transmission.nix
     ./qbittorrent.nix
     ./jellyseerr.nix

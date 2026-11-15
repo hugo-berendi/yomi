@@ -135,8 +135,6 @@ in {
         "n8n_jellyseerr_api_key"
         "sonarr_api_key"
         "radarr_api_key"
-        "lidarr_api_key"
-        "readarr_api_key"
       ]
       ++ lib.optional hasNtfyToken "n8n_ntfy_token"
     ) (_: {sopsFile = ../../secrets.yaml;});
@@ -152,8 +150,6 @@ in {
       JELLYSEERR_API_KEY=${config.sops.placeholder.n8n_jellyseerr_api_key}
       SONARR_API_KEY=${config.sops.placeholder.sonarr_api_key}
       RADARR_API_KEY=${config.sops.placeholder.radarr_api_key}
-      LIDARR_API_KEY=${config.sops.placeholder.lidarr_api_key}
-      READARR_API_KEY=${config.sops.placeholder.readarr_api_key}
     '';
     sops.templates."n8n-alert-router.env".content =
       lib.optionalString hasNtfyToken "NTFY_TOKEN=${config.sops.placeholder.n8n_ntfy_token}\n";

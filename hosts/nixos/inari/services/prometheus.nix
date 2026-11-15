@@ -7,10 +7,8 @@
   sops.secrets = {
     radarr_api_key.sopsFile = ../secrets.yaml;
     sonarr_api_key.sopsFile = ../secrets.yaml;
-    lidarr_api_key.sopsFile = ../secrets.yaml;
     prowlarr_api_key.sopsFile = ../secrets.yaml;
     bazarr_api_key.sopsFile = ../secrets.yaml;
-    readarr_api_key.sopsFile = ../secrets.yaml;
   };
   # }}}
   # {{{ Service
@@ -70,13 +68,6 @@
         apiKeyFile = config.sops.secrets.sonarr_api_key.path;
       };
 
-      exportarr-lidarr = {
-        enable = true;
-        port = config.yomi.ports.prometheus-exportarr-lidarr;
-        url = "http://127.0.0.1:${toString config.yomi.ports.lidarr}";
-        apiKeyFile = config.sops.secrets.lidarr_api_key.path;
-      };
-
       exportarr-prowlarr = {
         enable = true;
         port = config.yomi.ports.prometheus-exportarr-prowlarr;
@@ -89,13 +80,6 @@
         port = config.yomi.ports.prometheus-exportarr-bazarr;
         url = "http://127.0.0.1:${toString config.yomi.ports.bazarr}";
         apiKeyFile = config.sops.secrets.bazarr_api_key.path;
-      };
-
-      exportarr-readarr = {
-        enable = true;
-        port = config.yomi.ports.prometheus-exportarr-readarr;
-        url = "http://127.0.0.1:${toString config.yomi.ports.readarr}";
-        apiKeyFile = config.sops.secrets.readarr_api_key.path;
       };
     };
 
@@ -126,10 +110,8 @@
             targets = [
               "127.0.0.1:${toString config.services.prometheus.exporters.exportarr-radarr.port}"
               "127.0.0.1:${toString config.services.prometheus.exporters.exportarr-sonarr.port}"
-              "127.0.0.1:${toString config.services.prometheus.exporters.exportarr-lidarr.port}"
               "127.0.0.1:${toString config.services.prometheus.exporters.exportarr-prowlarr.port}"
               "127.0.0.1:${toString config.services.prometheus.exporters.exportarr-bazarr.port}"
-              "127.0.0.1:${toString config.services.prometheus.exporters.exportarr-readarr.port}"
             ];
           }
         ];

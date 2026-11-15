@@ -36,7 +36,6 @@
     jellyseerr = lib.mkDefault 8423;
     karakeep = lib.mkDefault 8426;
     karakeep-browser = lib.mkDefault 8427;
-    lidarr = lib.mkDefault 8430;
     loki = lib.mkDefault 8431;
     matrix-tuwunel = lib.mkDefault 8432;
     matrix-tuwunel-proxy = lib.mkDefault 8433;
@@ -72,10 +71,8 @@
     proton-smtp-relay = lib.mkDefault 8507;
     prometheus = lib.mkDefault 8451;
     prometheus-exportarr-bazarr = lib.mkDefault 8452;
-    prometheus-exportarr-lidarr = lib.mkDefault 8453;
     prometheus-exportarr-prowlarr = lib.mkDefault 8454;
     prometheus-exportarr-radarr = lib.mkDefault 8455;
-    prometheus-exportarr-readarr = lib.mkDefault 8456;
     prometheus-exportarr-sonarr = lib.mkDefault 8457;
     prometheus-nginx-exporter = lib.mkDefault 8458;
     prometheus-node-exporter = lib.mkDefault 8459;
@@ -86,7 +83,6 @@
     prowlarr = lib.mkDefault 8465;
     radarr = lib.mkDefault 8467;
     radicale = lib.mkDefault 8468;
-    readarr = lib.mkDefault 8469;
     sable = lib.mkDefault 8472;
     searxng = lib.mkDefault 8473;
     sonarr = 8989;
