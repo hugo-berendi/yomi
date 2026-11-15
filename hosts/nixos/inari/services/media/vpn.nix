@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }: {
   sops.secrets.wireguard_conf.sopsFile = ../../secrets.yaml;
@@ -24,4 +25,41 @@
     "192.168.0.0/16"
     "127.0.0.1"
   ];
+
+  # {{{ Egress check
+  # The WireGuard key belongs to someone else's Mullvad account. If it lapses
+  # or is revoked the namespace fails closed: nothing leaks, but downloads
+  # quietly stop. Mullvad's own check tells a dead tunnel from a live one, and
+  # a failed run shows up as a failed unit in the daily health digest.
+  systemd.services.vpn-egress-check = {
+    description = "Check that the wg namespace leaves through Mullvad";
+    vpnConfinement = {
+      enable = true;
+      vpnNamespace = "wg";
+    };
+    serviceConfig = {
+      Type = "oneshot";
+      DynamicUser = true;
+      ProtectSystem = "strict";
+      ProtectHome = true;
+      PrivateTmp = true;
+      NoNewPrivileges = true;
+      RestrictAddressFamilies = ["AF_INET" "AF_INET6"];
+    };
+    script = ''
+      answer=$(${lib.getExe pkgs.curl} -sf --max-time 20 https://am.i.mullvad.net/json)
+      if [ "$(${lib.getExe pkgs.jq} -r .mullvad_exit_ip <<<"$answer")" != true ]; then
+        echo "wg namespace does not exit through Mullvad: $answer" >&2
+        exit 1
+      fi
+    '';
+  };
+  systemd.timers.vpn-egress-check = {
+    wantedBy = ["timers.target"];
+    timerConfig = {
+      OnBootSec = "15min";
+      OnUnitActiveSec = "1h";
+    };
+  };
+  # }}}
 }
