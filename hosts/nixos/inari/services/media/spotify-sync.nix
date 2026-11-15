@@ -28,7 +28,7 @@
   # albums, own playlists), so adding music never means editing this file.
   sync = pkgs.writeShellApplication {
     name = "spotify-sync";
-    runtimeInputs = [pkgs.sockseek pkgs.curl pkgs.jq pkgs.coreutils pkgs.findutils];
+    runtimeInputs = [pkgs.sockseek pkgs.curl pkgs.jq pkgs.coreutils pkgs.findutils pkgs.gnugrep];
     text = builtins.readFile ./spotify-sync.sh;
   };
 
@@ -200,6 +200,10 @@ in {
       };
       # Tagging runs after every sync, finished or failed.
       wants = ["spotify-sync-tag.service"];
+      # A switch would otherwise kill a running sync, start it again and wait
+      # the whole run out (47 minutes on 2026-11-15). The timer's next run
+      # picks up the new unit anyway.
+      restartIfChanged = false;
       serviceConfig =
         hardening
         // {
@@ -228,6 +232,7 @@ in {
     systemd.services.spotify-sync-tag = {
       description = "Tag new Spotify downloads with beets";
       after = ["spotify-sync.service"];
+      restartIfChanged = false;
       serviceConfig =
         hardening
         // {

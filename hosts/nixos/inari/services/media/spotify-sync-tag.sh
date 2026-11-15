@@ -72,8 +72,13 @@ drop_stale_ids() {
 	beet modify -y "path:$1" "${fields[@]}" >/dev/null
 }
 
-# shellcheck disable=SC2016 # $1 and $2 belong to the inner shell
-flock "$lock" bash -c '[[ ! -s $1 ]] || { cat "$1" >>"$2" && rm -f "$1"; }' _ "$queue" "$work"
+# Take over the queue; hooks still running meanwhile start a new one.
+{
+	flock 9
+	if [[ -s $queue ]]; then
+		cat "$queue" >>"$work" && rm -f "$queue"
+	fi
+} 9>"$lock"
 [[ -s $work ]] || exit 0
 
 # fd 3: beets must not read the work list from stdin.

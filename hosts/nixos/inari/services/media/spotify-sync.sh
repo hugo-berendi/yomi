@@ -33,7 +33,15 @@ sync() {
 	fi
 	args+=("${@:4}")
 	echo "syncing ${3:-$2}"
-	if ! sockseek "${args[@]}"; then
+	if sockseek "${args[@]}" 2>&1 | tee "$STATE_DIR/sockseek.log"; then
+		return
+	fi
+	# sockseek also exits 1 when a single song was not on Soulseek. That is
+	# routine, and is retried daily; only a run that never got to its summary
+	# (bad login, Spotify unreachable, crash) fails the unit.
+	if grep -q '^\[cli\] Completed:' "$STATE_DIR/sockseek.log"; then
+		echo "some songs of ${3:-$2} were not found"
+	else
 		echo "sync of ${3:-$2} failed" >&2
 		failed=1
 	fi
