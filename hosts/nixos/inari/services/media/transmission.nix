@@ -18,6 +18,11 @@
       "incomplete-dir-enabled" = true;
       "incomplete-dir" = "/raid5pool/media/downloads/incomplete";
       "rpc-bind-address" = "0.0.0.0";
+      # credentialsFile supplies rpc-username and rpc-password, but that alone
+      # leaves authentication off: the RPC answered 409 rather than 401 with
+      # no credentials, so anyone on the LAN or tailnet who reached
+      # torrent.<domain> could add torrents and write into the media tree.
+      "rpc-authentication-required" = true;
       # Fix UI not showing data behind reverse proxy
       # Allow requests from any Host header and disable IP whitelist
       "rpc-host-whitelist-enabled" = false;
