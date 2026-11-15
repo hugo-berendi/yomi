@@ -94,6 +94,7 @@
     qbittorrent_peer = lib.mkDefault 8518;
     qbittorrent_ui = lib.mkDefault 8516;
     qui = lib.mkDefault 8517;
+    navidrome = lib.mkDefault 8519;
     vaultwarden = lib.mkDefault 8484;
     audiobookshelf = lib.mkDefault 8493;
     gatus = lib.mkDefault 8494;

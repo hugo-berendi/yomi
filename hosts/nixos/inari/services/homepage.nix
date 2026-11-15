@@ -250,6 +250,13 @@ in {
       {
         Entertainment = [
           {
+            Navidrome = {
+              icon = "navidrome.svg";
+              href = "https://music.hugo-berendi.de";
+              description = "Music server";
+            };
+          }
+          {
             Invidious = {
               icon = "invidious.svg";
               href = "https://yt.hugo-berendi.de";

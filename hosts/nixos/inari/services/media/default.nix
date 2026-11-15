@@ -7,6 +7,7 @@
     ./radarr.nix
     ./transmission.nix
     ./qbittorrent.nix
+    ./navidrome.nix
     ./jellyseerr.nix
     ./jellyfin.nix
     ./prowlarr.nix
