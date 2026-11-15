@@ -5,7 +5,7 @@
 #
 # Set by spotify-sync.nix: MUSIC_DIR, STATE_DIR, SOCKSEEK_CONFIG,
 # ALBUM_NAME_FORMAT, and the client-id, client-secret and refresh-token
-# credentials.
+# credentials. Tagging happens afterwards in spotify-sync-tag.sh.
 set -euo pipefail
 
 creds=$CREDENTIALS_DIRECTORY
