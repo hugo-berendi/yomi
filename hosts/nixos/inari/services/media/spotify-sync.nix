@@ -20,6 +20,10 @@
   secretsYaml = builtins.readFile ../../secrets.yaml;
   hasSecrets = lib.all (name: builtins.match ".*[[:space:]]*${name}:.*" secretsYaml != null) secretNames;
 
+  # File name inside an album folder: track number when tagged, else the
+  # Soulseek file name as the last resort.
+  fileFormat = "{track(. )artist( - )title|artist( - )title|sartist( - )stitle|slsk-filename}";
+
   # What gets synced follows the Spotify library itself (liked songs, saved
   # albums, own playlists), so adding music never means editing this file.
   sync = pkgs.writeShellApplication {
@@ -43,8 +47,13 @@ in {
         pref-format = flac
         # Mullvad forwards no ports, so nobody could reach a listener anyway.
         no-listen = true
-        # Tags when the file has them, Spotify's metadata when it does not.
-        name-format = {albumartist|artist|sartist}/{album|salbum}/{artist( - )title|sartist( - )stitle}
+        # One folder per Spotify album, named from Spotify's metadata, so a
+        # song's folder does not depend on how its uploader tagged it. Tag
+        # folders split albums whose tracks carry different artist tags, and
+        # sockseek then dropped the cover in their common parent, the library
+        # root. Saved albums override this in spotify-sync.sh. Navidrome
+        # groups albums by tag, so the layout only matters on disk.
+        name-format = {sartist( - )salbum|albumartist( - )album|sartist}/${fileFormat}
         # Each source keeps its own index, so a song in two playlists would be
         # fetched twice; matching against the library by tag catches that and
         # still lists the existing file in the second .m3u.
@@ -62,6 +71,11 @@ in {
 
     systemd.services.spotify-sync = {
       description = "Download the Spotify library over Soulseek";
+      # In an album download each file's source artist is guessed from its
+      # file name and can differ per track; {item-name} is the album job's
+      # "Artist - Album" straight from Spotify. Set here rather than in
+      # serviceConfig.Environment, which would not quote the spaces.
+      environment.ALBUM_NAME_FORMAT = "{item-name}/${fileFormat}";
       # Through Mullvad, like the torrent client.
       vpnConfinement = {
         enable = true;

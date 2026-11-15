@@ -3,8 +3,9 @@
 # saved albums, and every playlist the account owns or collaborates on. Liked
 # songs and playlists also become .m3u files that Navidrome imports.
 #
-# Set by spotify-sync.nix: MUSIC_DIR, STATE_DIR, SOCKSEEK_CONFIG, and the
-# client-id, client-secret and refresh-token credentials.
+# Set by spotify-sync.nix: MUSIC_DIR, STATE_DIR, SOCKSEEK_CONFIG,
+# ALBUM_NAME_FORMAT, and the client-id, client-secret and refresh-token
+# credentials.
 set -euo pipefail
 
 creds=$CREDENTIALS_DIRECTORY
@@ -21,15 +22,16 @@ fi
 
 failed=0
 
-# sync INPUT INDEX-NAME [M3U-NAME]
+# sync INPUT INDEX-NAME [M3U-NAME] [EXTRA-SOCKSEEK-ARGS...]
 sync() {
 	local args=(
 		"$1" --config "$SOCKSEEK_CONFIG" --output-dir "$MUSIC_DIR"
 		--index-path "$STATE_DIR/$2.index" "${skip_flags[@]}"
 	)
-	if [[ $# -ge 3 ]]; then
+	if [[ -n ${3:-} ]]; then
 		args+=(--write-playlist --playlist-path "$playlist_dir/$3.m3u")
 	fi
+	args+=("${@:4}")
 	echo "syncing ${3:-$2}"
 	if ! sockseek "${args[@]}"; then
 		echo "sync of ${3:-$2} failed" >&2
@@ -77,7 +79,7 @@ sync spotify-likes likes Lieblingssongs
 written[Lieblingssongs]=1
 
 # Whole albums, without a playlist file: Navidrome lists them as albums anyway.
-sync spotify-albums albums
+sync spotify-albums albums "" --name-format "$ALBUM_NAME_FORMAT"
 
 while IFS=$'\t' read -r id name; do
 	[[ -n $id ]] || continue
