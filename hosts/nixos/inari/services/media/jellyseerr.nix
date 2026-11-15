@@ -3,50 +3,25 @@
   pkgs,
   ...
 }: let
-  nodejs-slim = pkgs.nodejs-slim_22;
-  pnpm = pkgs.pnpm_9.override {inherit nodejs-slim;};
-
+  # OIDC login is still only on a preview branch upstream. The earlier
+  # preview-OIDC pin (September 2025) sat 595 commits behind v3.5.0, without
+  # the 3.1.0 security release; preview-new-oidc is the maintained successor.
+  # Its build matches nixpkgs' seerr (same node and pnpm), so only the source
+  # and its pnpm dependencies are swapped.
   jellyseerr-oidc-src = pkgs.fetchFromGitHub {
     owner = "seerr-team";
     repo = "seerr";
-    rev = "7f3979411655ef5f65ce4918fe0f8f214403f75e";
-    hash = "sha256-EJz1W7ewEczizNRs/X3esjQUwJiTHruo7nkAzyKZbjc=";
+    rev = "b1312ccd8776de04420a825f23b3f2d9aab2f2f9";
+    hash = "sha256-VUZbYfHGluBF58nuTueTZfEfK5EIKtQTwtfdAbePbNU=";
   };
 
-  jellyseerr-oidc = pkgs.seerr.overrideAttrs (_oldAttrs: {
-    version = "preview-OIDC";
+  jellyseerr-oidc = pkgs.seerr.overrideAttrs (oldAttrs: {
+    version = "preview-new-oidc";
     src = jellyseerr-oidc-src;
-    pnpmDeps = pkgs.fetchPnpmDeps {
-      pname = "seerr";
-      version = "preview-OIDC";
+    pnpmDeps = oldAttrs.pnpmDeps.overrideAttrs {
       src = jellyseerr-oidc-src;
-      inherit pnpm;
-      fetcherVersion = 3;
-      hash = "sha256-qv38UGPAqANLr3/MwwF75Vc8x3K5/IyfXnnBhypO7ck=";
+      outputHash = "sha256-gqjz0DM0VYdFKTkoKPG9fjAwZlKeQZS1GB4wwUcwZ9M=";
     };
-    nativeBuildInputs = [
-      pkgs.python3
-      pkgs.python3Packages.distutils
-      nodejs-slim
-      pkgs.makeWrapper
-      pkgs.pnpmConfigHook
-      pnpm
-    ];
-
-    installPhase = ''
-      runHook preInstall
-      mkdir -p $out/share
-      cp -r -t $out/share .next node_modules dist public package.json jellyseerr-api.yml
-      runHook postInstall
-    '';
-
-    postInstall = ''
-      mkdir -p $out/bin
-      makeWrapper '${nodejs-slim}/bin/node' "$out/bin/seerr" \
-        --add-flags "$out/share/dist/index.js" \
-        --chdir "$out/share" \
-        --set NODE_ENV production
-    '';
   });
 in {
   # {{{ reverse proxy
