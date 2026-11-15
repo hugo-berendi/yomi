@@ -7,12 +7,6 @@
   musicDir = "${config.nixarr.mediaDir}/library/music";
   stateDir = "/var/lib/spotify-sync";
 
-  # name -> Spotify playlist URL. Only playlists the Spotify account owns or
-  # collaborates on work: since February 2026 the API returns no tracks for
-  # anyone else's, public or not. The name becomes the .m3u file Navidrome
-  # imports as a playlist.
-  playlists = {};
-
   secretNames = [
     "spotify_sync_client_id"
     "spotify_sync_client_secret"
@@ -25,24 +19,16 @@
   # have been added to secrets.yaml.
   secretsYaml = builtins.readFile ../../secrets.yaml;
   hasSecrets = lib.all (name: builtins.match ".*[[:space:]]*${name}:.*" secretsYaml != null) secretNames;
-  enable = hasSecrets && playlists != {};
 
+  # What gets synced follows the Spotify library itself (liked songs, saved
+  # albums, own playlists), so adding music never means editing this file.
   sync = pkgs.writeShellApplication {
     name = "spotify-sync";
-    runtimeInputs = [pkgs.sockseek];
-    text = lib.concatStrings (lib.mapAttrsToList (name: url: ''
-        echo "syncing ${name}"
-        sockseek ${lib.escapeShellArg url} \
-          --config ${config.sops.templates."sockseek.conf".path} \
-          --output-dir ${musicDir} \
-          --index-path ${stateDir}/${name}.index \
-          --write-playlist \
-          --playlist-path ${lib.escapeShellArg "${musicDir}/playlists/${name}.m3u"}
-      '')
-      playlists);
+    runtimeInputs = [pkgs.sockseek pkgs.curl pkgs.jq pkgs.coreutils pkgs.findutils];
+    text = builtins.readFile ./spotify-sync.sh;
   };
 in {
-  config = lib.mkIf enable {
+  config = lib.mkIf hasSecrets {
     # {{{ Secrets
     sops.secrets = lib.genAttrs secretNames (_: {sopsFile = ../../secrets.yaml;});
     sops.templates."sockseek.conf" = {
@@ -59,6 +45,11 @@ in {
         no-listen = true
         # Tags when the file has them, Spotify's metadata when it does not.
         name-format = {albumartist|artist|sartist}/{album|salbum}/{artist( - )title|sartist( - )stitle}
+        # Each source keeps its own index, so a song in two playlists would be
+        # fetched twice; matching against the library by tag catches that and
+        # still lists the existing file in the second .m3u.
+        skip-music-dir = ${musicDir}
+        skip-mode-music-dir = tag
       '';
     };
     # }}}
@@ -70,7 +61,7 @@ in {
     };
 
     systemd.services.spotify-sync = {
-      description = "Download new tracks from Spotify playlists over Soulseek";
+      description = "Download the Spotify library over Soulseek";
       # Through Mullvad, like the torrent client.
       vpnConfinement = {
         enable = true;
@@ -87,7 +78,18 @@ in {
         StateDirectory = "spotify-sync";
         StateDirectoryMode = "0700";
         WorkingDirectory = stateDir;
-        Environment = ["HOME=${stateDir}"];
+        Environment = [
+          "HOME=${stateDir}"
+          "MUSIC_DIR=${musicDir}"
+          "STATE_DIR=${stateDir}"
+          "SOCKSEEK_CONFIG=${config.sops.templates."sockseek.conf".path}"
+        ];
+        # The script asks the Spotify API itself which playlists exist.
+        LoadCredential = [
+          "client-id:${config.sops.secrets.spotify_sync_client_id.path}"
+          "client-secret:${config.sops.secrets.spotify_sync_client_secret.path}"
+          "refresh-token:${config.sops.secrets.spotify_sync_refresh_token.path}"
+        ];
         TimeoutStartSec = "2h";
 
         ProtectSystem = "strict";
