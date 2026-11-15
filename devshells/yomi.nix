@@ -13,6 +13,7 @@ pkgs.mkShell {
     pkgs.ssh-to-age # just ssh-to-age
     pkgs.age # just age-public-key
     pkgs.deadnix
+    pkgs.nh
     pkgs.nixos-rebuild-ng
     pkgs.statix
     pkgs.stylua

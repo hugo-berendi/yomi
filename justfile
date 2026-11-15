@@ -10,7 +10,7 @@ hostname := `hostname`
 export NIX_CONFIG := env("NIX_CONFIG", "") + "\naccept-flake-config = true"
 
 # {{{ Nixos rebuilds
-[doc("Wrapper around `nixos-rebuild`, taking care of the generic arguments")]
+[doc("Build or deploy NixOS with nh; dry-build evaluates without building")]
 [group("nix")]
 nixos-rebuild action="switch" host=hostname install_bootloader="0":
   #!/usr/bin/env python3
@@ -18,49 +18,50 @@ nixos-rebuild action="switch" host=hostname install_bootloader="0":
   import subprocess
   import sys
 
-  install_bootloader = "{{install_bootloader}}" != "0"
+  action = "{{action}}"
   host = "{{host}}"
-  users = {
-    'amaterasu': 'hugob',
-    'inari': 'hugob',
-    'tsukuyomi': 'hugob',
-    'wsl-work': 'hugob',
-  }
-
-  args = [
-    "nixos-rebuild",
-    "{{action}}",
-    "--show-trace",
-    "--accept-flake-config",
-    "--flake",
-    ".#{{host}}",
-    "--no-reexec",
-  ]
-
-  if install_bootloader:
-    args.append("--install-bootloader")
-
-  if host == "{{hostname}}" or "{{action}}" in {"build", "dry-build"}:
-    print("🧬 Switching nixos configuration (locally) for '{{BLUE + host + NORMAL}}'")
-    if host == "{{hostname}}" and "{{action}}" in {"switch", "boot", "test", "dry-activate"}:
-      sudo_bin = "/run/wrappers/bin/sudo" if os.path.exists("/run/wrappers/bin/sudo") else "sudo"
-      args = [sudo_bin, *args]
+  local = host == "{{hostname}}"
+  sudo = "/run/wrappers/bin/sudo" if os.path.exists("/run/wrappers/bin/sudo") else "sudo"
+  if action == "dry-build":
+    args = ["nix", "build", "--dry-run", "--no-link", "--show-trace",
+            "--accept-flake-config", f".#nixosConfigurations.{host}.config.system.build.toplevel"]
+  elif action == "dry-activate":
+    # nh has no dry-activate action; retain the existing diagnostic interface.
+    args = ["nixos-rebuild", action, "--flake", f".#{host}", "--no-reexec",
+            "--show-trace", "--accept-flake-config"]
+    if local:
+      args.insert(0, sudo)
+    else:
+      args += ["--target-host", f"hugob@{host}", "--sudo"]
+  elif action in {"switch", "boot", "test", "build"}:
+    args = ["nh", "os", action, ".", "--hostname", host,
+            "--show-trace", "--accept-flake-config", "--elevation-strategy", sudo]
+    if not local and action != "build":
+      args += ["--target-host", f"hugob@{host}"]
+    if "{{install_bootloader}}" != "0":
+      args.append("--install-bootloader")
+    if not sys.stdout.isatty():
+      args += ["--no-nom", "--log-format", "raw"]
   else:
-    print("🧬 Switching nixos configuration (remotely) for '{{BLUE + host + NORMAL}}'")
-    args += ["--target-host", f"{users[host]}@{host}", "--sudo"]
-
-  if not sys.stdout.isatty():
-    args += ["--log-format", "raw"]
+    sys.exit(f"Unsupported action: {action}; use switch, boot, test, build, dry-build or dry-activate")
 
   try:
     subprocess.run(args, check=True)
-    print("🚀 All done!")
   except KeyboardInterrupt:
-    print("🪓 Command cancelled")
     sys.exit(130)
   except subprocess.CalledProcessError as error:
-    print("💢 Something went wrong")
     sys.exit(error.returncode)
+
+[doc("Build the local host, show package and service changes without activating")]
+[group("nix")]
+diff:
+  #!/usr/bin/env bash
+  set -euo pipefail
+  workdir=$(mktemp -d)
+  trap 'rm -rf "$workdir"' EXIT
+  nh os build . --hostname "{{hostname}}" --out-link "$workdir/result" --diff always --show-trace --accept-flake-config
+  echo "=== Service changes (dry-activate) ==="
+  /run/wrappers/bin/sudo "$workdir/result/bin/switch-to-configuration" dry-activate
 # }}}
 # {{{ Miscellaneous nix commands
 [doc("Build the custom ISO provided by the flake")]
@@ -98,8 +99,7 @@ bump-common:
 # }}}
 
 # Rebuild the system
-rebuild:
-	sudo nh switch .#$(hostname)
+rebuild: (nixos-rebuild "switch" hostname)
 
 # {{{ CI/Quality checks
 [doc("Run all flake checks (builds hosts, DNS, formatter)")]
@@ -195,16 +195,7 @@ gc:
   #!/usr/bin/env bash
   set -euo pipefail
 
-  echo "🧹 Deleting old NixOS generations..."
-  sudo nix-collect-garbage --delete-older-than 7d
-
-  echo "🧹 Running garbage collection..."
-  sudo nix-collect-garbage -d
-
-  echo "🧹 Optimizing nix store..."
-  sudo nix-store --optimise
-
-  echo "🚀 All done!"
+  nh clean all --keep 1 --keep-since 7d --optimise
 # }}}
 # {{{ Persistence
 [doc("Move home persistence data into the per-app storage layout; pass --apply to commit to it")]
