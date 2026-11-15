@@ -12,5 +12,6 @@
   chatgpt = pkgs.callPackage ./chatgpt.nix {};
   helium = pkgs.callPackage ./helium.nix {};
   suwayomi-server = pkgs.callPackage ./suwayomi-server.nix {};
+  sockseek = pkgs.callPackage ./sockseek.nix {};
   cliproxyapi-copilot-plugin = upkgs.callPackage ./cliproxyapi-copilot-plugin.nix {};
 }

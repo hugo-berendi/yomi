@@ -46,7 +46,7 @@ jobs:
 
       - name: Update GitHub-release packages with nix-update
         run: |
-          for pkg in cliproxyapi-copilot-plugin helium pelican-wings suwayomi-server; do
+          for pkg in cliproxyapi-copilot-plugin helium pelican-wings sockseek suwayomi-server; do
             echo "::group::nix-update $pkg"
             version_args=()
             # Wings currently tracks prereleases, including release candidates.
