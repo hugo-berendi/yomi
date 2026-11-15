@@ -25,6 +25,11 @@ max_attempts=3
 
 beet() { command beet -c "$BEETS_CONFIG" "$@"; }
 
+# beets' Spotify plugin sleeps out whatever Retry-After a 429 names, and logs
+# it only at debug level: on 2026-11-15 one song sat silent for hours, with
+# the whole queue behind it. An import that needs longer is retried later.
+import_timeout=10m
+
 # {{{ Backfill
 # Files downloaded before tagging existed: folders of four or more songs are
 # albums, anything else is looked up song by song.
@@ -47,14 +52,22 @@ fi
 # tag ATTEMPTS IMPORT-ARGS... PATH
 # Returns 1 when a source failed, so the caller can queue the entry again.
 tag() {
-	local attempts=$1 path=${*: -1} out
+	local attempts=$1 path=${*: -1} out status=0 retry=0
 	shift
-	out=$(beet import -q "$@" 2>&1) || true
+	out=$(timeout --kill-after=1m "$import_timeout" \
+		beet -c "$BEETS_CONFIG" import -q "$@" 2>&1) || status=$?
 	printf '%s\n' "$out"
+	if ((status == 124 || status == 137)); then
+		echo "beets took longer than $import_timeout on $path" >&2
+		retry=1
+	elif grep -q 'Error searching\|Max retries exceeded' <<<"$out"; then
+		retry=1
+	fi
 	# Lyrics and genres found for a file kept as-is stay in beets' database
-	# unless written out explicitly.
-	beet write "path:$path" || echo "could not write tags of $path" >&2
-	if grep -q 'Error searching\|Max retries exceeded' <<<"$out" && ((attempts < max_attempts)); then
+	# unless written out explicitly. Its output would list every changed
+	# field, whole lyrics included.
+	beet write "path:$path" >/dev/null || echo "could not write tags of $path" >&2
+	if ((retry && attempts < max_attempts)); then
 		return 1
 	fi
 }
@@ -82,19 +95,21 @@ drop_stale_ids() {
 [[ -s $work ]] || exit 0
 
 # fd 3: beets must not read the work list from stdin.
+# shellcheck disable=SC2094 # sed -i writes a new file; fd 3 keeps the old one
 while IFS=$'\t' read -r -u 3 kind uri path attempts; do
 	attempts=$((${attempts:-0} + 1))
-	[[ -e $path ]] || continue
-	case $kind in
-	album) tag "$attempts" "$path" ;;
-	single) tag "$attempts" -s "$path" ;;
-	track)
-		# Files inside an album download have no URI of their own; the album
-		# entry tags them together.
-		[[ $uri == spotify:track:* ]] || continue
-		tag "$attempts" -s --search-id "${uri##*:}" "$path" && drop_stale_ids "$path"
-		;;
-	esac || printf '%s\t%s\t%s\t%s\n' "$kind" "$uri" "$path" "$attempts" |
-		flock "$lock" tee -a "$queue" >/dev/null
+	# Files inside an album download have no URI of their own; the album
+	# entry tags them together.
+	if [[ -e $path && ($kind != track || $uri == spotify:track:*) ]]; then
+		case $kind in
+		album) tag "$attempts" "$path" ;;
+		single) tag "$attempts" -s "$path" ;;
+		track) tag "$attempts" -s --search-id "${uri##*:}" "$path" && drop_stale_ids "$path" ;;
+		esac || printf '%s\t%s\t%s\t%s\n' "$kind" "$uri" "$path" "$attempts" |
+			flock "$lock" tee -a "$queue" >/dev/null
+	fi
+	# Done with this entry: a stopped run resumes after it, not from the top.
+	# fd 3 still reads the old file, which sed replaces rather than edits.
+	sed -i 1d "$work"
 done 3<"$work"
 rm -f "$work"

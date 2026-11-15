@@ -34,7 +34,7 @@
 
   tag = pkgs.writeShellApplication {
     name = "spotify-sync-tag";
-    runtimeInputs = [pkgs.beets pkgs.coreutils pkgs.findutils pkgs.gnugrep pkgs.util-linux];
+    runtimeInputs = [pkgs.beets pkgs.coreutils pkgs.findutils pkgs.gnugrep pkgs.gnused pkgs.util-linux];
     text = builtins.readFile ./spotify-sync-tag.sh;
   };
 
