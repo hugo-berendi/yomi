@@ -17,6 +17,7 @@
     ./spotify.nix
     ./obsidian.nix
     ./zathura.nix
+    ./file-manager.nix
     ./gaming.nix
     ./unity.nix
     ./calibre.nix

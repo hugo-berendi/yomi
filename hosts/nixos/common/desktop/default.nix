@@ -6,6 +6,7 @@
   imports = [
     ./pipewire.nix
     ./xdg-portal.nix
+    ./file-manager.nix
     ./steam.nix
     ./unicode.nix
     ./quietboot.nix
