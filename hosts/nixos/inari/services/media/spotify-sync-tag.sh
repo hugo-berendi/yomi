@@ -5,12 +5,13 @@
 #   kind <TAB> spotify-uri <TAB> path [<TAB> attempts]
 # where kind is "track" (a song, with its Spotify URI), or "album" (a whole
 # album folder). Songs are tagged from exactly the Spotify track they were
-# downloaded for; albums are matched against MusicBrainz, Spotify and Deezer,
+# downloaded for; everything else is matched against MusicBrainz and Deezer,
 # closest candidate wins. Without a close enough match a file keeps its own
 # tags. Files are written in place: sockseek's indexes and the .m3u playlists
 # point at their paths.
 #
-# Set by spotify-sync.nix: MUSIC_DIR, STATE_DIR, BEETS_CONFIG, BEETSDIR.
+# Set by spotify-sync.nix: MUSIC_DIR, STATE_DIR, BEETS_CONFIG,
+# BEETS_SPOTIFY_CONFIG (the same plus Spotify), BEETSDIR.
 set -euo pipefail
 
 queue=$STATE_DIR/beets-queue
@@ -25,10 +26,14 @@ max_attempts=3
 
 beet() { command beet -c "$BEETS_CONFIG" "$@"; }
 
-# beets' Spotify plugin sleeps out whatever Retry-After a 429 names, and logs
-# it only at debug level: on 2026-11-15 one song sat silent for hours, with
-# the whole queue behind it. An import that needs longer is retried later.
+# An import that needs longer is retried later. beets' Spotify plugin sleeps
+# out whatever Retry-After a 429 names, and logs it only at debug level: on
+# 2026-11-15 that was 17 hours, for one song, with the queue behind it. A
+# Spotify lookup normally takes seconds, so it gets less.
 import_timeout=10m
+spotify_timeout=3m
+# Cleared for the rest of a run once Spotify stops answering.
+spotify_ok=1
 
 # {{{ Backfill
 # Files downloaded before tagging existed: folders of four or more songs are
@@ -49,16 +54,19 @@ if [[ ! -e $STATE_DIR/beets-backfilled ]]; then
 fi
 # }}}
 
-# tag ATTEMPTS IMPORT-ARGS... PATH
+# tag CONFIG TIME-LIMIT ATTEMPTS IMPORT-ARGS... PATH
 # Returns 1 when a source failed, so the caller can queue the entry again.
+# Sets timed_out when the import ran over its time.
 tag() {
-	local attempts=$1 path=${*: -1} out status=0 retry=0
-	shift
-	out=$(timeout --kill-after=1m "$import_timeout" \
-		beet -c "$BEETS_CONFIG" import -q "$@" 2>&1) || status=$?
+	local cfg=$1 limit=$2 attempts=$3 path=${*: -1} out status=0 retry=0
+	shift 3
+	timed_out=0
+	out=$(timeout --kill-after=1m "$limit" \
+		beet -c "$cfg" import -q "$@" 2>&1) || status=$?
 	printf '%s\n' "$out"
 	if ((status == 124 || status == 137)); then
-		echo "beets took longer than $import_timeout on $path" >&2
+		echo "beets took longer than $limit on $path" >&2
+		timed_out=1
 		retry=1
 	elif grep -q 'Error searching\|Max retries exceeded' <<<"$out"; then
 		retry=1
@@ -70,6 +78,25 @@ tag() {
 	if ((retry && attempts < max_attempts)); then
 		return 1
 	fi
+}
+
+# tag_track ATTEMPTS SPOTIFY-ID PATH
+# The exact Spotify track while Spotify answers; otherwise like any song.
+tag_track() {
+	local attempts=$1 id=$2 path=$3 status=0
+	if ((spotify_ok)); then
+		tag "$BEETS_SPOTIFY_CONFIG" "$spotify_timeout" "$attempts" \
+			-s --search-id "$id" "$path" || status=1
+		if ((!timed_out)); then
+			if ((status == 0)); then
+				drop_stale_ids "$path"
+			fi
+			return "$status"
+		fi
+		echo "Spotify is not answering; the rest of this run goes without it" >&2
+		spotify_ok=0
+	fi
+	tag "$BEETS_CONFIG" "$import_timeout" "$attempts" -s "$path"
 }
 
 # Spotify knows the song, not the release an uploader ripped it from: a hit
@@ -102,9 +129,9 @@ while IFS=$'\t' read -r -u 3 kind uri path attempts; do
 	# entry tags them together.
 	if [[ -e $path && ($kind != track || $uri == spotify:track:*) ]]; then
 		case $kind in
-		album) tag "$attempts" "$path" ;;
-		single) tag "$attempts" -s "$path" ;;
-		track) tag "$attempts" -s --search-id "${uri##*:}" "$path" && drop_stale_ids "$path" ;;
+		album) tag "$BEETS_CONFIG" "$import_timeout" "$attempts" "$path" ;;
+		single) tag "$BEETS_CONFIG" "$import_timeout" "$attempts" -s "$path" ;;
+		track) tag_track "$attempts" "${uri##*:}" "$path" ;;
 		esac || printf '%s\t%s\t%s\t%s\n' "$kind" "$uri" "$path" "$attempts" |
 			flock "$lock" tee -a "$queue" >/dev/null
 	fi

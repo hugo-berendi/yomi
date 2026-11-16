@@ -47,6 +47,75 @@
         ${lib.getExe' pkgs.coreutils "tee"} -a "$STATE_DIR/beets-queue" >/dev/null
   '';
 
+  # Metadata: every candidate from MusicBrainz and Deezer is scored against
+  # the file, and the closest wins. Below the threshold the file keeps its
+  # own tags (quiet_fallback: asis), so an unsure match never overwrites good
+  # tags with wrong ones.
+  #
+  # Spotify is left out here. Every search candidate costs it two single-item
+  # requests, and the backfill's few thousand got this app locked out of
+  # them for 17 hours on 2026-11-15 (429, Retry-After 60517), the app
+  # sockseek needs too. beets-spotify.yaml adds it back for songs sockseek
+  # reported a Spotify track for: two requests each, and the only source
+  # that also names a single song's album.
+  beetsSettings = {
+    directory = musicDir;
+    library = "${stateDir}/beets/library.db";
+    plugins = ["musicbrainz" "deezer" "fetchart" "embedart" "lyrics" "lastgenre"];
+    ui.color = false;
+    import = {
+      # Tags only: files stay where sockseek put them, because its
+      # indexes and the .m3u playlists point at those paths.
+      write = true;
+      copy = false;
+      move = false;
+      resume = false;
+      incremental = false;
+      quiet_fallback = "asis";
+      duplicate_action = "keep";
+      log = "${stateDir}/beets/import.log";
+    };
+    match = {
+      # beets' default (0.04) only trusts near-perfect matches. A correct
+      # album still scores around 0.1 when the uploader's folder lacks a
+      # bonus track or the release country differs; 0.15 accepts those
+      # and still rejects other albums, which scored 0.4 and up in tests.
+      strong_rec_thresh = 0.15;
+      # A file's leftover IDs from another release (often a compilation)
+      # would otherwise outweigh title, artist and length, and sink even
+      # the exact Spotify track a song was downloaded for.
+      distance_weights.track_id = 0.0;
+      preferred = {
+        countries = ["DE" "XW"];
+        media = ["Digital Media|File"];
+      };
+    };
+    # beets adds 0.5 to any candidate not from MusicBrainz by default,
+    # which made Spotify and Deezer lose even with identical data.
+    musicbrainz.data_source_mismatch_penalty = 0.0;
+    deezer.data_source_mismatch_penalty = 0.0;
+    fetchart = {
+      auto = true;
+      minwidth = 500;
+      maxwidth = 1500;
+      # The uploader's own scan first, when it is big enough. "spotify"
+      # reads the public album page, not the API.
+      sources = ["filesystem" "coverart" "itunes" "spotify"];
+    };
+    embedart.auto = true;
+    # Synced lyrics from LRCLIB; Navidrome shows them line by line.
+    lyrics = {
+      auto = true;
+      synced = true;
+      sources = ["lrclib"];
+    };
+    lastgenre = {
+      auto = true;
+      count = 3;
+      separator = "; ";
+    };
+  };
+
   # Both units run as spotify-sync with the same sandbox; only the network
   # differs.
   hardening = {
@@ -110,73 +179,23 @@ in {
         on-complete = + when=success scope=album lock -- ${enqueue} album - "{path}"
       '';
     };
-    # Metadata: every candidate from MusicBrainz, Spotify and Deezer is scored
-    # against the file, and the closest wins. Below the threshold the file
-    # keeps its own tags (quiet_fallback: asis), so an unsure match never
-    # overwrites good tags with wrong ones.
+    # Two configs over one library: Spotify only looks up songs whose exact
+    # track sockseek reported; see beetsSettings.
     sops.templates."beets.yaml" = {
       owner = "spotify-sync";
-      content = builtins.toJSON {
-        directory = musicDir;
-        library = "${stateDir}/beets/library.db";
-        plugins = ["musicbrainz" "spotify" "deezer" "fetchart" "embedart" "lyrics" "lastgenre"];
-        ui.color = false;
-        import = {
-          # Tags only: files stay where sockseek put them, because its
-          # indexes and the .m3u playlists point at those paths.
-          write = true;
-          copy = false;
-          move = false;
-          resume = false;
-          incremental = false;
-          quiet_fallback = "asis";
-          duplicate_action = "keep";
-          log = "${stateDir}/beets/import.log";
-        };
-        match = {
-          # beets' default (0.04) only trusts near-perfect matches. A correct
-          # album still scores around 0.1 when the uploader's folder lacks a
-          # bonus track or the release country differs; 0.15 accepts those
-          # and still rejects other albums, which scored 0.4 and up in tests.
-          strong_rec_thresh = 0.15;
-          # A file's leftover IDs from another release (often a compilation)
-          # would otherwise outweigh title, artist and length, and sink even
-          # the exact Spotify track a song was downloaded for.
-          distance_weights.track_id = 0.0;
-          preferred = {
-            countries = ["DE" "XW"];
-            media = ["Digital Media|File"];
+      content = builtins.toJSON beetsSettings;
+    };
+    sops.templates."beets-spotify.yaml" = {
+      owner = "spotify-sync";
+      content = builtins.toJSON (beetsSettings
+        // {
+          plugins = beetsSettings.plugins ++ ["spotify"];
+          spotify = {
+            data_source_mismatch_penalty = 0.0;
+            client_id = config.sops.placeholder.spotify_sync_client_id;
+            client_secret = config.sops.placeholder.spotify_sync_client_secret;
           };
-        };
-        # beets adds 0.5 to any candidate not from MusicBrainz by default,
-        # which made Spotify and Deezer lose even with identical data.
-        musicbrainz.data_source_mismatch_penalty = 0.0;
-        deezer.data_source_mismatch_penalty = 0.0;
-        spotify = {
-          data_source_mismatch_penalty = 0.0;
-          client_id = config.sops.placeholder.spotify_sync_client_id;
-          client_secret = config.sops.placeholder.spotify_sync_client_secret;
-        };
-        fetchart = {
-          auto = true;
-          minwidth = 500;
-          maxwidth = 1500;
-          # The uploader's own scan first, when it is big enough.
-          sources = ["filesystem" "coverart" "itunes" "spotify"];
-        };
-        embedart.auto = true;
-        # Synced lyrics from LRCLIB; Navidrome shows them line by line.
-        lyrics = {
-          auto = true;
-          synced = true;
-          sources = ["lrclib"];
-        };
-        lastgenre = {
-          auto = true;
-          count = 3;
-          separator = "; ";
-        };
-      };
+        });
     };
     # }}}
     # {{{ Service
@@ -243,6 +262,7 @@ in {
             "MUSIC_DIR=${musicDir}"
             "STATE_DIR=${stateDir}"
             "BEETS_CONFIG=${config.sops.templates."beets.yaml".path}"
+            "BEETS_SPOTIFY_CONFIG=${config.sops.templates."beets-spotify.yaml".path}"
             "BEETSDIR=${stateDir}/beets"
           ];
           # The first run backfills the whole library at MusicBrainz' one
