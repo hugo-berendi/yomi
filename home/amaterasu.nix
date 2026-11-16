@@ -1,4 +1,5 @@
 {
+  config,
   pkgs,
   upkgs,
   inputs,
@@ -41,8 +42,7 @@ in {
 
   home = {
     packages = with pkgs; [
-      localsend
-
+      # localsend comes from programs.localsend in hosts/nixos/amaterasu.
       prismlauncher
       t3code-desktop
       # {{{ messaging
@@ -110,6 +110,13 @@ in {
     commit.gpgsign = true;
     tag.gpgsign = true;
   };
+  # }}}
+
+  # {{{ LocalSend
+  # Device name, received-files folder and trusted devices.
+  yomi.persistence.at.state.apps.localsend.directories = [
+    "${config.xdg.dataHome}/org.localsend.localsend_app"
+  ];
   # }}}
 
   yomi = {

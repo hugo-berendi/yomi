@@ -43,6 +43,11 @@
   # that CCID driver the device.
   services.pcscd.enable = true;
 
+  # AirDrop-style transfers to phones and other machines. The module opens
+  # port 53317 (TCP+UDP); as a plain package LocalSend could send but other
+  # devices could neither discover nor reach it through the firewall.
+  programs.localsend.enable = true;
+
   boot.kernelPackages = pkgs.linuxPackages_6_12;
   boot.loader.systemd-boot.enable = true;
 
