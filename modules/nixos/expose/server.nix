@@ -2,6 +2,7 @@
   config,
   lib,
   outputs,
+  pkgs,
   ...
 }: let
   cfg = config.yomi.expose.server;
@@ -11,10 +12,25 @@
   ports = protocol: map (e: e.port) (lib.filter (e: e.protocol == protocol) listeners);
   webHosts = lib.concatMap (site: map (e: e.host) (lib.attrValues (lib.filterAttrs (_: e: e.enable) site.at))) sites;
 in {
-  imports = [./protection.nix];
+  imports = [./protection.nix ./backup.nix ./geoip.nix ./access-log.nix];
 
   options.yomi.expose.server = {
     enable = lib.mkEnableOption "the public Pangolin gateway";
+    edition = lib.mkOption {
+      type = lib.types.enum ["oss" "enterprise"];
+      default = "oss";
+      description = "Pangolin edition. Enterprise requires a valid license activated in the running instance.";
+    };
+    dashboardSessionHours = lib.mkOption {
+      type = lib.types.ints.positive;
+      default = 12;
+      description = "Maximum dashboard session lifetime in hours.";
+    };
+    resourceSessionHours = lib.mkOption {
+      type = lib.types.ints.positive;
+      default = 24;
+      description = "Maximum resource session lifetime in hours.";
+    };
     sourceHosts = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [];
@@ -55,6 +71,7 @@ in {
 
     services.pangolin = {
       enable = true;
+      package = lib.mkDefault (pkgs.fosrl-pangolin.override {inherit (cfg) edition;});
       baseDomain = config.yomi.expose.domain;
       letsEncryptEmail = config.yomi.pilot.email;
       inherit (cfg) environmentFile;
@@ -68,6 +85,16 @@ in {
         app = {
           telemetry.anonymous_usage = false;
           save_logs = false;
+          log_failed_attempts = true;
+        };
+        server = {
+          dashboard_session_length_hours = cfg.dashboardSessionHours;
+          resource_session_length_hours = cfg.resourceSessionHours;
+        };
+        # HTTP ingress limits and authentication attempts have different budgets.
+        rate_limits.auth = {
+          window_minutes = 1;
+          max_requests = 20;
         };
       };
     };

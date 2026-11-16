@@ -22,6 +22,26 @@
           port = 8443;
           protocol = "https";
           users = ["owner@example.com"];
+          healthCheck = {
+            enable = true;
+            path = "/health";
+          };
+          rules = [
+            {
+              match = "path";
+              value = "/private-admin";
+            }
+          ];
+          additionalTargets = [
+            {
+              hostname = "192.0.2.10";
+              port = 8443;
+              method = "https";
+            }
+          ];
+          blockedCountries = ["CN"];
+          blockedASNs = [64512];
+          allowedCountries = ["DE" "AT"];
         };
         disabled = {
           enable = false;
@@ -79,6 +99,53 @@
   rejects = configuration: lib.any (a: !a.assertion) configuration.config.assertions;
   checks = [
     {
+      name = "Country allowlists retain authentication and end in IPv4/IPv6 deny-all rules";
+      assertion = let
+        rules = public.ebisu-web-direct.rules;
+        last = lib.last rules;
+        countryPass = lib.filter (r: r.action == "pass" && r.match == "country") rules;
+      in
+        map (r: r.value) countryPass == ["DE" "AT"] && last.action == "deny" && last.match == "cidr" && last.value == "::/0" && (builtins.elemAt rules (builtins.length rules - 2)).value == "0.0.0.0/0" && !lib.any (r: r.action == "allow") rules && lib.all (r: r.priority < last.priority) countryPass;
+    }
+    {
+      name = "Authentication budgets and session lifetime are bounded, access logs omit URL paths and credentials";
+      assertion = server.services.pangolin.settings.server.dashboard_session_length_hours == 12 && server.services.pangolin.settings.server.resource_session_length_hours == 24 && server.services.pangolin.settings.rate_limits.auth.max_requests == 20 && server.services.traefik.staticConfigOptions.accessLog.fields.defaultMode == "drop" && !(server.services.traefik.staticConfigOptions.accessLog.fields.names ? RequestPath);
+    }
+    {
+      name = "Authentication bypass and extra targets behind a single Anubis instance are rejected";
+      assertion =
+        rejects (extend {
+          yomi.expose.at.test = {
+            port = 8080;
+            users = ["owner@example.com"];
+            rules = [
+              {
+                action = "allow";
+                match = "path";
+                value = "/";
+              }
+            ];
+          };
+        })
+        && rejects (extend {
+          yomi.expose.at.test = {
+            port = 8080;
+            users = ["owner@example.com"];
+            enableAnubis = true;
+            additionalTargets = [
+              {
+                hostname = "192.0.2.10";
+                port = 8080;
+              }
+            ];
+          };
+        });
+    }
+    {
+      name = "Health checks probe the backend and additional targets retain transport settings";
+      assertion = (builtins.head public.ebisu-web-direct.targets).healthcheck.path == "/health" && (builtins.head public.ebisu-web-direct.targets).healthcheck.hostname == "localhost" && builtins.length public.ebisu-web-direct.targets == 2 && (builtins.elemAt public.ebisu-web-direct.targets 1).hostname == "192.0.2.10" && (builtins.head public.ebisu-web-direct.rules).action == "deny" && (builtins.head public.ebisu-web-direct.rules).match == "country" && (builtins.elemAt public.ebisu-web-direct.rules 1).value == "AS64512";
+    }
+    {
       name = "HTTP authentication and target protocol survive blueprint generation";
       assertion = public.ebisu-web-web.auth.sso-enabled && public.ebisu-web-web.auth.sso-users == ["owner@example.com"] && !(public.ebisu-web-web.auth ? whitelist-users) && (builtins.head public.ebisu-web-web.targets).method == "http";
     }
@@ -94,7 +161,7 @@
         && active.yomi.ports.expose-anubis-web == 9444
         && !lib.elem 9444 active.networking.firewall.allowedTCPPorts
         && !lib.elem 9445 active.networking.firewall.allowedTCPPorts
-        && (builtins.head public.ebisu-web-direct.targets)
+        && builtins.removeAttrs (builtins.head public.ebisu-web-direct.targets) ["healthcheck"]
         == {
           hostname = "localhost";
           port = 8443;

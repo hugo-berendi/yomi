@@ -5,6 +5,14 @@
     enableAnubis = false;
     subdomain = "auth";
   };
+  # The identity provider must remain reachable before Pangolin login.
+  yomi.expose.at.pocket-id = {
+    port = config.yomi.ports.pocket-id;
+    subdomain = "auth";
+    sso = false;
+    labels = ["identity"];
+    monitor.enable = true;
+  };
   # }}}
   # {{{ Secrets
   sops.secrets.pocket_id_env = {

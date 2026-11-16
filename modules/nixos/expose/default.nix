@@ -19,36 +19,95 @@
   prefix = name: "${config.networking.hostName}-${name}";
   allowed = e: e.users != [] || e.roles != [];
   portString = ports: lib.concatMapStringsSep "," toString ports;
+  backend = e: target:
+    target
+    // lib.optionalAttrs e.healthCheck.enable {
+      healthcheck = {
+        inherit (target) hostname port;
+        inherit (e.healthCheck) path interval timeout status;
+        scheme = target.method;
+        enabled = true;
+      };
+    };
   blueprint = {
     # Prefix IDs to avoid resource takeover when different sites reuse a name.
     "public-resources" =
       lib.mapAttrs' (name: e:
-        lib.nameValuePair (prefix "web-${name}") {
-          inherit name;
-          mode = "http";
-          full-domain = e.host;
-          auth = {
-            sso-enabled = e.sso;
-            sso-roles = e.roles;
-            sso-users = e.users;
-          };
-          targets = [
-            {
-              hostname =
-                if e.enableAnubis
-                then "127.0.0.1"
-                else e.proxyAddress;
-              port =
-                if e.enableAnubis
-                then e.anubis.port
-                else e.port;
-              method =
-                if e.enableAnubis
-                then "http"
-                else e.protocol;
-            }
-          ];
-        })
+        lib.nameValuePair (prefix "web-${name}") ({
+            inherit name;
+            mode = "http";
+            full-domain = e.host;
+            inherit (e) labels;
+            rules = lib.imap0 (i: rule: rule // {priority = i;}) (
+              map (value: {
+                action = "deny";
+                match = "country";
+                inherit value;
+              })
+              e.blockedCountries
+              ++ map (asn: {
+                action = "deny";
+                match = "asn";
+                value = "AS${toString asn}";
+              })
+              e.blockedASNs
+              ++ e.rules
+              ++ map (value: {
+                action = "pass";
+                match = "country";
+                inherit value;
+              })
+              e.allowedCountries
+              # COUNTRY=ALL skips private/CGNAT IPs upstream. CIDR catch-alls
+              # also reject unknown or misclassified locations.
+              ++ lib.optionals (e.allowedCountries != []) [
+                {
+                  action = "deny";
+                  match = "cidr";
+                  value = "0.0.0.0/0";
+                }
+                {
+                  action = "deny";
+                  match = "cidr";
+                  value = "::/0";
+                }
+              ]
+            );
+            auth = {
+              sso-enabled = e.sso;
+              sso-roles = e.roles;
+              sso-users = e.users;
+            };
+            targets =
+              [
+                ({
+                    hostname =
+                      if e.enableAnubis
+                      then "127.0.0.1"
+                      else e.proxyAddress;
+                    port =
+                      if e.enableAnubis
+                      then e.anubis.port
+                      else e.port;
+                    method =
+                      if e.enableAnubis
+                      then "http"
+                      else e.protocol;
+                  }
+                  // lib.optionalAttrs e.healthCheck.enable {
+                    inherit
+                      (backend e {
+                        hostname = e.proxyAddress;
+                        inherit (e) port;
+                        method = e.protocol;
+                      })
+                      healthcheck
+                      ;
+                  })
+              ]
+              ++ map (backend e) e.additionalTargets;
+          }
+          // lib.optionalAttrs (e.hostHeader != null) {"host-header" = e.hostHeader;}))
       web
       // builtins.listToAttrs (map (e:
         lib.nameValuePair (prefix "${e.protocol}-${e.name}") {
@@ -83,6 +142,11 @@ in {
   imports = [./endpoints.nix ./server.nix ./anubis.nix];
 
   options.yomi.expose = {
+    allowedCountries = lib.mkOption {
+      type = lib.types.listOf (lib.types.strMatching "[A-Z]{2}");
+      default = [];
+      description = "Default country allowlist for public HTTP resources. Empty means unrestricted geography. Passing countries still authenticate.";
+    };
     enable = lib.mkEnableOption "the Pangolin site connector (Newt)";
     domain = lib.mkOption {
       type = lib.types.str;
@@ -133,6 +197,10 @@ in {
         (map (e: {
           assertion = !e.sso || allowed e;
           message = "Pangolin ${e.host}: SSO requires explicit users or roles.";
+        }) (lib.attrValues web))
+        ++ (map (e: {
+          assertion = (!e.enableAnubis || e.additionalTargets == []) && (e.allowAuthBypass || !lib.any (r: r.action == "allow") e.rules) && (e.allowedCountries == [] || lib.all (r: r.action == "deny") e.rules);
+          message = "Expose ${e.host}: Anubis needs one backend; allow requires allowAuthBypass; country allowlists may only be combined with custom deny rules to prevent geography bypass.";
         }) (lib.attrValues web))
         ++ (map (e: {
           assertion =

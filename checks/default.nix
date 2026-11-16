@@ -30,6 +30,14 @@ in
   }) ["amaterasu" "inari"]))
   // {
     expose = import ../tests/expose.nix {inherit pkgs self;};
+    expose-backup =
+      pkgs.runCommand "expose-backup-tests" {
+        nativeBuildInputs = [pkgs.python3];
+        EXPOSE_BACKUP_HELPER = ../modules/nixos/expose/backup.py;
+      } ''
+        python ${../tests/expose-backup.py}
+        touch "$out"
+      '';
     installer = import ../tests/installer.nix {inherit pkgs;};
     recover-tool = import ../tests/recover-tool.nix {inherit pkgs;};
     recover-disks = import ../tests/recover-disks.nix {

@@ -50,6 +50,10 @@ in {
         ];
         options =
           access
+          // (import ./web-options.nix {
+            inherit lib;
+            inherit (cfg) allowedCountries;
+          })
           // {
             port = mkOption {
               type = types.port;

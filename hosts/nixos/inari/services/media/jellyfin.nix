@@ -10,6 +10,15 @@
   yomi.expose.at.media = {
     port = config.yomi.ports.jellyfin;
     sso = false;
+    labels = ["media"];
+    monitor = {
+      enable = true;
+      name = "jellyfin";
+    };
+    healthCheck = {
+      enable = true;
+      path = "/health";
+    };
   };
   yomi.expose.private.media = {
     destination = "127.0.0.1";

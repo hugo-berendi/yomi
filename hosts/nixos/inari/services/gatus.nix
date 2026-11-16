@@ -4,13 +4,16 @@
   ...
 }: let
   port = config.yomi.ports.gatus;
+  exposed = lib.optionals config.yomi.expose.enable (lib.attrValues config.yomi.expose.at);
+  exposedHosts = map (e: e.host) (lib.filter (e: e.enable) exposed);
   endpoints =
     (
       if config.yomi.nginx.enable
       then lib.attrValues config.yomi.nginx.at
       else []
     )
-    ++ lib.attrValues config.yomi.cloudflared.at;
+    ++ lib.filter (e: !lib.elem e.host exposedHosts) (lib.attrValues config.yomi.cloudflared.at)
+    ++ exposed;
   monitored = lib.filter (e: e.enable && e.monitor.enable) endpoints;
   # Gatus mails every outage itself, and the service-status workflow pushes
   # the same outage through the alert router. Once the router path has been

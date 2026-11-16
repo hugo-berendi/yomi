@@ -14,6 +14,9 @@
 
   # Listener definitions can be inspected before the gateway is provisioned.
   yomi.expose.server.sourceHosts = ["inari"];
+  # License activation and GeoLite2 enrollment happen after the VPS bootstrap.
+  yomi.expose.server.edition = "enterprise";
+  yomi.expose.server.geoip.enable = true;
 
   # Confirm the provider's addresses and routes from the rescue system before
   # installation; no guessed public addresses are published in DNS.
