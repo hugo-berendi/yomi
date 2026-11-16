@@ -27,7 +27,6 @@
       ./services/cloudflared.nix
       ./services/forgejo
       ./services/paperless.nix
-      ./services/paperless-ai.nix
       ./services/homepage.nix
       ./services/expose.nix
       ./services/msmtp.nix

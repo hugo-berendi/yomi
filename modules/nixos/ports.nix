@@ -56,8 +56,6 @@
     llama-cpp-classifier = lib.mkDefault 8496;
     changedetection = lib.mkDefault 8492;
     paperless = lib.mkDefault 8445;
-    paperless-ai = lib.mkDefault 8446;
-    paperless-ai-rag = lib.mkDefault 8447;
     pelican-node1 = lib.mkDefault 8448;
     pelican-panel = lib.mkDefault 8449;
     pocket-id = lib.mkDefault 8450;
