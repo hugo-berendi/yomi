@@ -872,11 +872,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794870206,
-        "narHash": "sha256-vmOJD40JmOhUunhu8HgVxs45FBUZPibu1Weozn+w3Hs=",
+        "lastModified": 1794871946,
+        "narHash": "sha256-REUe1z47hXwNZsd2SmbFkWYvnPL3B9KIT72nslZ0Zgg=",
         "ref": "refs/heads/main",
-        "rev": "1a9b091fa61a2899d30fd5b83594c708bd6d31cc",
-        "revCount": 6,
+        "rev": "ba46d5bea83c82ade867b44ab483873cd4fb18b6",
+        "revCount": 7,
         "type": "git",
         "url": "https://git.hugo-berendi.de/hugo-berendi/kodama.git"
       },

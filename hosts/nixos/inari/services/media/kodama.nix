@@ -27,24 +27,19 @@
       displayName = "Hugo";
       navidromeUser = "hugoberendi";
       email = config.yomi.pilot.email;
-      # Not music. Spotify's export has no genres, so its audiobooks and
-      # radio plays go by artist; these topped whole years of it.
+      # Audiobooks and podcasts get their own tabs. The radio plays in the
+      # Spotify history (Gregs Tagebuch, Tschick, Die drei ???) are found by
+      # their numbered chapters; ASMR is none of music, book or podcast.
       exclude = {
-        genres = ["*asmr*" "Hörbuch" "Hörbücher" "Hörspiel" "Audiobook" "Podcast"];
-        artists = [
-          "*asmr*"
-          "Gregs Tagebuch"
-          "Jeff Kinney"
-          "Wolfgang Herrndorf"
-          "LEGO Ninjago"
-          "Erebos"
-          "Niklas Kolorz"
-          "Die drei ???"
-        ];
-        albums = ["*hörspiel*" "*hörbuch*"];
+        genres = ["*asmr*"];
+        artists = ["*asmr*"];
       };
+      audiobookshelf.tokenFile = config.sops.secrets.kodama_audiobookshelf_token.path;
     };
   };
+  # An API key of the pilot's Audiobookshelf account; it reads their
+  # listening sessions. Only kodama-sync gets it, as a credential.
+  sops.secrets.kodama_audiobookshelf_token.sopsFile = ../../secrets.yaml;
   # }}}
   # {{{ Persistence and backups
   yomi.persistence.at.state.apps.kodama.directories = [
