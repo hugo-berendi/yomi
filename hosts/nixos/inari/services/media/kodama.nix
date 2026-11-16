@@ -27,6 +27,22 @@
       displayName = "Hugo";
       navidromeUser = "hugoberendi";
       email = config.yomi.pilot.email;
+      # Not music. Spotify's export has no genres, so its audiobooks and
+      # radio plays go by artist; these topped whole years of it.
+      exclude = {
+        genres = ["*asmr*" "Hörbuch" "Hörbücher" "Hörspiel" "Audiobook" "Podcast"];
+        artists = [
+          "*asmr*"
+          "Gregs Tagebuch"
+          "Jeff Kinney"
+          "Wolfgang Herrndorf"
+          "LEGO Ninjago"
+          "Erebos"
+          "Niklas Kolorz"
+          "Die drei ???"
+        ];
+        albums = ["*hörspiel*" "*hörbuch*"];
+      };
     };
   };
   # }}}
