@@ -69,6 +69,13 @@ in
       inherit pkgs;
       configurations = self.nixosConfigurations;
     };
+    zfs-capacity = pkgs.runCommand "zfs-capacity-tests" {nativeBuildInputs = [pkgs.python3];} ''
+      mkdir -p tests hosts/nixos/inari/services
+      cp ${../tests/test_zfs_capacity.py} tests/test_zfs_capacity.py
+      cp ${../hosts/nixos/inari/services/zfs-capacity.py} hosts/nixos/inari/services/zfs-capacity.py
+      python3 tests/test_zfs_capacity.py
+      touch $out
+    '';
     backup-monitoring = import ../tests/backup-monitoring.nix {
       inherit pkgs;
       rules = self.nixosConfigurations.inari.config.services.grafana.provision.alerting.rules.settings;

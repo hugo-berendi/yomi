@@ -405,7 +405,7 @@ in {
                           {
                             evaluator = {
                               type = "lt";
-                              params = [0.1];
+                              params = [0.2];
                             };
                           }
                         ];
@@ -421,7 +421,7 @@ in {
                     severity = "warning";
                     service = "storage";
                   };
-                  annotations.summary = "{{ $labels.mountpoint }} on {{ $labels.instance }} has less than 10% free space.";
+                  annotations.summary = "{{ $labels.mountpoint }} on {{ $labels.instance }} has less than 20% free space. Review ZFS snapshots as well as live data.";
                 }
                 {
                   uid = "inari-zfs-pool-degraded";
