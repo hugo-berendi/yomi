@@ -129,7 +129,6 @@ configured = json.loads(Path(production_manifest).read_text())
 assert set(configured) >= {
     "forgejo",
     "n8n",
-    "home-assistant",
     "pocket-id",
     "matrix",
     "mautrix-discord",

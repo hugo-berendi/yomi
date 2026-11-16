@@ -20,11 +20,6 @@
         MemoryHigh = "3G";
       };
 
-      home-assistant = {
-        MemoryMax = "2G";
-        MemoryHigh = "1536M";
-      };
-
       paperless-scheduler = {
         MemoryMax = "2G";
         MemoryHigh = "1536M";

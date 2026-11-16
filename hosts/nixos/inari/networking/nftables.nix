@@ -41,8 +41,6 @@
 in {
   yomi.network.exposure = {
     beszel = {interface = "br0";};
-    home-assistant = {interface = "br0";};
-    mqtt = {interface = "br0";};
     pelican-node1 = {
       interface = "br0";
       service = "wings";

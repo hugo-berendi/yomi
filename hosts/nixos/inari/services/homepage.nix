@@ -131,18 +131,6 @@ in {
             };
           }
           {
-            "Home Assistant" = {
-              icon = "home-assistant.svg";
-              href = "https://home.hugo-berendi.de";
-              description = "Home automation";
-              widget = {
-                type = "homeassistant";
-                url = "http://127.0.0.1:${toString config.yomi.ports.home-assistant}";
-                key = "{{HOMEPAGE_VAR_HOMEASSISTANT_API_KEY}}";
-              };
-            };
-          }
-          {
             Immich = {
               icon = "immich.svg";
               href = "https://immich.hugo-berendi.de";

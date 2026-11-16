@@ -26,7 +26,6 @@
     flaresolverr = lib.mkDefault 8408;
     forgejo = lib.mkDefault 8409;
     grafana = lib.mkDefault 8412;
-    home-assistant = 8123;
     homepage = lib.mkDefault 8415;
     immich = lib.mkDefault 8416;
     iocaine = lib.mkDefault 8420;
@@ -45,7 +44,6 @@
     # its query port.
     valheim = 2456;
     valheim-query = 2457;
-    mqtt = lib.mkDefault 8437;
     n8n = lib.mkDefault 8438;
     ntfy = lib.mkDefault 8441;
     opencode = lib.mkDefault 8487;

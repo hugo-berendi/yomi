@@ -42,7 +42,6 @@
       ./services/adguard-home.nix
       ./services/comics.nix
       ./services/media
-      ./services/home-assistant.nix
       ./services/ntfy.nix
       ./services/audiobookshelf.nix
       ./services/gatus.nix

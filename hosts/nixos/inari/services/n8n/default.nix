@@ -131,7 +131,6 @@ in {
         "n8n_immich_api_key"
         "n8n_paperless_api_token"
         "n8n_mealie_api_token"
-        "n8n_home_assistant_api_token"
         "n8n_jellyseerr_api_key"
         "sonarr_api_key"
         "radarr_api_key"
@@ -146,7 +145,6 @@ in {
       IMMICH_API_KEY=${config.sops.placeholder.n8n_immich_api_key}
       PAPERLESS_API_TOKEN=${config.sops.placeholder.n8n_paperless_api_token}
       MEALIE_API_TOKEN=${config.sops.placeholder.n8n_mealie_api_token}
-      HOME_ASSISTANT_API_TOKEN=${config.sops.placeholder.n8n_home_assistant_api_token}
       JELLYSEERR_API_KEY=${config.sops.placeholder.n8n_jellyseerr_api_key}
       SONARR_API_KEY=${config.sops.placeholder.sonarr_api_key}
       RADARR_API_KEY=${config.sops.placeholder.radarr_api_key}
@@ -388,6 +386,8 @@ in {
     yomi.n8n.workflows.immich-trip-albums.source = ./workflows/immich-trip-albums.json;
     yomi.n8n.workflows.jellyseerr-tracker.source = ./workflows/jellyseerr-tracker.json;
     yomi.n8n.workflows.mealie-groceries.source = ./workflows/mealie-groceries.json;
+    # Retired with Home Assistant. Kept registered with active = false so the
+    # import unpublishes it; drop both once it is gone from n8n.
     yomi.n8n.workflows.home-assistant-anomalies.source = ./workflows/home-assistant-anomalies.json;
     yomi.n8n.workflows.paperless-dates.source = ./workflows/paperless-dates.json;
     yomi.n8n.workflows.forgejo-releases.source = ./workflows/forgejo-releases.json;

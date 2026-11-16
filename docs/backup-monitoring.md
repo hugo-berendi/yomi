@@ -23,7 +23,7 @@ committed WAL transactions, roll back unfinished journal transactions, and pass
 The original databases remain untouched. A failed copy retains the previous
 complete artifact and prevents the off-site backup from starting.
 
-The staged directories cover Forgejo, n8n, Home Assistant, Pocket ID,
+The staged directories cover Forgejo, n8n, Pocket ID,
 Tuwunel, all three Matrix bridges, Karakeep, calendar sync status and OAuth tokens,
 ntfy, SSH host keys, and Paperless metadata. `manifest.json` records the selected
 sources and SQLite files. Forgejo's existing compressed dumps are excluded from
