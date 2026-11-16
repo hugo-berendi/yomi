@@ -11,7 +11,10 @@
   dataDir = "/persist/data/vrising/data";
   wine = pkgs.wineWow64Packages.stable;
   steamAppId = "1829350";
-  configHash = builtins.hashString "sha256" (builtins.toJSON cfg);
+  # sopsFile points into the flake source, whose store path changes with
+  # every commit; hashing it restarted the server on every switch. The
+  # secret's own changes restart it through sops (restartUnits below).
+  configHash = builtins.hashString "sha256" (builtins.toJSON (removeAttrs cfg ["sopsFile"]));
 
   hostSettingsJson = pkgs.writeText "ServerHostSettings.json" (builtins.toJSON {
     Name = cfg.serverName;
@@ -200,6 +203,7 @@ in {
         lib.throwIf (cfg.sopsFile == null)
         "services.vrising.sopsFile must be set when services.vrising.enable is true"
         cfg.sopsFile;
+      restartUnits = ["vrising.service"];
     };
 
     services.steamGameServers.vrising = {
