@@ -61,7 +61,14 @@
   beetsSettings = {
     directory = musicDir;
     library = "${stateDir}/beets/library.db";
-    plugins = ["musicbrainz" "deezer" "fetchart" "embedart" "lyrics" "lastgenre"];
+    # versionguard: see beets-plugins/versionguard.py.
+    pluginpath = [
+      "${builtins.path {
+        path = ./beets-plugins;
+        name = "beets-plugins";
+      }}"
+    ];
+    plugins = ["musicbrainz" "deezer" "versionguard" "fetchart" "embedart" "lyrics" "lastgenre"];
     ui.color = false;
     import = {
       # Tags only: files stay where sockseek put them, because its
