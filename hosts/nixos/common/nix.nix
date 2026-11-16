@@ -43,6 +43,13 @@
       warn-dirty = false;
 
       auto-optimise-store = true;
+
+      # Collect unreachable store paths during builds before space runs out.
+      # Separate thresholds avoid repeatedly starting GC around one boundary;
+      # nh clean still owns pruning old generations, and ZFS snapshots can pin
+      # deleted blocks beyond the reach of Nix GC.
+      min-free = 10 * 1024 * 1024 * 1024;
+      max-free = 20 * 1024 * 1024 * 1024;
     };
     # }}}
   };
