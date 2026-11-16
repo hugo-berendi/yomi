@@ -6,6 +6,17 @@
 }: {
   # {{{ Reverse proxy
   yomi.cloudflared.at.media.port = config.yomi.ports.jellyfin;
+  # Staged until the Pangolin connector is enrolled; native apps use Jellyfin auth.
+  yomi.pangolin.at.media = {
+    port = config.yomi.ports.jellyfin;
+    sso = false;
+  };
+  yomi.pangolin.private.media = {
+    destination = "127.0.0.1";
+    alias = "media.inari.internal";
+    tcpPorts = [config.yomi.ports.jellyfin];
+    users = [config.yomi.pilot.email];
+  };
   # }}}
   # {{{ Secrets
   sops.secrets.jellyfin_oidc_secret = {

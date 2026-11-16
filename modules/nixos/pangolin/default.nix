@@ -1,0 +1,175 @@
+{
+  config,
+  lib,
+  pkgs,
+  upkgs,
+  ...
+}: let
+  cfg = config.yomi.pangolin;
+  format = pkgs.formats.yaml {};
+  enabled = lib.filterAttrs (_: e: e.enable);
+  web = enabled cfg.at;
+  private = enabled cfg.private;
+  raw = protocol:
+    lib.mapAttrsToList (name: e: {
+      inherit name protocol;
+      inherit (e) port publicPort proxyAddress;
+    }) (enabled cfg.${protocol});
+  rawEntries = raw "tcp" ++ raw "udp";
+  prefix = name: "${config.networking.hostName}-${name}";
+  allowed = e: e.users != [] || e.roles != [];
+  portString = ports: lib.concatMapStringsSep "," toString ports;
+  blueprint = {
+    # Prefix IDs to avoid resource takeover when different sites reuse a name.
+    "public-resources" =
+      lib.mapAttrs' (name: e:
+        lib.nameValuePair (prefix "web-${name}") {
+          inherit name;
+          mode = "http";
+          full-domain = e.host;
+          auth = {
+            sso-enabled = e.sso;
+            sso-roles = e.roles;
+            sso-users = e.users;
+          };
+          targets = [
+            {
+              hostname = e.proxyAddress;
+              inherit (e) port;
+              method = e.protocol;
+            }
+          ];
+        })
+      web
+      // builtins.listToAttrs (map (e:
+        lib.nameValuePair (prefix "${e.protocol}-${e.name}") {
+          inherit (e) name;
+          mode = e.protocol;
+          proxy-port = e.publicPort;
+          targets = [
+            {
+              hostname = e.proxyAddress;
+              inherit (e) port;
+            }
+          ];
+        })
+      rawEntries);
+    "private-resources" = lib.mapAttrs' (name: e:
+      lib.nameValuePair (prefix "private-${name}") ({
+          inherit name;
+          inherit (e) mode users roles;
+        }
+        // lib.optionalAttrs (e.mode != "exit-node") {
+          inherit (e) destination;
+          tcp-ports = portString e.tcpPorts;
+          udp-ports = portString e.udpPorts;
+          disable-icmp = !e.allowICMP;
+        }
+        // lib.optionalAttrs (e.alias != null && e.mode == "host") {
+          inherit (e) alias;
+        }))
+    private;
+  };
+in {
+  imports = [./endpoints.nix ./server.nix];
+
+  options.yomi.pangolin = {
+    enable = lib.mkEnableOption "the Pangolin site connector (Newt)";
+    domain = lib.mkOption {
+      type = lib.types.str;
+      default = config.yomi.dns.domain;
+      description = "Default domain for public Web resources.";
+    };
+    publicHost = lib.mkOption {
+      type = lib.types.str;
+      default = "ebisu.${cfg.domain}";
+      description = "Unproxied DNS hostname of the public Pangolin gateway.";
+    };
+    endpoint = lib.mkOption {
+      type = lib.types.str;
+      default = "https://pangolin.${cfg.domain}";
+      description = "Pangolin control server URL.";
+    };
+    environmentFile = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      description = "Runtime file with NEWT_ID and NEWT_SECRET; never put credentials in Nix expressions.";
+    };
+    blueprint = lib.mkOption {
+      inherit (format) type;
+      readOnly = true;
+      default = blueprint;
+      description = "Generated site blueprint, also available before activating the connector.";
+    };
+    listeners = lib.mkOption {
+      type = lib.types.listOf lib.types.attrs;
+      readOnly = true;
+      default =
+        map (e: {
+          inherit (e) protocol;
+          port = e.publicPort;
+        })
+        rawEntries;
+      description = "Public gateway listeners required by this site's raw resources.";
+    };
+  };
+
+  config = lib.mkMerge [
+    {
+      # Stable's Newt 1.12 cannot implement the exit-node resources supported
+      # by Pangolin 1.24. Keep the NixOS service and use the pinned newer client.
+      services.newt.package = lib.mkDefault upkgs.fosrl-newt;
+      system.build.pangolinBlueprint = format.generate "${config.networking.hostName}-pangolin.yaml" cfg.blueprint;
+      assertions =
+        (map (e: {
+          assertion = !e.sso || allowed e;
+          message = "Pangolin ${e.host}: SSO requires explicit users or roles.";
+        }) (lib.attrValues web))
+        ++ (map (e: {
+          assertion =
+            allowed e
+            && !lib.elem "Admin" e.roles
+            && (e.mode == "host" || e.alias == null)
+            && (
+              if e.mode == "exit-node"
+              then e.destination == null && e.tcpPorts == [] && e.udpPorts == [] && !e.allowICMP
+              else e.destination != null
+            );
+          message = "Private Pangolin resources require explicit users/roles and a destination, except exit nodes; aliases require host mode, exit nodes must not specify ineffective port/ICMP restrictions; do not list Admin.";
+        }) (lib.attrValues private))
+        ++ [
+          {
+            assertion = lib.all (e: !lib.elem "Admin" e.roles) (lib.attrValues web);
+            message = "Pangolin's Admin role is implicit and must not be listed in SSO roles.";
+          }
+          {
+            assertion = !lib.any (e: e.mode == "exit-node") (lib.attrValues private) || lib.versionAtLeast config.services.newt.package.version "1.18.0";
+            message = "Pangolin exit nodes require Newt 1.18.0 or newer.";
+          }
+        ];
+    }
+    (lib.mkIf cfg.enable {
+      assertions = [
+        {
+          assertion = cfg.environmentFile != null && lib.hasPrefix "/" cfg.environmentFile && !lib.hasPrefix "/nix/store/" cfg.environmentFile;
+          message = "Pangolin connector requires a runtime environmentFile with site credentials.";
+        }
+      ];
+      services.newt = {
+        enable = true;
+        inherit (cfg) environmentFile blueprint;
+        settings.endpoint = cfg.endpoint;
+      };
+      yomi.dns.records = lib.mapAttrsToList (_: e: {
+        type =
+          if e.dns.name == ""
+          then "ALIAS"
+          else "CNAME";
+        at = e.dns.name;
+        zone = e.dns.zone;
+        value = "${cfg.publicHost}.";
+        enableCloudflareProxy = false;
+      }) (lib.filterAttrs (_: e: e.dns.enable) web);
+    })
+  ];
+}

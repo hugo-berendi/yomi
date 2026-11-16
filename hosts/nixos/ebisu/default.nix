@@ -12,6 +12,9 @@
   networking.hostName = "ebisu";
   system.stateVersion = "26.05";
 
+  # Listener definitions can be inspected before the gateway is provisioned.
+  yomi.pangolin.server.sourceHosts = ["inari"];
+
   # Confirm the provider's addresses and routes from the rescue system before
   # installation; no guessed public addresses are published in DNS.
   networking.useDHCP = false;
