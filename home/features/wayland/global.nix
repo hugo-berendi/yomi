@@ -12,6 +12,7 @@
     ./waybar
     ./wlogout.nix
     ./wlsunset.nix
+    ./toggles.nix
 
     ../desktop
   ];

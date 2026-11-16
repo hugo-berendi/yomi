@@ -57,6 +57,7 @@
     mpv
     imv
     obs-studio
+    gnome-calculator
   ];
   # }}}
 }

@@ -136,7 +136,9 @@ in {
         format-disconnected = "󰤮";
         tooltip-format-wifi = "{essid}\n{ipaddr}\n{bandwidthDownBytes} ↓  {bandwidthUpBytes} ↑";
         tooltip-format-ethernet = "{ifname}\n{ipaddr}";
-        on-click = "${lib.getExe' pkgs.networkmanagerapplet "nm-connection-editor"}";
+        # Left: the nmtui panel (SUPER+CTRL+W). Right: the full GUI editor.
+        on-click = "pypr toggle wifi";
+        on-click-right = "${lib.getExe' pkgs.networkmanagerapplet "nm-connection-editor"}";
       };
 
       bluetooth = {
@@ -146,7 +148,9 @@ in {
         tooltip-format = "{controller_alias}";
         tooltip-format-connected = "{device_enumerate}";
         tooltip-format-enumerate-connected = "{device_alias}";
-        on-click = "${lib.getExe pkgs.overskride}";
+        # Left: the bluetui panel (SUPER+CTRL+B). Right: overskride.
+        on-click = "pypr toggle bluetooth";
+        on-click-right = "${lib.getExe pkgs.overskride}";
       };
 
       pulseaudio = {
@@ -158,7 +162,9 @@ in {
           ""
           ""
         ];
-        on-click = "${lib.getExe pkgs.pwvucontrol}";
+        # Left: the wiremix panel (SUPER+CTRL+A). Middle: pwvucontrol.
+        on-click = "pypr toggle audio";
+        on-click-middle = "${lib.getExe pkgs.pwvucontrol}";
         on-click-right = "${lib.getExe' pkgs.pulseaudio "pactl"} set-sink-mute @DEFAULT_SINK@ toggle";
       };
 
