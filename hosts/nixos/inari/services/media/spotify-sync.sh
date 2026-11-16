@@ -42,8 +42,16 @@ sync() {
 		"$1" --config "$SOCKSEEK_CONFIG" --output-dir "$MUSIC_DIR"
 		--index-path "$STATE_DIR/$2.index" "${skip_flags[@]}"
 	)
+	# sockseek keeps whatever a playlist file already holds and appends the
+	# whole playlist below it, so every run added each song once more:
+	# Lieblingssongs listed every song 8 times on 2026-11-16. It writes a new
+	# file instead, which replaces the old one once the run has finished. The
+	# hidden .part name keeps Navidrome from importing it halfway.
+	local part=""
 	if [[ -n ${4:-} ]]; then
-		args+=(--write-playlist --playlist-path "$playlist_dir/$4.m3u")
+		part=$playlist_dir/.$4.m3u.part
+		rm -f -- "$part"
+		args+=(--write-playlist --playlist-path "$part")
 	fi
 	args+=("${@:5}")
 
@@ -77,10 +85,16 @@ sync() {
 	if ((status != 0)); then
 		if ! grep -q '^\[cli\] Completed:' "$log"; then
 			echo "sync of $label failed" >&2
+			[[ -z $part ]] || rm -f -- "$part"
 			failed=1
 			return
 		fi
 		echo "some songs of $label were not found"
+	fi
+	# A source with nothing to do may end before writing a playlist at all;
+	# the old file then stays.
+	if [[ -n $part && -e $part ]]; then
+		mv -f -- "$part" "$playlist_dir/$4.m3u"
 	fi
 	printf '%s\n' "$3" >"$stamp"
 }
