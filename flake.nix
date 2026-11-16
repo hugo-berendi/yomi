@@ -175,7 +175,7 @@
         nixosConfigurations = let
           mkHost = import ./lib/mk-host.nix {inherit inputs self mkPkgs;};
         in
-          inputs.nixpkgs.lib.genAttrs ["amaterasu" "tsukuyomi" "inari" "iso" "wsl-work"] (hostname: mkHost {inherit hostname;});
+          inputs.nixpkgs.lib.genAttrs ["amaterasu" "tsukuyomi" "inari" "iso" "wsl-work" "ebisu"] (hostname: mkHost {inherit hostname;});
       };
 
       perSystem = {
