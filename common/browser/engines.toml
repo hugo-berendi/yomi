@@ -141,14 +141,8 @@ param = "q"
 icon = "https://expedition33.wiki.fextralife.com/favicon.ico"
 # }}}
 # {{{ Misc
-["Invidious"]
-aliases = ["@yt", "@invidious"]
-url = "https://yt.hugo-berendi.de/results"
-param = "search_query"
-icon = "http://yt.hugo-berendi.de/favicon.ico"
-
 ["Youtube"]
-aliases = ["@gyt", "@youtube"]
+aliases = ["@yt", "@gyt", "@youtube"]
 url = "https://www.youtube.com/results"
 param = "search_query"
 icon = "https://www.youtube.com/favicon.ico"

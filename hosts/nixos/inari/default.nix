@@ -31,7 +31,6 @@
       ./services/homepage.nix
       ./services/expose.nix
       ./services/msmtp.nix
-      ./services/invidious.nix
       ./services/microbin.nix
       ./services/mealie.nix
       ./services/radicale

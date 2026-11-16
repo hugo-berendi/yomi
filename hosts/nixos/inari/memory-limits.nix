@@ -64,11 +64,6 @@
         MemoryMax = "4G";
         MemoryHigh = "3G";
       };
-
-      invidious = {
-        MemoryMax = "1G";
-        MemoryHigh = "768M";
-      };
     };
   # }}}
 

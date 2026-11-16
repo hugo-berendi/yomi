@@ -257,13 +257,6 @@ in {
             };
           }
           {
-            Invidious = {
-              icon = "invidious.svg";
-              href = "https://yt.hugo-berendi.de";
-              description = "Youtube client";
-            };
-          }
-          {
             Sable = {
               icon = "mdi-chat-processing-outline";
               href = "https://sable.hugo-berendi.de";

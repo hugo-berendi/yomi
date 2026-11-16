@@ -29,7 +29,6 @@
     home-assistant = 8123;
     homepage = lib.mkDefault 8415;
     immich = lib.mkDefault 8416;
-    invidious = lib.mkDefault 8419;
     iocaine = lib.mkDefault 8420;
     ipp = lib.mkDefault 8421;
     jellyfin = lib.mkDefault 8422;
