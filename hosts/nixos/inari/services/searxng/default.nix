@@ -109,7 +109,7 @@ in {
   # on 2026-09-29. The whole service has to move: a namespace is per
   # process, and SearXNG cannot send one engine through a different route.
   #
-  # It is killswitched like transmission: if the tunnel is down, searx has
+  # It is killswitched like qBittorrent: if the tunnel is down, searx has
   # no route out, rather than falling back to the home IP.
   systemd.services.searx.vpnConfinement = {
     enable = true;

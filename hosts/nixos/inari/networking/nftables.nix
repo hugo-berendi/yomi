@@ -28,8 +28,8 @@
   #
   # These are deliberately not folded into the lists above. The allowlist is
   # meant to be decided here rather than accumulated from whatever a module
-  # asked for -- transmission's peer port, for one, is requested but reaches
-  # the internet through the VPN namespace, not br0. So say so instead, and
+  # asked for -- a torrent client's peer port, for one, may be requested but
+  # reaches the internet through the VPN namespace, not br0. So say so instead, and
   # let whoever adds a service put the port in lanTcpServicePorts on purpose.
   inertFirewallPorts =
     lib.filter (p: !lib.elem p (baseTcpPorts ++ lanTcpServicePorts)) config.networking.firewall.allowedTCPPorts

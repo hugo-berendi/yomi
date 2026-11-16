@@ -89,8 +89,6 @@
     stirling-pdf = lib.mkDefault 8478;
     suwayomi = lib.mkDefault 8479;
     syncthing = lib.mkDefault 8480;
-    transmission_peer = 51820;
-    transmission_ui = lib.mkDefault 8482;
     qbittorrent_peer = lib.mkDefault 8518;
     qbittorrent_ui = lib.mkDefault 8516;
     qui = lib.mkDefault 8517;

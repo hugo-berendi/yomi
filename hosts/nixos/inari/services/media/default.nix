@@ -5,7 +5,6 @@
     ./bazarr.nix
     ./sonarr.nix
     ./radarr.nix
-    ./transmission.nix
     ./qbittorrent.nix
     ./navidrome.nix
     ./spotify-sync.nix
