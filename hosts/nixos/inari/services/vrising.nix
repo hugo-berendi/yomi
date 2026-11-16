@@ -4,11 +4,11 @@
   ...
 }: {
   # Game clients connect to Ebisu; RCON remains private.
-  yomi.pangolin.udp = lib.mkIf config.services.vrising.enable {
+  yomi.expose.udp = lib.mkIf config.services.vrising.enable {
     vrising.port = config.services.vrising.gamePort;
     vrising-query.port = config.services.vrising.queryPort;
   };
-  yomi.pangolin.private.vrising-rcon = lib.mkIf config.services.vrising.enable {
+  yomi.expose.private.vrising-rcon = lib.mkIf config.services.vrising.enable {
     destination = "127.0.0.1";
     alias = "rcon.inari.internal";
     tcpPorts = [config.services.vrising.rconPort];

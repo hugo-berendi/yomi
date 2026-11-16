@@ -13,7 +13,7 @@
   filesystems = import ./filesystems.nix;
   endpoint-checks = import ./endpoint-checks.nix;
   cloudflared = import ./cloudflared.nix;
-  pangolin = import ./pangolin;
+  expose = import ./expose;
   iocaine = import ./iocaine.nix;
   playit = import ./playit.nix;
   ports = import ./ports.nix;

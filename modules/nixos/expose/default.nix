@@ -5,7 +5,7 @@
   upkgs,
   ...
 }: let
-  cfg = config.yomi.pangolin;
+  cfg = config.yomi.expose;
   format = pkgs.formats.yaml {};
   enabled = lib.filterAttrs (_: e: e.enable);
   web = enabled cfg.at;
@@ -34,9 +34,18 @@
           };
           targets = [
             {
-              hostname = e.proxyAddress;
-              inherit (e) port;
-              method = e.protocol;
+              hostname =
+                if e.enableAnubis
+                then "127.0.0.1"
+                else e.proxyAddress;
+              port =
+                if e.enableAnubis
+                then e.anubis.port
+                else e.port;
+              method =
+                if e.enableAnubis
+                then "http"
+                else e.protocol;
             }
           ];
         })
@@ -71,9 +80,9 @@
     private;
   };
 in {
-  imports = [./endpoints.nix ./server.nix];
+  imports = [./endpoints.nix ./server.nix ./anubis.nix];
 
-  options.yomi.pangolin = {
+  options.yomi.expose = {
     enable = lib.mkEnableOption "the Pangolin site connector (Newt)";
     domain = lib.mkOption {
       type = lib.types.str;
@@ -119,7 +128,7 @@ in {
       # Stable's Newt 1.12 cannot implement the exit-node resources supported
       # by Pangolin 1.24. Keep the NixOS service and use the pinned newer client.
       services.newt.package = lib.mkDefault upkgs.fosrl-newt;
-      system.build.pangolinBlueprint = format.generate "${config.networking.hostName}-pangolin.yaml" cfg.blueprint;
+      system.build.exposeBlueprint = format.generate "${config.networking.hostName}-pangolin.yaml" cfg.blueprint;
       assertions =
         (map (e: {
           assertion = !e.sso || allowed e;

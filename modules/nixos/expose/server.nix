@@ -4,14 +4,16 @@
   outputs,
   ...
 }: let
-  cfg = config.yomi.pangolin.server;
-  sites = map (name: outputs.nixosConfigurations.${name}.config.yomi.pangolin) cfg.sourceHosts;
+  cfg = config.yomi.expose.server;
+  sites = map (name: outputs.nixosConfigurations.${name}.config.yomi.expose) cfg.sourceHosts;
   listeners = lib.concatMap (site: site.listeners) sites;
   listenerKey = e: "${e.protocol}-${toString e.port}";
   ports = protocol: map (e: e.port) (lib.filter (e: e.protocol == protocol) listeners);
   webHosts = lib.concatMap (site: map (e: e.host) (lib.attrValues (lib.filterAttrs (_: e: e.enable) site.at))) sites;
 in {
-  options.yomi.pangolin.server = {
+  imports = [./protection.nix];
+
+  options.yomi.expose.server = {
     enable = lib.mkEnableOption "the public Pangolin gateway";
     sourceHosts = lib.mkOption {
       type = lib.types.listOf lib.types.str;
@@ -53,7 +55,7 @@ in {
 
     services.pangolin = {
       enable = true;
-      baseDomain = config.yomi.pangolin.domain;
+      baseDomain = config.yomi.expose.domain;
       letsEncryptEmail = config.yomi.pilot.email;
       inherit (cfg) environmentFile;
       openFirewall = true;

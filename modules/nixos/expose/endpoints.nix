@@ -3,7 +3,7 @@
   lib,
   ...
 }: let
-  cfg = config.yomi.pangolin;
+  cfg = config.yomi.expose;
   inherit (lib) mkOption types;
   access = {
     users = mkOption {
@@ -37,11 +37,11 @@
     };
   }));
 in {
-  options.yomi.pangolin = {
+  options.yomi.expose = {
     at = mkOption {
       default = {};
       description = "Public HTTP(S) tunnels, declared alongside their backend services.";
-      type = types.attrsOf (types.submodule {
+      type = types.attrsOf (types.submodule ({config, ...}: {
         imports = [
           (import ../lib/endpoint.nix {
             inherit lib;
@@ -55,13 +55,26 @@ in {
               type = types.port;
               description = "Upstream HTTP service port.";
             };
+            enableAnubis = lib.mkEnableOption "Anubis browser bot challenges before this Web application";
+            anubis = {
+              port = mkOption {
+                type = types.port;
+                default = config.port + 500;
+                description = "Loopback Anubis listener; override if it conflicts with another port.";
+              };
+              metricsPort = mkOption {
+                type = types.port;
+                default = config.port + 600;
+                description = "Loopback Anubis metrics listener.";
+              };
+            };
             sso = mkOption {
               type = types.bool;
               default = true;
               description = "Require Pangolin SSO; false explicitly publishes a service using its own authentication.";
             };
           };
-      });
+      }));
     };
     tcp = mkOption {
       type = raw;

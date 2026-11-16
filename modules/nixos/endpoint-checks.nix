@@ -5,8 +5,8 @@
 }: let
   nginx = lib.filterAttrs (_: e: e.enable && config.yomi.nginx.enable) config.yomi.nginx.at;
   tunnel = lib.filterAttrs (_: e: e.enable) config.yomi.cloudflared.at;
-  pangolin = lib.filterAttrs (_: e: e.enable) config.yomi.pangolin.at;
-  entries = lib.attrValues nginx ++ lib.attrValues tunnel ++ lib.attrValues pangolin;
+  expose = lib.filterAttrs (_: e: e.enable) config.yomi.expose.at;
+  entries = lib.attrValues nginx ++ lib.attrValues tunnel ++ lib.attrValues expose;
 in {
   config.assertions =
     (map (e: {
@@ -24,5 +24,5 @@ in {
     ++ (map (entries: {
       assertion = let hosts = map (e: e.host) (lib.attrValues entries); in builtins.length hosts == builtins.length (lib.unique hosts);
       message = "Endpoint hostnames must be unique within each proxy provider.";
-    }) [nginx tunnel pangolin]);
+    }) [nginx tunnel expose]);
 }

@@ -6,10 +6,21 @@
   base = self.nixosConfigurations.ebisu;
   extend = module: base.extendModules {modules = [module];};
   fixture = extend {
-    yomi.pangolin = {
+    yomi.expose = {
       at = {
         web = {
           port = 8080;
+          protocol = "https";
+          users = ["owner@example.com"];
+          enableAnubis = true;
+          anubis = {
+            port = 9444;
+            metricsPort = 9445;
+          };
+        };
+        direct = {
+          port = 8443;
+          protocol = "https";
           users = ["owner@example.com"];
         };
         disabled = {
@@ -41,7 +52,7 @@
       specialArgs.outputs = self // {nixosConfigurations = self.nixosConfigurations // {fixture = site;};};
       modules = [
         {
-          yomi.pangolin.server = {
+          yomi.expose.server = {
             enable = true;
             sourceHosts = ["fixture"];
             environmentFile = "/run/secrets/pangolin.env";
@@ -54,14 +65,14 @@
     (fixture.extendModules {
       modules = [
         {
-          yomi.pangolin = {
+          yomi.expose = {
             enable = true;
             environmentFile = "/run/secrets/newt.env";
           };
         }
       ];
     }).config;
-  blueprint = config.yomi.pangolin.blueprint;
+  blueprint = config.yomi.expose.blueprint;
   public = blueprint.public-resources;
   private = blueprint.private-resources;
   server = (gateway fixture).config;
@@ -70,6 +81,30 @@
     {
       name = "HTTP authentication and target protocol survive blueprint generation";
       assertion = public.ebisu-web-web.auth.sso-enabled && public.ebisu-web-web.auth.sso-users == ["owner@example.com"] && !(public.ebisu-web-web.auth ? whitelist-users) && (builtins.head public.ebisu-web-web.targets).method == "http";
+    }
+    {
+      name = "Anubis is inserted only on activation and its listeners stay private";
+      assertion =
+        config.services.anubis.instances
+        == {}
+        && (builtins.head public.ebisu-web-web.targets).port == 9444
+        && active.services.anubis.instances.expose-web.settings.BIND == "127.0.0.1:9444"
+        && active.services.anubis.instances.expose-web.settings.TARGET == "https://localhost:8080"
+        && active.services.anubis.instances.expose-web.settings.USE_REMOTE_ADDRESS == false
+        && active.yomi.ports.expose-anubis-web == 9444
+        && !lib.elem 9444 active.networking.firewall.allowedTCPPorts
+        && !lib.elem 9445 active.networking.firewall.allowedTCPPorts
+        && (builtins.head public.ebisu-web-direct.targets)
+        == {
+          hostname = "localhost";
+          port = 8443;
+          method = "https";
+        }
+        && builtins.attrNames active.services.anubis.instances == ["expose-web"];
+    }
+    {
+      name = "Gateway HTTPS entrypoint applies flood limits before resource and dashboard routers";
+      assertion = server.services.traefik.staticConfigOptions.entryPoints.websecure.http.middlewares == ["expose-rate-limit@file" "expose-inflight-ip@file" "expose-inflight-host@file"] && server.services.traefik.dynamicConfigOptions.http.middlewares.expose-rate-limit.rateLimit.sourceCriterion.ipStrategy == {ipv6Subnet = 64;} && server.services.traefik.dynamicConfigOptions.http.middlewares.expose-inflight-host.inFlightReq.sourceCriterion.requestHost && !server.services.traefik.staticConfigOptions.entryPoints.websecure.forwardedHeaders.insecure;
     }
     {
       name = "Disabled endpoints are absent and raw TCP/UDP do not receive HTTP fields";
@@ -89,7 +124,7 @@
     }
     {
       name = "Missing access lists are rejected";
-      assertion = rejects (extend {yomi.pangolin.at.unrestricted.port = 8080;}) && rejects (extend {yomi.pangolin.private.unrestricted.destination = "127.0.0.1";});
+      assertion = rejects (extend {yomi.expose.at.unrestricted.port = 8080;}) && rejects (extend {yomi.expose.private.unrestricted.destination = "127.0.0.1";});
     }
     {
       name = "Activation uses a runtime credential file and DNS bypasses the Cloudflare proxy";
@@ -99,13 +134,13 @@
       name = "Store credentials and misleading exit-node restrictions are rejected";
       assertion =
         rejects (extend {
-          yomi.pangolin = {
+          yomi.expose = {
             enable = true;
             environmentFile = "/nix/store/secret.env";
           };
         })
         && rejects (extend {
-          yomi.pangolin.private.exit = {
+          yomi.expose.private.exit = {
             mode = "exit-node";
             tcpPorts = [443];
             users = ["owner@example.com"];
@@ -116,19 +151,19 @@
       name = "Duplicate raw listeners and reserved gateway ports are rejected";
       assertion =
         rejects (gateway (extend {
-          yomi.pangolin.tcp = {
+          yomi.expose.tcp = {
             a.port = 25565;
             b.port = 25565;
           };
         }))
-        && rejects (gateway (extend {yomi.pangolin.udp.reserved.port = 51820;}))
-        && rejects (gateway (extend {yomi.pangolin.tcp.reserved.port = 3005;}));
+        && rejects (gateway (extend {yomi.expose.udp.reserved.port = 51820;}))
+        && rejects (gateway (extend {yomi.expose.tcp.reserved.port = 3005;}));
     }
     {
       name = "Duplicate web domains and missing runtime credentials are rejected";
       assertion =
         rejects (extend {
-          yomi.pangolin.at = {
+          yomi.expose.at = {
             a = {
               port = 8080;
               sso = false;
@@ -141,7 +176,7 @@
             };
           };
         })
-        && rejects (extend {yomi.pangolin.enable = true;});
+        && rejects (extend {yomi.expose.enable = true;});
     }
   ];
   failures = map (check: check.name) (lib.filter (check: !check.assertion) checks);
