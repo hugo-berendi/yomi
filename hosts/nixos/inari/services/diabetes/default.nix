@@ -27,8 +27,7 @@
     '';
   };
   credentials =
-    ["home-assistant-token:${config.sops.secrets.n8n_home_assistant_api_token.path}"]
-    ++ lib.optional cfg.weeklyEmailEnable "weekly-smtp-password:${config.sops.secrets.no_reply_smtp_password.path}"
+    lib.optional cfg.weeklyEmailEnable "weekly-smtp-password:${config.sops.secrets.no_reply_smtp_password.path}"
     ++ lib.optional (cfg.weeklyEmailEnable && cfg.weeklyMailCredentialFile != null) "weekly-mail:${cfg.weeklyMailCredentialFile}"
     ++ lib.optional (cfg.dexcomCredentialFile != null) "dexcom:${cfg.dexcomCredentialFile}";
   environment = {
@@ -36,7 +35,6 @@
     HOME = "/var/lib/diabetes";
     WEEKLY_EMAIL_ENABLED = lib.boolToString cfg.weeklyEmailEnable;
     MPLCONFIGDIR = "/var/lib/diabetes/matplotlib";
-    HOME_ASSISTANT_URL = "http://127.0.0.1:${toString config.yomi.ports.home-assistant}";
     # The running classifier serves Qwen3.5-9B through llama.cpp.
     AI_URL = "http://127.0.0.1:${toString config.yomi.ports.llama-cpp-classifier}/v1/chat/completions";
     PUBLIC_URL = config.yomi.nginx.at.diabetes.url;
@@ -44,7 +42,7 @@
 in {
   # {{{ Options
   options.yomi.diabetes = {
-    enable = lib.mkEnableOption "private diabetes reports and reminders";
+    enable = lib.mkEnableOption "private diabetes reports";
     weeklyEmailEnable = lib.mkEnableOption "weekly email submission through the private n8n endpoint";
     weeklyMailCredentialFile = lib.mkOption {
       type = lib.types.nullOr lib.types.str;
@@ -74,9 +72,6 @@ in {
         isSystemUser = true;
         group = "diabetes";
       };
-      # Retiring the site must not remove any device integrations already
-      # configured in Home Assistant.
-      services.home-assistant.extraComponents = ["dexcom" "mobile_app"];
       # {{{ Persistence and backups
       yomi.persistence.at.state.apps.diabetes.directories = [
         {
@@ -150,11 +145,11 @@ in {
           MemoryMax = "2G";
         };
       };
-      # Background work runs independently of n8n so reminders also survive an
-      # n8n credential/import outage. The optional workflow calls the same job
-      # under its process lock; both routes converge on the same notification IDs.
+      # Background work runs independently of n8n so reports and the weekly mail
+      # also survive an n8n credential/import outage. The optional workflow calls
+      # the same job under its process lock.
       systemd.services.diabetes-jobs = {
-        description = "Update diabetes reports and due reminders";
+        description = "Update diabetes reports";
         requires = ["diabetes.service"];
         after = ["diabetes.service"];
         environment =

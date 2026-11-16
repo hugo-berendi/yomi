@@ -51,11 +51,6 @@ DEFAULTS = {
     "low": 70,
     "high": 180,
     "display_unit": "mg/dL",
-    "notify_service": "",
-    "high_notifications": False,
-    "high_minutes": 30,
-    "light_entity": "",
-    "night_light": False,
     "ai_enabled": True,
 }
 QUESTIONS = {
@@ -124,7 +119,6 @@ def init_db(root):
         INSERT OR IGNORE INTO supplies VALUES ('Sensor', 0, 240, 14, NULL, '');
         CREATE TABLE IF NOT EXISTS notes (id TEXT PRIMARY KEY, ts INTEGER, text TEXT);
         CREATE TABLE IF NOT EXISTS appointments (id TEXT PRIMARY KEY, ts INTEGER, title TEXT);
-        CREATE TABLE IF NOT EXISTS sent (key TEXT PRIMARY KEY, ts INTEGER);
         CREATE TABLE IF NOT EXISTS state (key TEXT PRIMARY KEY, value TEXT);
         """)
         init_quarantine(db)
@@ -280,14 +274,11 @@ def build_report(db, now=None):
     return report
 
 
-def http_json(url, payload=None, token=None, timeout=15):
-    headers = {"Content-Type": "application/json"}
-    if token:
-        headers["Authorization"] = f"Bearer {token}"
+def http_json(url, payload=None, timeout=15):
     req = Request(
         url,
         data=json.dumps(payload).encode() if payload is not None else None,
-        headers=headers,
+        headers={"Content-Type": "application/json"},
     )
     with urlopen(req, timeout=timeout) as response:
         return json.loads(response.read(1024 * 1024))
@@ -422,40 +413,6 @@ def create_app(root=None, config=None):
     app.config["ROOT"] = root
     dexcom = DexcomReader(os.environ.get("DEXCOM_CREDENTIAL_FILE"))
     app.extensions["dexcom"] = dexcom
-    ha_url = os.environ.get("HOME_ASSISTANT_URL", "http://127.0.0.1:8123")
-    credential_dir = Path(
-        os.environ.get("CREDENTIALS_DIRECTORY", "/run/credentials/diabetes.service")
-    )
-
-    def ha_call(path, payload):
-        token = (credential_dir / "home-assistant-token").read_text().strip()
-        return http_json(ha_url + path, payload, token)
-
-    def notify(cfg, key, message):
-        if not cfg["notify_service"]:
-            return False
-        with database(root) as db:
-            if db.execute("SELECT 1 FROM sent WHERE key=?", (key,)).fetchone():
-                return True
-        # No health values on the lock screen. The stable tag replaces a
-        # duplicate if a process dies after sending but before committing.
-        ha_call(
-            "/api/services/notify/" + cfg["notify_service"],
-            {
-                "title": "Yomi",
-                "message": message,
-                "data": {
-                    "tag": key,
-                    "url": os.environ.get("PUBLIC_URL", "/"),
-                    "clickAction": os.environ.get("PUBLIC_URL", "/"),
-                },
-            },
-        )
-        with database(root) as db:
-            db.execute(
-                "INSERT OR REPLACE INTO sent VALUES (?,?)", (key, int(time.time()))
-            )
-        return True
 
     def tick():
         with (root / "jobs.lock").open("w") as lock:
@@ -470,11 +427,6 @@ def create_app(root=None, config=None):
                 ai = db.execute(
                     "SELECT ai FROM reports WHERE week=?", (week,)
                 ).fetchone()[0]
-                supplies = [dict(r) for r in db.execute("SELECT * FROM supplies")]
-                appointments = [
-                    dict(r) for r in db.execute("SELECT * FROM appointments")
-                ]
-                meal = get_state(db, "meal")
                 ai_attempt = get_state(db, "ai_attempt", 0)
             errors = []
             if (
@@ -503,117 +455,6 @@ def create_app(root=None, config=None):
                         "Local AI unavailable or invalid; calculated report remains available"
                     )
             now = int(time.time())
-            messages = (
-                [
-                    (
-                        f"week:{week}:ready"
-                        if report["comparable"]
-                        else f"week:{week}:upload",
-                        "Your weekly review is ready."
-                        if report["comparable"]
-                        else (
-                            "Your weekly review has missing data. Check Glooko sync in your journal."
-                            if (root / "glooko-credentials.json").exists()
-                            else "Connect Glooko in your journal to update your weekly review automatically."
-                        ),
-                    )
-                ]
-                if now >= report["weeks"][0]["end"] + 8 * 3600
-                else []
-            )
-            for supply in supplies:
-                if supply["changed"] is None:
-                    continue
-                if now >= supply["changed"] + supply["hours"] * 3600 - 12 * 3600:
-                    messages.append(
-                        (
-                            f"change:{supply['kind']}:{supply['changed']}",
-                            "A replacement reminder is due. Open your journal.",
-                        )
-                    )
-                if supply["stock"] * supply["hours"] / 24 <= supply["lead_days"]:
-                    messages.append(
-                        (
-                            f"stock:{supply['kind']}",
-                            "Review your supplies and delivery lead time.",
-                        )
-                    )
-            for appointment in appointments:
-                if 0 <= appointment["ts"] - now <= 7 * 86400:
-                    messages.append(
-                        (
-                            "appointment:" + appointment["id"],
-                            "Prepare your appointment notes and weekly reports.",
-                        )
-                    )
-            if (
-                meal
-                and not meal["done"]
-                and meal["due"] <= now
-                and meal["expires"] > now
-            ):
-                messages.append(
-                    (
-                        f"meal:{meal['id']}:{meal['due']}",
-                        "Meal check: review your plan and pump history.",
-                    )
-                )
-            for key, message in messages:
-                try:
-                    notify(cfg, key, message)
-                except Exception:
-                    errors.append("Notification delivery failed; it will be retried")
-            reading = (
-                dexcom.read()
-                if cfg["high_notifications"] or cfg["night_light"]
-                else {"available": False}
-            )
-            with database(root) as db:
-                high = get_state(db, "high")
-                if (
-                    not reading["available"]
-                    or reading.get("age_seconds", 601) > 360
-                    or reading["value"] <= cfg["high"]
-                ):
-                    high = None
-                elif high is None or reading["timestamp"] - high["seen"] > 360:
-                    high = {"start": reading["timestamp"], "seen": reading["timestamp"]}
-                else:
-                    high["seen"] = reading["timestamp"]
-                put_state(db, "high", high)
-            if (
-                cfg["high_notifications"]
-                and high
-                and high["seen"] - high["start"] >= cfg["high_minutes"] * 60
-            ):
-                try:
-                    notify(
-                        cfg,
-                        f"high:{high['start']}",
-                        "Check your current glucose and your agreed care plan.",
-                    )
-                except Exception:
-                    errors.append("Glucose reminder delivery failed")
-            hour = datetime.now(BERLIN).hour
-            if (
-                cfg["night_light"]
-                and cfg["light_entity"]
-                and reading["available"]
-                and reading["value"] < cfg["low"]
-                and (hour >= 22 or hour < 6)
-            ):
-                with database(root) as db:
-                    last_light = get_state(db, "last_light", 0)
-                if now - last_light >= 3600:
-                    try:
-                        ha_call(
-                            "/api/services/light/turn_on",
-                            {"entity_id": cfg["light_entity"], "brightness_pct": 15},
-                        )
-                        with database(root) as db:
-                            put_state(db, "last_light", now)
-                    except Exception:
-                        errors.append("Optional light unavailable")
             if os.environ.get("WEEKLY_EMAIL_ENABLED") == "true":
                 from weekly import run_weekly
 
@@ -720,7 +561,6 @@ def create_app(root=None, config=None):
                 jobs=get_state(db, "jobs"),
                 glooko=get_state(db, "glooko", {}),
                 glooko_connected=(root / "glooko-credentials.json").exists(),
-                meal=get_state(db, "meal"),
                 action_id=str(uuid.uuid4()),
                 packet=request.path == "/appointment",
             )
@@ -776,17 +616,6 @@ def create_app(root=None, config=None):
         low, high = number(request.form["low"]), number(request.form["high"])
         if not 20 <= low < high <= 500:
             raise ValueError("Check the analysis range, in mg/dL")
-        service, light = (
-            request.form.get("notify_service", ""),
-            request.form.get("light_entity", ""),
-        )
-        if service and not re.fullmatch(r"mobile_app_[a-z0-9_]+", service):
-            raise ValueError("Choose one mobile_app notification service")
-        if light and not re.fullmatch(r"light\.[a-z0-9_]+", light):
-            raise ValueError("Choose a light entity")
-        minutes = int(request.form.get("high_minutes", 30))
-        if not 15 <= minutes <= 240:
-            raise ValueError("Reminder persistence must be between 15 and 240 minutes")
         unit = request.form.get("display_unit", "mg/dL")
         if unit not in {"mg/dL", "mmol/L"}:
             raise ValueError("Unsupported display unit")
@@ -794,13 +623,7 @@ def create_app(root=None, config=None):
             "low": low,
             "high": high,
             "display_unit": unit,
-            "notify_service": service,
-            "light_entity": light,
-            "high_minutes": minutes,
-            **{
-                k: request.form.get(k) == "on"
-                for k in ("high_notifications", "night_light", "ai_enabled")
-            },
+            "ai_enabled": request.form.get("ai_enabled") == "on",
         }
         with database(root) as db:
             for key, value in cfg.items():
@@ -808,7 +631,6 @@ def create_app(root=None, config=None):
                     "INSERT OR REPLACE INTO settings VALUES (?,?)",
                     (key, json.dumps(value)),
                 )
-            put_state(db, "high", None)
             build_report(db)
         return redirect("/")
 
@@ -859,8 +681,6 @@ def create_app(root=None, config=None):
                     )
                 else:
                     raise ValueError("Unknown supply action")
-                if operation == "configure" and stock > old["stock"]:
-                    db.execute("DELETE FROM sent WHERE key=?", (f"stock:{item}",))
             elif kind == "note":
                 text = request.form.get("text", "").strip()
                 if not text or len(text) > 2000:
@@ -877,24 +697,6 @@ def create_app(root=None, config=None):
             elif kind in {"delete_note", "delete_appointment"}:
                 table = "notes" if kind == "delete_note" else "appointments"
                 db.execute(f"DELETE FROM {table} WHERE id=?", (request.form["id"],))
-            elif kind == "meal":
-                operation = request.form.get("operation")
-                meal = get_state(db, "meal")
-                if operation == "start":
-                    meal = {
-                        "id": key,
-                        "due": now,
-                        "expires": now + 2 * 3600,
-                        "done": False,
-                    }
-                elif meal and operation in {"done", "snooze"}:
-                    if operation == "done":
-                        meal["done"] = True
-                    else:
-                        meal["due"] = now + 5 * 60
-                else:
-                    raise ValueError("Start a meal check first")
-                put_state(db, "meal", meal)
             else:
                 raise ValueError("Unknown action")
         return redirect("/")
