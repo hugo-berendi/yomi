@@ -47,7 +47,6 @@
       ./services/audiobookshelf.nix
       ./services/gatus.nix
       ./services/scrutiny.nix
-      ./services/miniflux.nix
       ./services/healthchecks.nix
       ./services/pocket-id.nix
       ./services/remote-access.nix

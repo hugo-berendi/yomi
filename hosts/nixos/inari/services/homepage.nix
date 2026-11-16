@@ -169,13 +169,6 @@ in {
               description = "Bookmark manager";
             };
           }
-          {
-            Miniflux = {
-              icon = "miniflux.svg";
-              href = config.yomi.cloudflared.at.miniflux.url;
-              description = "Minimal RSS reader";
-            };
-          }
         ];
       }
       {
