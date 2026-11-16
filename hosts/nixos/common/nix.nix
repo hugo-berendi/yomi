@@ -10,10 +10,12 @@
     package = pkgs.lix;
     # }}}
     # {{{ Garbage collection
-    gc = {
-      automatic = true;
-      dates = "weekly";
-    };
+    # nh clean replaces nix.gc (the nh module warns when both run). Plain
+    # `nix-collect-garbage` without options only frees unreachable paths: every
+    # old system and home-manager generation stayed a GC root forever, so the
+    # store only ever grew. nh drops generations older than a week while always
+    # keeping the newest five, then collects.
+    gc.automatic = false;
     # }}}
     # {{{ Optimization
     optimise.automatic = true;
@@ -44,4 +46,18 @@
     };
     # }}}
   };
+
+  # {{{ nh
+  # `nh os switch` / `nh home switch` show a nix-output-monitor build view and
+  # an nvd diff of what changed; the just recipes keep working as before.
+  programs.nh = {
+    enable = true;
+    flake = "/home/${config.yomi.pilot.name}/projects/yomi";
+    clean = {
+      enable = true;
+      dates = "weekly";
+      extraArgs = "--keep-since 7d --keep 5";
+    };
+  };
+  # }}}
 }
