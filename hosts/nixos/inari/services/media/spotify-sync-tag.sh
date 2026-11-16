@@ -119,7 +119,7 @@ drop_stale_ids() {
 		cat "$queue" >>"$work" && rm -f "$queue"
 	fi
 } 9>"$lock"
-[[ -s $work ]] || exit 0
+touch "$work"
 
 # fd 3: beets must not read the work list from stdin.
 # shellcheck disable=SC2094 # sed -i writes a new file; fd 3 keeps the old one
@@ -140,3 +140,16 @@ while IFS=$'\t' read -r -u 3 kind uri path attempts; do
 	sed -i 1d "$work"
 done 3<"$work"
 rm -f "$work"
+
+# {{{ Playlists
+# Songs sockseek listed as failed may be in the library after all; see
+# spotify-sync-resolve.py. Every run, since a sync may have rewritten a
+# playlist with nothing new to tag. The lock keeps spotify-sync from
+# replacing a playlist meanwhile.
+shopt -s nullglob
+playlists=("$playlist_dir"/*.m3u)
+if ((${#playlists[@]})); then
+	flock "$STATE_DIR/playlists.lock" \
+		spotify-sync-resolve "$BEETSDIR/library.db" "${playlists[@]}"
+fi
+# }}}

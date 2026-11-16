@@ -93,8 +93,9 @@ sync() {
 	fi
 	# A source with nothing to do may end before writing a playlist at all;
 	# the old file then stays.
+	# The lock: spotify-sync-tag may be filling in the old one right now.
 	if [[ -n $part && -e $part ]]; then
-		mv -f -- "$part" "$playlist_dir/$4.m3u"
+		flock "$STATE_DIR/playlists.lock" mv -f -- "$part" "$playlist_dir/$4.m3u"
 	fi
 	printf '%s\n' "$3" >"$stamp"
 }

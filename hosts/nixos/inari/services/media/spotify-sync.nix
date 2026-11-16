@@ -28,13 +28,18 @@
   # albums, own playlists), so adding music never means editing this file.
   sync = pkgs.writeShellApplication {
     name = "spotify-sync";
-    runtimeInputs = [pkgs.sockseek pkgs.curl pkgs.jq pkgs.coreutils pkgs.findutils pkgs.gnugrep];
+    runtimeInputs = [pkgs.sockseek pkgs.curl pkgs.jq pkgs.coreutils pkgs.findutils pkgs.gnugrep pkgs.util-linux];
     text = builtins.readFile ./spotify-sync.sh;
   };
 
+  # Puts library songs into the playlists where sockseek wrote #FAIL.
+  resolve = pkgs.writers.writePython3Bin "spotify-sync-resolve" {
+    flakeIgnore = ["E501"];
+  } (builtins.readFile ./spotify-sync-resolve.py);
+
   tag = pkgs.writeShellApplication {
     name = "spotify-sync-tag";
-    runtimeInputs = [pkgs.beets pkgs.coreutils pkgs.findutils pkgs.gnugrep pkgs.gnused pkgs.util-linux];
+    runtimeInputs = [pkgs.beets resolve pkgs.coreutils pkgs.findutils pkgs.gnugrep pkgs.gnused pkgs.util-linux];
     text = builtins.readFile ./spotify-sync-tag.sh;
   };
 
