@@ -865,6 +865,26 @@
         "type": "github"
       }
     },
+    "kodama": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1794856877,
+        "narHash": "sha256-UveBhRv5NagGtroRT2MNS5crguLNCdQr1ElxHdpwqms=",
+        "ref": "refs/heads/main",
+        "rev": "08d50925392535586471f90e01f9d54e5c938c9a",
+        "revCount": 3,
+        "type": "git",
+        "url": "https://git.hugo-berendi.de/hugo-berendi/kodama.git"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://git.hugo-berendi.de/hugo-berendi/kodama.git"
+      }
+    },
     "llm-agents": {
       "inputs": {
         "bun2nix": "bun2nix",
@@ -1388,6 +1408,7 @@
         "hugo-berendi-de": "hugo-berendi-de",
         "hyprland": "hyprland",
         "impermanence": "impermanence",
+        "kodama": "kodama",
         "llm-agents": "llm-agents",
         "mcp-nixos": "mcp-nixos",
         "nix-flatpak": "nix-flatpak",

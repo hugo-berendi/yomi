@@ -8,6 +8,7 @@
     ./qbittorrent.nix
     ./navidrome.nix
     ./spotify-sync.nix
+    ./kodama.nix
     ./jellyseerr.nix
     ./jellyfin.nix
     ./prowlarr.nix
