@@ -1,5 +1,6 @@
 {
   config,
+  lib,
   pkgs,
   upkgs,
   inputs,
@@ -117,6 +118,49 @@ in {
   yomi.persistence.at.state.apps.localsend.directories = [
     "${config.xdg.dataHome}/org.localsend.localsend_app"
   ];
+  # }}}
+  # {{{ Internal microphone
+  # On the Framework 13 AMD the internal microphones only record once the
+  # Family 17h/19h audio controller is switched to its "HiFi (Mic1, Mic2,
+  # Speaker)" profile; the profile WirePlumber picks by itself leaves them
+  # silent. Omarchy applies the same fix at login (fix-f13-amd-audio-input.sh).
+  # The unit only sets the profile when that card and profile exist, so it
+  # is harmless on a dock or after a firmware change renames them.
+  systemd.user.services.framework-mic-profile = {
+    Unit = {
+      Description = "Select the Framework 13 AMD HiFi profile with internal microphones";
+      After = ["wireplumber.service"];
+      Wants = ["wireplumber.service"];
+    };
+    Service = {
+      Type = "oneshot";
+      ExecStart = lib.getExe (pkgs.writeShellApplication {
+        name = "framework-mic-profile";
+        runtimeInputs = [pkgs.pulseaudio pkgs.gnugrep pkgs.gawk pkgs.coreutils];
+        text = ''
+          profile="HiFi (Mic1, Mic2, Speaker)"
+          # PipeWire takes a moment after wireplumber starts to list cards.
+          for _ in $(seq 10); do
+            card=$(pactl list cards 2>/dev/null \
+              | grep -B20 "Family 17h/19h" | awk '/Name: /{print $2}' | head -n1 || true)
+            [ -n "$card" ] && break
+            sleep 1
+          done
+          if [ -z "$card" ]; then
+            echo "no Family 17h/19h card; nothing to do"
+            exit 0
+          fi
+          if pactl list cards | grep -qF "$profile:"; then
+            pactl set-card-profile "$card" "$profile"
+            echo "set $card to $profile"
+          else
+            echo "$card has no profile '$profile'; leaving it alone"
+          fi
+        '';
+      });
+    };
+    Install.WantedBy = ["graphical-session.target"];
+  };
   # }}}
 
   yomi = {
