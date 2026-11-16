@@ -127,7 +127,6 @@ print("Application state staging regression passed")
 # the privileged ZFS commands are replaced; no production path is read.
 configured = json.loads(Path(production_manifest).read_text())
 assert set(configured) >= {
-    "vaultwarden",
     "forgejo",
     "n8n",
     "home-assistant",

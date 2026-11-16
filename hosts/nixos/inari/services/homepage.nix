@@ -89,13 +89,6 @@ in {
             };
           }
           {
-            Vaultwarden = {
-              icon = "bitwarden.svg";
-              href = "https://warden.hugo-berendi.de";
-              description = "Password manager";
-            };
-          }
-          {
             SearXNG = {
               icon = "searxng.svg";
               href = "https://search.hugo-berendi.de";

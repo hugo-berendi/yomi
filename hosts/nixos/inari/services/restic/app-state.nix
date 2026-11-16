@@ -11,7 +11,6 @@
   raidSnapshot = "${snapshotMounts}/raid";
   state = path: {source = "${stateSnapshot}/${path}";};
   applications = {
-    vaultwarden = (state "var/lib/bitwarden_rs") // {sqlite = ["db.sqlite3"];};
     forgejo =
       (state "var/lib/forgejo")
       // {

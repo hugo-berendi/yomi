@@ -36,7 +36,6 @@
       ./services/calsync.nix
       ./services/restic
       ./services/valheim.nix
-      ./services/vaultwarden.nix
       ./services/immich.nix
       ./services/searxng
       ./services/zfs.nix
