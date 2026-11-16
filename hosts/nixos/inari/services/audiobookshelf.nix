@@ -4,6 +4,9 @@
   ...
 }: let
   port = config.yomi.ports.audiobookshelf;
+  # Episodes of the subscribed podcasts. Not backed up: every one of them can
+  # be downloaded again from its feed.
+  podcastDir = "/raid5pool/media/podcasts";
 in {
   # {{{ Reverse proxy
   yomi.cloudflared.at.audiobookshelf = {
@@ -27,6 +30,11 @@ in {
       group = config.users.users.audiobookshelf.group;
     }
   ];
+  systemd.tmpfiles.settings.audiobookshelf.${podcastDir}.d = {
+    mode = "0755";
+    inherit (config.users.users.audiobookshelf) group;
+    user = config.users.users.audiobookshelf.name;
+  };
   # }}}
   # {{{ Hardening
   systemd.services.audiobookshelf.serviceConfig = lib.mkMerge [
@@ -46,7 +54,8 @@ in {
       RestrictSUIDSGID = true;
       SystemCallArchitectures = "native";
     }
-    {ReadWritePaths = ["/var/lib/audiobookshelf"];}
+    # The podcast library is the only place outside its state it writes to.
+    {ReadWritePaths = ["/var/lib/audiobookshelf" podcastDir];}
   ];
   # }}}
 }
