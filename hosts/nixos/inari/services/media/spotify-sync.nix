@@ -37,9 +37,15 @@
     flakeIgnore = ["E501"];
   } (builtins.readFile ./spotify-sync-resolve.py);
 
+  # Lists the album folders that ended up without a cover.
+  covers = pkgs.writers.writePython3Bin "spotify-sync-covers" {
+    libraries = [pkgs.python3Packages.mutagen];
+    flakeIgnore = ["E501"];
+  } (builtins.readFile ./spotify-sync-covers.py);
+
   tag = pkgs.writeShellApplication {
     name = "spotify-sync-tag";
-    runtimeInputs = [pkgs.beets resolve pkgs.coreutils pkgs.findutils pkgs.gnugrep pkgs.gnused pkgs.util-linux];
+    runtimeInputs = [pkgs.beets resolve covers pkgs.coreutils pkgs.findutils pkgs.gnugrep pkgs.gnused pkgs.util-linux];
     text = builtins.readFile ./spotify-sync-tag.sh;
   };
 

@@ -15,13 +15,17 @@
 set -euo pipefail
 
 queue=$STATE_DIR/beets-queue
+# Entries beets failed on max_attempts times, in the queue's format without
+# the attempts: appending them to the queue tries them again.
+failed=$STATE_DIR/beets-failed
 work=$STATE_DIR/beets-queue.work
 lock=$STATE_DIR/beets-queue.lock
 playlist_dir=$MUSIC_DIR/playlists
 mkdir -p "$BEETSDIR"
 
-# MusicBrainz answers 503 when busy; such an entry is retried on the next
-# runs instead of being dropped as "kept as is".
+# An entry beets failed on is retried on the next runs, and then listed in
+# $failed: MusicBrainz answers 503 when busy, and a file dropped from the
+# queue keeps its old tags, often without a cover, while the unit succeeds.
 max_attempts=3
 
 beet() { command beet -c "$BEETS_CONFIG" "$@"; }
@@ -55,7 +59,8 @@ fi
 # }}}
 
 # tag CONFIG TIME-LIMIT ATTEMPTS IMPORT-ARGS... PATH
-# Returns 1 when a source failed, so the caller can queue the entry again.
+# Returns 1 when beets or a source failed, so the caller can queue the entry
+# again, and 2 when that was the last attempt.
 # Sets timed_out when the import ran over its time.
 tag() {
 	local cfg=$1 limit=$2 attempts=$3 path=${*: -1} out status=0 retry=0
@@ -68,15 +73,19 @@ tag() {
 		echo "beets took longer than $limit on $path" >&2
 		timed_out=1
 		retry=1
-	elif grep -q 'Error searching\|Max retries exceeded' <<<"$out"; then
+	elif ((status != 0)) || grep -q 'Error searching\|Max retries exceeded' <<<"$out"; then
+		# beets exits 0 when a source failed but the import went on.
 		retry=1
 	fi
 	# Lyrics and genres found for a file kept as-is stay in beets' database
 	# unless written out explicitly. Its output would list every changed
 	# field, whole lyrics included.
-	beet write "path:$path" >/dev/null || echo "could not write tags of $path" >&2
-	if ((retry && attempts < max_attempts)); then
-		return 1
+	if ! beet write "path:$path" >/dev/null; then
+		echo "could not write tags of $path" >&2
+		retry=1
+	fi
+	if ((retry)); then
+		return $((attempts < max_attempts ? 1 : 2))
 	fi
 }
 
@@ -86,7 +95,7 @@ tag_track() {
 	local attempts=$1 id=$2 path=$3 status=0
 	if ((spotify_ok)); then
 		tag "$BEETS_SPOTIFY_CONFIG" "$spotify_timeout" "$attempts" \
-			-s --search-id "$id" "$path" || status=1
+			-s --search-id "$id" "$path" || status=$?
 		if ((!timed_out)); then
 			if ((status == 0)); then
 				drop_stale_ids "$path"
@@ -128,12 +137,19 @@ while IFS=$'\t' read -r -u 3 kind uri path attempts; do
 	# Files inside an album download have no URI of their own; the album
 	# entry tags them together.
 	if [[ -e $path && ($kind != track || $uri == spotify:track:*) ]]; then
+		status=0
 		case $kind in
 		album) tag "$BEETS_CONFIG" "$import_timeout" "$attempts" "$path" ;;
 		single) tag "$BEETS_CONFIG" "$import_timeout" "$attempts" -s "$path" ;;
 		track) tag_track "$attempts" "${uri##*:}" "$path" ;;
-		esac || printf '%s\t%s\t%s\t%s\n' "$kind" "$uri" "$path" "$attempts" |
-			flock "$lock" tee -a "$queue" >/dev/null
+		esac || status=$?
+		if ((status == 1)); then
+			printf '%s\t%s\t%s\t%s\n' "$kind" "$uri" "$path" "$attempts" |
+				flock "$lock" tee -a "$queue" >/dev/null
+		elif ((status != 0)); then
+			echo "giving up on $path after $attempts attempts; listed in $failed" >&2
+			printf '%s\t%s\t%s\n' "$kind" "$uri" "$path" >>"$failed"
+		fi
 	fi
 	# Done with this entry: a stopped run resumes after it, not from the top.
 	# fd 3 still reads the old file, which sed replaces rather than edits.
@@ -152,4 +168,11 @@ if ((${#playlists[@]})); then
 	flock "$STATE_DIR/playlists.lock" \
 		spotify-sync-resolve "$BEETSDIR/library.db" "${playlists[@]}"
 fi
+# }}}
+
+# {{{ Report
+if [[ -s $failed ]]; then
+	echo "$(wc -l <"$failed") entries beets gave up on are listed in $failed" >&2
+fi
+spotify-sync-covers "$MUSIC_DIR" "$STATE_DIR/missing-covers"
 # }}}
