@@ -26,9 +26,14 @@
 
   # What gets synced follows the Spotify library itself (liked songs, saved
   # albums, own playlists), so adding music never means editing this file.
+  # New releases of the library's artists, from Deezer.
+  radar = pkgs.writers.writePython3Bin "spotify-sync-radar" {
+    flakeIgnore = ["E501"];
+  } (builtins.readFile ./spotify-sync-radar.py);
+
   sync = pkgs.writeShellApplication {
     name = "spotify-sync";
-    runtimeInputs = [pkgs.sockseek pkgs.curl pkgs.jq pkgs.coreutils pkgs.findutils pkgs.gnugrep pkgs.util-linux];
+    runtimeInputs = [pkgs.sockseek radar pkgs.curl pkgs.jq pkgs.coreutils pkgs.findutils pkgs.gnugrep pkgs.util-linux];
     text = builtins.readFile ./spotify-sync.sh;
   };
 

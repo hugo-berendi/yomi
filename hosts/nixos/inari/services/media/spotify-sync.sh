@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Mirrors the Spotify library into the music folder over Soulseek: liked songs,
-# saved albums, and every playlist the account owns or collaborates on. Liked
-# songs and playlists also become .m3u files that Navidrome imports.
+# saved albums, and every playlist the account owns or collaborates on, plus a
+# Release Radar of what the library's artists released lately. Liked songs and
+# playlists also become .m3u files that Navidrome imports.
 #
 # Set by spotify-sync.nix: MUSIC_DIR, STATE_DIR, SOCKSEEK_CONFIG,
 # ALBUM_NAME_FORMAT, and the client-id, client-secret and refresh-token
@@ -155,6 +156,24 @@ while IFS=$'\t' read -r id snapshot name; do
 	sync "https://open.spotify.com/playlist/$id" "playlist-$id" "$snapshot $name" "$name"
 	written[$name]=1
 done <<<"$owned"
+
+# {{{ Release Radar
+# New releases of the library's artists, looked up once a day on Deezer by
+# spotify-sync-radar.py and downloaded like a playlist. A failed lookup waits
+# for the next day too, rather than asking Deezer every quarter of an hour.
+radar=$STATE_DIR/release-radar.csv
+radar_stamp=$STATE_DIR/last-release-radar
+if [[ ! -e $radar_stamp || -n $(find "$radar_stamp" -mmin +1440) ]]; then
+	touch "$radar_stamp"
+	spotify-sync-radar "$STATE_DIR/beets/library.db" "$radar" "$STATE_DIR/deezer-artists.json" ||
+		echo "Release Radar: the Deezer lookup failed" >&2
+fi
+# A week without releases keeps the last list.
+if [[ -e $radar && $(wc -l <"$radar") -gt 1 ]]; then
+	sync "$radar" release-radar "$(sha256sum <"$radar")" "Release Radar"
+fi
+[[ ! -e "$playlist_dir/Release Radar.m3u" ]] || written["Release Radar"]=1
+# }}}
 
 # {{{ Cleanup
 # Drop .m3u files of playlists that were deleted or renamed in Spotify. Only
