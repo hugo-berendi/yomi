@@ -15,7 +15,10 @@ not taken for the song. The artist is compared name by name: as a part of
 the whole credit, "Ski Aggu" would also have found "Ski Aggu Musik", and
 "Kid" every song by "Kid Cudi". Lines without a match stay as they are.
 
-Usage: spotify-sync-resolve LIBRARY_DB PLAYLIST...
+beets 2.14 stores a path relative to its music directory, MUSIC_DIR here;
+the playlists name it in full.
+
+Usage: MUSIC_DIR=... spotify-sync-resolve LIBRARY_DB PLAYLIST...
 """
 
 from __future__ import annotations
@@ -66,7 +69,7 @@ def load(db: str) -> Library:
         for title, *credits, path, length in rows:
             if not title or not path:
                 continue
-            path = os.fsdecode(path)
+            path = os.path.join(os.environ["MUSIC_DIR"], os.fsdecode(path))
             artists = names(credits)
             songs.setdefault(norm(title), []).append((artists, path, length or 0.0))
     finally:
