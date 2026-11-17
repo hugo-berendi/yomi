@@ -52,7 +52,8 @@
   ];
   # Navidrome deletes a file's play history with the file, and Spotify's
   # export takes a month to request again: kodama's database is the only
-  # complete copy of the listening history, so it goes off-site too.
-  yomi.restic.offsite.paths = ["/persist/state/var/lib/kodama"];
+  # complete copy of the listening history. It goes off-site from a frozen
+  # ZFS snapshot (restic/app-state.nix), not live: a sync during the backup
+  # would leave the database and its WAL out of step.
   # }}}
 }

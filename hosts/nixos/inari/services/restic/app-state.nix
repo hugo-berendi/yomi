@@ -27,6 +27,14 @@
     karakeep = state "var/lib/karakeep";
     calendar-sync = state "var/lib/vdirsyncer";
     ntfy = state "var/lib/ntfy-sh";
+    # Kodama keeps the only complete copy of the listening history. Its copy
+    # of Navidrome's database is rebuilt by every sync.
+    kodama =
+      (state "var/lib/kodama")
+      // {
+        exclude = ["navidrome.db" "navidrome.db-wal" "navidrome.db-shm" "navidrome.db-journal"];
+        sqlite = ["kodama.db"];
+      };
     ssh = state "etc/ssh";
     paperless = {
       source = "${raidSnapshot}/data/paperless";

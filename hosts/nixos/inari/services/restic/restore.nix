@@ -9,7 +9,7 @@ in {
   # A repository check cannot prove that a SQL dump can actually be imported.
   # Use the production extensions, but a disposable cluster with no TCP listener.
   systemd.services.restic-offsite-restore = {
-    description = "Restore a B2 document, an Immich original, Paperless SQLite and PostgreSQL dump";
+    description = "Restore a B2 document, an Immich original, Paperless and Kodama SQLite and PostgreSQL dump";
     wants = ["network-online.target"];
     after = ["network-online.target" "restic-backups-offsite.service" "restic-backups-offsite-check.service"];
     restartIfChanged = false;
@@ -84,6 +84,10 @@ in {
       test "$(sqlite3 -readonly "$work/paperless.sqlite3" 'PRAGMA integrity_check')" = ok
       count=$(sqlite3 -readonly "$work/paperless.sqlite3" 'SELECT count(*) FROM documents_document')
       test "$count" -gt 0
+      restic --retry-lock=30m dump "$snapshot" /persist/state/var/backup/app-state/kodama/kodama.db > "$work/kodama.db"
+      test "$(sqlite3 -readonly "$work/kodama.db" 'PRAGMA integrity_check')" = ok
+      count=$(sqlite3 -readonly "$work/kodama.db" 'SELECT count(*) FROM plays')
+      test "$count" -gt 0
 
       # The photo library is what the off-site set exists for, and the weekly
       # check only reads a 5% sample of it. Restore one random original:
@@ -113,7 +117,7 @@ in {
       # An empty or truncated-but-valid SQL file must not count as recovery.
       count=$(psql -XAt --dbname=immich -c "SELECT count(*) FROM pg_tables WHERE schemaname = 'public'")
       test "$count" -gt 0
-      echo "Restored one document and one Immich original, validated Paperless SQLite and imported the PostgreSQL dump successfully."
+      echo "Restored one document and one Immich original, validated Paperless and Kodama SQLite and imported the PostgreSQL dump successfully."
     '';
   };
   systemd.timers.restic-offsite-restore = {
