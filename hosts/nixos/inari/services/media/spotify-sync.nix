@@ -61,9 +61,25 @@
   # is tagged House and would be half of "Electronic"; it has its own mix.
   leaveOutOfGenreMixes = ["Kato"];
 
+  # Songs beets tagged wrong, by the Deezer track each one is, retagged once
+  # by spotify-sync-tag.sh (a path, below the music folder, is retagged again
+  # when its ID changes). Found on 2026-11-17: singles from "Bravo Hits"
+  # compilation rips, which kept the compilation's tags and cover, and two
+  # songs without an album.
+  retag = {
+    "Jaschu/Bravo Hits 130/Jaschu - Schnee von morgen.flac" = 3137060671;
+    "Various Artists/Bravo Hits 123/Baby B3ns - Schmetterling.flac" = 2395976995;
+    "Various Artists/Bravo Hits 130/Zsá Zsá & Replay Okay - bad bunnies.mp3" = 3339356611;
+    "Various Artists/BRAVO Hits  2023/Ellice - ANGST>LIEBE.mp3" = 2480904621;
+    "bac - Rosaroter Tee/17. bac - Rosaroter Tee.flac" = 3040569121;
+    "21 Savage - american dream/21 Savage - redrum.flac" = 2614584352;
+    "Carli/PINOCCHIO/Carli - Pinocchio.mp3" = 3792205442;
+  };
+  retagList = pkgs.writeText "spotify-sync-retag" (lib.concatStrings (lib.mapAttrsToList (path: id: "${toString id}\t${path}\n") retag));
+
   tag = pkgs.writeShellApplication {
     name = "spotify-sync-tag";
-    runtimeInputs = [pkgs.beets resolve covers mixes art pkgs.coreutils pkgs.findutils pkgs.gnugrep pkgs.gnused pkgs.util-linux];
+    runtimeInputs = [pkgs.beets resolve covers mixes art pkgs.curl pkgs.jq pkgs.coreutils pkgs.findutils pkgs.gnugrep pkgs.gnused pkgs.util-linux];
     text = builtins.readFile ./spotify-sync-tag.sh;
   };
 
@@ -298,6 +314,7 @@ in {
       description = "Tag new Spotify downloads with beets";
       # Quoted by NixOS, unlike serviceConfig.Environment: names have spaces.
       environment.MIXES_LEAVE_OUT = lib.concatStringsSep ";" leaveOutOfGenreMixes;
+      environment.RETAG_LIST = retagList;
       after = ["spotify-sync.service"];
       restartIfChanged = false;
       serviceConfig =

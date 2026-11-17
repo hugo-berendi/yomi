@@ -4,14 +4,15 @@
 # sockseek's on-complete hook queues every finished download as
 #   kind <TAB> spotify-uri <TAB> path [<TAB> attempts]
 # where kind is "track" (a song, with its Spotify URI), or "album" (a whole
-# album folder). Songs are tagged from exactly the Spotify track they were
+# album folder). "deezer" entries come from RETAG_LIST (see Retag below) and
+# carry a Deezer track ID in place of the URI. Songs are tagged from exactly the Spotify track they were
 # downloaded for; everything else is matched against MusicBrainz and Deezer,
 # closest candidate wins. Without a close enough match a file keeps its own
 # tags. Files are written in place: sockseek's indexes and the .m3u playlists
 # point at their paths.
 #
 # Set by spotify-sync.nix: MUSIC_DIR, STATE_DIR, BEETS_CONFIG,
-# BEETS_SPOTIFY_CONFIG (the same plus Spotify), BEETSDIR.
+# BEETS_SPOTIFY_CONFIG (the same plus Spotify), BEETSDIR, RETAG_LIST.
 set -euo pipefail
 
 queue=$STATE_DIR/beets-queue
@@ -121,6 +122,52 @@ drop_stale_ids() {
 	beet modify -y "path:$1" "${fields[@]}" >/dev/null
 }
 
+# {{{ Retag
+# Songs beets got wrong, each named with the Deezer track it is (RETAG_LIST:
+# Deezer ID <TAB> path below MUSIC_DIR), are queued once each and tagged as
+# exactly that track: singles ripped from a "Bravo Hits" compilation kept
+# its tags and cover, and a file without tags showed as "[Unknown Album]".
+retagged=$STATE_DIR/retagged
+touch "$retagged"
+while IFS=$'\t' read -r id rel; do
+	[[ -n $id ]] || continue
+	if ! grep -qxF "$id	$rel" "$retagged"; then
+		printf 'deezer\t%s\t%s\n' "$id" "$MUSIC_DIR/$rel" |
+			flock "$lock" tee -a "$queue" >/dev/null
+		printf '%s\t%s\n' "$id" "$rel" >>"$retagged"
+	fi
+done <"$RETAG_LIST"
+
+# deezer_fix DEEZER-ID PATH
+# Makes the song that Deezer track, whatever beets made of it: a singleton
+# match changes title and artist but keeps the compilation's album, and a
+# file without tags is imported as it is. The release's cover is embedded,
+# and becomes the folder's cover when the song is alone there: Navidrome
+# prefers a folder's cover.jpg to what is embedded.
+deezer_fix() {
+	local json img dir
+	json=$(curl -fsS "https://api.deezer.com/track/$1") || return 1
+	jq -e '.id' >/dev/null <<<"$json" || return 1
+	local fields
+	mapfile -t fields < <(jq -r '
+		"title=\(.title)", "artist=\(.artist.name)",
+		"album=\(.album.title)", "albumartist=\(.artist.name)",
+		"track=\(.track_position // 0)", "disc=\(.disk_number // 1)",
+		"year=\((.release_date // "0")[0:4])"' <<<"$json")
+	beet modify -y "path:$2" "${fields[@]}" comp=false \
+		mb_albumid= mb_releasegroupid= mb_albumartistid= mb_trackid= >/dev/null || return 1
+	img=$(mktemp -p "$STATE_DIR" --suffix=.jpg)
+	if curl -fsS -o "$img" "$(jq -r '.album.cover_xl // empty' <<<"$json")"; then
+		beet embedart -y -f "$img" "path:$2" >/dev/null || true
+		dir=$(dirname "$2")
+		if [[ $(find "$dir" -maxdepth 1 -type f \( -iname '*.flac' -o -iname '*.mp3' -o -iname '*.m4a' -o -iname '*.opus' -o -iname '*.ogg' \) | wc -l) -eq 1 ]]; then
+			install -m 664 "$img" "$dir/cover.jpg"
+		fi
+	fi
+	rm -f "$img"
+}
+# }}}
+
 # Take over the queue; hooks still running meanwhile start a new one.
 {
 	flock 9
@@ -142,6 +189,10 @@ while IFS=$'\t' read -r -u 3 kind uri path attempts; do
 		album) tag "$BEETS_CONFIG" "$import_timeout" "$attempts" "$path" ;;
 		single) tag "$BEETS_CONFIG" "$import_timeout" "$attempts" -s "$path" ;;
 		track) tag_track "$attempts" "${uri##*:}" "$path" ;;
+		deezer)
+			tag "$BEETS_CONFIG" "$import_timeout" "$attempts" -s --search-id "$uri" "$path" &&
+				deezer_fix "$uri" "$path"
+			;;
 		esac || status=$?
 		if ((status == 1)); then
 			printf '%s\t%s\t%s\t%s\n' "$kind" "$uri" "$path" "$attempts" |
