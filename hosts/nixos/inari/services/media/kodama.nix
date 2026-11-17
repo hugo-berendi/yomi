@@ -35,6 +35,10 @@
         artists = ["*asmr*"];
       };
       audiobookshelf.tokenFile = config.sops.secrets.kodama_audiobookshelf_token.path;
+      # Top songs per year and month, imported by Navidrome beside the
+      # Spotify playlists and mixes; kodama writes there through `media`.
+      # spotify-sync-art draws their covers.
+      playlistDir = "${config.nixarr.mediaDir}/library/music/playlists";
     };
   };
   # An API key of the pilot's Audiobookshelf account; it reads their
