@@ -29,6 +29,15 @@ in {
       # reshuffled every mix on each look, and Symfonium's offline copies
       # with it.
       SmartPlaylistRefreshDelay = "24h";
+      # An album is its album artist, title and version (Deluxe and the
+      # like), whatever MusicBrainz release and date each song carries.
+      # The default puts those first, and songs of one album tagged on their
+      # own (from Spotify, against another release) split it: on 2026-11-17
+      # 14 albums showed twice or more, "All Eyez on Me" four times. Changing
+      # this gave the 65 songs without a MusicBrainz track ID new IDs, and
+      # with them new play counts; Kodama keeps the history. A changed PID
+      # makes Navidrome rescan everything at its next start.
+      PID.Album = "albumartistid,album,albumversion";
       EnableInsightsCollector = false;
     };
   };
