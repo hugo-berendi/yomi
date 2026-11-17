@@ -52,13 +52,18 @@
   mixes = pkgs.writers.writePython3Bin "spotify-sync-mixes" {
     flakeIgnore = ["E501"];
   } (builtins.readFile ./spotify-sync-mixes.py);
+  # Draws their covers, and the Release Radar's.
+  art = pkgs.writers.writePython3Bin "spotify-sync-art" {
+    libraries = [pkgs.python3Packages.pillow pkgs.python3Packages.mutagen];
+    flakeIgnore = ["E501"];
+  } (builtins.replaceStrings ["@fonts@"] ["${pkgs.figtree}/share/fonts/opentype"] (builtins.readFile ./spotify-sync-art.py));
   # Artists the genre mixes leave out. Kato's 80-song Zelda lullaby album
   # is tagged House and would be half of "Electronic"; it has its own mix.
   leaveOutOfGenreMixes = ["Kato"];
 
   tag = pkgs.writeShellApplication {
     name = "spotify-sync-tag";
-    runtimeInputs = [pkgs.beets resolve covers mixes pkgs.coreutils pkgs.findutils pkgs.gnugrep pkgs.gnused pkgs.util-linux];
+    runtimeInputs = [pkgs.beets resolve covers mixes art pkgs.coreutils pkgs.findutils pkgs.gnugrep pkgs.gnused pkgs.util-linux];
     text = builtins.readFile ./spotify-sync-tag.sh;
   };
 

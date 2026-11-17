@@ -24,6 +24,10 @@ genres split at ";", "/" and ",". Navidrome leaves a credit such as "Mr.
 Polska, Ski Aggu, Natte Visstick" whole, so a mix names it as it is, and the
 artists in it count each on their own.
 
+Each playlist's cover is drawn by spotify-sync-art.py, from what is written
+to COVERS_JSON: the style, and the album folders of its biggest artist or
+genre.
+
 A file is only rewritten when its content changes, so Navidrome does not
 reimport it on every run. Files are never removed: Navidrome keeps the
 playlist of a deleted file, so a mix that drops out stays as it was.
@@ -31,7 +35,7 @@ playlist of a deleted file, so a mix that drops out stays as it was.
 beets 2.14 stores a path relative to its music directory, MUSIC_DIR here;
 the playlists name it in full.
 
-Usage: MUSIC_DIR=... spotify-sync-mixes LIBRARY_DB PLAYLIST_DIR
+Usage: MUSIC_DIR=... spotify-sync-mixes LIBRARY_DB PLAYLIST_DIR COVERS_JSON
 """
 
 from __future__ import annotations
@@ -143,7 +147,8 @@ class Library:
         )
         self.genre_songs: collections.Counter[str] = collections.Counter()
         self.credited = collections.Counter()  # (a, b) on one song
-        self.items: list[tuple[list[str], list[str]]] = []  # (artists, genres) per song
+        # (artists, genres, path) per song
+        self.items: list[tuple[list[str], list[str], str]] = []
         con = sqlite3.connect(f"file:{db}?mode=ro", uri=True, timeout=60)
         try:
             rows = con.execute(
@@ -168,9 +173,8 @@ class Library:
                 for g in split_names(tag, GENRE_SPLIT)
             ]
             genres = list(dict.fromkeys(genres))
-            self.artists[os.path.join(os.environ["MUSIC_DIR"], os.fsdecode(path))] = (
-                names
-            )
+            path = os.path.join(os.environ["MUSIC_DIR"], os.fsdecode(path))
+            self.artists[path] = names
             for name in names:
                 self.songs[name] += 1
                 self.genres[name].update(genres)
@@ -179,7 +183,7 @@ class Library:
                     if a != b:
                         self.credited[a, b] += 1
             self.genre_songs.update(genres)
-            self.items.append((names, genres))
+            self.items.append((names, genres, path))
 
 
 def playlists_together(lib: Library, folder: str) -> collections.Counter:
@@ -211,7 +215,15 @@ def cosine(a: collections.Counter, b: collections.Counter) -> float:
     return dot / norm if norm else 0.0
 
 
-def artist_mixes(lib: Library, together: collections.Counter) -> dict[str, dict]:
+def folders(paths: list[str]) -> list[str]:
+    """The album folders with the most of these songs, to take a cover from."""
+    count = collections.Counter(os.path.dirname(p) for p in paths)
+    return [f for f, _ in count.most_common(5)]
+
+
+def artist_mixes(
+    lib: Library, together: collections.Counter, covers: dict[str, dict]
+) -> dict[str, dict]:
     mixes = {}
     made: list[set[str]] = []
     leaders = [
@@ -236,6 +248,11 @@ def artist_mixes(lib: Library, together: collections.Counter) -> dict[str, dict]
         made.append(cast)
         names = sorted(set().union(*(lib.names[a] for a in [artist, *related])))
         comment = f"{artist} und {', '.join(related)}"
+        covers[f"{artist} Mix"] = {
+            "style": "artist",
+            "artist": artist,
+            "folders": folders([p for a, _, p in lib.items if artist in a]),
+        }
         mixes[f"{artist} Mix"] = {
             "comment": comment,
             "any": [{"is": {"artist": name}} for name in names],
@@ -245,7 +262,9 @@ def artist_mixes(lib: Library, together: collections.Counter) -> dict[str, dict]
     return mixes
 
 
-def genre_mixes(lib: Library, leave_out: list[str]) -> dict[str, dict]:
+def genre_mixes(
+    lib: Library, leave_out: list[str], covers: dict[str, dict]
+) -> dict[str, dict]:
     members: dict[str, list[str]] = collections.defaultdict(list)
     for genre in lib.genre_songs:
         k = key(genre)
@@ -254,13 +273,15 @@ def genre_mixes(lib: Library, leave_out: list[str]) -> dict[str, dict]:
                 members[family].append(genre)
                 break
     mixes = {}
+    # Indie and Pop share many albums; each mix shows one of its own.
+    shown: set[str] = set()
     for family, _ in FAMILIES:
         genres = sorted(members[family])
-        songs = [artists for artists, tags in lib.items if set(tags) & set(genres)]
+        songs = [(a, p) for a, tags, p in lib.items if set(tags) & set(genres)]
         if len(songs) < GENRE_MIN_SONGS:
             continue
         left_out = sorted(
-            a for a in leave_out if any(a in artists for artists in songs)
+            a for a in leave_out if any(a in artists for artists, _ in songs)
         )
         comment = "Genres: " + ", ".join(genres)
         rules: list[dict] = [{"any": [{"is": {"genre": g}} for g in genres]}]
@@ -268,6 +289,16 @@ def genre_mixes(lib: Library, leave_out: list[str]) -> dict[str, dict]:
             comment += ". Ohne " + ", ".join(left_out)
             names = sorted(set().union(*(lib.names[a] for a in left_out)))
             rules += [{"isNot": {"artist": name}} for name in names]
+        covers[f"{family} Mix"] = {
+            "style": "genre",
+            "title": family,
+            "folders": [
+                f
+                for f in folders([p for a, p in songs if not set(a) & set(left_out)])
+                if f not in shown
+            ],
+        }
+        shown.update(covers[f"{family} Mix"]["folders"][:1])
         mixes[f"{family} Mix"] = {
             "comment": comment,
             "all": rules,
@@ -275,6 +306,15 @@ def genre_mixes(lib: Library, leave_out: list[str]) -> dict[str, dict]:
             "limit": MIX_LENGTH * 2,
         }
     return mixes
+
+
+def write_covers(path: str, covers: dict[str, dict]) -> None:
+    fd, tmp = tempfile.mkstemp(
+        dir=os.path.dirname(os.path.abspath(path)), prefix=".covers."
+    )
+    with os.fdopen(fd, "w", encoding="utf-8") as f:
+        json.dump(covers, f, ensure_ascii=False, indent=1)
+    os.replace(tmp, path)
 
 
 def write(folder: str, name: str, rules: dict) -> bool:
@@ -298,19 +338,23 @@ def write(folder: str, name: str, rules: dict) -> bool:
 
 
 def main() -> None:
-    db, folder = sys.argv[1:]
+    db, folder, covers_path = sys.argv[1:]
     lib = Library(db)
+    covers = {name: {"style": "list"} for name in FIXED}
     playlists = {
         **FIXED,
         **genre_mixes(
-            lib, split_names(os.environ.get("MIXES_LEAVE_OUT"), re.compile(";"))
+            lib,
+            split_names(os.environ.get("MIXES_LEAVE_OUT"), re.compile(";")),
+            covers,
         ),
-        **artist_mixes(lib, playlists_together(lib, folder)),
+        **artist_mixes(lib, playlists_together(lib, folder), covers),
     }
     playlists["Lange nicht gehört"]["all"][0]["inPlaylist"]["path"] = os.path.join(
         os.path.abspath(folder), LIKED
     )
     changed = [name for name, rules in playlists.items() if write(folder, name, rules)]
+    write_covers(covers_path, covers)
     if changed:
         print(f"{len(changed)} smart playlists written: {', '.join(changed)}")
 

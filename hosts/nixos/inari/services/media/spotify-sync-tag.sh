@@ -171,7 +171,12 @@ fi
 # Mixes per artist and genre, as smart playlists Navidrome fills itself; see
 # spotify-sync-mixes.py. They read the playlists just resolved.
 flock "$STATE_DIR/playlists.lock" \
-	spotify-sync-mixes "$BEETSDIR/library.db" "$playlist_dir"
+	spotify-sync-mixes "$BEETSDIR/library.db" "$playlist_dir" "$STATE_DIR/playlist-covers.json"
+# Their covers, and the Release Radar's; see spotify-sync-art.py. A failed
+# drawing leaves the old covers, and is no reason to fail the run.
+spotify-sync-art "$STATE_DIR/playlist-covers.json" "$playlist_dir" \
+	"$STATE_DIR/deezer-artists.json" "$STATE_DIR/artist-photos" ||
+	echo "drawing the playlist covers failed" >&2
 # }}}
 
 # {{{ Report
