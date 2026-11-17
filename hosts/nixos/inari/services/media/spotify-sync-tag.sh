@@ -168,6 +168,10 @@ if ((${#playlists[@]})); then
 	flock "$STATE_DIR/playlists.lock" \
 		spotify-sync-resolve "$BEETSDIR/library.db" "${playlists[@]}"
 fi
+# Mixes per artist and genre, as smart playlists Navidrome fills itself; see
+# spotify-sync-mixes.py. They read the playlists just resolved.
+flock "$STATE_DIR/playlists.lock" \
+	spotify-sync-mixes "$BEETSDIR/library.db" "$playlist_dir"
 # }}}
 
 # {{{ Report

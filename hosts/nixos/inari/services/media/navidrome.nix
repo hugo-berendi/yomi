@@ -24,6 +24,11 @@ in {
       # the uploader's own .m3u, which would turn up as a playlist each.
       AutoImportPlaylists = true;
       PlaylistsPath = "playlists";
+      # Smart playlists (spotify-sync-mixes.py) are filled again at most
+      # once a day, like Spotify's daily mixes. Navidrome's 5 seconds
+      # reshuffled every mix on each look, and Symfonium's offline copies
+      # with it.
+      SmartPlaylistRefreshDelay = "24h";
       EnableInsightsCollector = false;
     };
   };

@@ -43,9 +43,17 @@
     flakeIgnore = ["E501"];
   } (builtins.readFile ./spotify-sync-covers.py);
 
+  # Writes the smart playlists: a mix per artist and genre, and a few lists.
+  mixes = pkgs.writers.writePython3Bin "spotify-sync-mixes" {
+    flakeIgnore = ["E501"];
+  } (builtins.readFile ./spotify-sync-mixes.py);
+  # Artists the genre mixes leave out. Kato's 80-song Zelda lullaby album
+  # is tagged House and would be half of "Electronic"; it has its own mix.
+  leaveOutOfGenreMixes = ["Kato"];
+
   tag = pkgs.writeShellApplication {
     name = "spotify-sync-tag";
-    runtimeInputs = [pkgs.beets resolve covers pkgs.coreutils pkgs.findutils pkgs.gnugrep pkgs.gnused pkgs.util-linux];
+    runtimeInputs = [pkgs.beets resolve covers mixes pkgs.coreutils pkgs.findutils pkgs.gnugrep pkgs.gnused pkgs.util-linux];
     text = builtins.readFile ./spotify-sync-tag.sh;
   };
 
@@ -268,6 +276,8 @@ in {
     # exhausts. After= on a oneshot waits until the sync has finished.
     systemd.services.spotify-sync-tag = {
       description = "Tag new Spotify downloads with beets";
+      # Quoted by NixOS, unlike serviceConfig.Environment: names have spaces.
+      environment.MIXES_LEAVE_OUT = lib.concatStringsSep ";" leaveOutOfGenreMixes;
       after = ["spotify-sync.service"];
       restartIfChanged = false;
       serviceConfig =
