@@ -168,9 +168,13 @@ if [[ ! -e $radar_stamp || -n $(find "$radar_stamp" -mmin +1440) ]]; then
 	spotify-sync-radar "$STATE_DIR/beets/library.db" "$radar" "$STATE_DIR/deezer-artists.json" ||
 		echo "Release Radar: the Deezer lookup failed" >&2
 fi
-# A week without releases keeps the last list.
+# A week without releases keeps the last list. Title and artist must stand in
+# the file's path as whole words: on 2026-11-17 the loose match took a GTA
+# Vice City radio ad, "Commercial Yuppie & the Alien" from the Grand Theft
+# Auto soundtrack, for "Yu - Auto". A playlist's songs have more to go on.
 if [[ -e $radar && $(wc -l <"$radar") -gt 1 ]]; then
-	sync "$radar" release-radar "$(sha256sum <"$radar")" "Release Radar"
+	sync "$radar" release-radar "$(sha256sum <"$radar")" "Release Radar" \
+		--strict-title --strict-artist
 fi
 [[ ! -e "$playlist_dir/Release Radar.m3u" ]] || written["Release Radar"]=1
 # }}}
