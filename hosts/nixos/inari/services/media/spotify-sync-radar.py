@@ -1,10 +1,17 @@
 """List the new releases of the library's artists, for a Release Radar.
 
 Takes the TOP_ARTISTS artists with the most songs in beets' library, looks
-each up on Deezer's public API, and lists what they released in the last
-WINDOW_DAYS days: every song of a single or EP, and the PER_ALBUM most
-played songs of an album, newest release first, at most LIMIT songs. The
-list is a CSV sockseek downloads like a playlist.
+each up on Deezer's public API, and lists what they released in the week up
+to today, Saturday to Friday as Spotify's does: every song of a single or
+EP, and the PER_ALBUM most played songs of an album, newest release first,
+at most LIMIT songs. The list is a CSV sockseek downloads like a playlist.
+
+A release date alone does not make a song new. Deezer lists "Berq -
+Complete", out 2026-11-06, as an album, not a compilation, and most of it
+dates from 2023. So a song also needs an ISRC from this year (or last
+year's, early in the year): the code is assigned once, when a recording is
+first released, and keeps its year on every reissue. A song already in the
+library is left out as well.
 
 Deezer, not Spotify: Spotify's API gives development apps no new releases
 since February 2026, and every request counts against the limit sockseek
@@ -35,7 +42,9 @@ import urllib.request
 
 TOP_ARTISTS = 40
 MIN_SONGS = 3
-WINDOW_DAYS = 14
+WINDOW_DAYS = 7
+# How early in a year a song may still carry last year's ISRC.
+ISRC_GRACE_DAYS = 90
 PER_ALBUM = 3
 LIMIT = 50
 API = "https://api.deezer.com"
@@ -54,10 +63,15 @@ def split_names(text: str | None, pattern: re.Pattern) -> list[str]:
     return [n.strip() for n in pattern.split(text or "") if n.strip()]
 
 
-def library(db: str) -> tuple[collections.Counter, dict[str, set[str]]]:
-    """Songs per artist, and the keys of each artist's album and song titles."""
+Library = tuple[collections.Counter, dict[str, set[str]], set[tuple[str, str]]]
+
+
+def library(db: str) -> Library:
+    """Songs per artist, the keys of each artist's album and song titles, and
+    (artist, title) keys of every song."""
     songs: collections.Counter[str] = collections.Counter()
     titles: dict[str, set[str]] = collections.defaultdict(set)
+    have: set[tuple[str, str]] = set()
     con = sqlite3.connect(f"file:{db}?mode=ro", uri=True, timeout=60)
     try:
         rows = con.execute("SELECT artist, artists, album, title FROM items").fetchall()
@@ -70,7 +84,8 @@ def library(db: str) -> tuple[collections.Counter, dict[str, set[str]]]:
         for part in parts:
             songs[part] += 1
             titles[part].update(k for k in (key(album or ""), key(title or "")) if k)
-    return songs, titles
+            have.add((key(part), key(title or "")))
+    return songs, titles, have
 
 
 def get(path: str, **params) -> dict:
@@ -114,13 +129,34 @@ def releases(artist_id: int, since: datetime.date, today: datetime.date) -> list
             released = datetime.date.fromisoformat(album.get("release_date", ""))
         except ValueError:
             continue
+        # Deezer's own compilations; reissues under other names are caught by
+        # the ISRC.
+        if album.get("record_type") == "compile":
+            continue
         if since <= released <= today:
             fresh.append({**album, "released": released})
     return fresh
 
 
-def songs_of(album: dict) -> list[dict]:
+def is_new(track: dict, today: datetime.date) -> bool:
+    """Whether the song was first released this year, by its ISRC."""
+    isrc = get(f"track/{track['id']}").get("isrc") or ""
+    # CC-XXX-YY-NNNNN; without one there is nothing to go on.
+    if len(isrc) != 12 or not isrc[5:7].isdigit():
+        return True
+    earliest = today - datetime.timedelta(days=ISRC_GRACE_DAYS)
+    return 2000 + int(isrc[5:7]) >= earliest.year
+
+
+def songs_of(
+    album: dict, have: set[tuple[str, str]], today: datetime.date
+) -> list[dict]:
     tracks = get(f"album/{album['id']}/tracks", limit=100).get("data", [])
+    tracks = [
+        t
+        for t in tracks
+        if (key(t["artist"]["name"]), key(t["title"])) not in have and is_new(t, today)
+    ]
     if album.get("record_type") == "album":
         tracks = sorted(tracks, key=lambda t: -t.get("rank", 0))[:PER_ALBUM]
     return tracks
@@ -134,9 +170,9 @@ def main() -> None:
     except FileNotFoundError:
         cache = {}
 
-    counts, titles = library(db)
+    counts, titles, have = library(db)
     today = datetime.date.today()
-    since = today - datetime.timedelta(days=WINDOW_DAYS)
+    since = today - datetime.timedelta(days=WINDOW_DAYS - 1)
     found: dict[int, dict] = {}
     for name, n in counts.most_common(TOP_ARTISTS):
         if n < MIN_SONGS:
@@ -154,7 +190,7 @@ def main() -> None:
     for album in sorted(
         found.values(), key=lambda a: (a["released"], a["id"]), reverse=True
     ):
-        for track in songs_of(album):
+        for track in songs_of(album, have, today):
             artist = track["artist"]["name"]
             if (key(artist), key(track["title"])) in seen:
                 continue

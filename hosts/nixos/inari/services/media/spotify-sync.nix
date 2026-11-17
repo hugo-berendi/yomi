@@ -316,6 +316,8 @@ in {
         # Measured from the end of the last run, so a long first sync never
         # overlaps the next one.
         OnUnitInactiveSec = "15min";
+        # The Release Radar is due then; see spotify-sync.sh.
+        OnCalendar = "Fri *-*-* 01:00:00";
       };
     };
 

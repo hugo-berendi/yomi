@@ -158,15 +158,29 @@ while IFS=$'\t' read -r id snapshot name; do
 done <<<"$owned"
 
 # {{{ Release Radar
-# New releases of the library's artists, looked up once a day on Deezer by
-# spotify-sync-radar.py and downloaded like a playlist. A failed lookup waits
-# for the next day too, rather than asking Deezer every quarter of an hour.
+# New releases of the library's artists, looked up on Deezer by
+# spotify-sync-radar.py and downloaded like a playlist. Weekly like Spotify's:
+# due every Friday at 01:00, when the timer starts this run, and made by the
+# first run after that. A failed lookup is tried again an hour later rather
+# than every quarter of an hour.
 radar=$STATE_DIR/release-radar.csv
 radar_stamp=$STATE_DIR/last-release-radar
-if [[ ! -e $radar_stamp || -n $(find "$radar_stamp" -mmin +1440) ]]; then
-	touch "$radar_stamp"
-	spotify-sync-radar "$STATE_DIR/beets/library.db" "$radar" "$STATE_DIR/deezer-artists.json" ||
-		echo "Release Radar: the Deezer lookup failed" >&2
+radar_tried=$STATE_DIR/last-release-radar-attempt
+due=$(date -d 'today 01:00' +%s)
+if [[ $(date +%u) != 5 || $(date +%s) -lt $due ]]; then
+	due=$(date -d 'last friday 01:00' +%s)
+fi
+radar_due=0
+radar_wait=0
+[[ -e $radar_stamp && $(stat -c %Y "$radar_stamp") -ge $due ]] || radar_due=1
+[[ ! -e $radar_tried || -n $(find "$radar_tried" -mmin +60) ]] || radar_wait=1
+if ((radar_due && !radar_wait)); then
+	touch "$radar_tried"
+	if spotify-sync-radar "$STATE_DIR/beets/library.db" "$radar" "$STATE_DIR/deezer-artists.json"; then
+		touch "$radar_stamp"
+	else
+		echo "Release Radar: the Deezer lookup failed; trying again in an hour" >&2
+	fi
 fi
 # A week without releases keeps the last list. Title and artist must stand in
 # the file's path as whole words: on 2026-11-17 the loose match took a GTA
