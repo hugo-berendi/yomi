@@ -9,9 +9,11 @@ looks at the library at all, and its library match wants the exact title
 another playlist.
 
 Each such line is replaced by the path of a song in beets' library with the
-same title and artist, ignoring case and punctuation, and a length within
-LENGTH_SLACK seconds, so a live or extended version is not taken for the
-song. Lines without a match stay as they are.
+same title, ignoring case and punctuation, one artist of exactly that name,
+and a length within LENGTH_SLACK seconds, so a live or extended version is
+not taken for the song. The artist is compared name by name: as a part of
+the whole credit, "Ski Aggu" would also have found "Ski Aggu Musik", and
+"Kid" every song by "Kid Cudi". Lines without a match stay as they are.
 
 Usage: spotify-sync-resolve LIBRARY_DB PLAYLIST...
 """
@@ -26,6 +28,11 @@ import unicodedata
 
 FAIL = re.compile(r"^#FAIL: (?P<song>.*) \((?P<length>\d+)s\) \[\w+\]$")
 LENGTH_SLACK = 10
+# Between the names of one credit ("A, B & C feat. D", "A x B"), and beets'
+# own separator in its multi-valued fields.
+SEPARATORS = re.compile(
+    r"\s*(?:[,;/&+]|\bfeat\.?|\bft\.|\bfeaturing\b|\bx\b|\\\u2400)\s*", re.IGNORECASE
+)
 
 
 def norm(text: str) -> str:
@@ -34,20 +41,33 @@ def norm(text: str) -> str:
     return "".join(c for c in text if c.isalnum())
 
 
-Library = dict[str, list[tuple[str, str, float]]]
+Library = dict[str, list[tuple[frozenset[str], str, float]]]
+
+
+def names(credits: list[str | None]) -> frozenset[str]:
+    """Every artist named in the credits, and each credit as a whole: a band
+    may have a comma or an ampersand in its name."""
+    found = set()
+    for credit in filter(None, credits):
+        found.add(norm(credit))
+        found.update(norm(name) for name in SEPARATORS.split(credit))
+    found.discard("")
+    return frozenset(found)
 
 
 def load(db: str) -> Library:
-    """Songs by normalised title: (normalised artists, path, length)."""
+    """Songs by normalised title: (normalised artist names, path, length)."""
     songs: Library = {}
     con = sqlite3.connect(f"file:{db}?mode=ro", uri=True, timeout=60)
     try:
-        rows = con.execute("SELECT title, artist, albumartist, path, length FROM items")
-        for title, artist, albumartist, path, length in rows:
+        rows = con.execute(
+            "SELECT title, artist, albumartist, artists, path, length FROM items"
+        )
+        for title, *credits, path, length in rows:
             if not title or not path:
                 continue
             path = os.fsdecode(path)
-            artists = norm(f"{artist or ''} {albumartist or ''}")
+            artists = names(credits)
             songs.setdefault(norm(title), []).append((artists, path, length or 0.0))
     finally:
         con.close()
