@@ -11,9 +11,12 @@ the playlist's own two colours, with its name written large:
 - genre: an album cover of the genre, tilted, on its colours.
 - list: the colours alone.
 - Release Radar: the cover of its newest release, which leads the playlist.
+- top: Kodama's top songs of a year or month, the cover of the top song's
+  album, tilted, under the year or month.
 
 SPEC_JSON comes from spotify-sync-mixes.py: per playlist name, the style,
-and the folders to take an album cover from. Colours follow from the name,
+and the folders to take an album cover from. Kodama writes the same for its
+playlists, as KODAMA_COVERS in PLAYLIST_DIR. Colours follow from the name,
 so a cover only changes when its picture does; an image is only rewritten
 when its bytes change, like the playlists.
 
@@ -40,6 +43,7 @@ SIZE = 1000
 MARGIN = 72
 FONTS = "@fonts@"
 RADAR = "Release Radar"
+KODAMA_COVERS = ".kodama-covers.json"
 # (dark, light) per playlist, picked by its name.
 PALETTE = [
     ("#0b1a4a", "#5b9bff"),
@@ -292,6 +296,8 @@ def render(name: str, spec: dict, deezer: dict, cache: str) -> Image.Image:
         return tilted_cover(first_cover(folders), spec["title"], "Mix", name)
     if style == "radar":
         return photo_cover(first_cover(folders), name, "Neu von deinen Artists", name)
+    if style == "top":
+        return tilted_cover(first_cover(folders), spec["title"], spec["label"], name)
     return list_cover(name, name)
 
 
@@ -339,6 +345,11 @@ def main() -> None:
     radar = radar_spec(folder)
     if radar:
         specs[RADAR] = radar
+    try:
+        with open(os.path.join(folder, KODAMA_COVERS), encoding="utf-8") as f:
+            specs.update(json.load(f))
+    except FileNotFoundError:
+        pass
     os.makedirs(cache, exist_ok=True)
     changed = [
         name
