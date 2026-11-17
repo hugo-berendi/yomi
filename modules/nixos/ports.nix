@@ -89,6 +89,7 @@
     qui = lib.mkDefault 8517;
     navidrome = lib.mkDefault 8519;
     kodama = lib.mkDefault 8520;
+    audiomuse = lib.mkDefault 8521;
     audiobookshelf = lib.mkDefault 8493;
     gatus = lib.mkDefault 8494;
     scrutiny = lib.mkDefault 8495;

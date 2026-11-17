@@ -9,6 +9,7 @@
     ./navidrome.nix
     ./spotify-sync.nix
     ./kodama.nix
+    ./audiomuse.nix
     ./jellyseerr.nix
     ./jellyfin.nix
     ./prowlarr.nix

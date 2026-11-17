@@ -13,5 +13,6 @@
   helium = pkgs.callPackage ./helium.nix {};
   suwayomi-server = pkgs.callPackage ./suwayomi-server.nix {};
   sockseek = pkgs.callPackage ./sockseek.nix {};
+  audiomuse-navidrome-plugin = pkgs.callPackage ./audiomuse-navidrome-plugin.nix {};
   cliproxyapi-copilot-plugin = upkgs.callPackage ./cliproxyapi-copilot-plugin.nix {};
 }
