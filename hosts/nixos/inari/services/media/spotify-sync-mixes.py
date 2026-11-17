@@ -28,7 +28,10 @@ A file is only rewritten when its content changes, so Navidrome does not
 reimport it on every run. Files are never removed: Navidrome keeps the
 playlist of a deleted file, so a mix that drops out stays as it was.
 
-Usage: spotify-sync-mixes LIBRARY_DB PLAYLIST_DIR
+beets 2.14 stores a path relative to its music directory, MUSIC_DIR here;
+the playlists name it in full.
+
+Usage: MUSIC_DIR=... spotify-sync-mixes LIBRARY_DB PLAYLIST_DIR
 """
 
 from __future__ import annotations
@@ -144,11 +147,11 @@ class Library:
         con = sqlite3.connect(f"file:{db}?mode=ro", uri=True, timeout=60)
         try:
             rows = con.execute(
-                "SELECT artist, artists, genre, path FROM items"
+                "SELECT artist, artists, genres, path FROM items"
             ).fetchall()
         finally:
             con.close()
-        for artist, artists, genre, path in rows:
+        for artist, artists, tags, path in rows:
             names = [n for n in (artists or "").split(BEETS_LIST) if n.strip()]
             names = list(dict.fromkeys(names or split_names(artist, ARTIST_SPLIT)))
             parts = []
@@ -157,8 +160,17 @@ class Library:
                     self.names[part].add(name)
                     parts.append(part)
             names = list(dict.fromkeys(parts))
-            genres = list(dict.fromkeys(split_names(genre, GENRE_SPLIT)))
-            self.artists[os.fsdecode(path)] = names
+            # A list in beets 2.14, written to the file as one GENRE value
+            # per entry; lastgenre may still put several into one.
+            genres = [
+                g
+                for tag in (tags or "").split(BEETS_LIST)
+                for g in split_names(tag, GENRE_SPLIT)
+            ]
+            genres = list(dict.fromkeys(genres))
+            self.artists[os.path.join(os.environ["MUSIC_DIR"], os.fsdecode(path))] = (
+                names
+            )
             for name in names:
                 self.songs[name] += 1
                 self.genres[name].update(genres)
