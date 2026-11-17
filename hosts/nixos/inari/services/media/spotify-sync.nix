@@ -134,9 +134,14 @@
       auto = true;
       minwidth = 500;
       maxwidth = 1500;
-      # The uploader's own scan first, when it is big enough. "spotify"
-      # reads the public album page, not the API.
-      sources = ["filesystem" "coverart" "itunes" "spotify"];
+      # The uploader's own scan first, when it is big enough; then the
+      # cover of the release beets matched: the Cover Art Archive for a
+      # MusicBrainz match, the Deezer album's own cover (cover_art_url) for a
+      # Deezer match. "spotify" reads the public album page, not the API.
+      # No "itunes": without an exact hit it takes the first search result,
+      # and on 2026-11-16 put Maroon 5's "Girls Like You" on Juju's "44 ME",
+      # which iTunes does not carry.
+      sources = ["filesystem" "coverart" "cover_art_url" "spotify"];
     };
     embedart.auto = true;
     # Synced lyrics from LRCLIB; Navidrome shows them line by line.
@@ -208,6 +213,11 @@ in {
         # still lists the existing file in the second .m3u.
         skip-music-dir = ${musicDir}
         skip-mode-music-dir = tag
+        # What an album download that never completes leaves behind goes out
+        # of the library: sockseek's default, {output dir}/failed, put a
+        # second Kato and Ski Aggu album into Navidrome. A later run fetches
+        # the album again.
+        incomplete-album-action = move:${stateDir}/incomplete
         # Songs carry their Spotify URI, so beets can tag them from exactly
         # that track; files of an album download do not, and are tagged with
         # their album instead (scope=album, {path} is then the folder).
