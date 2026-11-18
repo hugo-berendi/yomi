@@ -5,7 +5,7 @@
   ...
 }: let
   cfg = config.services.nextcloud;
-  pocketIdUrl = config.yomi.cloudflared.at.pocket-id.url;
+  pocketIdUrl = config.yomi.web.at.pocket-id.url;
   cloud = config.yomi.cloudflared.at.cloud;
   office = config.yomi.cloudflared.at.office;
   occ = lib.getExe cfg.occ;

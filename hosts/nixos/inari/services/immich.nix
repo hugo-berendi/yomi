@@ -68,7 +68,7 @@ in {
 
     settings.oauth = {
       enabled = true;
-      issuerUrl = config.yomi.cloudflared.at.pocket-id.url;
+      issuerUrl = config.yomi.web.at.pocket-id.url;
       clientId = "adf23559-7783-4b2e-bab4-443da5844e18";
       autoRegister = true;
       scope = "openid profile email";

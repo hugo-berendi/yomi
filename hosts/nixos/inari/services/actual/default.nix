@@ -51,7 +51,7 @@
       enforceOpenId = true;
       userCreationMode = "manual";
       openId = {
-        discoveryURL = "${config.yomi.cloudflared.at.pocket-id.url}/.well-known/openid-configuration";
+        discoveryURL = "${config.yomi.web.at.pocket-id.url}/.well-known/openid-configuration";
         client_id = "e73eccb5-a6ae-4db9-974e-4dc795cda925";
         server_hostname = config.yomi.nginx.at.budget.url;
         authMethod = "openid";

@@ -8,7 +8,7 @@
   yomi.remoteAccess = {
     enable = false;
     sopsFile = ../secrets.yaml;
-    issuerUrl = config.yomi.cloudflared.at.pocket-id.url;
+    issuerUrl = config.yomi.web.at.pocket-id.url;
     # lab is Homepage, code is opencode. Home Assistant (home) is deliberately
     # not listed.
     endpoints = ["lab" "grafana" "status" "t3code" "n8n" "code"];

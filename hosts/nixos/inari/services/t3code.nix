@@ -21,7 +21,7 @@ in {
     memory.enable = true;
     oidc = {
       enable = true;
-      issuer = config.yomi.cloudflared.at.pocket-id.url;
+      issuer = config.yomi.web.at.pocket-id.url;
       origin = config.yomi.nginx.at.t3code.url;
       # Pocket ID restricts this client to the t3code group.
       clientId = "2db66a5a-664a-4938-a2d1-15815ec7c1d2";

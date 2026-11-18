@@ -1,16 +1,13 @@
 {config, ...}: {
   # {{{ Reverse proxy
-  yomi.cloudflared.at.pocket-id = {
-    port = config.yomi.ports.pocket-id;
-    enableAnubis = false;
-    subdomain = "auth";
-  };
-  # The identity provider must remain reachable before Pangolin login.
-  yomi.expose.at.pocket-id = {
+  # The identity provider must remain reachable before gateway login.
+  yomi.web.at.pocket-id = {
     port = config.yomi.ports.pocket-id;
     subdomain = "auth";
-    sso = false;
-    labels = ["identity"];
+    transport = "cloudflare";
+    authentication = "application";
+    stagePangolin = true;
+    pangolin.labels = ["identity"];
     monitor.enable = true;
   };
   # }}}
@@ -44,11 +41,11 @@
     enable = true;
     environmentFile = config.sops.secrets.pocket_id_env.path;
     settings = {
-      PORT = config.yomi.cloudflared.at.pocket-id.port;
+      PORT = config.yomi.web.at.pocket-id.port;
       TRUST_PROXY = true;
       ANALYTICS_DISABLED = true;
 
-      APP_URL = config.yomi.cloudflared.at.pocket-id.url;
+      APP_URL = config.yomi.web.at.pocket-id.url;
       APP_NAME = "Yomi SSO";
 
       UI_CONFIG_DISABLED = true;

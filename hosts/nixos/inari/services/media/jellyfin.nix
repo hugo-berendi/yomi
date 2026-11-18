@@ -5,19 +5,21 @@
   ...
 }: {
   # {{{ Reverse proxy
-  yomi.cloudflared.at.media.port = config.yomi.ports.jellyfin;
-  # Staged until the Pangolin connector is enrolled; native apps use Jellyfin auth.
-  yomi.expose.at.media = {
+  yomi.web.at.media = {
     port = config.yomi.ports.jellyfin;
-    sso = false;
-    labels = ["media"];
+    transport = "cloudflare";
+    authentication = "application";
+    stagePangolin = true;
     monitor = {
       enable = true;
       name = "jellyfin";
     };
-    healthCheck = {
-      enable = true;
-      path = "/health";
+    pangolin = {
+      labels = ["media"];
+      healthCheck = {
+        enable = true;
+        path = "/health";
+      };
     };
   };
   yomi.expose.private.media = {

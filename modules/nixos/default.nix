@@ -9,6 +9,7 @@
   hermes-dispatcher = import ./hermes-dispatcher;
   network-exposure = import ./network-exposure.nix;
   persistence = import ./persistence.nix;
+  web = import ./web.nix;
   nginx = import ./nginx.nix;
   filesystems = import ./filesystems.nix;
   endpoint-checks = import ./endpoint-checks.nix;

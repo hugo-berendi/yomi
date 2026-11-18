@@ -33,6 +33,10 @@ in
       inherit pkgs;
       config = self.nixosConfigurations.inari.config;
     };
+    web-endpoints = import ../tests/web-endpoints.nix {
+      inherit pkgs;
+      configuration = self.nixosConfigurations.inari;
+    };
     expose = import ../tests/expose.nix {inherit pkgs self;};
     expose-backup =
       pkgs.runCommand "expose-backup-tests" {

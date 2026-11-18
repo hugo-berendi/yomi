@@ -41,12 +41,11 @@
     alerts = mailAlert name;
   };
 in {
-  yomi.cloudflared.at = lib.genAttrs ["pocket-id" "immich-share" "cloud" "media" "request-media" "search" "bin" "git"] (name: {
+  yomi.cloudflared.at = lib.genAttrs ["immich-share" "cloud" "request-media" "search" "bin" "git"] (name: {
     monitor.enable = true;
     monitor.name =
       {
         cloud = "nextcloud";
-        media = "jellyfin";
         request-media = "jellyseerr";
         search = "searxng";
         bin = "microbin";
