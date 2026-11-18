@@ -30,7 +30,24 @@ _: {
     options = ["size=16G" "mode=0755" "noatime"];
   };
 
-  nix.settings.build-dir = "/nix/build";
+  nix.settings = {
+    build-dir = "/nix/build";
+    max-jobs = 2;
+    cores = 2;
+  };
+
+  # Runner limits do not cover work sent to the daemon. Bound both together,
+  # including the daemon's build children, so CI cannot consume the memory
+  # reserved for applications. This is resource isolation, not a VM boundary.
+  systemd.slices.nix-builds.sliceConfig = {
+    CPUWeight = 20;
+    IOWeight = 10;
+    MemoryHigh = "20G";
+    MemoryMax = "28G";
+    MemorySwapMax = "2G";
+  };
+  systemd.services.nix-daemon.serviceConfig.Slice = "nix-builds.slice";
+  systemd.services.gitea-runner-default.serviceConfig.Slice = "nix-builds.slice";
 
   # /raid5pool itself is 1777 on disk -- world-writable with a sticky bit,
   # like /tmp -- leftover state from however the pool was first made. Nothing
