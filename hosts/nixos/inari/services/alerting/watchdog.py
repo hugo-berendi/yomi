@@ -274,9 +274,11 @@ def direct_fallback(env, state, router_down, now):
 def heartbeat(env, faults):
     """Ping the outside check: success only while pushes can actually go out."""
     path = env.get("HEARTBEAT_URL_FILE")
-    if not path or not Path(path).exists():
+    if not path:
         return None
     url = Path(path).read_text().strip()
+    if not url:
+        raise RuntimeError("heartbeat credential is empty")
     broken = {
         service: faults[service]
         for service in ("alert-router", "ntfy")
@@ -320,8 +322,9 @@ def main(argv=None):
     try:
         beat = heartbeat(env, faults)
     except (OSError, URLError, RuntimeError) as error:
-        print(f"watchdog: heartbeat failed: {error}", file=sys.stderr)
+        print(f"watchdog: heartbeat failed ({type(error).__name__})", file=sys.stderr)
         beat = "error"
+        status = 1
     write_state(args.state, {"streaks": streaks, "fallback": fallback})
     for service, fault in faults.items():
         print(f"watchdog: {service}: {fault}", file=sys.stderr)

@@ -34,6 +34,8 @@ in {
   # }}}
 
   config = {
+    warnings = lib.optional (!hasHeartbeat) "Inari has no external monitoring heartbeat. Configure alert_heartbeat_url with an independently hosted check and notification channel; local monitoring cannot report a host or uplink outage.";
+
     yomi.ports.hermes-webhook = lib.mkDefault 8515;
 
     # {{{ Shared signing secret

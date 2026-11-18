@@ -1,6 +1,7 @@
 """Monitoring watchdog: component faults, hysteresis, router fallback and heartbeat."""
 
 import importlib.util
+import io
 import json
 import os
 import tempfile
@@ -9,6 +10,8 @@ import time
 import unittest
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
+from unittest.mock import patch
+from urllib.error import URLError
 
 SCRIPT = Path(
     os.environ.get(
@@ -211,6 +214,45 @@ class WatchdogTests(unittest.TestCase):
         os.environ["HEARTBEAT_URL_FILE"] = ""
         self.run_once()
         self.assertFalse([c for c in Fake.calls if c[1].startswith("/ping")])
+
+
+class HeartbeatFailureTests(unittest.TestCase):
+    """Credential and transport errors must reach systemd without leaking URLs."""
+
+    def run_job(self, credential, transport_error=None):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "heartbeat"
+            if credential is not None:
+                path.write_text(credential)
+            output = io.StringIO()
+            with (
+                patch.dict(os.environ, {"HEARTBEAT_URL_FILE": str(path)}),
+                patch.object(watchdog, "run_checks", return_value={}),
+                patch.object(watchdog, "post_router"),
+                patch.object(watchdog, "direct_fallback", return_value={}),
+                patch.object(watchdog, "fetch", side_effect=transport_error),
+                patch("sys.stderr", output),
+            ):
+                result = watchdog.main(["--state", str(Path(directory) / "state")])
+            return result, output.getvalue()
+
+    def test_missing_credential_fails_job(self):
+        self.assertEqual(self.run_job(None)[0], 1)
+
+    def test_empty_credential_fails_job(self):
+        self.assertEqual(self.run_job("\n")[0], 1)
+
+    def test_transport_failure_fails_job_without_leaking_url(self):
+        url = "https://outside.invalid/private-ping-token"
+        result, error = self.run_job(url, URLError(url))
+        self.assertEqual(result, 1)
+        self.assertNotIn("private-ping-token", error)
+        self.assertIn("URLError", error)
+
+    def test_recovered_transport_clears_job_failure(self):
+        self.assertEqual(
+            self.run_job("https://outside.invalid/private-ping-token")[0], 0
+        )
 
 
 if __name__ == "__main__":
