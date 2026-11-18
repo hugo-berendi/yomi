@@ -37,6 +37,13 @@ in
       inherit pkgs;
       configuration = self.nixosConfigurations.inari;
     };
+    deployment-health = pkgs.runCommand "deployment-health-tests" {nativeBuildInputs = [pkgs.python3];} ''
+      mkdir -p tests scripts/ops
+      cp ${../tests/test_deployment_health.py} tests/test_deployment_health.py
+      cp ${../scripts/ops/deployment-health.py} scripts/ops/deployment-health.py
+      python3 -m unittest discover -s tests -p test_deployment_health.py
+      touch "$out"
+    '';
     expose = import ../tests/expose.nix {inherit pkgs self;};
     expose-backup =
       pkgs.runCommand "expose-backup-tests" {
