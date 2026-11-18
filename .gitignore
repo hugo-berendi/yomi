@@ -25,3 +25,6 @@ log.txt
 .wakatime.cfg
 __pycache__/
 *.pyc
+
+# Agent-owned checkouts are local workspaces, not repository submodules.
+.claude/worktrees/
