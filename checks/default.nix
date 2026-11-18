@@ -29,6 +29,10 @@ in
     };
   }) ["amaterasu" "inari"]))
   // {
+    firewall-reload = import ../tests/firewall-reload.nix {
+      inherit pkgs;
+      config = self.nixosConfigurations.inari.config;
+    };
     expose = import ../tests/expose.nix {inherit pkgs self;};
     expose-backup =
       pkgs.runCommand "expose-backup-tests" {
