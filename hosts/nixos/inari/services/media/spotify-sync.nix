@@ -63,9 +63,9 @@
 
   # Songs beets tagged wrong, by the Deezer track each one is, retagged once
   # by spotify-sync-tag.sh (a path, below the music folder, is retagged again
-  # when its ID changes). Found on 2026-11-17: singles from "Bravo Hits"
-  # compilation rips, which kept the compilation's tags and cover, and two
-  # songs without an album.
+  # when its ID changes). Found on 2026-11-17 and 18: singles from
+  # compilation rips ("Bravo Hits", "Future Dance"), which kept the
+  # compilation's tags and cover, and two songs without an album.
   retag = {
     "Jaschu/Bravo Hits 130/Jaschu - Schnee von morgen.flac" = 3137060671;
     "Various Artists/Bravo Hits 123/Baby B3ns - Schmetterling.flac" = 2395976995;
@@ -74,6 +74,7 @@
     "bac - Rosaroter Tee/17. bac - Rosaroter Tee.flac" = 3040569121;
     "21 Savage - american dream/21 Savage - redrum.flac" = 2614584352;
     "Carli/PINOCCHIO/Carli - Pinocchio.mp3" = 3792205442;
+    "Various Artists/Future Dance Part 2/Baby B3ns; Yung Hurn - Liebe in Stereo.mp3" = 2816357052;
   };
   retagList = pkgs.writeText "spotify-sync-retag" (lib.concatStrings (lib.mapAttrsToList (path: id: "${toString id}\t${path}\n") retag));
 
