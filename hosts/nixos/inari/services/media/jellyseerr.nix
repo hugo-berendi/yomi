@@ -25,12 +25,31 @@
   });
 in {
   # {{{ reverse proxy
-  yomi.cloudflared.at.request-media.port = config.yomi.ports.jellyseerr;
+  yomi.web.at.request-media = {
+    port = config.yomi.ports.jellyseerr;
+    transport = "pangolin";
+    authentication = "application";
+    monitor = {
+      enable = true;
+      name = "jellyseerr";
+    };
+    pangolin = {
+      labels = ["media"];
+      healthCheck = {
+        enable = true;
+        path = "/api/v1/status";
+      };
+    };
+  };
+  yomi.cloudflared.at.request-media = {
+    inherit (config.yomi.web.at.request-media) host port protocol proxyAddress;
+    dns.enable = false;
+  };
   # }}}
   #{{{ settings
   nixarr.seerr = {
     enable = true;
-    port = config.yomi.cloudflared.at.request-media.port;
+    port = config.yomi.web.at.request-media.port;
     vpn.enable = false;
     package = jellyseerr-oidc;
   };

@@ -42,6 +42,12 @@
     (!live.yomi.expose.at.media.sso
       && !live.yomi.cloudflared.at.media.dns.enable
       && expectedGatewayDns "media")
+    (lib.all (name:
+      !live.yomi.expose.at.${name}.sso
+      && !live.yomi.cloudflared.at.${name}.dns.enable
+      && expectedGatewayDns name) ["audiobookshelf" "request-media"])
+    (map (endpoint: endpoint.url) (lib.filter (endpoint: endpoint.name == "jellyseerr" && endpoint.group == "Services") live.services.gatus.settings.endpoints)
+      == ["https://request-media.hugo-berendi.de"])
     (!builtins.hasAttr "web-fixture" disabled.yomi.cloudflared.at)
   ];
 in

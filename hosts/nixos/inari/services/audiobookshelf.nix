@@ -9,9 +9,21 @@
   podcastDir = "/raid5pool/media/podcasts";
 in {
   # {{{ Reverse proxy
-  yomi.cloudflared.at.audiobookshelf = {
+  yomi.web.at.audiobookshelf = {
     inherit port;
-    enableAnubis = false;
+    transport = "pangolin";
+    authentication = "application";
+    pangolin = {
+      labels = ["media"];
+      healthCheck = {
+        enable = true;
+        path = "/ping";
+      };
+    };
+  };
+  yomi.cloudflared.at.audiobookshelf = {
+    inherit (config.yomi.web.at.audiobookshelf) host port protocol proxyAddress;
+    dns.enable = false;
   };
   # }}}
   # {{{ Service
