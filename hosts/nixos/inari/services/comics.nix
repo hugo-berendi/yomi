@@ -95,11 +95,9 @@ in {
     };
   };
 
-  systemd.services.suwayomi-server = {
-    requires = ["suwayomi-xvfb.service"];
-    after = ["suwayomi-xvfb.service"];
-    environment.DISPLAY = webviewDisplay;
-  };
+  systemd.services.suwayomi-server.requires = ["suwayomi-xvfb.service"];
+  systemd.services.suwayomi-server.after = ["suwayomi-xvfb.service"];
+  systemd.services.suwayomi-server.environment.DISPLAY = webviewDisplay;
   # }}}
 
   # {{{ Storage
