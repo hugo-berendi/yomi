@@ -4,8 +4,6 @@
   dataDir = "/persist/data/windrose";
 in {
   config = {
-    yomi.expose.tcp.windrose.port = serverPort;
-    yomi.expose.udp.windrose.port = serverPort;
     yomi.expose.private.windrose-admin = {
       destination = "127.0.0.1";
       alias = "windrose.inari.internal";
