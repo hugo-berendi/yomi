@@ -1,4 +1,5 @@
 {
+  config,
   lib,
   modulesPath,
   ...
@@ -11,6 +12,19 @@
 
   networking.hostName = "ebisu";
   system.stateVersion = "26.05";
+
+  users.users.${config.yomi.pilot.name} = {
+    hashedPassword = lib.mkForce null;
+    # Provision the hash on Ebisu so it stays out of Git and the Nix store.
+    hashedPasswordFile = "/var/lib/yomi/ebisu-password.hash";
+    openssh.authorizedKeys.keyFiles = [./keys/inari-admin.pub];
+  };
+
+  services.openssh.extraConfig = lib.mkAfter ''
+    Match User ${config.yomi.pilot.name}
+      PasswordAuthentication yes
+    Match all
+  '';
 
   # Listener definitions can be inspected before the gateway is provisioned.
   yomi.expose.server.sourceHosts = ["inari"];

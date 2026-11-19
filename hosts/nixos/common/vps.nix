@@ -31,8 +31,8 @@
       (import ./users/common.nix).authorizedKeys {inherit outputs lib;};
   };
 
-  # This host has no password login or shared password secret. Administrative
-  # access therefore relies on the pilot's authorized SSH keys.
+  # The VPS profile starts with a locked pilot password, so sudo must work
+  # after an SSH key login.
   security.sudo.extraRules = [
     {
       users = [config.yomi.pilot.name];
