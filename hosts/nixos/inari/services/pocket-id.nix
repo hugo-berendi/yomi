@@ -4,11 +4,15 @@
   yomi.web.at.pocket-id = {
     port = config.yomi.ports.pocket-id;
     subdomain = "auth";
-    transport = "cloudflare";
+    transport = "pangolin";
     authentication = "application";
-    stagePangolin = true;
     pangolin.labels = ["identity"];
     monitor.enable = true;
+  };
+  # Keep the tunnel origin available if the previous DNS configuration is reapplied.
+  yomi.cloudflared.at.pocket-id = {
+    inherit (config.yomi.web.at.pocket-id) host port protocol proxyAddress;
+    dns.enable = false;
   };
   # }}}
   # {{{ Secrets
