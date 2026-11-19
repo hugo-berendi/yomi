@@ -21,7 +21,13 @@
     optimise.automatic = true;
     # }}}
     # {{{ Registry
-    registry = lib.mapAttrs (_: value: {flake = value;}) inputs;
+    # Only nixpkgs and this flake. Pinning every input put each one's source
+    # tree into the system closure (~0.5 GiB on inari), and nothing here looks
+    # the others up by registry name; unpinned names still resolve through the
+    # global registry.
+    registry = lib.mapAttrs (_: value: {flake = value;}) {
+      inherit (inputs) nixpkgs self;
+    };
 
     nixPath = lib.mapAttrsToList (key: value: "${key}=${value.to.path}") config.nix.registry;
     # }}}
