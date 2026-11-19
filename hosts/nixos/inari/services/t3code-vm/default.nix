@@ -110,7 +110,9 @@ in {
           "--cloud-localds"
           "${pkgs.cloud-utils}/bin/cloud-localds"
           "--qemu-img"
-          "${pkgs.qemu}/bin/qemu-img"
+          # qemu-utils, not qemu: the full package carries every system
+          # emulator (~1 GiB) and this only needs qemu-img.
+          "${pkgs.qemu-utils}/bin/qemu-img"
           "--user-data"
           userData.userData
           "--network-config"
