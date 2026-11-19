@@ -41,7 +41,7 @@
     alerts = mailAlert name;
   };
 in {
-  yomi.cloudflared.at = lib.genAttrs ["immich-share" "cloud" "git"] (name: {
+  yomi.cloudflared.at = lib.genAttrs ["cloud" "git"] (name: {
     monitor.enable = true;
     monitor.name =
       if name == "cloud"

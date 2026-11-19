@@ -22,10 +22,17 @@ in {
     port = config.yomi.ports.immich;
     clientMaxBodySize = "50000M";
   };
-  # Single-label subdomain: Cloudflare's free Universal SSL only covers one
-  # level of wildcard (*.<domain>), so a nested "share.immich.<domain>" host
-  # would have no matching edge certificate on this account.
-  yomi.cloudflared.at."immich-share".port = config.yomi.ports.ipp;
+  # Keep the existing hostname so published share links remain valid.
+  yomi.web.at.immich-share = {
+    port = config.yomi.ports.ipp;
+    transport = "pangolin";
+    authentication = "application";
+    monitor.enable = true;
+  };
+  yomi.cloudflared.at.immich-share = {
+    inherit (config.yomi.web.at.immich-share) host port protocol proxyAddress;
+    dns.enable = false;
+  };
   # }}}
   # {{{ Public proxy
   services.immich-public-proxy = {
@@ -79,7 +86,7 @@ in {
 
     # Shared links are generated using this domain, so it must be the public
     # proxy's URL, not the LAN/VPN-only nginx vhost.
-    settings.server.externalDomain = config.yomi.cloudflared.at."immich-share".url;
+    settings.server.externalDomain = config.yomi.web.at.immich-share.url;
 
     settings.trash = {
       enabled = true;
