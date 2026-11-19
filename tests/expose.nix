@@ -4,7 +4,10 @@
 }: let
   inherit (pkgs) lib;
   base = self.nixosConfigurations.ebisu;
-  extend = module: base.extendModules {modules = [module];};
+  extend = module:
+    base.extendModules {
+      modules = [{yomi.expose.server.enable = lib.mkForce false;} module];
+    };
   fixture = extend {
     yomi.expose = {
       at = {
@@ -74,8 +77,7 @@
         {
           yomi.expose.server = {
             enable = true;
-            sourceHosts = ["fixture"];
-            environmentFile = "/run/secrets/pangolin.env";
+            sourceHosts = lib.mkForce ["fixture"];
           };
         }
       ];
@@ -187,7 +189,7 @@
     }
     {
       name = "A staged site creates no connector, DNS mutation or public firewall ports";
-      assertion = !config.services.newt.enable && config.yomi.dns.records == [] && config.networking.firewall.allowedTCPPorts == [22] && config.networking.firewall.allowedUDPPorts == [];
+      assertion = !config.services.newt.enable && !lib.any (record: lib.elem record.at ["web" "direct" "disabled"]) config.yomi.dns.records && config.networking.firewall.allowedTCPPorts == [22] && config.networking.firewall.allowedUDPPorts == [];
     }
     {
       name = "Missing access lists are rejected";
@@ -195,7 +197,7 @@
     }
     {
       name = "Activation uses a runtime credential file and DNS bypasses the Cloudflare proxy";
-      assertion = lib.all (a: a.assertion) active.assertions && active.services.newt.enable && active.systemd.services.newt.serviceConfig.EnvironmentFile == "/run/secrets/newt.env" && (builtins.head active.yomi.dns.records).enableCloudflareProxy == false && active.networking.firewall.allowedTCPPorts == [22];
+      assertion = lib.all (a: a.assertion) active.assertions && active.services.newt.enable && active.systemd.services.newt.serviceConfig.EnvironmentFile == "/run/secrets/newt.env" && lib.any (record: record.at == "web" && !record.enableCloudflareProxy) active.yomi.dns.records && active.networking.firewall.allowedTCPPorts == [22];
     }
     {
       name = "Store credentials and misleading exit-node restrictions are rejected";

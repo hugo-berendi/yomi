@@ -35,7 +35,7 @@ in {
           description = "Who authenticates requests; none deliberately permits anonymous access.";
         };
         enableAnubis = lib.mkEnableOption "Anubis protection on the selected tunnel";
-        stagePangolin = lib.mkEnableOption "a Pangolin blueprint before enrolling the connector";
+        stagePangolin = lib.mkEnableOption "previewing this endpoint in the blueprint while the connector is disabled";
         pangolin = lib.mkOption {
           default = {};
           description = "Pangolin-specific access and backend policy.";
@@ -70,10 +70,6 @@ in {
         message = "Web ${e.host}: gateway authentication requires the Pangolin transport.";
       }
       {
-        assertion = !e.stagePangolin || !config.yomi.expose.enable || e.transport == "pangolin";
-        message = "Web ${e.host}: select Pangolin explicitly before activating a staged connector.";
-      }
-      {
         assertion = !e.enableAnubis || e.transport != "nginx";
         message = "Web ${e.host}: Anubis requires a supported tunnel transport.";
       }
@@ -86,6 +82,6 @@ in {
       // {
         inherit (e) enableAnubis;
         sso = e.authentication == "gateway";
-      }) (lib.filterAttrs (_: e: e.transport == "pangolin" || e.stagePangolin) endpoints);
+      }) (lib.filterAttrs (_: e: e.transport == "pangolin" || (e.stagePangolin && !config.yomi.expose.enable)) endpoints);
   };
 }

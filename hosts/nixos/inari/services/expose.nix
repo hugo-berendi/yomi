@@ -4,6 +4,7 @@
   ...
 }: {
   imports = [./expose-vpn.nix];
+  yomi.expose.enable = true;
   sops.secrets.pangolin_newt_environment = lib.mkIf config.yomi.expose.enable {
     sopsFile = ../secrets.yaml;
   };
@@ -27,6 +28,8 @@
     }
     // {
       home-exit = {
+        # Verify the exit node's LAN reachability before granting full egress.
+        enable = false;
         mode = "exit-node";
         users = [config.yomi.pilot.email];
       };
