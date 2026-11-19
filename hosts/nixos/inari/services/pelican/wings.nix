@@ -9,6 +9,7 @@
   # repository that is mirrored to a public forge, and produces a real file
   # rather than a store symlink.
   configFile = config.sops.templates."pelican-wings.yml".path;
+  panelOrigin = config.virtualisation.oci-containers.containers.pelican-panel.environment.APP_URL;
 in {
   sops.secrets = {
     pelican_wings_uuid.sopsFile = ../../secrets.yaml;
@@ -16,6 +17,7 @@ in {
     pelican_wings_token.sopsFile = ../../secrets.yaml;
   };
 
+  sops.templates."pelican-wings.yml".restartUnits = ["wings.service"];
   sops.templates."pelican-wings.yml".content = ''
     debug: false
     uuid: ${config.sops.placeholder.pelican_wings_uuid}
@@ -40,6 +42,9 @@ in {
     # meant resolving it against the local AdGuard, which has no record for it
     # -- wings died with "no such host" on every start.
     remote: 'http://127.0.0.1:${toString config.yomi.ports.pelican-panel}'
+    # Browser uploads and console connections originate at the public panel.
+    allowed_origins:
+      - ${builtins.toJSON panelOrigin}
   '';
 
   systemd.services.wings-network = {
