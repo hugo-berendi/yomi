@@ -3,7 +3,11 @@
   lib,
   modulesPath,
   ...
-}: {
+}: let
+  ipv4 = "62.83.116.214";
+  ipv6 = "2a03:4000:16:16e1:78f7:e3ff:fe9b:63c0";
+  inherit (config.yomi.expose) publicHost;
+in {
   imports = [
     ../common/vps.nix
     "${modulesPath}/profiles/qemu-guest.nix"
@@ -29,11 +33,31 @@
   # stays off because only the pilot's Match block enables it.
   security.pam.services.sshd.unixAuth = lib.mkForce true;
 
-  # Listener definitions can be inspected before the gateway is provisioned.
-  yomi.expose.server.sourceHosts = ["inari"];
-  # License activation and GeoLite2 enrollment happen after the VPS bootstrap.
-  yomi.expose.server.edition = "enterprise";
-  yomi.expose.server.geoip.enable = true;
+  yomi.expose.server = {
+    enable = true;
+    sourceHosts = ["inari"];
+    edition = "enterprise";
+    environmentFile = "/var/lib/yomi/pangolin.env";
+    geoip.enable = true;
+  };
+  yomi.dns.records = [
+    {
+      at = "ebisu";
+      type = "A";
+      value = ipv4;
+    }
+    {
+      at = "ebisu";
+      type = "AAAA";
+      value = ipv6;
+    }
+    {
+      at = "pangolin";
+      type = "CNAME";
+      value = "${publicHost}.";
+    }
+  ];
+  yomi.ssh.extraHostNames = [publicHost ipv4 ipv6];
 
   # The netcup Debian image uses static addresses on both IP families.
   networking.useDHCP = false;
@@ -46,8 +70,8 @@
       IPv6AcceptRA = false;
     };
     address = [
-      "62.83.116.214/22"
-      "2a03:4000:16:16e1:78f7:e3ff:fe9b:63c0/64"
+      "${ipv4}/22"
+      "${ipv6}/64"
     ];
     routes = [
       {
