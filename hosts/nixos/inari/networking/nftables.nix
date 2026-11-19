@@ -8,13 +8,9 @@
   portsFor = protocol: map (entry: entry.port) (lib.filter (entry: lib.elem protocol entry.protocols) grants);
   lanTcpServicePorts = portsFor "tcp";
   lanUdpServicePorts = portsFor "udp";
-  # Only ports something on inari answers on. Samba (445), NFS (2049) and
-  # Syncthing (21027, 22000) were listed here with nothing behind them, so a
-  # service that later bound one would have been LAN-open without anyone
-  # deciding it. 1900 and 5353 are Home Assistant's SSDP and zeroconf
-  # discovery (ss -ulnpe, 2026-10-27).
-  baseTcpPorts = [22 53 80 443];
-  baseUdpPorts = [53 67 68 443 1900 5353];
+  # SSH and the web ingress are part of the host's LAN interface.
+  baseTcpPorts = [22 80 443];
+  baseUdpPorts = [443];
   lanTcpPorts = lib.concatMapStringsSep ", " toString (
     lib.unique (baseTcpPorts ++ lanTcpServicePorts)
   );
@@ -35,10 +31,6 @@
   inertFirewallPorts =
     lib.filter (p: !lib.elem p (baseTcpPorts ++ lanTcpServicePorts)) config.networking.firewall.allowedTCPPorts
     ++ lib.filter (p: !lib.elem p (baseUdpPorts ++ lanUdpServicePorts)) config.networking.firewall.allowedUDPPorts;
-  exitNodeForwardRule = lib.optionalString config.yomi.tailscale.exitNode ''
-    # Allow Tailscale exit node traffic
-    iifname "tailscale0" oifname "br0" accept
-  '';
 in {
   yomi.network.exposure = {
     beszel = {interface = "br0";};
@@ -139,12 +131,6 @@ in {
             iifname {"docker0", "br-pelican", "br-changedet", "veth*"} accept comment "Allow Docker to router"
             iifname "wg-br" accept comment "Allow VPN namespace to router"
             iifname "tailscale0" accept comment "Allow Tailscale to router"
-
-            # There is no eno1 on this machine any more -- the wired port is
-            # enp4s0 and it is down. Inari sits behind the home router on br0,
-            # so the three WAN rules that used to live here matched nothing.
-            # Everything not accepted above is dropped by the chain policy.
-            #
           }
 
           chain forward {
@@ -158,19 +144,13 @@ in {
             iifname "t3test0" oifname "br0" accept
             iifname "br0" oifname "t3test0" ip daddr 10.231.0.2 ct state { established, related } accept
           ''}
-            # Internal networks (VLANs, WiFi, Docker, Tailscale) to upstream bridge (WAN toward home router)
-            iifname { "vlan20", "vlan30", "br1", "docker0", "br-pelican", "br-changedet", "tailscale0" } oifname "br0" accept comment "internal to WAN"
-            iifname "br0" oifname { "vlan20", "vlan30", "br1", "docker0", "br-pelican", "br-changedet", "tailscale0" } ct state { established, related } accept comment "WAN back to internal"
-
-            # WiFi hotspot access to main LAN address space
-            iifname "br1" oifname "br0" accept comment "WiFi to LAN"
+            # br0 reaches the home LAN and the upstream router.
+            iifname { "docker0", "br-pelican", "br-changedet", "tailscale0" } oifname "br0" accept comment "Docker and Tailscale to uplink"
+            iifname "br0" oifname { "docker0", "br-pelican", "br-changedet", "tailscale0" } ct state { established, related } accept comment "Replies from uplink"
 
             # VPN namespace bridge access
             iifname "wg-br" oifname "br0" accept comment "VPN namespace to WAN"
             iifname "br0" oifname "wg-br" ct state { established, related } accept comment "WAN back to VPN namespace"
-
-            # Explicit Tailscale exit node rule (in addition to internal set)
-            ${exitNodeForwardRule}
           }
 
           chain output {
@@ -187,8 +167,7 @@ in {
             ${lib.optionalString config.yomi.t3codeVm.enable ''
             iifname "t3test0" ip saddr 10.231.0.2 oifname "br0" masquerade
           ''}
-            # Masquerade traffic from internal networks towards upstream bridge (WAN toward home router)
-            iifname {"vlan20", "vlan30", "br1", "docker0", "br-pelican", "br-changedet", "tailscale0"} oifname "br0" masquerade comment "NAT towards WAN"
+            iifname {"docker0", "br-pelican", "br-changedet", "tailscale0"} oifname "br0" masquerade comment "NAT towards home router"
           }
         '';
       };

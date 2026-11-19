@@ -10,7 +10,6 @@
             rootDataset = "zroot/recovered";
             tpmUnlock = true;
             lanInterface = "enp1s0";
-            wifiInterface = null;
           };
         }
       ];

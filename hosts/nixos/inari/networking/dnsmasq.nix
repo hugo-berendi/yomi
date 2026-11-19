@@ -10,6 +10,7 @@
         # over half its queries (9/20) while 1.1.1.1 answered 20/20.
         "1.1.1.1" # Cloudflare
       ];
+      strict-order = true;
 
       # sensible behaviours
       domain-needed = true;
@@ -19,10 +20,7 @@
       # Cache DNS queries.
       cache-size = 1000;
 
-      interface = "br1";
-      dhcp-range = ["br1,192.168.10.50,192.168.10.254,24h"];
-      dhcp-option = ["option:router,192.168.10.1"];
-      dhcp-host = "192.168.10.1";
+      interface = "lo";
 
       # don't use /etc/hosts as this would advertise surfer as localhost
       no-hosts = true;

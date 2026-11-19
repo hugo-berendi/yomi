@@ -888,14 +888,17 @@ def overrides(repo, info, root, args):
         not args.wifi or re.fullmatch(r"[a-zA-Z0-9_.:-]+", args.wifi),
         "Invalid Wi-Fi interface.",
     )
+    has_legacy_ap = (host / "networking/hostapd.nix").is_file()
+    require(has_legacy_ap or not args.wifi, "This checkout has no Inari access point.")
     values = {
         "yomi.inari.rootDataset": root,
         "yomi.inari.tpmUnlock": args.tpm,
         "yomi.inari.lanInterface": args.lan,
-        "yomi.inari.wifiInterface": args.wifi or None,
         "disko.devices.disk.x.device": stable_device(info),
         'fileSystems."/boot".device': esp_device(info),
     }
+    if has_legacy_ap:
+        values["yomi.inari.wifiInterface"] = args.wifi or None
     # JSON literals are valid Nix strings/bools/null; interface names are validated.
     text = (
         "{lib, ...}: {\n"
@@ -1507,7 +1510,11 @@ def parse(argv=None):
             )
         if name in ("restore-zfs", "continue-install", "fresh-install"):
             sub.add_argument("--lan")
-            sub.add_argument("--wifi", default="")
+            sub.add_argument(
+                "--wifi",
+                default="",
+                help="Only for older checkouts with an Inari access point",
+            )
             sub.add_argument(
                 "--tpm",
                 action="store_true",
@@ -1732,14 +1739,7 @@ def wizard():
                         interfaces,
                     )
                 ]
-                wifi_choices = ["No Wi-Fi access point"] + interfaces
-                wifi_index = menu(screen, "Wi-Fi interface for hostapd", wifi_choices)
-                options += [
-                    "--lan",
-                    lan,
-                    "--wifi",
-                    wifi_choices[wifi_index] if wifi_index else "",
-                ]
+                options += ["--lan", lan]
                 if (
                     menu(
                         screen,
