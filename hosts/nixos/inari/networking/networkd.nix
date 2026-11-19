@@ -3,10 +3,17 @@
   lib,
   ...
 }: {
-  options.yomi.inari.lanInterface = lib.mkOption {
-    type = lib.types.str;
-    default = "eno1";
-    description = "Physical LAN interface enslaved to br0 on the installed server.";
+  options.yomi.inari = {
+    lanInterface = lib.mkOption {
+      type = lib.types.str;
+      default = "eno1";
+      description = "Physical LAN interface enslaved to br0 on the installed server.";
+    };
+    lanIPv4 = lib.mkOption {
+      type = lib.types.str;
+      default = "192.168.178.200";
+      description = "Static IPv4 address used by Inari's home network.";
+    };
   };
   config = {
     # Forward packets (IPV4 only)
@@ -43,7 +50,7 @@
           linkConfig.RequiredForOnline = "carrier";
           networkConfig = {
             LinkLocalAddressing = "no";
-            Address = "192.168.178.200/24";
+            Address = "${config.yomi.inari.lanIPv4}/24";
             Gateway = "192.168.178.1";
           };
         };

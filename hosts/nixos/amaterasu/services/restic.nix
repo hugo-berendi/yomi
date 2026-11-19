@@ -1,4 +1,10 @@
-{config, ...}: {
+{
+  config,
+  outputs,
+  ...
+}: let
+  inherit (outputs.nixosConfigurations.inari.config.yomi.inari) lanIPv4;
+in {
   # Backups of /persist/data and /persist/state, pushed over sftp to a
   # dedicated, chrooted account on inari (see hosts/nixos/inari/services/restic/default.nix).
   #
@@ -10,18 +16,17 @@
   # data that only exists on this laptop, everything else is in git already.
   sops.secrets.amaterasu_restic_ssh_key.sopsFile = ../secrets.yaml;
 
+  # The backup must use the LAN without relying on MagicDNS. Keep checking
+  # Inari's pinned host key even when connecting directly to its IPv4 address.
+  programs.ssh.extraConfig = ''
+    Host inari-restic
+      HostName ${lanIPv4}
+      HostKeyAlias inari
+      IdentityFile ${config.sops.secrets.amaterasu_restic_ssh_key.path}
+  '';
+
   yomi.restic = {
     enable = true;
-    repository = "sftp:restic-amaterasu@inari:/data";
-    extraOptions = ["sftp.args='-i ${config.sops.secrets.amaterasu_restic_ssh_key.path}'"];
+    repository = "sftp:restic-amaterasu@inari-restic:/data";
   };
-
-  # Inari retains the last observed success while the laptop is asleep or away.
-  services.prometheus.exporters.node = {
-    enable = true;
-    port = config.yomi.ports.prometheus-node-exporter;
-    extraFlags = ["--collector.disable-defaults"];
-    enabledCollectors = ["textfile"];
-  };
-  networking.firewall.interfaces.tailscale0.allowedTCPPorts = [config.yomi.ports.prometheus-node-exporter];
 }
