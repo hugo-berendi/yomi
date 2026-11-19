@@ -38,7 +38,8 @@ in {
     services.traefik = {
       staticConfigOptions.entryPoints.websecure = {
         forwardedHeaders.insecure = false;
-        proxyProtocol.insecure = false;
+        # Setting proxyProtocol at all enables its listener. Direct clients
+        # need the regular TLS listener, with no trusted proxy addresses.
         # EntryPoint middleware also covers Pangolin's login/API routers and
         # runs before their authentication, without overriding generated routes.
         http.middlewares = [
