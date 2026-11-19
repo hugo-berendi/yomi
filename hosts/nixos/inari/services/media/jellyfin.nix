@@ -7,9 +7,8 @@
   # {{{ Reverse proxy
   yomi.web.at.media = {
     port = config.yomi.ports.jellyfin;
-    transport = "cloudflare";
+    transport = "pangolin";
     authentication = "application";
-    stagePangolin = true;
     monitor = {
       enable = true;
       name = "jellyfin";
@@ -21,6 +20,11 @@
         path = "/health";
       };
     };
+  };
+  # Keep the tunnel origin available for a DNS-only rollback.
+  yomi.cloudflared.at.media = {
+    inherit (config.yomi.web.at.media) host port protocol proxyAddress;
+    dns.enable = false;
   };
   yomi.expose.private.media = {
     destination = "127.0.0.1";
