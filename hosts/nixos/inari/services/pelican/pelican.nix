@@ -7,6 +7,7 @@
   dockerNetwork = import ../../lib/docker-network.nix;
   dataDir = "/persist/data/pelican";
   logsDir = "/persist/state/pelican/logs";
+  endpoint = config.yomi.web.at.pelican;
 
   # `./Caddyfile` resolves to a path *inside* the flake source, so the mount
   # string carried the source hash -- which changes on every commit. The unit
@@ -18,7 +19,15 @@
     name = "pelican-caddyfile";
   };
 in {
-  yomi.cloudflared.at.pelican.port = config.yomi.ports.pelican-panel;
+  yomi.web.at.pelican = {
+    port = config.yomi.ports.pelican-panel;
+    transport = "pangolin";
+    authentication = "application";
+  };
+  yomi.cloudflared.at.pelican = {
+    inherit (endpoint) host port protocol proxyAddress;
+    dns.enable = false;
+  };
 
   # The Alpine-based image runs as www-data (UID/GID 82).
   systemd.tmpfiles.rules = [
@@ -36,10 +45,10 @@ in {
     image = (import ../../images.nix).pelican-panel;
     environment = {
       "ADMIN_EMAIL" = "pelican@hugo-berendi.de";
-      "APP_URL" = config.yomi.cloudflared.at.pelican.url;
+      "APP_URL" = endpoint.url;
       "XDG_DATA_HOME" = "/pelican-data";
 
-      # TLS is terminated by the cloudflare tunnel. Without BEHIND_PROXY the
+      # The public reverse proxy terminates TLS. Without BEHIND_PROXY the
       # entrypoint refuses an https APP_URL, demanding a Let's Encrypt address
       # it must not need; with it, caddy serves plain http on :80 and turns
       # auto_https off. TRUSTED_PROXIES is this network's gateway and matches
@@ -53,7 +62,7 @@ in {
       "${caddyfile}:/etc/caddy/Caddyfile"
     ];
     ports = [
-      "127.0.0.1:${toString config.yomi.cloudflared.at.pelican.port}:80"
+      "127.0.0.1:${toString endpoint.port}:80"
     ];
     log-driver = "journald";
     extraOptions = [
