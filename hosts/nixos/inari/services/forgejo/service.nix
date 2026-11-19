@@ -3,7 +3,9 @@
   config,
   pkgs,
   ...
-}: {
+}: let
+  endpoint = config.yomi.web.at.git;
+in {
   # {{{ Secrets
   sops.secrets.forgejo_mail_password = {
     sopsFile = ../../secrets.yaml;
@@ -12,9 +14,17 @@
   };
   # }}}
   # {{{ Reverse proxy
-  yomi.cloudflared.at.git = {
+  yomi.web.at.git = {
     port = config.yomi.ports.forgejo;
+    transport = "pangolin";
+    authentication = "application";
     enableAnubis = true;
+    monitor.enable = true;
+  };
+  yomi.cloudflared.at.git = {
+    inherit (endpoint) host port protocol proxyAddress;
+    enableAnubis = true;
+    dns.enable = false;
   };
   # }}}
   # {{{ DNS records
@@ -30,7 +40,7 @@
   # Forgejo does not run its own sshd (START_SSH_SERVER is unset), so git
   # traffic to this name is served by the host's sshd and presents the host
   # key. Pin it under that name too, or every clone is trust-on-first-use.
-  yomi.ssh.extraHostNames = ["ssh.${config.yomi.cloudflared.at.git.host}"];
+  yomi.ssh.extraHostNames = ["ssh.${endpoint.host}"];
   # }}}
   # {{{ Service
   services.forgejo = {
@@ -51,11 +61,11 @@
       default.APP_NAME = "hugit";
 
       server = {
-        DOMAIN = config.yomi.cloudflared.at.git.host;
-        HTTP_PORT = config.yomi.cloudflared.at.git.port;
-        ROOT_URL = config.yomi.cloudflared.at.git.url;
+        DOMAIN = endpoint.host;
+        HTTP_PORT = endpoint.port;
+        ROOT_URL = endpoint.url;
         LANDING_PAGE = "hugo-berendi";
-        SSH_DOMAIN = "ssh.${config.yomi.cloudflared.at.git.host}";
+        SSH_DOMAIN = "ssh.${endpoint.host}";
       };
 
       cron.ENABLED = true;
