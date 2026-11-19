@@ -25,6 +25,9 @@
       PasswordAuthentication yes
     Match all
   '';
+  # NixOS derives the PAM default from global PasswordAuthentication, which
+  # stays off because only the pilot's Match block enables it.
+  security.pam.services.sshd.unixAuth = lib.mkForce true;
 
   # Listener definitions can be inspected before the gateway is provisioned.
   yomi.expose.server.sourceHosts = ["inari"];
