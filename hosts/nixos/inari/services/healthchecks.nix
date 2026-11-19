@@ -4,12 +4,17 @@
   ...
 }: let
   port = config.yomi.ports.healthchecks;
+  endpoint = config.yomi.web.at.ping;
 in {
   # {{{ Reverse proxy
-  yomi.cloudflared.at.ping = {
-    subdomain = "ping";
+  yomi.web.at.ping = {
     inherit port;
-    enableAnubis = false;
+    transport = "pangolin";
+    authentication = "application";
+  };
+  yomi.cloudflared.at.ping = {
+    inherit (endpoint) host port protocol proxyAddress;
+    dns.enable = false;
   };
   # }}}
   # {{{ Service
@@ -19,7 +24,7 @@ in {
     inherit port;
 
     settings = {
-      SITE_ROOT = config.yomi.cloudflared.at.ping.url;
+      SITE_ROOT = endpoint.url;
       SITE_NAME = "Yomi Ping";
       REGISTRATION_OPEN = false;
       SECRET_KEY_FILE = config.sops.secrets.healthchecks_secret_key.path;
