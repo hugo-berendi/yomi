@@ -28,6 +28,9 @@
     settings = {
       PAPERLESS_AUTO_LOGIN_USERNAME = "admin";
       PAPERLESS_CSRF_TRUSTED_ORIGINS = "https://paperless.hugo-berendi.de";
+      # Also limits the tesseract build to these languages (plus equ, osd);
+      # stirling-pdf.nix matches the list so both share one tesseract.
+      PAPERLESS_OCR_LANGUAGE = "deu+eng";
     };
   };
   # }}}
