@@ -41,10 +41,6 @@ in {
       };
     };
   };
-  yomi.cloudflared.at.request-media = {
-    inherit (config.yomi.web.at.request-media) host port protocol proxyAddress;
-    dns.enable = false;
-  };
   # }}}
   #{{{ settings
   nixarr.seerr = {

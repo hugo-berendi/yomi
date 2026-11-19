@@ -24,7 +24,6 @@
       ./services/proton-mail-sorter
       ./services/diabetes
       ./services/protonmail-bridge
-      ./services/cloudflared.nix
       ./services/forgejo
       ./services/paperless.nix
       ./services/homepage.nix
@@ -86,6 +85,7 @@
   yomi.wireless.enable = false;
   yomi.tailscale.enable = true;
   yomi.tailscale.exitNode = true;
+  yomi.anubis.enable = true;
   yomi.meilisearch.sopsFile = ./secrets.yaml;
   yomi.meilisearch.environment = "production";
 

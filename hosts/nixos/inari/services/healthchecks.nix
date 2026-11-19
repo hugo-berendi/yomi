@@ -12,10 +12,6 @@ in {
     transport = "pangolin";
     authentication = "application";
   };
-  yomi.cloudflared.at.ping = {
-    inherit (endpoint) host port protocol proxyAddress;
-    dns.enable = false;
-  };
   # }}}
   # {{{ Service
   services.healthchecks = {

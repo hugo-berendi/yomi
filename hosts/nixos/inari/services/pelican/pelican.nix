@@ -24,10 +24,6 @@ in {
     transport = "pangolin";
     authentication = "application";
   };
-  yomi.cloudflared.at.pelican = {
-    inherit (endpoint) host port protocol proxyAddress;
-    dns.enable = false;
-  };
 
   # The Alpine-based image runs as www-data (UID/GID 82).
   systemd.tmpfiles.rules = [

@@ -10,8 +10,8 @@
       command = ["${config.systemd.package}/bin/systemctl" "is-active" "nginx.service"];
     }
     {
-      name = "Cloudflare tunnel";
-      command = ["${config.systemd.package}/bin/systemctl" "is-active" "cloudflared-tunnel-${config.yomi.cloudflared.tunnel}.service"];
+      name = "Pangolin site connector";
+      command = ["${config.systemd.package}/bin/systemctl" "is-active" "newt.service"];
     }
     {
       name = "PostgreSQL query";

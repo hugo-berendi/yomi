@@ -21,10 +21,6 @@ in {
       path = "/healthz";
     };
   };
-  yomi.cloudflared.at.search = {
-    inherit (config.yomi.web.at.search) host port protocol proxyAddress;
-    dns.enable = false;
-  };
   # {{{ Secrets
   sops.secrets.searxng_env = {
     sopsFile = ../../secrets.yaml;

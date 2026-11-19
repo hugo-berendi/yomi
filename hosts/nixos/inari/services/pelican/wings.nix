@@ -119,10 +119,6 @@ in {
     transport = "pangolin";
     authentication = "application";
   };
-  yomi.cloudflared.at.wings = {
-    inherit (config.yomi.web.at.wings) host port protocol proxyAddress;
-    dns.enable = false;
-  };
 
   yomi.nginx.at.wings-local = {
     port = config.yomi.ports.pelican-node1;

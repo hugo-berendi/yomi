@@ -87,15 +87,6 @@ in {
       path = "/hosting/capabilities";
     };
   };
-  # Keep both tunnel origins available if the previous DNS configuration is reapplied.
-  yomi.cloudflared.at.cloud = {
-    inherit (cloud) host port protocol proxyAddress;
-    dns.enable = false;
-  };
-  yomi.cloudflared.at.office = {
-    inherit (office) host port protocol proxyAddress;
-    dns.enable = false;
-  };
 
   # The TLS gateway forwards to the module's loopback php-fpm vhost over HTTP.
   services.nginx.virtualHosts.${cloud.host} = {

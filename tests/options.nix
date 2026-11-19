@@ -4,7 +4,7 @@
 }: let
   inherit (pkgs) lib;
   base = configurations.inari;
-  extend = module: (base.extendModules {modules = [module];}).config;
+  extend = module: (base.extendModules {modules = [{yomi.cloudflared.tunnel = "00000000-0000-4000-8000-000000000000";} module];}).config;
   check = name: condition: {
     inherit name;
     assertion = condition;
@@ -60,7 +60,7 @@
       port = 19200;
     };
   };
-  collision = extend {yomi.ports.fixture = base.config.yomi.ports.forgejo + 200;};
+  collision = extend {yomi.ports.fixture = base.config.yomi.expose.at.git.anubis.port;};
   overflow = extend {
     yomi.cloudflared.at.fixture = {
       port = 65530;

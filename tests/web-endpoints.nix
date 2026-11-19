@@ -3,7 +3,7 @@
   configuration,
 }: let
   inherit (pkgs) lib;
-  extend = module: (configuration.extendModules {modules = [module];}).config;
+  extend = module: (configuration.extendModules {modules = [{yomi.cloudflared.tunnel = "00000000-0000-4000-8000-000000000000";} module];}).config;
   valid = c: lib.all (a: a.assertion) c.assertions;
   fixture = transport: {
     port = 19250;
@@ -39,14 +39,13 @@
     (valid live
       && live.services.pocket-id.settings.APP_URL == "https://auth.hugo-berendi.de"
       && !live.yomi.expose.at.pocket-id.sso
-      && !live.yomi.cloudflared.at.pocket-id.dns.enable
+      && !live.services.cloudflared.enable
+      && live.yomi.cloudflared.at == {}
       && expectedGatewayDns "auth")
     (!live.yomi.expose.at.media.sso
-      && !live.yomi.cloudflared.at.media.dns.enable
       && expectedGatewayDns "media")
     (lib.all (name:
       !live.yomi.expose.at.${name}.sso
-      && !live.yomi.cloudflared.at.${name}.dns.enable
       && expectedGatewayDns name) ["audiobookshelf" "request-media" "bin" "search" "ntfy" "immich-share" "cloud" "office"])
     (monitoredUrls "jellyseerr" == ["https://request-media.hugo-berendi.de"])
     (monitoredUrls "microbin" == ["https://bin.hugo-berendi.de"])

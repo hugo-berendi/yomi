@@ -5,14 +5,12 @@
 }: let
   port = config.yomi.ports.gatus;
   exposed = lib.optionals config.yomi.expose.enable (lib.attrValues config.yomi.expose.at);
-  exposedHosts = map (e: e.host) (lib.filter (e: e.enable) exposed);
   endpoints =
     (
       if config.yomi.nginx.enable
       then lib.attrValues config.yomi.nginx.at
       else []
     )
-    ++ lib.filter (e: !lib.elem e.host exposedHosts) (lib.attrValues config.yomi.cloudflared.at)
     ++ exposed;
   monitored = lib.filter (e: e.enable && e.monitor.enable) endpoints;
   # Gatus mails every outage itself, and the service-status workflow pushes
@@ -41,7 +39,6 @@
     alerts = mailAlert name;
   };
 in {
-  yomi.cloudflared.at.git.monitor.enable = true;
   yomi.nginx.at = (lib.genAttrs ["paperless" "immich" "lab" "n8n" "karakeep" "radarr" "sonarr" "bazarr" "prowlarr" "torrent" "music" "cal" "pdf" "grafana" "prometheus" "adguard" "monitoring" "budget"] (_: {monitor.enable = true;})) // {status.port = port;};
   # {{{ Reverse proxy
   # }}}

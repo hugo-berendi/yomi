@@ -21,11 +21,6 @@ in {
     enableAnubis = true;
     monitor.enable = true;
   };
-  yomi.cloudflared.at.git = {
-    inherit (endpoint) host port protocol proxyAddress;
-    enableAnubis = true;
-    dns.enable = false;
-  };
   # }}}
   # {{{ DNS records
   yomi.dns.records = [

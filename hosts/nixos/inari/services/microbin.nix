@@ -16,10 +16,6 @@
       name = "microbin";
     };
   };
-  yomi.cloudflared.at.bin = {
-    inherit (config.yomi.web.at.bin) host port protocol proxyAddress;
-    dns.enable = false;
-  };
   # }}}
   # {{{ Service
   services.microbin = {

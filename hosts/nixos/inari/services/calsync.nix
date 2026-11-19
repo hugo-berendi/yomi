@@ -98,10 +98,6 @@ in {
     authentication = "none";
     pangolin.allowedCountries = [];
   };
-  yomi.cloudflared.at.calsync = {
-    inherit (endpoint) host port protocol proxyAddress;
-    dns.enable = false;
-  };
 
   # Loopback only; the tunnel is the one way in.
   services.nginx.virtualHosts.calsync = {

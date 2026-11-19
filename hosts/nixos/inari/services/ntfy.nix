@@ -15,10 +15,6 @@ in {
       path = "/v1/health";
     };
   };
-  yomi.cloudflared.at.ntfy = {
-    inherit (config.yomi.web.at.ntfy) host port protocol proxyAddress;
-    dns.enable = false;
-  };
   # }}}
   # {{{ Service
   services.ntfy-sh = {

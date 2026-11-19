@@ -48,10 +48,6 @@ in {
         }) ["0.0.0.0/0" "::/0"];
     };
   };
-  yomi.cloudflared.at.matrix = {
-    inherit (matrix) host port protocol proxyAddress;
-    dns.enable = false;
-  };
   # }}}
 
   # {{{ Secrets

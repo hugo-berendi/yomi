@@ -21,10 +21,6 @@ in {
       };
     };
   };
-  yomi.cloudflared.at.audiobookshelf = {
-    inherit (config.yomi.web.at.audiobookshelf) host port protocol proxyAddress;
-    dns.enable = false;
-  };
   # }}}
   # {{{ Service
   services.audiobookshelf = {

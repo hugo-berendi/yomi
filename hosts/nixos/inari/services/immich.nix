@@ -29,10 +29,6 @@ in {
     authentication = "application";
     monitor.enable = true;
   };
-  yomi.cloudflared.at.immich-share = {
-    inherit (config.yomi.web.at.immich-share) host port protocol proxyAddress;
-    dns.enable = false;
-  };
   # }}}
   # {{{ Public proxy
   services.immich-public-proxy = {

@@ -21,11 +21,6 @@
       };
     };
   };
-  # Keep the tunnel origin available for a DNS-only rollback.
-  yomi.cloudflared.at.media = {
-    inherit (config.yomi.web.at.media) host port protocol proxyAddress;
-    dns.enable = false;
-  };
   yomi.expose.private.media = {
     destination = "127.0.0.1";
     alias = "media.inari.internal";

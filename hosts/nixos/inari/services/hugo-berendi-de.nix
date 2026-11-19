@@ -17,10 +17,6 @@ in {
     authentication = "none";
     pangolin.allowedCountries = [];
   };
-  yomi.cloudflared.at.hugo-berendi-de = {
-    inherit (endpoint) host subdomain port protocol proxyAddress;
-    dns.enable = false;
-  };
   # }}}
   # {{{ Service
   services.hugo-berendi-de = {
