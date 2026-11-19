@@ -1,5 +1,5 @@
 {
-  imports = [./app-state.nix ./restore.nix];
+  imports = [./amaterasu-metrics.nix ./app-state.nix ./restore.nix];
   # Backups of /persist/data and /persist/state. The repository lives on the
   # redundant raid5pool rather than on the NVMe the data itself sits on, so it
   # survives losing zroot.

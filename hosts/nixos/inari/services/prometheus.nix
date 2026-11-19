@@ -85,10 +85,6 @@
 
     scrapeConfigs = [
       {
-        job_name = "amaterasu-backups";
-        static_configs = [{targets = ["amaterasu.hugo-berendi.de:${toString config.yomi.ports.prometheus-node-exporter}"];}];
-      }
-      {
         job_name = "inari-system";
         static_configs = [
           {

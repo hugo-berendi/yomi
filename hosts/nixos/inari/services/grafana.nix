@@ -347,8 +347,7 @@ in {
                       };
                       datasourceUid = "prometheus";
                       model = {
-                        # Laptop sleep is expected; its backups have a separate age alert.
-                        expr = ''up{job!="amaterasu-backups"} == bool 0'';
+                        expr = ''up == bool 0'';
                         instant = true;
                         refId = "A";
                       };

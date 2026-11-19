@@ -9,7 +9,7 @@
     evaluation_interval = "1h";
     tests = [
       {
-        name = "Down targets alert; laptop sleep does not";
+        name = "The target-down check distinguishes healthy and down targets";
         interval = "1m";
         input_series = [
           {
@@ -17,8 +17,8 @@
             values = "0";
           }
           {
-            series = ''up{job="amaterasu-backups",instance="laptop"}'';
-            values = "0";
+            series = ''up{job="inari-system",instance="healthy"}'';
+            values = "1";
           }
         ];
         promql_expr_test = [
@@ -26,6 +26,10 @@
             expr = query "inari-target-down";
             eval_time = "0m";
             exp_samples = [
+              {
+                labels = ''{job="inari-system",instance="healthy"}'';
+                value = 0;
+              }
               {
                 labels = ''{job="inari-system",instance="server"}'';
                 value = 1;
