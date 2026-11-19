@@ -10,14 +10,17 @@
   # rather than a store symlink.
   configFile = config.sops.templates."pelican-wings.yml".path;
   panelOrigin = config.virtualisation.oci-containers.containers.pelican-panel.environment.APP_URL;
+  nodeSecret = {
+    sopsFile = ../../secrets.yaml;
+    restartUnits = ["wings.service"];
+  };
 in {
   sops.secrets = {
-    pelican_wings_uuid.sopsFile = ../../secrets.yaml;
-    pelican_wings_token_id.sopsFile = ../../secrets.yaml;
-    pelican_wings_token.sopsFile = ../../secrets.yaml;
+    pelican_wings_uuid = nodeSecret;
+    pelican_wings_token_id = nodeSecret;
+    pelican_wings_token = nodeSecret;
   };
 
-  sops.templates."pelican-wings.yml".restartUnits = ["wings.service"];
   sops.templates."pelican-wings.yml".content = ''
     debug: false
     uuid: ${config.sops.placeholder.pelican_wings_uuid}
@@ -71,6 +74,9 @@ in {
 
   systemd.services.wings = {
     description = "Pelican Wings Daemon";
+    # Wings rewrites the rendered YAML on startup. Track the template input
+    # so an unrelated system activation does not restart the daemon.
+    restartTriggers = [config.sops.templates."pelican-wings.yml".file];
     after = ["docker.service" "network.target" "wings-network.service"];
     requires = ["docker.service" "wings-network.service"];
     serviceConfig = {
