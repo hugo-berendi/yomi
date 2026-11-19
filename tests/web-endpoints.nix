@@ -47,10 +47,14 @@
     (lib.all (name:
       !live.yomi.expose.at.${name}.sso
       && !live.yomi.cloudflared.at.${name}.dns.enable
-      && expectedGatewayDns name) ["audiobookshelf" "request-media" "bin" "search" "ntfy" "immich-share"])
+      && expectedGatewayDns name) ["audiobookshelf" "request-media" "bin" "search" "ntfy" "immich-share" "cloud" "office"])
     (monitoredUrls "jellyseerr" == ["https://request-media.hugo-berendi.de"])
     (monitoredUrls "microbin" == ["https://bin.hugo-berendi.de"])
     (monitoredUrls "searxng" == ["https://search.hugo-berendi.de"])
+    (monitoredUrls "nextcloud"
+      == ["https://cloud.hugo-berendi.de"]
+      && live.services.nextcloud.hostName == "cloud.hugo-berendi.de"
+      && live.services.collabora-online.settings.server_name == "office.hugo-berendi.de")
     (monitoredUrls "immich-share"
       == ["https://immich-share.hugo-berendi.de"]
       && live.services.immich.settings.server.externalDomain == "https://immich-share.hugo-berendi.de"

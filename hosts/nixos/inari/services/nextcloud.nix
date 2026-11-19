@@ -6,8 +6,8 @@
 }: let
   cfg = config.services.nextcloud;
   pocketIdUrl = config.yomi.web.at.pocket-id.url;
-  cloud = config.yomi.cloudflared.at.cloud;
-  office = config.yomi.cloudflared.at.office;
+  cloud = config.yomi.web.at.cloud;
+  office = config.yomi.web.at.office;
   occ = lib.getExe cfg.occ;
   wopiPort = config.yomi.ports.nextcloud-wopi;
   wopiCallback = "https://${cloud.host}:${toString wopiPort}";
@@ -65,11 +65,39 @@
   # }}}
 in {
   # {{{ reverse proxy
-  # nginx (the module's own php-fpm vhost) listens on loopback only and
-  # cloudflared forwards to it; TLS ends at Cloudflare.
-  yomi.cloudflared.at.cloud.port = config.yomi.ports.nextcloud;
-  yomi.cloudflared.at.office.port = config.yomi.ports.collabora;
+  yomi.web.at.cloud = {
+    port = config.yomi.ports.nextcloud;
+    transport = "pangolin";
+    authentication = "application";
+    monitor = {
+      enable = true;
+      name = "nextcloud";
+    };
+    pangolin.healthCheck = {
+      enable = true;
+      path = "/status.php";
+    };
+  };
+  yomi.web.at.office = {
+    port = config.yomi.ports.collabora;
+    transport = "pangolin";
+    authentication = "application";
+    pangolin.healthCheck = {
+      enable = true;
+      path = "/hosting/capabilities";
+    };
+  };
+  # Keep both tunnel origins available if the previous DNS configuration is reapplied.
+  yomi.cloudflared.at.cloud = {
+    inherit (cloud) host port protocol proxyAddress;
+    dns.enable = false;
+  };
+  yomi.cloudflared.at.office = {
+    inherit (office) host port protocol proxyAddress;
+    dns.enable = false;
+  };
 
+  # The TLS gateway forwards to the module's loopback php-fpm vhost over HTTP.
   services.nginx.virtualHosts.${cloud.host} = {
     listen = [
       {
@@ -82,7 +110,6 @@ in {
         ssl = true;
       }
     ];
-    # Cloudflare already redirects to HTTPS; nginx must not do so again.
     forceSSL = false;
     addSSL = true;
     enableACME = true;
@@ -269,8 +296,7 @@ in {
   };
   # }}}
   # {{{ collabora
-  # Collabora serves plain HTTP on loopback; cloudflared publishes it as its
-  # own host because the browser loads the editor frame straight from it.
+  # The browser loads the editor frame from the separate public office hostname.
   services.collabora-online = {
     enable = true;
     port = config.yomi.ports.collabora;
