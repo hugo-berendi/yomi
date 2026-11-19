@@ -101,6 +101,22 @@
   rejects = configuration: lib.any (a: !a.assertion) configuration.config.assertions;
   checks = [
     {
+      name = "Matrix federation is worldwide and client requests keep the EU policy";
+      assertion = let
+        inari = self.nixosConfigurations.inari.config;
+        resource = inari.yomi.expose.blueprint.public-resources.inari-web-matrix;
+      in
+        !resource.auth.sso-enabled
+        && map (rule: [rule.action rule.match rule.value]) resource.rules
+        == [
+          ["pass" "path" "/.well-known/matrix/server"]
+          ["pass" "path" "/_matrix/federation/*"]
+          ["pass" "path" "/_matrix/key/*"]
+        ]
+        ++ map (country: ["pass" "country" country]) inari.yomi.expose.allowedCountries
+        ++ [["deny" "cidr" "0.0.0.0/0"] ["deny" "cidr" "::/0"]];
+    }
+    {
       name = "Country allowlists retain authentication and end in IPv4/IPv6 deny-all rules";
       assertion = let
         rules = public.ebisu-web-direct.rules;

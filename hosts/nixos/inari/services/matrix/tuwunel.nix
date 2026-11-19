@@ -4,7 +4,13 @@
   upkgs,
   ...
 }: let
-  matrixHost = "matrix.${config.yomi.dns.domain}";
+  matrix = config.yomi.web.at.matrix;
+  matrixHost = matrix.host;
+  federationPaths = [
+    "/.well-known/matrix/server"
+    "/_matrix/federation/*"
+    "/_matrix/key/*"
+  ];
   bridges = config.yomi.matrix.bridges.enable;
   secret = {
     sopsFile = ../../secrets.yaml;
@@ -14,7 +20,38 @@
   appserviceTokens = lib.concatMap (bridge: ["matrix_tuwunel_appservice_${bridge}_as_token" "matrix_tuwunel_appservice_${bridge}_hs_token"]) ["whatsapp" "signal" "discord"];
 in {
   # {{{ Reverse proxy
-  yomi.cloudflared.at.matrix.port = config.yomi.ports.matrix-tuwunel-proxy;
+  yomi.web.at.matrix = {
+    port = config.yomi.ports.matrix-tuwunel-proxy;
+    transport = "pangolin";
+    authentication = "application";
+    pangolin = {
+      # Discovery, federation and key lookups must work for homeservers worldwide.
+      # Evaluate these paths before applying the usual EU allowlist to all other requests.
+      allowedCountries = [];
+      rules =
+        map (value: {
+          action = "pass";
+          match = "path";
+          inherit value;
+        })
+        federationPaths
+        ++ map (value: {
+          action = "pass";
+          match = "country";
+          inherit value;
+        })
+        config.yomi.expose.allowedCountries
+        ++ map (value: {
+          action = "deny";
+          match = "cidr";
+          inherit value;
+        }) ["0.0.0.0/0" "::/0"];
+    };
+  };
+  yomi.cloudflared.at.matrix = {
+    inherit (matrix) host port protocol proxyAddress;
+    dns.enable = false;
+  };
   # }}}
 
   # {{{ Secrets
@@ -129,7 +166,7 @@ in {
     listen = [
       {
         addr = "127.0.0.1";
-        port = config.yomi.cloudflared.at.matrix.port;
+        inherit (matrix) port;
         ssl = false;
       }
     ];
