@@ -18,16 +18,30 @@
   yomi.expose.server.edition = "enterprise";
   yomi.expose.server.geoip.enable = true;
 
-  # Confirm the provider's addresses and routes from the rescue system before
-  # installation; no guessed public addresses are published in DNS.
+  # The netcup Debian image uses static addresses on both IP families.
   networking.useDHCP = false;
   networking.useNetworkd = true;
+  networking.nameservers = ["46.38.252.230" "46.38.225.230" "2a03:4000:8000::fce6"];
   systemd.network.networks."10-uplink" = {
-    matchConfig.Name = "en* eth*";
+    matchConfig.MACAddress = "7a:f7:e3:9b:63:c0";
     networkConfig = {
-      DHCP = "ipv4";
-      IPv6AcceptRA = true;
+      DHCP = "no";
+      IPv6AcceptRA = false;
     };
+    address = [
+      "62.83.116.214/22"
+      "2a03:4000:16:16e1:78f7:e3ff:fe9b:63c0/64"
+    ];
+    routes = [
+      {
+        Gateway = "62.83.116.1";
+        GatewayOnLink = true;
+      }
+      {
+        Gateway = "fe80::1";
+        GatewayOnLink = true;
+      }
+    ];
   };
 
   boot.loader.grub = {
@@ -41,8 +55,4 @@
   # The persistent root keeps SSH keys and service state across reboots.
   services.qemuGuest.enable = true;
   services.fstrim.enable = lib.mkDefault true;
-
-  warnings = [
-    "ebisu is a bootstrap configuration: replace the disk placeholder and verify firmware, DHCP IPv4 and IPv6 routes before installing."
-  ];
 }

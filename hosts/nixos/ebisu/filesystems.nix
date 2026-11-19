@@ -1,9 +1,8 @@
 {lib, ...}: {
-  # An intentionally nonexistent target prevents formatting an assumed /dev/vda.
-  # Replace this with the disk identified in the VPS rescue system.
+  # The VPS disk has no serial/by-id link. Use its verified virtio PCI path.
   disko.devices.disk.system = {
     type = "disk";
-    device = lib.mkDefault "/dev/disk/by-id/REPLACE_WITH_NETCUP_DISK";
+    device = lib.mkDefault "/dev/disk/by-path/virtio-pci-0000:00:10.0";
     content = {
       type = "gpt";
       partitions = {
