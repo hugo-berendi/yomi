@@ -48,6 +48,7 @@
     ntfy = lib.mkDefault 8441;
     opencode = lib.mkDefault 8487;
     nextcloud = lib.mkDefault 8444;
+    nextcloud-wopi = lib.mkDefault 8446;
     collabora = lib.mkDefault 9980;
     windrose-direct = lib.mkDefault 8489;
     windrose-rcon = lib.mkDefault 8490;

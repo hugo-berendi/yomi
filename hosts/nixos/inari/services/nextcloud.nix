@@ -9,6 +9,12 @@
   cloud = config.yomi.cloudflared.at.cloud;
   office = config.yomi.cloudflared.at.office;
   occ = lib.getExe cfg.occ;
+  wopiPort = config.yomi.ports.nextcloud-wopi;
+  wopiCallback = "https://${cloud.host}:${toString wopiPort}";
+  wopiHosts = pkgs.concatText "coolwsd-hosts" [
+    config.environment.etc.hosts.source
+    (pkgs.writeText "coolwsd-nextcloud-host" "\n127.0.0.1 ${cloud.host}\n")
+  ];
   colors = config.lib.stylix.colors;
   themeCss = pkgs.writeText "nextcloud-theme.css" ''
     :root, body {
@@ -70,10 +76,17 @@ in {
         addr = "127.0.0.1";
         port = config.yomi.ports.nextcloud;
       }
+      {
+        addr = "127.0.0.1";
+        port = wopiPort;
+        ssl = true;
+      }
     ];
     # Cloudflare already redirects to HTTPS; nginx must not do so again.
     forceSSL = false;
-    enableACME = false;
+    addSSL = true;
+    enableACME = true;
+    acmeRoot = null;
   };
   # }}}
   # {{{ secrets
@@ -285,6 +298,10 @@ in {
   # generates code), PrivateDevices and ProtectProc (the jails bind /dev and
   # read /proc of their children). Unverified at runtime until the next switch.
   systemd.services.coolwsd.serviceConfig = {
+    # Resolve only Collabora's Nextcloud callbacks to the loopback TLS listener.
+    BindReadOnlyPaths = ["${wopiHosts}:/etc/hosts"];
+    # The host's nscd would resolve names against its own hosts file.
+    InaccessiblePaths = ["/run/nscd"];
     NoNewPrivileges = true;
     ProtectSystem = "strict";
     ProtectHome = true;
@@ -313,8 +330,9 @@ in {
       User = "nextcloud";
     };
     script = ''
-      nextcloud-occ config:app:set richdocuments wopi_url --value=${office.url}
+      nextcloud-occ config:app:set richdocuments wopi_url --value='http://[::1]:${toString config.yomi.ports.collabora}'
       nextcloud-occ config:app:set richdocuments public_wopi_url --value=${office.url}
+      nextcloud-occ config:app:set richdocuments wopi_callback_url --value=${wopiCallback}
       nextcloud-occ config:app:set richdocuments wopi_allowlist --value="127.0.0.1,::1"
     '';
   };
