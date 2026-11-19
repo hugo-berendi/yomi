@@ -5,7 +5,7 @@
   ...
 }: let
   port = config.yomi.ports.calsync;
-  endpoint = config.yomi.cloudflared.at.calsync;
+  endpoint = config.yomi.web.at.calsync;
   contact = "personal@hugo-berendi.de";
 
   # Google will not publish an OAuth app (and so stops expiring its refresh
@@ -92,7 +92,16 @@
     '';
   };
 in {
-  yomi.cloudflared.at.calsync.port = port;
+  yomi.web.at.calsync = {
+    inherit port;
+    transport = "pangolin";
+    authentication = "none";
+    pangolin.allowedCountries = [];
+  };
+  yomi.cloudflared.at.calsync = {
+    inherit (endpoint) host port protocol proxyAddress;
+    dns.enable = false;
+  };
 
   # Loopback only; the tunnel is the one way in.
   services.nginx.virtualHosts.calsync = {
