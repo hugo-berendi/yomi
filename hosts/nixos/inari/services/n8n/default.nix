@@ -222,9 +222,9 @@ in {
         N8N_PORT = toString config.yomi.nginx.at.n8n.port;
         N8N_HOST = "127.0.0.1";
         # N8N_HOST only names the host in generated URLs; the listener binds
-        # to every address unless told otherwise. Tailscale and the docker
-        # bridges are accepted without a port filter, so anything they carry
-        # could otherwise post to the unauthenticated webhooks.
+        # to every address unless told otherwise. The Docker bridges are
+        # accepted without a port filter, so their clients could otherwise
+        # post to the unauthenticated webhooks.
         N8N_LISTEN_ADDRESS = "127.0.0.1";
         N8N_EDITOR_BASE_URL = config.yomi.nginx.at.n8n.url;
         N8N_TEMPLATES_ENABLED = toString true;

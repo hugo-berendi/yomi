@@ -126,12 +126,11 @@ in {
     };
   };
   # }}}
-  # {{{ Tailnet access
+  # {{{ Private mail access
   # Mail clients on other devices connect with implicit TLS to 993/465 and a
-  # real certificate for mail.hugo-berendi.de, which resolves to inari's
-  # tailscale address. Listening on every address is safe: the nftables input
-  # chain only admits registered ports from br0 and none of these are
-  # registered, so in practice only tailscale0 reaches them.
+  # real certificate for the private Pangolin alias mail.hugo-berendi.de.
+  # Its target is loopback. The nftables input chain only admits registered
+  # LAN ports, and the mail listeners are intentionally absent from that list.
   #
   #   client --TLS--> nginx :993 --plain, loopback--> stunnel :8506
   #          --STARTTLS, pinned--> Bridge :1143

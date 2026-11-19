@@ -65,7 +65,7 @@ in {
   ];
   # The old generated deletions file flushes every table once on migration.
   # Only that transition needs Docker to reinstall its own rules. Subsequent
-  # reloads replace our named tables without touching Docker or Tailscale.
+  # reloads replace our named tables without touching Docker.
   systemd.services.nftables = let
     markLegacyFlush = pkgs.writeShellScript "nftables-mark-legacy-flush" ''
       set -eu
@@ -130,7 +130,6 @@ in {
             iifname "br0" ip6 nexthdr ipv6-icmp accept comment "Allow LAN IPv6 diagnostics"
             iifname {"docker0", "br-pelican", "br-changedet", "veth*"} accept comment "Allow Docker to router"
             iifname "wg-br" accept comment "Allow VPN namespace to router"
-            iifname "tailscale0" accept comment "Allow Tailscale to router"
           }
 
           chain forward {
@@ -145,8 +144,8 @@ in {
             iifname "br0" oifname "t3test0" ip daddr 10.231.0.2 ct state { established, related } accept
           ''}
             # br0 reaches the home LAN and the upstream router.
-            iifname { "docker0", "br-pelican", "br-changedet", "tailscale0" } oifname "br0" accept comment "Docker and Tailscale to uplink"
-            iifname "br0" oifname { "docker0", "br-pelican", "br-changedet", "tailscale0" } ct state { established, related } accept comment "Replies from uplink"
+            iifname { "docker0", "br-pelican", "br-changedet" } oifname "br0" accept comment "Docker to uplink"
+            iifname "br0" oifname { "docker0", "br-pelican", "br-changedet" } ct state { established, related } accept comment "Replies from uplink"
 
             # VPN namespace bridge access
             iifname "wg-br" oifname "br0" accept comment "VPN namespace to WAN"
@@ -167,7 +166,7 @@ in {
             ${lib.optionalString config.yomi.t3codeVm.enable ''
             iifname "t3test0" ip saddr 10.231.0.2 oifname "br0" masquerade
           ''}
-            iifname {"docker0", "br-pelican", "br-changedet", "tailscale0"} oifname "br0" masquerade comment "NAT towards home router"
+            iifname {"docker0", "br-pelican", "br-changedet"} oifname "br0" masquerade comment "NAT towards home router"
           }
         '';
       };

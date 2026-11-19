@@ -1,5 +1,4 @@
 {
-  config,
   pkgs,
   upkgs,
   ...
@@ -19,12 +18,14 @@
 
   system.stateVersion = "24.05";
 
-  yomi.tailscale.enable = true;
   yomi.pilot.name = "hugob";
   yomi.machine.graphical = true;
   yomi.machine.gaming = true;
   yomi.machine.interactible = true;
   yomi.wireless.enable = true;
+
+  # Keep the reverse-path policy used with VPN clients and asymmetric routes.
+  networking.firewall.checkReversePath = "loose";
 
   # udev rules so the pilot can use the YubiKey as a FIDO2 SSH authenticator
   # (ssh-keygen -t ed25519-sk) without root. libfido2 ships its own rules;
@@ -56,19 +57,5 @@
   # {{{ Machine ids
   networking.hostName = "amaterasu";
   environment.etc.machine-id.text = "08357db3540c4cd2b76d4bb7f825ec88";
-  # }}}
-  # {{{ DNS records
-  yomi.dns.records = [
-    {
-      at = config.networking.hostName;
-      type = "A";
-      value = "100.127.234.94";
-    }
-    {
-      at = config.networking.hostName;
-      type = "AAAA";
-      value = "fd7a:115c:a1e0::501:ea5f";
-    }
-  ];
   # }}}
 }

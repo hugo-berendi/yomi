@@ -6,7 +6,7 @@
   musicDir = "${config.nixarr.mediaDir}/library/music";
 in {
   # {{{ Reverse proxy
-  # LAN and tailnet only, like the *arrs; Subsonic apps reach it over Tailscale.
+  # The LAN and Pangolin's private alias share this Subsonic endpoint.
   yomi.nginx.at.music.port = config.yomi.ports.navidrome;
   # }}}
   # {{{ Service

@@ -83,8 +83,6 @@
   yomi.containers.enable = true;
   yomi.postgres.enable = true;
   yomi.wireless.enable = false;
-  yomi.tailscale.enable = true;
-  yomi.tailscale.exitNode = true;
   yomi.anubis.enable = true;
   yomi.meilisearch.sopsFile = ./secrets.yaml;
   yomi.meilisearch.environment = "production";
@@ -112,16 +110,13 @@
   boot.loader.systemd-boot.enable = true;
   # }}}
   # {{{ DNS records
+  # LAN clients reach nginx and SSH directly. Pangolin provides the same
+  # hostnames as private aliases when away from home.
   yomi.dns.records = [
     {
       at = config.networking.hostName;
       type = "A";
-      value = "100.83.158.40";
-    }
-    {
-      at = config.networking.hostName;
-      type = "AAAA";
-      value = "fd7a:115c:a1e0::2401:9e28";
+      value = config.yomi.inari.lanIPv4;
     }
   ];
   # }}}
