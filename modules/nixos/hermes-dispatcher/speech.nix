@@ -26,13 +26,16 @@
       path = file "de_DE-kerstin-low.onnx.json" "sha256-VucIVWt7m3pTxPiVfgIUIeafEaYAliu6VUz/vnLPLUc=";
     }
   ];
+  # withTrain defaults to true and pulls torch, triton and lightning (~1.2 GiB)
+  # into the closure; synthesis runs on onnxruntime and needs none of them.
+  piper = pkgs.piper-tts.override {withTrain = false;};
   # Hermes' command provider hands over a text file and an output path. Piper
   # writes WAV, ffmpeg turns it into the Ogg/Opus Matrix voice bubbles need.
   # length-scale above 1 slows speech down (calmer); the noise values give the
   # prosody some movement instead of a flat read-out.
   speak = pkgs.writeShellApplication {
     name = "ciel-speak";
-    runtimeInputs = [pkgs.piper-tts pkgs.ffmpeg-headless pkgs.coreutils];
+    runtimeInputs = [piper pkgs.ffmpeg-headless pkgs.coreutils];
     text = ''
       in=$1
       out=$2
