@@ -7,9 +7,23 @@
 in {
   imports = [./theme.nix];
 
-  yomi.cloudflared.at.search = {
+  yomi.web.at.search = {
     port = config.yomi.ports.searxng;
     proxyAddress = vpn.namespaceAddress;
+    transport = "pangolin";
+    authentication = "none";
+    monitor = {
+      enable = true;
+      name = "searxng";
+    };
+    pangolin.healthCheck = {
+      enable = true;
+      path = "/healthz";
+    };
+  };
+  yomi.cloudflared.at.search = {
+    inherit (config.yomi.web.at.search) host port protocol proxyAddress;
+    dns.enable = false;
   };
   # {{{ Secrets
   sops.secrets.searxng_env = {

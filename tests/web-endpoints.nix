@@ -21,6 +21,8 @@
     == ["${live.yomi.expose.publicHost}."]
     && lib.all (record: !record.enableCloudflareProxy) records;
   stagedEndpoint = fixture "cloudflare" // {stagePangolin = true;};
+  monitoredUrls = name:
+    map (endpoint: endpoint.url) (lib.filter (endpoint: endpoint.name == name && endpoint.group == "Services") live.services.gatus.settings.endpoints);
   staged = extend {yomi.web.at.web-fixture = stagedEndpoint;};
   preview = extend {
     yomi.web.at.web-fixture = stagedEndpoint;
@@ -45,9 +47,10 @@
     (lib.all (name:
       !live.yomi.expose.at.${name}.sso
       && !live.yomi.cloudflared.at.${name}.dns.enable
-      && expectedGatewayDns name) ["audiobookshelf" "request-media"])
-    (map (endpoint: endpoint.url) (lib.filter (endpoint: endpoint.name == "jellyseerr" && endpoint.group == "Services") live.services.gatus.settings.endpoints)
-      == ["https://request-media.hugo-berendi.de"])
+      && expectedGatewayDns name) ["audiobookshelf" "request-media" "bin" "search" "ntfy"])
+    (monitoredUrls "jellyseerr" == ["https://request-media.hugo-berendi.de"])
+    (monitoredUrls "microbin" == ["https://bin.hugo-berendi.de"])
+    (monitoredUrls "searxng" == ["https://search.hugo-berendi.de"])
     (!builtins.hasAttr "web-fixture" disabled.yomi.cloudflared.at)
   ];
 in

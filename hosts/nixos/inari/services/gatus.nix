@@ -41,16 +41,12 @@
     alerts = mailAlert name;
   };
 in {
-  yomi.cloudflared.at = lib.genAttrs ["immich-share" "cloud" "search" "bin" "git"] (name: {
+  yomi.cloudflared.at = lib.genAttrs ["immich-share" "cloud" "git"] (name: {
     monitor.enable = true;
     monitor.name =
-      {
-        cloud = "nextcloud";
-        search = "searxng";
-        bin = "microbin";
-      }.${
-        name
-      } or name;
+      if name == "cloud"
+      then "nextcloud"
+      else name;
   });
   yomi.nginx.at = (lib.genAttrs ["paperless" "immich" "lab" "n8n" "karakeep" "radarr" "sonarr" "bazarr" "prowlarr" "torrent" "music" "cal" "pdf" "grafana" "prometheus" "adguard" "monitoring" "budget"] (_: {monitor.enable = true;})) // {status.port = port;};
   # {{{ Reverse proxy

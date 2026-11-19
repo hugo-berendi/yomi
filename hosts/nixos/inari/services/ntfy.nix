@@ -6,9 +6,18 @@
   port = config.yomi.ports.ntfy;
 in {
   # {{{ Reverse proxy
-  yomi.cloudflared.at.ntfy = {
+  yomi.web.at.ntfy = {
     inherit port;
-    enableAnubis = false;
+    transport = "pangolin";
+    authentication = "application";
+    pangolin.healthCheck = {
+      enable = true;
+      path = "/v1/health";
+    };
+  };
+  yomi.cloudflared.at.ntfy = {
+    inherit (config.yomi.web.at.ntfy) host port protocol proxyAddress;
+    dns.enable = false;
   };
   # }}}
   # {{{ Service
@@ -16,7 +25,7 @@ in {
     enable = true;
     settings = {
       listen-http = "127.0.0.1:${toString port}";
-      base-url = config.yomi.cloudflared.at.ntfy.url;
+      base-url = config.yomi.web.at.ntfy.url;
       behind-proxy = true;
 
       cache-file = "/var/lib/ntfy-sh/cache.db";

@@ -7,7 +7,19 @@
   sops.secrets.microbin_env.sopsFile = ../secrets.yaml;
   # }}}
   # {{{ Reverse proxy
-  yomi.cloudflared.at.bin.port = config.yomi.ports.microbin;
+  yomi.web.at.bin = {
+    port = config.yomi.ports.microbin;
+    transport = "pangolin";
+    authentication = "application";
+    monitor = {
+      enable = true;
+      name = "microbin";
+    };
+  };
+  yomi.cloudflared.at.bin = {
+    inherit (config.yomi.web.at.bin) host port protocol proxyAddress;
+    dns.enable = false;
+  };
   # }}}
   # {{{ Service
   services.microbin = {
@@ -17,8 +29,8 @@
 
     settings = {
       MICROBIN_ADMIN_USERNAME = "hugo-berendi";
-      MICROBIN_PORT = toString config.yomi.cloudflared.at.bin.port;
-      MICROBIN_PUBLIC_PATH = config.yomi.cloudflared.at.bin.url;
+      MICROBIN_PORT = toString config.yomi.web.at.bin.port;
+      MICROBIN_PUBLIC_PATH = config.yomi.web.at.bin.url;
       MICROBIN_DEFAULT_EXPIRY = "1week";
 
       MICROBIN_DISABLE_TELEMETRY = "true";
