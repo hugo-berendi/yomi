@@ -5,18 +5,17 @@
   pkgs,
   ...
 }: {
-  imports = [./default.nix];
+  # Only the shared base: no desktop, theming, 1Password, monitoring agent or
+  # the fleet's pilot user. A new VPS cannot decrypt the home fleet's
+  # password/monitoring secrets, so it bootstraps with keys only; enroll its
+  # real host key before adding secrets.
+  imports = [./base.nix];
 
-  # A new VPS cannot decrypt the home fleet's password/monitoring secrets.
-  # Bootstrap with keys only; enroll its real host key before adding secrets.
-  disabledModules = [./users/pilot.nix];
-
+  # The yomi modules default these on for the home fleet's impermanence and
+  # Wi-Fi; a VPS has neither.
   yomi.persistence.enable = false;
   yomi.filesystems.persistPaths = [];
-  yomi.beszel-agent.enable = false;
   yomi.wireless.enable = false;
-  programs._1password.enable = lib.mkForce false;
-  stylix.enable = lib.mkForce false;
 
   users.mutableUsers = false;
   users.users.root.hashedPassword = "*";
