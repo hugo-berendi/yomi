@@ -21,6 +21,9 @@
       cache-size = 1000;
 
       interface = "lo";
+      # Newt reaches this address through Inari's local route. The input
+      # firewall admits DNS via loopback only.
+      listen-address = config.yomi.inari.lanIPv4;
 
       # don't use /etc/hosts as this would advertise surfer as localhost
       no-hosts = true;

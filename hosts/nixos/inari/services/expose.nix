@@ -54,6 +54,13 @@ in {
       host-ssh = privateSSH "${config.networking.hostName}.${config.yomi.dns.domain}";
       forgejo-ssh = privateSSH config.services.forgejo.settings.server.SSH_DOMAIN;
       mail = privateHost "mail.${config.yomi.dns.domain}" [465 993];
+      adguard-dns =
+        privateHost null [53]
+        // {
+          destination = config.yomi.inari.lanIPv4;
+          udpPorts = [53];
+          labels = ["DNS"];
+        };
       home-exit = {
         mode = "exit-node";
         users = [config.yomi.pilot.email];
