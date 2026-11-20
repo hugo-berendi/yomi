@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  outputs,
   pkgs,
   ...
 }: let
@@ -77,6 +78,14 @@
   };
 
   dashboardsDir = pkgs.linkFarm "inari-grafana-dashboards" [
+    {
+      name = "yomi-infrastructure.json";
+      path = import ./infrastructure-dashboard.nix {
+        inherit lib pkgs;
+        hosts = builtins.attrNames outputs.nixosConfigurations;
+        statusUrl = config.yomi.nginx.at.status.url;
+      };
+    }
     {
       name = "node-exporter-full.json";
       path = nodeExporterFullDashboard;
