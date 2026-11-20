@@ -116,7 +116,7 @@ in
     };
     # Service unit tests live beside their modules and are exposed through
     # system.build so they build against the same python the service runs.
-    diabetes = self.nixosConfigurations.inari.config.system.build.diabetes-tests;
+    diabetes = myPkgs.diabetes-app.tests.unit;
     proton-mail-sorter = self.nixosConfigurations.inari.config.system.build.proton-mail-sorter-tests;
     hermes-dispatcher = myPkgs.hermes-dispatcher.tests;
     hermes-tool-approvals = import ../tests/hermes-tool-approvals.nix {inherit pkgs;};

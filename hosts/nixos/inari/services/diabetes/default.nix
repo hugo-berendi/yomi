@@ -5,14 +5,12 @@
   ...
 }: let
   cfg = config.yomi.diabetes;
-  python = pkgs.python3.withPackages (p: [p.flask p.waitress p.pydexcom p.matplotlib p.playwright]);
-  source = builtins.path {
-    path = ./.;
-    # default.nix lives beside the sources; keep it out so the store path (and
-    # every unit embedding it) does not change when the module is edited.
-    filter = path: _: baseNameOf path != "default.nix";
-    name = "yomi-diabetes";
-  };
+  # The app (sources, Python environment, unit tests) is built by package.nix;
+  # this module only deploys it. Units keep calling the interpreter and app.py
+  # directly so their command lines match the pre-split ones.
+  app = pkgs.callPackage ./package.nix {};
+  inherit (app) python;
+  source = app.src;
   loginHelper = pkgs.writeShellApplication {
     name = "diabetes-glooko-login";
     text = ''
@@ -59,12 +57,7 @@ in {
   config = lib.mkMerge [
     {
       system.build.diabetes-glooko-login = loginHelper;
-      system.build.diabetes-tests = pkgs.runCommand "yomi-diabetes-tests" {} ''
-        export MPLCONFIGDIR="$TMPDIR/matplotlib"
-        export PYTHONDONTWRITEBYTECODE=1
-        ${python}/bin/python -m unittest discover -s ${source} -v
-        touch "$out"
-      '';
+      system.build.diabetes-tests = app.tests.unit;
       # Keep the retired site's state mounted and backed up. Turning off the
       # web service must not discard health history or reassign its owner.
       users.groups.diabetes = {};

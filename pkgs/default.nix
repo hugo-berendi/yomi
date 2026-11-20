@@ -10,6 +10,7 @@
 }:
 {
   yomi-recover = pkgs.callPackage ./yomi-recover {inherit disko;};
+  diabetes-app = pkgs.callPackage ../hosts/nixos/inari/services/diabetes/package.nix {};
   vimclip = pkgs.callPackage ./vimclip.nix {};
   pelican-wings = pkgs.callPackage ./pelican-wings.nix {};
   chatgpt = pkgs.callPackage ./chatgpt.nix {};
