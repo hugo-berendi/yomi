@@ -51,6 +51,8 @@ in {
     // internalWeb
     // {
       ssh = privateSSH "ssh.inari.internal";
+      # Termius speaks SSH directly, without the Pangolin CLI auth exchange.
+      ssh-direct = privateHost "ssh-direct.inari.internal" [22];
       host-ssh = privateSSH "${config.networking.hostName}.${config.yomi.dns.domain}";
       forgejo-ssh = privateSSH config.services.forgejo.settings.server.SSH_DOMAIN;
       mail = privateHost "mail.${config.yomi.dns.domain}" [465 993];
