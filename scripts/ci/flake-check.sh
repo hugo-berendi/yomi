@@ -45,18 +45,21 @@ light() {
 	[[ " $full_hosts " != *" $host "* ]]
 }
 
-while read -r name; do
-	if light "$name"; then
-		run "checks.$name (dry-run)" nix build --accept-flake-config --show-trace --dry-run "$flake#checks.$system.$name"
+for output in checks packages devShells; do
+	if ! output_names=$(names "$output.$system"); then
+		failed+=("enumerate $output.$system")
 		continue
 	fi
-	run "checks.$name" nix build --accept-flake-config --show-trace --no-link "$flake#checks.$system.$name"
-done < <(names "checks.$system")
-
-for output in packages devShells; do
 	while read -r name; do
-		run "$output.$name" nix eval --accept-flake-config --show-trace --raw "$flake#$output.$system.$name.drvPath"
-	done < <(names "$output.$system")
+		[[ -n $name ]] || continue
+		if [[ $output != checks ]]; then
+			run "$output.$name" nix eval --accept-flake-config --show-trace --raw "$flake#$output.$system.$name.drvPath"
+		elif light "$name"; then
+			run "checks.$name (dry-run)" nix build --accept-flake-config --show-trace --dry-run "$flake#checks.$system.$name"
+		else
+			run "checks.$name" nix build --accept-flake-config --show-trace --no-link "$flake#checks.$system.$name"
+		fi
+	done <<<"$output_names"
 done
 
 run "formatter" nix eval --accept-flake-config --show-trace --raw "$flake#formatter.$system.drvPath"

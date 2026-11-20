@@ -38,6 +38,8 @@ jobs:
         run: just lint
       - name: Test the update PR pipeline (publish, gate, LLM review)
         run: nix develop -c python3 -m unittest discover -s tests -p "test_update_*.py"
+      - name: Test flake check error handling
+        run: nix develop -c python3 -m unittest discover -s tests -p test_flake_check.py
       - name: Run flake checks
         run: just check
       - name: Push host builds to hugo-berendi.cachix.org
