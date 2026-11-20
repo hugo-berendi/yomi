@@ -94,37 +94,7 @@ in {
       default = {};
       description = "Client-only resources; no public listener is created.";
       type = types.attrsOf (types.submodule {
-        options =
-          access
-          // {
-            enable = lib.mkEnableOption "this private resource" // {default = true;};
-            mode = mkOption {
-              type = types.enum ["host" "cidr" "exit-node"];
-              default = "host";
-              description = "Single host, network range or an explicit full-tunnel exit node.";
-            };
-            destination = mkOption {
-              type = types.nullOr types.str;
-              default = null;
-              description = "Destination address or CIDR; unused for exit nodes.";
-            };
-            alias = mkOption {
-              type = types.nullOr types.str;
-              default = null;
-              description = "Private client DNS name for a host resource; required for hostname destinations and useful for loopback backends.";
-            };
-            tcpPorts = mkOption {
-              type = types.listOf types.port;
-              default = [];
-              description = "Allowed TCP ports; none by default. Exit nodes always carry all traffic.";
-            };
-            udpPorts = mkOption {
-              type = types.listOf types.port;
-              default = [];
-              description = "Allowed UDP ports; none by default. Exit nodes always carry all traffic.";
-            };
-            allowICMP = lib.mkEnableOption "ICMP to this private resource";
-          };
+        options = access // import ./private-options.nix {inherit lib;};
       });
     };
   };

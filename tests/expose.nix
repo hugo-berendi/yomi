@@ -67,6 +67,20 @@
           mode = "exit-node";
           users = ["owner@example.com"];
         };
+        web-native = {
+          mode = "http";
+          fullDomain = "tool.hugo-berendi.de";
+          destination = "127.0.0.1";
+          destinationPort = 8080;
+          labels = ["Internal tools"];
+          users = ["owner@example.com"];
+        };
+        ai = {
+          mode = "inference";
+          fullDomain = "models.hugo-berendi.de";
+          machines = ["build-agent"];
+          aiProviders = [{provider = "local-models";}];
+        };
       };
     };
   };
@@ -198,6 +212,47 @@
     {
       name = "Private SSH grants only TCP 22 and exit nodes omit ignored port restrictions";
       assertion = private.ebisu-private-ssh.alias == "ssh.ebisu.internal" && private.ebisu-private-ssh.tcp-ports == "22" && private.ebisu-private-ssh.udp-ports == "" && private.ebisu-private-ssh.disable-icmp && !(private.ebisu-private-exit ? destination) && !(private.ebisu-private-exit ? tcp-ports);
+    }
+    {
+      name = "Private HTTP and AI gateway use their native Pangolin blueprint fields";
+      assertion = let
+        http = private.ebisu-private-web-native;
+        ai = private.ebisu-private-ai;
+      in
+        http.mode
+        == "http"
+        && http.full-domain == "tool.hugo-berendi.de"
+        && http.destination-port == 8080
+        && http.scheme == "http"
+        && http.ssl
+        && http.labels == ["Internal tools"]
+        && !(http ? tcp-ports)
+        && ai.mode == "inference"
+        && ai.machines == ["build-agent"]
+        && (builtins.head ai.ai-providers).provider == "local-models"
+        && !(ai ? destination)
+        && !(ai ? tcp-ports);
+    }
+    {
+      name = "Forgejo keeps the OpenSSH target, alias, port and pilot access in SSH mode";
+      assertion = let
+        inari = self.nixosConfigurations.inari.config;
+        forgejo = inari.yomi.expose.blueprint.private-resources.inari-private-forgejo-ssh;
+      in
+        forgejo.mode
+        == "ssh"
+        && forgejo.auth-daemon
+        == {
+          mode = "site";
+          pam = "passthrough";
+        }
+        && forgejo.alias == inari.services.forgejo.settings.server.SSH_DOMAIN
+        && forgejo.destination == "127.0.0.1"
+        && forgejo.destination-port == 22
+        && forgejo.tcp-ports == "22"
+        && forgejo.udp-ports == ""
+        && forgejo.disable-icmp
+        && forgejo.users == [inari.yomi.pilot.email];
     }
     {
       name = "Same TCP/UDP port can coexist and both reach firewall and Traefik";

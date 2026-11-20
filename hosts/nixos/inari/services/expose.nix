@@ -9,6 +9,12 @@
     inherit alias tcpPorts;
     users = [config.yomi.pilot.email];
   };
+  privateSSH = alias:
+    privateHost alias [22]
+    // {
+      mode = "ssh";
+      labels = ["SSH"];
+    };
   # The HTTPS vhosts share the same listener and pilot grant. Keep their
   # canonical hostnames so clients use the existing certificates and origins.
   internalWeb = lib.mapAttrs' (name: endpoint:
@@ -37,7 +43,6 @@ in {
   # one nginx listener, so they are not separate access boundaries.
   yomi.expose.private =
     lib.mapAttrs (name: ports: privateHost "${name}.inari.internal" ports) {
-      ssh = [22];
       grafana = [config.yomi.ports.grafana];
       homepage = [config.yomi.ports.homepage];
       status = [config.yomi.ports.gatus];
@@ -45,8 +50,9 @@ in {
     }
     // internalWeb
     // {
-      host-ssh = privateHost "${config.networking.hostName}.${config.yomi.dns.domain}" [22];
-      forgejo-ssh = privateHost config.services.forgejo.settings.server.SSH_DOMAIN [22];
+      ssh = privateSSH "ssh.inari.internal";
+      host-ssh = privateSSH "${config.networking.hostName}.${config.yomi.dns.domain}";
+      forgejo-ssh = privateSSH config.services.forgejo.settings.server.SSH_DOMAIN;
       mail = privateHost "mail.${config.yomi.dns.domain}" [465 993];
       home-exit = {
         mode = "exit-node";
