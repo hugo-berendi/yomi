@@ -29,9 +29,21 @@ in
     export RESTIC_REPOSITORY_FILE="$CREDENTIALS_DIRECTORY/repository"
     restic init
 
+    export SUWAYOMI_JAR=${restore.environment.SUWAYOMI_JAR}
     mkdir -p "$FIXTURE/raid5pool/media/documents/documents/originals" \
       "$FIXTURE/persist/state/var/backup/postgresql" \
-      "$FIXTURE/persist/state/var/backup/app-state/paperless"
+      "$FIXTURE/persist/state/var/backup/app-state/paperless" \
+      "$FIXTURE/persist/state/var/backup/app-state/kodama" \
+      "$FIXTURE/persist/state/var/backup/app-state/suwayomi"
+    sqlite3 "$FIXTURE/persist/state/var/backup/app-state/kodama/kodama.db" \
+      'CREATE TABLE plays (id INTEGER PRIMARY KEY); INSERT INTO plays VALUES (1);'
+    # A disposable database written by the same H2 engine Suwayomi bundles.
+    suwayomi_h2() {
+      java -Xmx128m -XX:-UsePerfData -Duser.home="$TMPDIR" -cp "$SUWAYOMI_JAR" org.h2.tools.Shell \
+        -url "jdbc:h2:file:$FIXTURE/persist/state/var/backup/app-state/suwayomi/database" \
+        -user "" -password "" -sql "$1" > /dev/null
+    }
+    suwayomi_h2 'CREATE TABLE MANGA (ID INT); INSERT INTO MANGA VALUES (1); CREATE TABLE CHAPTER (ID INT); INSERT INTO CHAPTER VALUES (1); CREATE TABLE MIGRATIONS (ID INT); INSERT INTO MIGRATIONS VALUES (1)'
     printf 'synthetic original document' > "$FIXTURE/raid5pool/media/documents/documents/originals/document.pdf"
     # A 1x1 PNG, so the type check sees an image; the thumbnail must never be picked.
     mkdir -p "$IMMICH_ORIGINALS/library/admin/2026" "$IMMICH_ORIGINALS/thumbs/admin"
@@ -70,6 +82,15 @@ in
     ${restoreScript}
     test ! -e "$CACHE_DIRECTORY/work"
     test ! -e "$CACHE_DIRECTORY/import-failure.log"
+    # A readable but empty Suwayomi library must not count as recovery.
+    suwayomi_h2 'DELETE FROM MANGA'
+    restic backup --host inari --tag app-state-v1 "$FIXTURE"
+    if ${restoreScript}; then
+      echo 'Empty Suwayomi library counted as successful recovery' >&2
+      exit 1
+    fi
+    test ! -e "$CACHE_DIRECTORY/work"
+    suwayomi_h2 'INSERT INTO MANGA VALUES (1)'
     # Valid SQLite with the wrong application schema must not count as recovery.
     sqlite3 "$FIXTURE/persist/state/var/backup/app-state/paperless/db.sqlite3" 'DROP TABLE documents_document; CREATE TABLE unrelated (id int);'
     restic backup --host inari --tag app-state-v1 "$FIXTURE"
@@ -87,5 +108,5 @@ in
       exit 1
     fi
     test ! -e "$CACHE_DIRECTORY/work"
-    echo 'App-state, restic, PostgreSQL, Paperless SQLite and Immich original recovery checks passed' > "$out"
+    echo 'App-state, restic, PostgreSQL, Paperless and Kodama SQLite, Suwayomi H2 and Immich original recovery checks passed' > "$out"
   ''

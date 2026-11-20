@@ -9,17 +9,19 @@ in {
   # A repository check cannot prove that a SQL dump can actually be imported.
   # Use the production extensions, but a disposable cluster with no TCP listener.
   systemd.services.restic-offsite-restore = {
-    description = "Restore a B2 document, an Immich original, Paperless and Kodama SQLite and PostgreSQL dump";
+    description = "Restore a B2 document, an Immich original, Paperless and Kodama SQLite, Suwayomi H2 and PostgreSQL dump";
     wants = ["network-online.target"];
     after = ["network-online.target" "restic-backups-offsite.service" "restic-backups-offsite-check.service"];
     restartIfChanged = false;
-    path = [backup.package pkgs.jq pkgs.zstd pkgs.sqlite pkgs.file pkgs.coreutils config.services.postgresql.finalPackage];
+    path = [backup.package pkgs.jq pkgs.zstd pkgs.sqlite pkgs.file pkgs.coreutils pkgs.jdk21_headless config.services.postgresql.finalPackage];
     environment = {
       PGHOST = "/run/restic-offsite-restore";
       PGPORT = "55432";
       PGUSER = "yomi_restore_admin";
       PAPERLESS_ORIGINALS = "${config.services.paperless.mediaDir}/documents/originals";
       IMMICH_ORIGINALS = config.services.immich.mediaLocation;
+      # The server jar bundles the H2 engine and tools that wrote the database.
+      SUWAYOMI_JAR = "${config.services.suwayomi-server.package.src}";
     };
     serviceConfig = {
       Type = "oneshot";
@@ -89,6 +91,24 @@ in {
       count=$(sqlite3 -readonly "$work/kodama.db" 'SELECT count(*) FROM plays')
       test "$count" -gt 0
 
+      # Open the restored Suwayomi library with the server's own H2 version.
+      # COUNT(*) comes from table metadata, so SCRIPT TO /dev/null reads every
+      # row; damaged pages raise an MVStore error. Its result set is schema
+      # DDL only. Shell continues after an error and exits 0, so check both.
+      mkdir "$work/suwayomi"
+      restic --retry-lock=30m dump "$snapshot" /persist/state/var/backup/app-state/suwayomi/database.mv.db > "$work/suwayomi/database.mv.db"
+      if ! timeout 20m java -Xmx512m -XX:-UsePerfData -Djava.io.tmpdir="$work" -Duser.home="$work" \
+        -cp "$SUWAYOMI_JAR" org.h2.tools.Shell \
+        -url "jdbc:h2:file:$work/suwayomi/database;IFEXISTS=TRUE" -user "" -password "" \
+        -sql "SCRIPT NOPASSWORDS NOSETTINGS TO '/dev/null'; SELECT (SELECT COUNT(*) FROM MANGA) > 0 AND (SELECT COUNT(*) FROM CHAPTER) > 0 AND (SELECT COUNT(*) FROM MIGRATIONS) > 0 AS RESTORE_OK" \
+        > "$work/suwayomi.log" 2>&1 ||
+        grep -q -e '^Error' -e '^Exception' "$work/suwayomi.log" ||
+        [ "$(tail -n 2 "$work/suwayomi.log" | head -n 1)" != TRUE ]; then
+        # Engine errors can contain application data.
+        echo "Suwayomi H2 restore check failed (an empty library also fails)."
+        exit 1
+      fi
+
       # The photo library is what the off-site set exists for, and the weekly
       # check only reads a 5% sample of it. Restore one random original:
       # restic verifies every blob hash on the way out, and the size and type
@@ -117,7 +137,7 @@ in {
       # An empty or truncated-but-valid SQL file must not count as recovery.
       count=$(psql -XAt --dbname=immich -c "SELECT count(*) FROM pg_tables WHERE schemaname = 'public'")
       test "$count" -gt 0
-      echo "Restored one document and one Immich original, validated Paperless and Kodama SQLite and imported the PostgreSQL dump successfully."
+      echo "Restored one document and one Immich original, validated Paperless and Kodama SQLite and Suwayomi H2 and imported the PostgreSQL dump successfully."
     '';
   };
   systemd.timers.restic-offsite-restore = {

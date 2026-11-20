@@ -114,6 +114,49 @@ manifest.write_text(
 run(success=False)
 assert count() == 2
 assert not partial.exists(), "A failed SQLite check must remove its staging copy"
+# H2 databases are only checked for presence and the MVStore header here;
+# the restore rehearsal opens them.
+h2_app = {"source": str(source), "sqlite": ["db.sqlite3"], "h2": ["library.mv.db"]}
+manifest.write_text(json.dumps({"paperless": h2_app}))
+run(success=False)
+assert count() == 2
+assert not partial.exists(), "A missing H2 database must remove its staging copy"
+(source / "library.mv.db").write_bytes(b"\x00" * 4096)
+run(success=False)
+assert count() == 2
+assert not partial.exists(), "An invalid H2 header must remove its staging copy"
+(source / "library.mv.db").write_bytes(b"H:2,block:2,blockSize:1000" + b"\x00" * 4070)
+(source / "settings").mkdir()
+(source / "settings/cookie_store.xml").write_text("synthetic-session-cookie")
+(source / "settings/tracker.xml").write_text("synthetic-tracker-state")
+(source / "cache/sub").mkdir(parents=True)
+(source / "cache/sub/entry").write_text("browser cache")
+manifest.write_text(
+    json.dumps(
+        {
+            "paperless": h2_app
+            | {"exclude": ["settings/cookie_store.xml", "cache/sub", "absent/file"]}
+        }
+    )
+)
+run()
+assert count() == 2
+assert (destination / "paperless/library.mv.db").read_bytes().startswith(b"H:2,")
+assert not (destination / "paperless/settings/cookie_store.xml").exists()
+assert (destination / "paperless/settings/tracker.xml").exists()
+assert (destination / "paperless/cache").is_dir()
+assert not (destination / "paperless/cache/sub").exists()
+outside = root / "outside"
+outside.mkdir()
+sentinel = outside / "secret"
+sentinel.write_text("outside staging")
+(source / "nested-link").symlink_to(outside, target_is_directory=True)
+manifest.write_text(
+    json.dumps({"paperless": h2_app | {"exclude": ["nested-link/secret"]}})
+)
+run(success=False)
+assert sentinel.read_text() == "outside staging"
+assert count() == 2
 manifest.write_text(
     json.dumps({"paperless": {"source": str(source), "sqlite": ["db.sqlite3"]}})
 )
@@ -139,7 +182,12 @@ assert set(configured) >= {
     "ntfy",
     "paperless",
     "ssh",
+    "kodama",
+    "suwayomi",
 }
+assert configured["suwayomi"]["source"] == (
+    "/run/restic-app-state/raid/media/comics/.local/share/Tachidesk"
+), "Suwayomi must be staged from its data root, not the chapter downloads"
 sources = {}
 for name, app in configured.items():
     assert app["source"].startswith("/run/restic-app-state/")
@@ -154,8 +202,15 @@ for name, app in configured.items():
             db.execute("CREATE TABLE fixture (id INTEGER PRIMARY KEY)")
             db.execute("INSERT INTO fixture VALUES (37)")
             db.commit()
+    for filename in app.get("h2", []):
+        (folder / filename).write_bytes(b"H:2,block:2,blockSize:1000" + bytes(64))
     if name == "n8n":
         (folder / ".n8n/config").write_text("synthetic-encryption-key")
+    if name == "suwayomi":
+        for relative in ("bin/kcef/libcef.so", "settings/cookie_store.xml"):
+            (folder / relative).parent.mkdir(parents=True, exist_ok=True)
+            (folder / relative).write_text("derived or session data")
+        (folder / "settings/tracker.xml").write_text("synthetic tracker state")
 manifest.write_text(json.dumps(sources))
 tools = root / "tools"
 tools.mkdir()
@@ -233,6 +288,10 @@ for _ in range(2):
             with closing(sqlite3.connect(destination / name / filename)) as db:
                 assert db.execute("SELECT id FROM fixture").fetchone() == (37,)
 assert (destination / "n8n/.n8n/config").read_text() == "synthetic-encryption-key"
+assert (destination / "suwayomi/database.mv.db").read_bytes().startswith(b"H:2,")
+assert (destination / "suwayomi/settings/tracker.xml").exists()
+assert not (destination / "suwayomi/bin").exists()
+assert not (destination / "suwayomi/settings/cookie_store.xml").exists()
 
 failed = subprocess.run(
     [unit], env=env | {"YOMI_TEST_FAIL_SNAPSHOT": "1"}, capture_output=True

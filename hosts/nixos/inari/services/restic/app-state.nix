@@ -10,6 +10,7 @@
   stateSnapshot = "${snapshotMounts}/state";
   raidSnapshot = "${snapshotMounts}/raid";
   state = path: {source = "${stateSnapshot}/${path}";};
+  suwayomiData = "${config.services.suwayomi-server.dataDir}/.local/share/Tachidesk";
   applications = {
     forgejo =
       (state "var/lib/forgejo")
@@ -40,6 +41,34 @@
       source = "${raidSnapshot}/data/paperless";
       sqlite = ["db.sqlite3"];
     };
+    # Library, categories, read progress, trackers and extension settings.
+    # Only the data root is staged: the chapter downloads beside it stay
+    # reacquirable and out of the off-site set.
+    suwayomi = {
+      source = "${raidSnapshot}${lib.removePrefix "/raid5pool" suwayomiData}";
+      h2 = ["database.mv.db"];
+      exclude = [
+        # Downloaded Chromium (KCEF), migration tools and WebUI, ~360 MiB.
+        "bin"
+        "webUI"
+        "logs"
+        # Chapter content, should downloadsPath ever fall back to the default.
+        "downloads"
+        "local"
+        # WebView browser cache and site session cookies; a login renews them.
+        "cache"
+        "settings/cookie_store.xml"
+        "android-compat/appdata/cache"
+        "android-compat/extappdata/cache"
+        # H2 traces can quote SQL with library data. The .200 files are the
+        # superseded copies kept by the July 2026 H2 1.4 -> 2.x migration.
+        "database.trace.db"
+        "database.240.trace.db"
+        "database.mv.db.200.backup"
+        "database.200.sql"
+        "database.200.modified.sql"
+      ];
+    };
   };
   manifest = pkgs.writeText "app-state-sources.json" (builtins.toJSON applications);
   helper = builtins.path {
@@ -55,6 +84,13 @@ in {
       {
         assertion = config.fileSystems."/persist/state".fsType == "zfs" && lib.elem "raid5pool" config.boot.zfs.extraPools;
         message = "Inari's app-state backup needs ZFS snapshots for /persist/state and /raid5pool.";
+      }
+      {
+        # Only the raid5pool root dataset is snapshotted; /raid5pool/media is
+        # part of it (findmnt, 2026-11-20). A child dataset would appear as an
+        # empty directory there, which the required H2 database check rejects.
+        assertion = lib.hasPrefix "/raid5pool/" suwayomiData;
+        message = "Suwayomi's data root must live on raid5pool for the app-state backup.";
       }
     ];
     yomi.restic.offsite.paths = [destination];

@@ -30,12 +30,34 @@ def stage_state(manifest, destination):
                 raise RuntimeError(f"Missing snapshot source for {name}")
             target = staging / name
             target.mkdir(mode=0o700)
+            excluded = app.get("exclude", [])
             for entry in source.iterdir():
-                if entry.name not in app.get("exclude", []):
+                if entry.name not in excluded:
                     subprocess.run(
                         ["cp", "-a", "--reflink=auto", "--", str(entry), str(target)],
                         check=True,
                     )
+            # Nested exclusions are removed from the private staging copy. The
+            # manifest is static Nix configuration, never data from the snapshot.
+            for relative in excluded:
+                if "/" not in relative:
+                    continue
+                relative_path = Path(relative)
+                if relative_path.is_absolute() or ".." in relative_path.parts:
+                    raise RuntimeError(
+                        f"Invalid nested exclusion for {name}: {relative}"
+                    )
+                if any(
+                    (target / parent).is_symlink() for parent in relative_path.parents
+                ):
+                    raise RuntimeError(
+                        f"Symlink parent in exclusion for {name}: {relative}"
+                    )
+                path = target / relative_path
+                if path.is_dir() and not path.is_symlink():
+                    shutil.rmtree(path)
+                else:
+                    path.unlink(missing_ok=True)
             # cp preserves nested ownership; copy the application's root metadata too.
             metadata = source.stat()
             os.chown(target, metadata.st_uid, metadata.st_gid)
@@ -75,6 +97,17 @@ def stage_state(manifest, destination):
                 raise RuntimeError(
                     f"Required SQLite database missing or invalid for {name}"
                 )
+            # H2's MVStore appends checksummed chunks and reopens at the last
+            # complete one, so a copy from the frozen snapshot is crash-consistent.
+            # Opening it needs a JVM; the monthly restore rehearsal does that on
+            # a restored copy, so each backup run only checks the file header.
+            for relative in app.get("h2", []):
+                database = target / relative
+                if database.is_symlink() or not database.is_file():
+                    raise RuntimeError(f"Required H2 database missing for {name}")
+                with database.open("rb") as file:
+                    if file.read(4) != b"H:2,":
+                        raise RuntimeError(f"Required H2 database invalid for {name}")
         (staging / "manifest.json").write_text(
             json.dumps(
                 {"applications": manifest, "sqliteDatabases": databases}, indent=2
