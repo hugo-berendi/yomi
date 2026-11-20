@@ -40,6 +40,12 @@ in {
     edition = "enterprise";
     environmentFile = "/var/lib/yomi/pangolin.env";
     geoip.enable = true;
+    backup = {
+      enable = true;
+      repositoryFile = "/var/lib/yomi/ebisu-restic.repository";
+      passwordFile = "/var/lib/yomi/ebisu-restic.password";
+      environmentFile = "/var/lib/yomi/ebisu-restic-b2.env";
+    };
   };
   # Managed client DNS first shipped in 1.27.
   services.pangolin = {
