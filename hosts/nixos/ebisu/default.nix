@@ -13,6 +13,7 @@ in {
     ../common/vps.nix
     "${modulesPath}/profiles/qemu-guest.nix"
     ./filesystems.nix
+    ./heartbeat.nix
     ./releases.nix
   ];
 
