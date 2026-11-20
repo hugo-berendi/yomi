@@ -84,6 +84,7 @@
         inherit lib pkgs;
         hosts = builtins.attrNames outputs.nixosConfigurations;
         statusUrl = config.yomi.nginx.at.status.url;
+        topologyUrl = "${config.yomi.nginx.at.lab.url}/infrastruktur/";
       };
     }
     {

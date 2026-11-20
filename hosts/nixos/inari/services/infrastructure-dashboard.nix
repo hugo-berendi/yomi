@@ -3,6 +3,7 @@
   pkgs,
   hosts,
   statusUrl,
+  topologyUrl,
 }: let
   datasource = {
     type = "prometheus";
@@ -73,6 +74,11 @@ in
       to = "now";
     };
     links = [
+      {
+        title = "Infrastrukturkarte";
+        url = topologyUrl;
+        type = "link";
+      }
       {
         title = "Dienststatus in Gatus";
         url = statusUrl;

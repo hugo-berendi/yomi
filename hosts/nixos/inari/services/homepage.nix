@@ -1,6 +1,8 @@
 {config, ...}: let
   port = config.yomi.ports.homepage;
 in {
+  imports = [./infrastructure-topology.nix];
+
   sops.secrets.homepage_env = {
     sopsFile = ../secrets.yaml;
   };
@@ -53,6 +55,13 @@ in {
     services = [
       {
         Tooling = [
+          {
+            Infrastrukturkarte = {
+              icon = "mdi-sitemap";
+              href = "${config.yomi.nginx.at.lab.url}/infrastruktur/";
+              description = "Hosts, Dienste und Verbindungen";
+            };
+          }
           {
             Mealie = {
               icon = "mealie.svg";

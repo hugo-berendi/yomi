@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="de">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yomi · Infrastrukturkarte</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --ink: var(--foreground, #e6eee8);
+    --muted-ink: var(--muted-foreground, #a7bcb2);
+    --paper: var(--card, #14231f);
+    --line: var(--border, #3d5249);
+    --route: var(--chart-2, #81dfbe);
+    --backup: var(--chart-4, #f2cc8b);
+    --down: var(--destructive, #ff9c92);
+    background: var(--background, #0d1714);
+    color: var(--ink);
+    font: 15px/1.5 var(--font-sans, system-ui, sans-serif);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  main { max-width: 1100px; margin: auto; padding: clamp(20px, 4vw, 54px); }
+  h1, h2, p { margin: 0; }
+  h1 { font-size: clamp(30px, 5vw, 55px); line-height: 1.08; letter-spacing: -.035em; }
+  h2 { font-size: 20px; margin-block-end: 12px; }
+  header { display: flex; align-items: end; gap: 14px 28px; justify-content: space-between; flex-wrap: wrap; }
+  #state, .hint, .node small, .meta { color: var(--muted-ink); }
+  #state { font-size: .83rem; }
+  section { margin-top: 28px; }
+  .paths { display: grid; gap: 2px; }
+  .path {
+    list-style: none; padding: 12px; margin: 0; display: flex;
+    align-items: center; background: var(--paper); min-width: 0;
+  }
+  .path:first-child { border-radius: 12px 12px 0 0; }
+  .path:last-child { border-radius: 0 0 12px 12px; }
+  .node { flex: 1; min-width: 0; padding: 6px 8px; overflow-wrap: anywhere; }
+  .node strong, .node small { display: block; }
+  .node strong { font-weight: 650; }
+  .edge {
+    flex: 1.2; min-width: 0; color: var(--route); text-align: center;
+    font-size: .76rem; overflow-wrap: anywhere; padding-inline: 4px;
+  }
+  .edge::after {
+    content: ""; display: block; height: 9px; margin-top: 3px;
+    background: currentColor;
+    clip-path: polygon(0 42%, calc(100% - 7px) 42%, calc(100% - 7px) 0, 100% 50%, calc(100% - 7px) 100%, calc(100% - 7px) 58%, 0 58%);
+  }
+  .backups .edge { color: var(--backup); }
+  .flows { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 275px), 1fr)); gap: 20px; }
+  .hosts { font-size: .9rem; color: var(--muted-ink); margin-top: 12px; overflow-wrap: anywhere; }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  input, select {
+    font: inherit; color: inherit; background: var(--paper);
+    border: 1px solid var(--line); padding: 7px 10px; border-radius: 6px;
+  }
+  input { flex: 1; min-width: min(190px, 100%); }
+  a { color: var(--route); text-underline-offset: 3px; }
+  :focus-visible { outline: 2px solid var(--route); outline-offset: 3px; }
+  ::selection { background: var(--route); color: #102018; }
+  .services { list-style: none; margin: 0; padding: 0; }
+  .services li {
+    display: flex; gap: 8px 20px; flex-wrap: wrap; align-items: baseline;
+    justify-content: space-between; border-bottom: 1px solid var(--line); padding: 9px 0;
+  }
+  .services a { overflow-wrap: anywhere; }
+  .meta { font-size: .83rem; }
+  .up { color: var(--route); }
+  .down { color: var(--down); }
+  .hint { margin-top: 8px; font-size: .86rem; }
+  @media (max-width: 560px) {
+    #access .path { flex-direction: column; align-items: stretch; }
+    #access .edge { text-align: left; padding-left: 30px; position: relative; min-height: 25px; }
+    #access .edge::after { position: absolute; width: 24px; left: -3px; top: 5px; transform: rotate(90deg); }
+  }
+</style>
+<main>
+  <header>
+    <h1>Infrastrukturkarte</h1>
+    <p id="state" role="status">Karte wird geladen …</p>
+  </header>
+  <section aria-labelledby="access-title">
+    <h2 id="access-title">Zugangswege</h2>
+    <div class="paths" id="access"></div>
+    <p class="hosts" id="hosts"></p>
+  </section>
+  <div class="flows" id="flows"></div>
+  <section aria-labelledby="services-title">
+    <h2 id="services-title">Webdienste</h2>
+    <div class="controls">
+      <input type="search" id="search" aria-label="Dienste durchsuchen" placeholder="Dienst oder Hostname suchen">
+      <select id="filter" aria-label="Zugangsweg filtern">
+        <option value="">Alle Zugangswege</option>
+        <option>nginx</option>
+        <option>Pangolin</option>
+      </select>
+    </div>
+    <p class="hint" id="total" aria-live="polite"></p>
+    <ul class="services" id="services"></ul>
+  </section>
+  <noscript>Die Infrastrukturkarte benötigt JavaScript.</noscript>
+</main>
+<script>
+"use strict";
+
+const preview = null;
+const element = id => document.getElementById(id);
+let topology;
+let checks = new Map();
+
+function make(tag, value, className) {
+  const item = document.createElement(tag);
+  if (value !== undefined) item.textContent = value;
+  if (className) item.className = className;
+  return item;
+}
+
+function path(nodes, edges) {
+  const row = make("ol", undefined, "path");
+  nodes.forEach(([name, detail], index) => {
+    if (index) row.append(make("li", edges[index - 1], "edge"));
+    const node = make("li", undefined, "node");
+    node.append(make("strong", name));
+    if (detail) node.append(make("small", detail));
+    row.append(node);
+  });
+  return row;
+}
+
+function renderTopology() {
+  const access = element("access");
+  access.replaceChildren();
+  if (topology.services.some(service => service.access === "nginx")) {
+    access.append(path([["Heimnetz"], [topology.host, "nginx"], ["Webdienste", "nginx-Routen"]], ["HTTPS", "HTTP(S) im Backend"]));
+  }
+  if (topology.throughGateway) {
+    access.append(path([["Internet"], ["Ebisu", "Traefik · Pangolin"], [topology.host, "Newt"], ["Webdienste", "Pangolin-Routen"]], ["HTTPS", "Newt-Tunnel", "HTTP(S) im Backend"]));
+  }
+  if (topology.privateAccess) {
+    access.append(path([["Pangolin-Client"], ["Ebisu", "Pangolin · Gerbil"], [topology.host, "Newt"], ["Private Ziele", "z. B. nginx und SSH"]], ["Client-Verbindung", "Newt-Tunnel", "Private Weiterleitung"]));
+  }
+  element("hosts").textContent = "Konfigurierte Systeme · " + topology.hosts.join(" · ");
+
+  const flows = element("flows");
+  flows.replaceChildren();
+  for (const scope of [...new Set(topology.flows.map(flow => flow.scope))]) {
+    const section = make("section");
+    section.append(make("h2", scope));
+    const group = make("div", undefined, scope === "Backups" ? "paths backups" : "paths");
+    group.append(...topology.flows.filter(flow => flow.scope === scope)
+      .map(flow => path([[flow.from], [flow.to]], [flow.label])));
+    section.append(group);
+    flows.append(section);
+  }
+}
+
+function checkKey(check) {
+  return JSON.stringify([check.group, check.name]);
+}
+
+function renderServices() {
+  if (!topology) return;
+  const query = element("search").value.trim().toLowerCase();
+  const access = element("filter").value;
+  const filtered = topology.services.filter(service =>
+    (!access || service.access === access) && [service.name, service.host].some(value => value.toLowerCase().includes(query)));
+  element("total").textContent = filtered.length + " von " + topology.services.length + " Routen auf " + topology.host;
+  element("services").replaceChildren(...filtered.map(service => {
+    const row = make("li");
+    const link = make("a", service.host);
+    link.href = service.url;
+    const detail = make("span", service.access + (service.port ? " · " + service.protocol.toUpperCase() + " " + service.port : " · statische Dateien"), "meta");
+    const healthy = checks.get(checkKey(service.check));
+    if (healthy !== undefined) detail.append(" · ", make("span", healthy ? "erreichbar" : "Prüfung fehlgeschlagen", healthy ? "up" : "down"));
+    row.append(link, detail);
+    return row;
+  }));
+}
+
+async function getJson(path) {
+  const response = await fetch(path, {cache: "no-store", signal: AbortSignal.timeout(8000)});
+  if (!response.ok) throw new Error(response.statusText);
+  return response.json();
+}
+
+async function refresh() {
+  const [data, health] = await Promise.allSettled(preview
+    ? [preview.topology, preview.statuses]
+    : [getJson("topology.json"), getJson("status.json")]);
+  let topologyChanged = false;
+  if (data.status === "fulfilled") {
+    if (JSON.stringify(data.value) !== JSON.stringify(topology)) {
+      topology = data.value;
+      topologyChanged = true;
+      renderTopology();
+    }
+  }
+  const live = health.status === "fulfilled";
+  const updatedChecks = new Map(live ? health.value.flatMap(check => {
+    const success = check.results?.at(-1)?.success;
+    return typeof success === "boolean" ? [[checkKey(check), success]] : [];
+  }) : []);
+  if (topologyChanged || checks.size !== updatedChecks.size ||
+      [...updatedChecks].some(([key, status]) => checks.get(key) !== status)) {
+    checks = updatedChecks;
+    renderServices();
+  }
+  element("state").textContent = data.status !== "fulfilled"
+    ? (topology ? "Letzter verfügbarer Konfigurationsstand" : "Karte konnte nicht geladen werden")
+    : preview ? "Vorschau aus der NixOS-Konfiguration"
+    : live ? "Dienststatus geprüft um " + new Date().toLocaleTimeString("de-DE")
+    : "Dienststatus derzeit nicht verfügbar";
+  if (!preview) setTimeout(refresh, 30000);
+}
+
+element("search").addEventListener("input", renderServices);
+element("filter").addEventListener("change", renderServices);
+refresh();
+</script>
+</html>
