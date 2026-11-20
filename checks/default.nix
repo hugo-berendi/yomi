@@ -87,10 +87,6 @@ in
       configuration = self.nixosConfigurations.inari;
     };
     n8n-notifications = import ../tests/n8n-notifications.nix {inherit pkgs;};
-    hermes-alert-webhook = import ../tests/hermes-alert-webhook.nix {
-      inherit pkgs;
-      configuration = self.nixosConfigurations.inari;
-    };
     custom-options = import ../tests/options.nix {
       inherit pkgs;
       configurations = self.nixosConfigurations;
@@ -118,12 +114,6 @@ in
     # system.build so they build against the same python the service runs.
     diabetes = myPkgs.diabetes-app.tests.unit;
     proton-mail-sorter = self.nixosConfigurations.inari.config.system.build.proton-mail-sorter-tests;
-    hermes-dispatcher = myPkgs.hermes-dispatcher.tests;
-    hermes-tool-approvals = import ../tests/hermes-tool-approvals.nix {inherit pkgs;};
-    hermes-sandbox = import ../tests/hermes-sandbox.nix {
-      inherit pkgs;
-      configuration = self.nixosConfigurations.inari;
-    };
     dns-zones = dnsPackages.octodns-zones;
     dns-sync = dnsPackages.octodns-sync;
   }

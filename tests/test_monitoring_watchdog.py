@@ -80,8 +80,6 @@ class Fake(BaseHTTPRequestHandler):
             return self.reply(200, [{"name": "x", "results": [{"timestamp": stamp}]}])
         if self.path == "/n8n/healthz":
             return self.reply(*w.get("n8n", (200, {"status": "ok"})))
-        if self.path == "/hermes/health":
-            return self.reply(200, {"status": "ok"})
         if self.path == "/ping":
             return self.reply(200, b"OK")
         return self.reply(404, b"")
@@ -112,7 +110,6 @@ class WatchdogTests(unittest.TestCase):
             "LOKI_URL": f"{base}/loki",
             "GATUS_URL": f"{base}/gatus",
             "N8N_URL": f"{base}/n8n",
-            "HERMES_WEBHOOK_HEALTH": f"{base}/hermes/health",
             "EXPECTED_SYSTEM_TARGETS": "6",
         }
         cls.base = base
@@ -156,6 +153,29 @@ class WatchdogTests(unittest.TestCase):
             all(a["host"] == "inari" and a["source"] == "watchdog" for a in alerts)
         )
         self.assertIn(("GET", "/ping", b""), Fake.calls, "success heartbeat")
+
+    def test_retired_check_is_cleared_once(self):
+        self.state.write_text(json.dumps({"streaks": {"retired": 3, "idle": 0}}))
+        alerts = self.run_once()
+        cleared = [a for a in alerts if a["service"] in ("retired", "idle")]
+        self.assertEqual(len(cleared), 1, "only a failing retired check needs one")
+        self.assertEqual(cleared[0]["fingerprint"], "watchdog:retired")
+        self.assertTrue(cleared[0]["resolved"])
+        streaks = json.loads(self.state.read_text())["streaks"]
+        self.assertNotIn("retired", streaks)
+        self.assertNotIn("idle", streaks)
+        alerts = self.run_once()
+        self.assertFalse(any(a["service"] == "retired" for a in alerts), "sent once")
+
+    def test_retired_check_is_retried_when_router_rejects_it(self):
+        self.state.write_text(json.dumps({"streaks": {"retired": 3}}))
+        Fake.world["router_down"] = True
+        self.run_once()
+        Fake.world["router_down"] = False
+        alerts = self.run_once()
+        cleared = [a for a in alerts if a["service"] == "retired"]
+        self.assertEqual(len(cleared), 1)
+        self.assertTrue(cleared[0]["resolved"])
 
     def test_silent_loki_is_a_fault_after_two_runs(self):
         Fake.world["loki_lines"] = 0

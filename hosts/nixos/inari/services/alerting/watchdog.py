@@ -134,14 +134,6 @@ def check_n8n(env, now):
     return None
 
 
-def check_hermes(env, now):
-    if not env.get("HERMES_WEBHOOK_HEALTH"):
-        return None
-    if fetch_json(env["HERMES_WEBHOOK_HEALTH"]).get("status") != "ok":
-        return "Der Hermes-Webhook antwortet fehlerhaft."
-    return None
-
-
 CHECKS = {
     # service: (check, severity, title)
     "alert-router": (check_router, "critical", "Alarmzustellung gestört"),
@@ -151,7 +143,6 @@ CHECKS = {
     "loki": (check_loki, "warning", "Loki nimmt keine Logs an"),
     "gatus": (check_gatus, "warning", "Gatus prüft nicht mehr"),
     "n8n": (check_n8n, "critical", "n8n nicht erreichbar"),
-    "hermes": (check_hermes, "warning", "Hermes-Triage nicht erreichbar"),
 }
 # }}}
 
@@ -210,6 +201,22 @@ def events(faults, state, checks=CHECKS):
             alerts.append({**base, "message": fault})
         elif not fault:
             alerts.append({**base, "resolved": True, "message": "Wieder in Ordnung."})
+    # A check deleted from CHECKS keeps its streak in the state file. Clear its
+    # alert once, or the router holds it open and re-pushes it every day.
+    for service in set(streaks) - set(checks):
+        if streaks.pop(service):
+            alerts.append(
+                {
+                    "source": "watchdog",
+                    "host": "inari",
+                    "service": service,
+                    "severity": "warning",
+                    "title": "Prüfung entfernt",
+                    "fingerprint": f"watchdog:{service}",
+                    "resolved": True,
+                    "message": "Diese Prüfung gibt es nicht mehr.",
+                }
+            )
     return alerts, streaks
 
 
@@ -308,6 +315,15 @@ def main(argv=None):
         post_router(env, alerts)
     except (OSError, URLError, RuntimeError) as error:
         router_down = True
+        # Retired checks have no next observation. Keep them until delivery
+        # succeeds so a transient router outage cannot leave an alert open.
+        streaks.update(
+            {
+                service: count
+                for service, count in state.get("streaks", {}).items()
+                if service not in CHECKS and count
+            }
+        )
         faults.setdefault(
             "alert-router",
             f"Alarmrouter nimmt keine Meldungen an ({type(error).__name__})",

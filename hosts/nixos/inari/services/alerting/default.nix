@@ -7,7 +7,6 @@
   cfg = config.yomi.alerting;
   ports = config.yomi.ports;
   n8nEnv = config.services.n8n.environment;
-  secretFile = "/run/alert-webhook/secret";
 
   # Same eval-time key test as the ntfy token in n8n/default.nix: a missing
   # sops key would fail the whole rebuild, so the heartbeat wires itself up
@@ -27,63 +26,14 @@ in {
       Remove the notification paths that duplicate the alert router: Grafana's
       Discord and mail receivers, Gatus' per-endpoint mail and the n8n
       execution monitor's own direct ntfy fallback (the watchdog owns that
-      now). Leave this off until the router, Hermes triage and the outside
-      heartbeat have been checked on the running system.
+      now). Leave this off until the router and the outside heartbeat have
+      been checked on the running system.
     '';
   };
   # }}}
 
   config = {
     warnings = lib.optional (!hasHeartbeat) "Inari has no external monitoring heartbeat. Configure alert_heartbeat_url with an independently hosted check and notification channel; local monitoring cannot report a host or uplink outage.";
-
-    yomi.ports.hermes-webhook = lib.mkDefault 8515;
-
-    # {{{ Shared signing secret
-    # Router and Hermes need the same HMAC secret and nothing else does. It is
-    # generated at boot instead of kept in sops: nobody has to handle it, it
-    # never touches the repository, and both consumers read it as a systemd
-    # credential after this unit has run. A new secret on every boot is fine.
-    systemd.services.alert-webhook-secret = {
-      description = "Generate the alert router's Hermes webhook secret";
-      serviceConfig = {
-        Type = "oneshot";
-        RemainAfterExit = true;
-        UMask = "0077";
-      };
-      script = ''
-        install -d -m 0700 ${dirOf secretFile}
-        if [ ! -s ${secretFile} ]; then
-          ${pkgs.openssl}/bin/openssl rand -base64 48 > ${secretFile}.tmp
-          mv ${secretFile}.tmp ${secretFile}
-        fi
-      '';
-    };
-    # }}}
-
-    # {{{ Hermes webhook
-    yomi.hermesDispatcher.alertWebhook = {
-      enable = true;
-      port = ports.hermes-webhook;
-      inherit secretFile;
-    };
-    systemd.services.hermes-dispatcher = {
-      wants = ["alert-webhook-secret.service"];
-      after = ["alert-webhook-secret.service"];
-    };
-    # }}}
-
-    # {{{ Router triage target
-    systemd.services.n8n-alert-router = {
-      wants = ["alert-webhook-secret.service"];
-      after = ["alert-webhook-secret.service"];
-      environment = {
-        HERMES_WEBHOOK_URL = "http://127.0.0.1:${toString ports.hermes-webhook}/webhooks";
-        PROMETHEUS_URL = "http://127.0.0.1:${toString ports.prometheus}";
-        LOKI_URL = "http://127.0.0.1:${toString ports.loki}";
-      };
-      serviceConfig.LoadCredential = ["hermes-webhook:${secretFile}"];
-    };
-    # }}}
 
     # {{{ Outside heartbeat
     sops.secrets.alert_heartbeat_url = lib.mkIf hasHeartbeat {sopsFile = ../../secrets.yaml;};
@@ -103,7 +53,6 @@ in {
         LOKI_URL = "http://127.0.0.1:${toString ports.loki}";
         GATUS_URL = "http://127.0.0.1:${toString ports.gatus}";
         N8N_URL = "http://127.0.0.1:${toString ports.n8n}";
-        HERMES_WEBHOOK_HEALTH = "http://127.0.0.1:${toString ports.hermes-webhook}/health";
         EXPECTED_SYSTEM_TARGETS = toString (builtins.length systemTargets);
         HEARTBEAT_URL_FILE = lib.optionalString hasHeartbeat "%d/heartbeat-url";
       };

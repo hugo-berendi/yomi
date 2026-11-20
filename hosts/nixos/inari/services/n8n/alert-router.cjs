@@ -3,13 +3,8 @@
 // One local process owns every notification decision on inari. Producers
 // (Grafana, Gatus via n8n, n8n workflows, the watchdog) post loosely shaped
 // alerts; this normalizes them, decides per target whether to deliver, and
-// keeps a delivery ledger per target in one state file that survives
-// restarts.
-//
-// Targets are independent on purpose. ntfy is the urgent channel and is always
-// handled first, inside the request. Hermes triage (alert-triage.cjs) runs in a
-// separate loop after the response: a slow, rate-limited or dead AI must never
-// delay or block a push.
+// keeps a delivery ledger in one state file that survives restarts. ntfy is
+// the only target and is handled inside the request.
 
 const crypto = require('node:crypto');
 const fs = require('node:fs/promises');
@@ -27,14 +22,6 @@ const SPEC = {
   warning: {priority: 4, tag: 'warning', rank: 1, prefix: '[WARN]'},
   info: {priority: 3, tag: 'information_source', rank: 0, prefix: '[INFO]'},
 };
-// Triage waits this long after an alert starts, so an alert storm forms one
-// batch and a flap that clears within the window costs no model call.
-const TRIAGE_SETTLE = 2 * MINUTE;
-const TRIAGE_BATCH = 8;
-const TRIAGE_PER_HOUR = 6;
-const TRIAGE_MAX_ATTEMPTS = 8;
-const TRIAGE_GIVE_UP = 6 * HOUR;
-const TRIAGE_INFLIGHT_TIMEOUT = 5 * MINUTE;
 
 const rank = (severity) => SPEC[severity]?.rank ?? -1;
 
@@ -75,7 +62,7 @@ function deriveService(fingerprint, source) {
 function parseTime(value, fallback) {
   if (value === undefined || value === null || value === '') return fallback;
   const parsed = typeof value === 'number' ? value * (value < 1e12 ? 1000 : 1) : Date.parse(String(value));
-  // A producer clock far in the future would postpone triage indefinitely.
+  // A producer clock far in the future would corrupt the "Since" line.
   if (!Number.isFinite(parsed) || parsed <= 0 || parsed > fallback + 5 * MINUTE) return fallback;
   return parsed;
 }
@@ -116,17 +103,19 @@ function normalize(raw, received) {
 
 // {{{ State
 const emptyNtfy = () => ({pending: false, lastSent: null, failures: 0, retryAt: null});
-const emptyHermes = () => ({pending: false, phase: null, state: 'idle', triaged: false});
 
-// Version 1 kept one flat entry per fingerprint with ntfy fields at the top.
-// Carry its suppression state over; old alerts are not triaged after the fact.
+// Version 1 kept one flat entry per fingerprint with ntfy fields at the top;
+// carry its suppression state over. Version 2 state written while the removed
+// Hermes triage target existed still carries its ledger, which is dropped.
 function migrate(loaded) {
   if (loaded?.version === 2) {
-    return {
-      alerts: Object.assign(Object.create(null), loaded.alerts ?? {}),
-      triage: {inflight: loaded.triage?.inflight ?? null, sent: loaded.triage?.sent ?? []},
-      targets: loaded.targets ?? {},
-    };
+    const alerts = Object.create(null);
+    for (const [fingerprint, entry] of Object.entries(loaded.alerts ?? {})) {
+      const {hermes: _hermes, ...kept} = entry;
+      alerts[fingerprint] = kept;
+    }
+    const {hermes: _target, ...targets} = loaded.targets ?? {};
+    return {alerts, targets};
   }
   const alerts = Object.create(null);
   for (const [fingerprint, old] of Object.entries(loaded?.alerts ?? {})) {
@@ -138,20 +127,18 @@ function migrate(loaded) {
       firstSeen: old.lastSent ?? seen, lastSeen: seen, lastChange: seen,
       ntfy: {pending: Boolean(old.pending), lastSent: old.lastSent ?? null,
         failures: old.failures ?? 0, retryAt: old.retryAt ?? null},
-      hermes: {...emptyHermes(), state: 'migrated'},
     };
   }
-  return {alerts, triage: {inflight: null, sent: []}, targets: {}};
+  return {alerts, targets: {}};
 }
 // }}}
 
 function createRouter({
-  statePath, env = process.env, httpRequest = defaultPublish, now = () => new Date(), triage = null,
+  statePath, env = process.env, httpRequest = defaultPublish, now = () => new Date(),
 } = {}) {
   if (!statePath) throw new TypeError('statePath is required');
   let state = migrate(null);
   let queue = Promise.resolve();
-  let triageRunning = null;
 
   const clock = () => {
     const instant = now();
@@ -212,8 +199,6 @@ function createRouter({
     return null;
   }
 
-  const triageable = (alert) => alert.kind === 'state' && alert.severity !== 'info';
-
   function receive(alerts, raw, timestamp) {
     const alert = normalize(raw, timestamp);
     const fingerprint = alert.fingerprint;
@@ -225,9 +210,7 @@ function createRouter({
         return;
       }
       const pushed = Boolean(previous.ntfy.lastSent);
-      // A triage still in flight may land; its outcome decides the all-clear.
-      const triaged = previous.hermes.triaged || previous.hermes.state === 'inflight';
-      if (!pushed && !triaged) {
+      if (!pushed) {
         delete alerts[fingerprint];
         return;
       }
@@ -235,13 +218,7 @@ function createRouter({
         ...previous,
         alert: {...alert, title: previous.alert.title, severity: previous.alert.severity},
         lastSeen: timestamp, lastChange: timestamp, resolvedAt: alert.occurredAt,
-        ntfy: {...previous.ntfy, pending: pushed, failures: 0, retryAt: null},
-        hermes: previous.hermes.state === 'inflight'
-          ? previous.hermes
-          : previous.hermes.triaged
-            ? {...previous.hermes, pending: true, phase: 'resolved', state: 'pending',
-              notBefore: timestamp, attempts: 0}
-            : {...previous.hermes, pending: false},
+        ntfy: {...previous.ntfy, pending: true, failures: 0, retryAt: null},
       };
       return;
     }
@@ -251,10 +228,8 @@ function createRouter({
     const reopened = previous?.alert.status === 'resolved';
     const escalated = Boolean(previous) && rank(alert.severity) > rank(previous.severity);
     const ntfy = previous ? {...previous.ntfy} : emptyNtfy();
-    let hermes = previous ? {...previous.hermes} : emptyHermes();
     if (reopened) {
       ntfy.pending = escalated;
-      hermes.pending = false;
     } else {
       ntfy.pending = !ntfy.lastSent || escalated || Boolean(ntfy.pending);
     }
@@ -271,16 +246,12 @@ function createRouter({
       if (by?.alert.status === 'firing' && rank(by.alert.severity) >= rank(alert.severity)) ntfy.pending = false;
       else delete ntfy.absorbedBy;
     }
-    if ((isNew || escalated) && triageable(alert) && !ntfy.absorbedBy && hermes.state !== 'inflight') {
-      hermes = {...hermes, pending: true, phase: 'firing', state: 'pending',
-        notBefore: timestamp + TRIAGE_SETTLE, attempts: 0};
-    }
     alerts[fingerprint] = {
       alert, severity: alert.severity,
       firstSeen: previous && !reopened ? previous.firstSeen : alert.occurredAt,
       lastSeen: timestamp,
       lastChange: isNew || escalated ? timestamp : previous.lastChange,
-      ntfy, hermes,
+      ntfy,
     };
   }
   // }}}
@@ -367,8 +338,7 @@ function createRouter({
 
   function prune(alerts, timestamp) {
     for (const [fingerprint, entry] of Object.entries(alerts)) {
-      const busy = entry.ntfy.pending || entry.hermes.pending || entry.hermes.state === 'inflight';
-      if (busy) continue;
+      if (entry.ntfy.pending) continue;
       if (entry.alert.status === 'resolved') delete alerts[fingerprint];
       else if (entry.alert.kind === 'event' && timestamp - (entry.ntfy.lastSent ?? entry.lastSeen) > 7 * DAY) {
         delete alerts[fingerprint];
@@ -397,157 +367,6 @@ function createRouter({
     return {sent, failed, queued: Object.values(alerts).filter((entry) => entry.ntfy.pending).length};
   }
 
-  // {{{ Hermes triage
-  function disableTriage(timestamp) {
-    let changed = false;
-    for (const entry of Object.values(state.alerts)) {
-      if (entry.hermes.pending) {
-        Object.assign(entry.hermes, {pending: false, state: 'disabled'});
-        changed = true;
-      }
-    }
-    if (changed) prune(state.alerts, timestamp);
-    return changed;
-  }
-
-  function nextDelivery(timestamp) {
-    const inflight = state.triage.inflight;
-    if (inflight) {
-      // Retry the same delivery id: Hermes records webhook deliveries durably
-      // and answers a repeat as a duplicate instead of running it twice.
-      const stuck = inflight.sentAt && timestamp - inflight.sentAt > TRIAGE_INFLIGHT_TIMEOUT;
-      if (inflight.sentAt && !stuck) return null;
-      if (inflight.nextAttemptAt && timestamp < inflight.nextAttemptAt) return null;
-      return inflight;
-    }
-    state.triage.sent = state.triage.sent.filter((time) => timestamp - time < HOUR);
-    if (state.triage.sent.length >= TRIAGE_PER_HOUR) return null;
-    const quiet = isQuiet(timestamp);
-    const due = (phase) => Object.entries(state.alerts)
-      .filter(([, entry]) => entry.hermes.pending && entry.hermes.phase === phase
-        && timestamp >= (entry.hermes.notBefore ?? 0)
-        && !(quiet && (phase === 'resolved' || entry.alert.severity !== 'critical')))
-      .sort(([, a], [, b]) => rank(b.alert.severity) - rank(a.alert.severity) || a.firstSeen - b.firstSeen)
-      .slice(0, TRIAGE_BATCH)
-      .map(([fingerprint]) => fingerprint);
-    let phase = 'firing';
-    let items = due(phase);
-    if (!items.length) items = due(phase = 'resolved');
-    if (!items.length) return null;
-    const id = 'alert-' + crypto.createHash('sha256')
-      .update(JSON.stringify([phase, ...items.map((fingerprint) => [fingerprint, state.alerts[fingerprint].firstSeen,
-        state.alerts[fingerprint].lastChange])]))
-      .digest('hex').slice(0, 32);
-    const delivery = {id, phase, items, createdAt: timestamp, attempts: 0};
-    for (const fingerprint of items) state.alerts[fingerprint].hermes.state = 'inflight';
-    state.triage.inflight = delivery;
-    return delivery;
-  }
-
-  function settle(delivery, timestamp, result) {
-    const ok = result.ok === true;
-    for (const fingerprint of delivery.items) {
-      const entry = state.alerts[fingerprint];
-      if (!entry) continue;
-      const hermes = entry.hermes;
-      hermes.lastAttempt = timestamp;
-      if (ok) {
-        Object.assign(hermes, {pending: false, state: 'delivered', deliveredAt: timestamp,
-          deliveryId: delivery.id, lastError: null});
-        if (delivery.phase === 'firing') hermes.triaged = true;
-        // It cleared while the analysis was on its way: follow up with the all-clear.
-        if (delivery.phase === 'firing' && entry.alert.status === 'resolved') {
-          Object.assign(hermes, {pending: true, phase: 'resolved', state: 'pending', notBefore: timestamp, attempts: 0});
-        }
-      } else {
-        hermes.lastError = clean(result.error, 300);
-        hermes.attempts = delivery.attempts;
-      }
-    }
-    if (ok) {
-      state.triage.inflight = null;
-      state.triage.sent.push(timestamp);
-      recordTarget('hermes', timestamp);
-      return;
-    }
-    recordTarget('hermes', timestamp, result.error);
-    const abandon = delivery.attempts >= TRIAGE_MAX_ATTEMPTS || timestamp - delivery.createdAt > TRIAGE_GIVE_UP;
-    if (abandon) {
-      for (const fingerprint of delivery.items) {
-        const entry = state.alerts[fingerprint];
-        if (entry) Object.assign(entry.hermes, {pending: false, state: 'abandoned'});
-      }
-      state.triage.inflight = null;
-      console.error(`alert-router: hermes delivery ${delivery.id} abandoned after ${delivery.attempts} attempts: ${clean(result.error, 300)}`);
-      return;
-    }
-    delivery.sentAt = null;
-    delivery.nextAttemptAt = timestamp + Math.min(30 * MINUTE, MINUTE * 2 ** (delivery.attempts - 1));
-    for (const fingerprint of delivery.items) {
-      const entry = state.alerts[fingerprint];
-      // An alert that cleared before its first analysis went out needs none.
-      if (entry && delivery.phase === 'firing' && entry.alert.status === 'resolved' && !entry.hermes.triaged) {
-        Object.assign(entry.hermes, {pending: false, state: 'skipped'});
-      }
-    }
-    if (delivery.phase === 'firing') {
-      delivery.items = delivery.items.filter((fingerprint) => state.alerts[fingerprint]?.hermes.state === 'inflight');
-      if (!delivery.items.length) state.triage.inflight = null;
-    }
-    console.error(`alert-router: hermes delivery ${delivery.id} failed (attempt ${delivery.attempts}): ${clean(result.error, 300)}`);
-  }
-
-  async function triageOnce() {
-    const picked = await serialized(async () => {
-      const timestamp = clock();
-      if (!triage) {
-        if (disableTriage(timestamp)) await save();
-        return null;
-      }
-      const delivery = nextDelivery(timestamp);
-      if (!delivery) return null;
-      delivery.attempts += 1;
-      delivery.sentAt = timestamp;
-      await save();
-      // A snapshot: the receive path keeps mutating state while this is sent.
-      const items = delivery.items.map((fingerprint) => state.alerts[fingerprint]).filter(Boolean);
-      const others = Object.values(state.alerts)
-        .filter((entry) => entry.alert.status === 'firing' && !delivery.items.includes(entry.alert.fingerprint));
-      return structuredClone({delivery, items, others});
-    });
-    if (!picked) return false;
-    let result;
-    try {
-      result = await triage.deliver(picked.delivery, picked.items, picked.others);
-    } catch (error) {
-      result = {ok: false, error: error?.message ?? String(error)};
-    }
-    await serialized(async () => {
-      const delivery = state.triage.inflight;
-      if (!delivery || delivery.id !== picked.delivery.id) return;
-      settle(delivery, clock(), result);
-      prune(state.alerts, clock());
-      await save();
-    });
-    return result.ok === true;
-  }
-
-  // Runs after the response; concurrent callers share one pass.
-  function runTriage() {
-    if (!triageRunning) {
-      triageRunning = (async () => {
-        try {
-          for (let round = 0; round < 3 && await triageOnce(); round++);
-        } catch (error) {
-          console.error(`alert-router: triage pass failed: ${error?.message ?? error}`);
-        } finally {
-          triageRunning = null;
-        }
-      })();
-    }
-    return triageRunning;
-  }
-  // }}}
 
   function submit(alertArray) {
     if (!Array.isArray(alertArray)) return Promise.reject(new TypeError('Alerts must be an array'));
@@ -561,13 +380,11 @@ function createRouter({
         open: entries.filter((entry) => entry.alert.status === 'firing').length,
         ntfy: {pending: entries.filter((entry) => entry.ntfy.pending).length,
           failing: entries.filter((entry) => entry.ntfy.failures > 0).length, ...state.targets.ntfy},
-        hermes: {enabled: Boolean(triage), pending: entries.filter((entry) => entry.hermes.pending).length,
-          inflight: state.triage.inflight ? state.triage.inflight.items.length : 0, ...state.targets.hermes},
       };
     });
   }
 
-  return {submit, runTriage, status};
+  return {submit, status};
 }
 
 async function defaultPublish({url, headers, body, timeout}) {
@@ -582,10 +399,7 @@ async function defaultPublish({url, headers, body, timeout}) {
 async function startServer() {
   const statePath = process.env.ALERT_ROUTER_STATE || '/var/lib/n8n-alert-router/state.json';
   const port = Number(process.env.PORT || 8508);
-  const {createTriage} = require('./alert-triage.cjs');
-  const triage = await createTriage({env: process.env});
-  if (!triage) console.error('alert-router: Hermes triage not configured; ntfy only');
-  const router = createRouter({statePath, triage});
+  const router = createRouter({statePath});
   const server = http.createServer(async (request, response) => {
     if (request.method === 'GET' && request.url === '/status') {
       try {
@@ -615,18 +429,14 @@ async function startServer() {
     } catch (error) {
       console.error(`alert-router: request failed: ${error?.message ?? error}`);
       response.writeHead(503, {'content-type': 'application/json'}).end('{"error":"alert routing failed"}');
-      return;
     }
-    router.runTriage();
   });
   server.listen(port, '127.0.0.1');
   const drain = setInterval(() => {
     router.submit([])
-      .catch((error) => console.error(`alert-router: drain failed: ${error?.message ?? error}`))
-      .finally(() => router.runTriage());
+      .catch((error) => console.error(`alert-router: drain failed: ${error?.message ?? error}`));
   }, 60_000);
   drain.unref();
-  router.runTriage();
   return {server, drain, router};
 }
 
