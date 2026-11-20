@@ -3,7 +3,7 @@
   configuration,
 }: let
   inherit (pkgs) lib;
-  extend = module: (configuration.extendModules {modules = [{yomi.cloudflared.tunnel = "00000000-0000-4000-8000-000000000000";} module];}).config;
+  extend = module: (configuration.extendModules {modules = [module];}).config;
   valid = c: lib.all (a: a.assertion) c.assertions;
   fixture = transport: {
     port = 19250;
@@ -11,8 +11,8 @@
     authentication = "application";
   };
   nginx = extend {yomi.web.at.web-fixture = fixture "nginx";};
-  cloudflare = extend {yomi.web.at.web-fixture = fixture "cloudflare";};
-  missingGatewayAuth = extend {yomi.web.at.web-fixture = fixture "cloudflare" // {authentication = "gateway";};};
+  pangolin = extend {yomi.web.at.web-fixture = fixture "pangolin";};
+  missingGatewayAuth = extend {yomi.web.at.web-fixture = fixture "nginx" // {authentication = "gateway";};};
   live = configuration.config;
   expectedGatewayDns = subdomain: let
     records = lib.filter (record: record.at == subdomain && record.zone == live.yomi.expose.domain) live.yomi.dns.records;
@@ -20,7 +20,7 @@
     map (record: record.value) records
     == ["${live.yomi.expose.publicHost}."]
     && lib.all (record: !record.enableCloudflareProxy) records;
-  stagedEndpoint = fixture "cloudflare" // {stagePangolin = true;};
+  stagedEndpoint = fixture "nginx" // {stagePangolin = true;};
   monitoredUrls = name:
     map (endpoint: endpoint.url) (lib.filter (endpoint: endpoint.name == name && endpoint.group == "Services") live.services.gatus.settings.endpoints);
   staged = extend {yomi.web.at.web-fixture = stagedEndpoint;};
@@ -28,10 +28,10 @@
     yomi.web.at.web-fixture = stagedEndpoint;
     yomi.expose.enable = lib.mkForce false;
   };
-  disabled = extend {yomi.web.at.web-fixture = fixture "cloudflare" // {enable = false;};};
+  disabled = extend {yomi.web.at.web-fixture = fixture "pangolin" // {enable = false;};};
   checks = [
-    (valid nginx && nginx.yomi.nginx.at.web-fixture.port == 19250 && !builtins.hasAttr "web-fixture" nginx.yomi.cloudflared.at)
-    (valid cloudflare && cloudflare.yomi.cloudflared.at.web-fixture.port == 19250)
+    (valid nginx && nginx.yomi.nginx.at.web-fixture.port == 19250 && !(nginx.yomi.expose.at ? web-fixture))
+    (valid pangolin && pangolin.yomi.expose.at.web-fixture.port == 19250 && !(pangolin.yomi.nginx.at ? web-fixture))
     (!valid missingGatewayAuth)
     (valid staged
       && !(staged.yomi.expose.blueprint.public-resources ? inari-web-web-fixture)
@@ -40,7 +40,6 @@
       && live.services.pocket-id.settings.APP_URL == "https://auth.hugo-berendi.de"
       && !live.yomi.expose.at.pocket-id.sso
       && !live.services.cloudflared.enable
-      && live.yomi.cloudflared.at == {}
       && expectedGatewayDns "auth")
     (!live.yomi.expose.at.media.sso
       && expectedGatewayDns "media")
@@ -58,7 +57,7 @@
       == ["https://immich-share.hugo-berendi.de"]
       && live.services.immich.settings.server.externalDomain == "https://immich-share.hugo-berendi.de"
       && !(live.yomi.expose.at ? immich))
-    (!builtins.hasAttr "web-fixture" disabled.yomi.cloudflared.at)
+    (!(disabled.yomi.expose.at ? web-fixture))
   ];
 in
   assert lib.all (result: result) checks;

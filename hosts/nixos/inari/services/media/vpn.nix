@@ -18,8 +18,8 @@
   # instead; SearXNG's sandbox blocks that socket and failed every lookup.
   # Transmission's "Could not connect to tracker" had the same cause.
   #
-  # No network here uses 10/8 (LAN and VLANs are 192.168/16, Docker is
-  # 172.16/12, Tailscale is 100.64/10), so drop it rather than add routes.
+  # The LAN, VLANs and Docker bridges use other ranges, so drop 10/8
+  # from the exceptions to keep Mullvad DNS inside the tunnel.
   vpnNamespaces.wg.accessibleFrom = lib.mkForce [
     "172.16.0.0/12"
     "192.168.0.0/16"

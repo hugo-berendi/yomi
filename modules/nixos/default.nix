@@ -13,17 +13,14 @@
   nginx = import ./nginx.nix;
   filesystems = import ./filesystems.nix;
   endpoint-checks = import ./endpoint-checks.nix;
-  cloudflared = import ./cloudflared.nix;
   expose = import ./expose;
   iocaine = import ./iocaine.nix;
   playit = import ./playit.nix;
   ports = import ./ports.nix;
   pounce = import ./pounce.nix;
   protonvpn = import ./protonvpn.nix;
-  remote-access = import ./remote-access.nix;
   steam-game-server = import ./steam-game-server.nix;
   vrising = import ./vrising;
-  tailscale = import ./tailscale.nix;
   windrose = import ./windrose.nix;
   wireless = import ./wireless;
 }

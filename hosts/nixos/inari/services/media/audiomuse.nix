@@ -51,7 +51,7 @@ in {
   # to http://127.0.0.1:8521 (yomi.ports.audiomuse).
 
   # {{{ Reverse proxy
-  # LAN and tailnet only, like Navidrome.
+  # Private access through Pangolin, like Navidrome.
   yomi.nginx.at.audiomuse.port = port;
   # }}}
   # {{{ Containers

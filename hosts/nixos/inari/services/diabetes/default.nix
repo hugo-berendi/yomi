@@ -107,8 +107,6 @@ in {
         port = config.yomi.ports.diabetes;
         clientMaxBodySize = "20m";
       };
-      # The existing nginx endpoint resolves to inari's tailnet address. App
-      # authentication still protects health data from other tailnet clients.
       services.nginx.virtualHosts.${config.yomi.nginx.at.diabetes.host}.locations."/".extraConfig = ''
         proxy_read_timeout 910s;
       '';

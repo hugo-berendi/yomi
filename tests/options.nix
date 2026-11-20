@@ -4,7 +4,7 @@
 }: let
   inherit (pkgs) lib;
   base = configurations.inari;
-  extend = module: (base.extendModules {modules = [{yomi.cloudflared.tunnel = "00000000-0000-4000-8000-000000000000";} module];}).config;
+  extend = module: (base.extendModules {modules = [module];}).config;
   check = name: condition: {
     inherit name;
     assertion = condition;
@@ -20,21 +20,16 @@
       port = 19200;
     };
     yomi.nginx.at.disabled-fixture = {enable = false;};
-    yomi.cloudflared.at.disabled-fixture = {enable = false;};
-    yomi.cloudflared.at.protected-fixture = {
-      port = 19201;
-      enableIocaine = true;
-      enableAnubis = true;
-    };
   };
   # A tunnel endpoint on the apex of a zone yomi does not otherwise use, so it
   # cannot collide with the real homepage endpoint.
-  apexTunnel = extend {
-    yomi.cloudflared.at.apex-fixture = {
+  apexGateway = extend {
+    yomi.expose.at.apex-fixture = {
       subdomain = "";
       host = "example.org";
       dns.zone = "example.org";
       port = 19202;
+      sso = false;
     };
   };
   misplacedAlias = extend {
@@ -62,7 +57,7 @@
   };
   collision = extend {yomi.ports.fixture = base.config.yomi.expose.at.git.anubis.port;};
   overflow = extend {
-    yomi.cloudflared.at.fixture = {
+    yomi.expose.at.fixture = {
       port = 65530;
       enableAnubis = true;
     };
@@ -142,31 +137,17 @@
       }
     ];
   };
-  remote = extend ({lib, ...}: {
-    yomi.remoteAccess = {
-      enable = lib.mkForce true;
-      upstream = "http://127.0.0.1:19704";
-    };
-    yomi.ports.remote-access = 19702;
-    yomi.ports.oauth2-proxy = 19703;
-  });
-  remoteVhosts = lib.filterAttrs (name: _: lib.hasPrefix "remote-" name && name != "remote-default") remote.services.nginx.virtualHosts;
   checks =
     [
-      (check "remote access vhosts all demand a login" (remoteVhosts != {} && lib.all (v: lib.hasPrefix "auth_request /oauth2/auth;" v.extraConfig) (lib.attrValues remoteVhosts) && valid remote))
-      (check "remote access admits listed accounts only" (remote.services.oauth2-proxy.email.domains == [] && remote.services.oauth2-proxy.email.addresses != null))
       (check "host override and matching DNS" (endpoint.yomi.nginx.at.fixture.host == "custom.example.org" && valid endpoint))
-      (check "disabled endpoints need no upstream and create no vhost" (!(endpoint.services.nginx.virtualHosts ? "disabled-fixture.hugo-berendi.de") && !(endpoint.services.cloudflared.tunnels.${endpoint.yomi.cloudflared.tunnel}.ingress ? "disabled-fixture.hugo-berendi.de")))
-      (check "iocaine is in the tunnel request path" (endpoint.services.cloudflared.tunnels.${endpoint.yomi.cloudflared.tunnel}.ingress."protected-fixture.hugo-berendi.de".service == "http://127.0.0.1:19601"))
-      (check "nginx forwards protected traffic through Anubis" (endpoint.services.nginx.virtualHosts.tunnel-protected-fixture.locations."/".proxyPass == "http://127.0.0.1:19401"))
+      (check "disabled nginx endpoints need no upstream and create no vhost" (!(endpoint.services.nginx.virtualHosts ? "disabled-fixture.hugo-berendi.de")))
       (check "nginx disable removes endpoint DNS" (!(lib.any (r: r.at == "immich") disabled.yomi.dns.records)))
       (check "hostname mismatch rejected" (!valid mismatch))
       (check "duplicate hostname rejected" (!valid duplicate))
       (check "derived port collision rejected" (!valid collision))
       (check "derived port overflow rejected" (!(builtins.tryEval (builtins.deepSeq overflow.yomi.ports true)).success))
       (check "DNS apex normalized" ((builtins.head apex).at == ""))
-      (check "apex tunnel endpoint publishes an ALIAS" (lib.any (r: r.zone == "example.org" && r.at == "" && r.type == "ALIAS" && r.enableCloudflareProxy) apexTunnel.yomi.dns.records && valid apexTunnel))
-      (check "subdomain tunnel endpoint publishes a CNAME" (lib.any (r: r.at == "protected-fixture" && r.type == "CNAME" && r.enableCloudflareProxy) endpoint.yomi.dns.records))
+      (check "apex Pangolin endpoint publishes an unproxied ALIAS" (lib.any (r: r.zone == "example.org" && r.at == "" && r.type == "ALIAS" && r.value == "${apexGateway.yomi.expose.publicHost}." && !r.enableCloudflareProxy) apexGateway.yomi.dns.records && valid apexGateway))
       (check "ALIAS below the apex rejected" (!valid misplacedAlias))
       (check "CNAME coexistence rejected" (!(lib.all (a: a.assertion) dnsChecks)))
       (check "custom backup prerequisites ordered" (lib.elem "fixture-dump.service" backups.systemd.services.restic-backups-fixture.after && lib.elem "fixture-dump.service" backups.systemd.services.restic-backups-fixture.requires))
@@ -196,58 +177,9 @@
       check "systemd unit ${name} exists and has a command" (unit != null && (unit.serviceConfig.ExecStart or "") != ""))
     ["immich-server" "immich-machine-learning" "immich-public-proxy" "karakeep-init" "karakeep-web" "karakeep-workers" "llama-cpp-classifier" "proton-mail-sorter"];
   failures = map (c: c.name) (lib.filter (c: !c.assertion) checks);
-  proxyConfig = pkgs.writeText "endpoint-fixture.conf" ''
-    daemon off;
-    pid nginx.pid;
-    error_log stderr;
-    events {}
-    http {
-      access_log off;
-      client_body_temp_path client_temp;
-      proxy_temp_path proxy_temp;
-      fastcgi_temp_path fastcgi_temp;
-      uwsgi_temp_path uwsgi_temp;
-      scgi_temp_path scgi_temp;
-      ${endpoint.services.nginx.commonHttpConfig}
-      server {
-        listen 127.0.0.1:19601;
-        ${endpoint.services.nginx.virtualHosts.tunnel-protected-fixture.extraConfig}
-        location / { proxy_pass ${endpoint.services.nginx.virtualHosts.tunnel-protected-fixture.locations."/".proxyPass}; }
-        location /.well-known/@iocaine { proxy_pass ${endpoint.services.nginx.virtualHosts.tunnel-protected-fixture.locations."/.well-known/@iocaine".proxyPass}; }
-      }
-      server { listen 127.0.0.1:19401; location / { return 200 "anubis upstream"; } }
-      server { listen 127.0.0.1:${toString endpoint.yomi.iocaine.port}; location / { return 200 "iocaine trap"; } }
-
-      # Remote access: the generated server bodies, a stand-in oauth2-proxy
-      # that accepts one cookie, and a stand-in internal vhost.
-      map $http_upgrade $connection_upgrade { default upgrade; "" close; }
-      server {
-        listen 127.0.0.1:19702 default_server;
-        ${remote.services.nginx.virtualHosts.remote-default.extraConfig}
-      }
-      server {
-        listen 127.0.0.1:19702;
-        server_name ${remote.services.nginx.virtualHosts.remote-grafana.serverName};
-        ${remote.services.nginx.virtualHosts.remote-grafana.extraConfig}
-      }
-      server {
-        listen 127.0.0.1:19703;
-        location = /oauth2/auth {
-          if ($http_cookie ~ "_oauth2_proxy=valid") { return 202; }
-          return 401;
-        }
-        location /oauth2/ { return 200 "oauth2 $http_x_forwarded_host"; }
-      }
-      server {
-        listen 127.0.0.1:19704;
-        location = /redirect { return 302 https://grafana.hugo-berendi.de/login; }
-        location / { return 200 "upstream $host $http_origin"; }
-      }
-    }
-  '';
 in
   assert lib.assertMsg (failures == []) ("Option regression checks failed: " + lib.concatStringsSep ", " failures);
-    pkgs.runCommand "yomi-option-checks" {nativeBuildInputs = [pkgs.jq pkgs.nginx pkgs.curl];} ''
+    pkgs.runCommand "yomi-option-checks" {nativeBuildInputs = [pkgs.jq];} ''
       # Exercise the generated renderer twice with characters that must remain
       # data, not shell or JSON syntax. No game process or Steam update is run.
       mkdir -p "$TMPDIR/credentials"
@@ -259,26 +191,5 @@ in
       cmp "$TMPDIR/first.json" "$TMPDIR/server/R5/ServerDescription.json"
       test "$(stat -c %a "$TMPDIR/server/R5/ServerDescription.json")" = 600
       jq -e --rawfile password "$CREDENTIALS_DIRECTORY/server-password" '.ServerDescription_Persistent.Password == ($password | rtrimstr("\n")) and .ServerDescription_Persistent.IsPasswordProtected' "$TMPDIR/first.json" > /dev/null
-      nginx -p "$TMPDIR" -c ${proxyConfig} &
-      nginx_pid=$!
-      trap 'kill "$nginx_pid"; wait "$nginx_pid" || true' EXIT
-      curl --retry 20 --retry-connrefused --retry-delay 1 --fail -s http://127.0.0.1:19601/ > "$TMPDIR/response"
-      test "$(cat "$TMPDIR/response")" = 'anubis upstream'
-      test "$(curl --fail -s -A GPTBot http://127.0.0.1:19601/test)" = 'iocaine trap'
-      test "$(curl --fail -s -A GPTBot http://127.0.0.1:19601/.well-known/@iocaine/test)" = 'iocaine trap'
-
-      # Remote access: no session is sent to the login, never to the service.
-      remote() { curl -s -H 'Host: grafana-remote.hugo-berendi.de' "$@"; }
-      test "$(remote -o /dev/null -w '%{http_code} %{redirect_url}' http://127.0.0.1:19702/d/x)" = '307 https://grafana-remote.hugo-berendi.de/oauth2/start?rd=/d/x'
-      test "$(remote http://127.0.0.1:19702/oauth2/start)" = 'oauth2 grafana-remote.hugo-berendi.de'
-      test "$(remote -b '_oauth2_proxy=valid' http://127.0.0.1:19702/d/x)" = 'upstream grafana.hugo-berendi.de '
-      test "$(remote -b '_oauth2_proxy=valid' -H 'Origin: https://grafana-remote.hugo-berendi.de' http://127.0.0.1:19702/)" = 'upstream grafana.hugo-berendi.de https://grafana.hugo-berendi.de'
-      test "$(remote -b '_oauth2_proxy=valid' -o /dev/null -w '%{redirect_url}' http://127.0.0.1:19702/redirect)" = 'https://grafana-remote.hugo-berendi.de/login'
-      # A name that is not a listed endpoint gets the connection closed.
-      # (`! cmd` would not trip set -e, so test the status explicitly.)
-      if curl -s -H 'Host: anything.hugo-berendi.de' -b '_oauth2_proxy=valid' http://127.0.0.1:19702/; then
-        echo "unlisted host was answered" >&2
-        exit 1
-      fi
       echo ${lib.escapeShellArg ("Passed " + toString (builtins.length checks) + " option regression checks")} > $out
     ''

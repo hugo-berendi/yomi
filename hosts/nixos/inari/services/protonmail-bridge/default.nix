@@ -12,7 +12,7 @@
   # The public half of Bridge's self-signed certificate, exported once after
   # the first login and checked in: it is not a secret, and pinning it in git
   # means a regenerated certificate fails closed instead of being trusted on
-  # first use. Until it exists the tailnet relay below stays off, so Bridge
+  # first use. Until it exists the TLS relay below stays off, so Bridge
   # can be deployed and logged in on its own first.
   bridgeCertificate = ./bridge-cert.pem;
   havePin = builtins.pathExists bridgeCertificate;
@@ -70,7 +70,7 @@ in {
   # {{{ Service
   # Proton has no IMAP of its own. Bridge decrypts locally and serves IMAP and
   # SMTP on 127.0.0.1 with STARTTLS. It runs here so the Proton sorter can
-  # reach the mailbox and other devices get it over the tailnet without a
+  # reach the mailbox and other devices get it over Pangolin without a
   # Bridge of their own.
   #
   # One-time, after the first switch (see docs/proton-mail-sorter.md):

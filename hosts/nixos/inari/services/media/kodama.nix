@@ -8,7 +8,7 @@
   imports = [inputs.kodama.nixosModules.default];
 
   # {{{ Reverse proxy
-  # LAN and tailnet only, like Navidrome itself.
+  # Private access through Pangolin, like Navidrome.
   yomi.nginx.at.wrapped.port = config.yomi.ports.kodama;
   # }}}
   # {{{ Service

@@ -9,7 +9,6 @@
     inherit (e) host subdomain port protocol proxyAddress dns;
     monitor = lib.mkDefault e.monitor;
   };
-  forTransport = transport: lib.mapAttrs (_: e: common e // lib.optionalAttrs (transport == "cloudflare") {inherit (e) enableAnubis;}) (lib.filterAttrs (_: e: e.transport == transport) endpoints);
 in {
   options.yomi.web.at = lib.mkOption {
     default = {};
@@ -27,14 +26,14 @@ in {
           description = "HTTP application port.";
         };
         transport = lib.mkOption {
-          type = lib.types.enum ["nginx" "cloudflare" "pangolin"];
+          type = lib.types.enum ["nginx" "pangolin"];
           description = "Transport responsible for this endpoint's publication and DNS.";
         };
         authentication = lib.mkOption {
           type = lib.types.enum ["application" "gateway" "none"];
           description = "Who authenticates requests; none deliberately permits anonymous access.";
         };
-        enableAnubis = lib.mkEnableOption "Anubis protection on the selected tunnel";
+        enableAnubis = lib.mkEnableOption "Anubis protection on Pangolin";
         stagePangolin = lib.mkEnableOption "previewing this endpoint in the blueprint while the connector is disabled";
         pangolin = lib.mkOption {
           default = {};
@@ -70,12 +69,11 @@ in {
         message = "Web ${e.host}: gateway authentication requires the Pangolin transport.";
       }
       {
-        assertion = !e.enableAnubis || e.transport != "nginx";
-        message = "Web ${e.host}: Anubis requires a supported tunnel transport.";
+        assertion = !e.enableAnubis || e.transport == "pangolin";
+        message = "Web ${e.host}: Anubis requires the Pangolin transport.";
       }
     ]) (lib.attrValues endpoints);
-    yomi.nginx.at = forTransport "nginx";
-    yomi.cloudflared.at = forTransport "cloudflare";
+    yomi.nginx.at = lib.mapAttrs (_: common) (lib.filterAttrs (_: e: e.transport == "nginx") endpoints);
     yomi.expose.at = lib.mapAttrs (_: e:
       common e
       // e.pangolin

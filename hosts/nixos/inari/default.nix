@@ -47,7 +47,6 @@
       ./services/scrutiny.nix
       ./services/healthchecks.nix
       ./services/pocket-id.nix
-      ./services/remote-access.nix
       ./services/prometheus.nix
       ./services/grafana.nix
       ./services/loki.nix
