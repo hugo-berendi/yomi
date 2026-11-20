@@ -35,6 +35,9 @@ def interim_callback(display_kind, consumer):
     ctx = SimpleNamespace(
         _run_still_current=lambda: True,
         persist_user_display_kind=display_kind,
+        source=SimpleNamespace(
+            platform=SimpleNamespace(value="matrix"), chat_type="dm"
+        ),
         _status_adapter=None,
         _status_thread_metadata=None,
     )
@@ -87,6 +90,9 @@ class InterimCallbackTests(unittest.TestCase):
             self.run_callback(INTERNAL, "Der Worker braucht eine Freigabe.", True),
             [("segment_break",)],
         )
+
+    def test_matrix_voice_marker_waits_for_final_delivery(self):
+        self.assertEqual(self.run_callback(None, "[[voice]] Hallo.", False), [])
 
     def test_text_that_only_contains_the_marker_is_forwarded(self):
         for text in (

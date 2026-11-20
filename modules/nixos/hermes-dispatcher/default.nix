@@ -7,10 +7,13 @@
 }: let
   cfg = config.yomi.hermesDispatcher;
   system = pkgs.stdenv.hostPlatform.system;
-  hermes = import ./package.nix {
-    inherit pkgs;
-    upstream = inputs.llm-agents.packages.${system}.hermes-agent;
+  app = import ./app.nix {
+    inherit pkgs lib;
+    hermesAgent = inputs.llm-agents.packages.${system}.hermes-agent;
+    skillsSource = inputs.skills;
   };
+  inherit (cfg.appPackage) hermes skills routes routingConfig;
+  launcherSource = cfg.appPackage;
   codex = import ../../../home/features/cli/ai/codex-package.nix {
     inherit inputs pkgs;
     # ProtectKernelTunables masks proc subtrees. Keep that protection and let
@@ -21,86 +24,9 @@
       cargoTestFlags = ["--package" "codex-linux-sandbox" "proc_mount_failure_tests"];
     });
   };
-  skills = import ./skills.nix {inherit pkgs lib inputs;};
   state = cfg.stateDirectory;
-  stt = import ./stt.nix {inherit pkgs;};
-  speech = import ./speech.nix {inherit pkgs;};
-  routes = {
-    routine = {
-      model = "gpt-6-luna";
-      effort = "low";
-    };
-    standard = {
-      model = "gpt-6.1-sol";
-      effort = "medium";
-    };
-    complex = {
-      model = "gpt-6.1-sol";
-      effort = "high";
-    };
-  };
-  routingConfig = pkgs.writeText "ciel-routing.json" (builtins.toJSON {
-    baseline = routes.standard;
-    inherit routes;
-  });
   dispatch = import ./dispatch.nix {inherit config lib pkgs inputs state skills launcherSource routes;};
-  settings = pkgs.writeText "hermes-dispatcher-config.yaml" (builtins.toJSON {
-    model = {
-      provider = "openai-codex";
-      default = "gpt-6.1-sol";
-      openai_runtime = "codex_app_server";
-    };
-    agent = {
-      reasoning_effort = "medium";
-      max_iterations = 20;
-    };
-    fallback_providers = [];
-    auth.adopt_external_logins = false;
-    kanban = {
-      dispatch_in_gateway = false;
-      review_dispatch = false;
-    };
-    max_concurrent_sessions = 1;
-    platform_toolsets.matrix = [];
-    # Webhook turns get no Hermes tools either; Codex-side limits are in
-    # ciel_webhook_policy.py.
-    platform_toolsets.webhook = [];
-    # The Matrix plugin registers display tier "medium", which posts a bubble
-    # for every new tool call. Hugo reads Ciel's answers, not her tool log.
-    # This gate covers tool bubbles only: clarify prompts, approvals and
-    # subagent failure notices take separate paths and stay visible.
-    display.platforms.matrix.tool_progress = "off";
-    stt = stt.settings;
-    tts = speech.settings;
-    auxiliary =
-      lib.recursiveUpdate
-      (lib.genAttrs ["compression" "title_generation" "background_review" "vision" "web_extract"] (name: {
-        provider = "codex";
-        model = "gpt-6-luna";
-        reasoning_effort =
-          if name == "compression"
-          then "medium"
-          else "low";
-        fallback_chain = [];
-      }))
-      {
-        title_generation = {
-          enabled = false;
-          model_upgrade_enabled = false;
-        };
-        background_review.enabled = false;
-      };
-    terminal.cwd = "${state}/home";
-    memory = {
-      memory_enabled = false;
-      user_profile_enabled = false;
-    };
-    plugins.entries = {
-      matrix-platform.enabled = true;
-      signal-platform.enabled = false;
-    };
-    skills.external_dirs = ["${skills.bundle}"];
-  });
+  settings = cfg.appPackage.mkSettings {inherit state;};
   # {{{ Alert webhook
   # Routes for the inari alert router (hosts/nixos/inari/services/n8n). The
   # launcher adds the signing secret and the verified private room at start.
@@ -121,10 +47,7 @@
     };
   };
   # }}}
-  instructions = import ./instructions.nix {
-    inherit pkgs skills;
-    inherit (cfg.matrix) displayName;
-  };
+  instructions = cfg.appPackage.mkInstructions {inherit (cfg.matrix) displayName;};
   # Codex commands inherit this PATH; the sandbox test checks the same value.
   toolPath = lib.makeBinPath [hermes codex pkgs.coreutils pkgs.git pkgs.file pkgs.poppler-utils pkgs.ffmpeg-headless];
   launchSettings = pkgs.writeText "hermes-dispatcher-launch.json" (builtins.toJSON {
@@ -195,13 +118,6 @@
     TimeoutStopSec = "30s";
     KillMode = "control-group";
   };
-  launcherSource = pkgs.runCommand "hermes-dispatcher-source" {} ''
-    mkdir -p "$out"
-    cp ${./launcher.py} "$out/launcher.py"
-    cp ${./matrix_bootstrap.py} "$out/matrix_bootstrap.py"
-    cp ${./matrix_profile.py} "$out/matrix_profile.py"
-    ${lib.concatMapStringsSep "\n" (name: "cp ${./. + "/${name}.py"} \"$out/${name}.py\"") ["broker_client" "ciel_routing" "dispatch_core" "dispatch_service" "dispatch_store" "local_tools" "mcp_server" "t3_rpc" "t3_mcp" "t3_mcp_auth" "t3_backend" "task_policy" "provider_policy" "quota_recovery" "matrix_rooms" "pr_verification" "task_followup" "task_scheduler" "task_notices" "project_memory" "ciel_watch" "runtime_approvals" "model_selection" "task_requests" "task_supplements" "task_solve" "task_blockers" "workspace_binding" "matrix_threads" "ciel_voice" "alert_webhook"]}
-  '';
 in {
   options.yomi.hermesDispatcher = {
     alertWebhook = {
@@ -280,6 +196,16 @@ in {
       type = lib.types.str;
       default = "/var/lib/hermes-dispatcher";
       description = "Private persisted profile directory; contains device and login credentials.";
+    };
+    appPackage = lib.mkOption {
+      type = lib.types.package;
+      default = app;
+      defaultText = lib.literalMD "the app built by `app.nix` from `inputs.llm-agents` and `inputs.skills`";
+      description = ''
+        Host-independent dispatcher app: its Python source tree, with the
+        patched Hermes runtime and the settings, instruction and test builders
+        in passthru (see app.nix). A replacement must provide the same passthru.
+      '';
     };
     package = lib.mkOption {
       type = lib.types.package;
@@ -372,20 +298,7 @@ in {
       ];
       backupSets = ["state"];
     };
-    system.build.hermes-dispatcher-tests =
-      pkgs.runCommand "hermes-dispatcher-tests" {
-        nativeBuildInputs = [pkgs.python3];
-      } ''
-        cp ${launcherSource}/*.py .
-        ${lib.concatMapStringsSep "\n" (name: "cp ${./. + "/${name}"} ${lib.escapeShellArg name}") (lib.filter (name: lib.hasPrefix "test_" name && lib.hasSuffix ".py" name) (builtins.attrNames (builtins.readDir ./.)))}
-        for site in ${hermes}/lib/python*/site-packages; do
-          export CIEL_HERMES_SOURCE="$site"
-        done
-        export CIEL_HERMES_SETTINGS=${settings}
-        export CIEL_LAUNCH_SETTINGS=${launchSettings}
-        python3 -m unittest discover -p 'test_*.py' -v
-        touch "$out"
-      '';
+    system.build.hermes-dispatcher-tests = cfg.appPackage.mkTests {inherit settings launchSettings;};
     system.build.hermes-sandbox-test-config = pkgs.writeText "hermes-sandbox-test.json" (builtins.toJSON {
       serviceConfig = builtins.removeAttrs common ["User" "Group" "ReadWritePaths" "Restart" "RestartSec" "TimeoutStopSec" "KillMode"];
       codex = lib.getExe codex;

@@ -188,7 +188,7 @@
       }: let
         upkgs = mkPkgs inputs.nixpkgs-unstable system;
         myPkgs = import ./pkgs {
-          inherit pkgs upkgs;
+          inherit pkgs upkgs inputs;
           disko = inputs.disko.packages.${system}.disko;
         };
 

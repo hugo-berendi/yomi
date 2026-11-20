@@ -44,16 +44,17 @@ in
       python3 -m unittest discover -s tests -p test_deployment_health.py
       touch "$out"
     '';
-    release-upgrade = pkgs.runCommand "release-upgrade-tests" {
-      nativeBuildInputs = [pkgs.python3 pkgs.openssh pkgs.bash];
-    } ''
-      mkdir -p tests scripts/ops pkgs/yomi-recover
-      cp ${../tests/test_release_upgrade.py} tests/test_release_upgrade.py
-      cp ${../scripts/ops/release-upgrade.py} scripts/ops/release-upgrade.py
-      cp ${../pkgs/yomi-recover/recover.py} pkgs/yomi-recover/recover.py
-      python3 -m unittest discover -s tests -p test_release_upgrade.py
-      touch "$out"
-    '';
+    release-upgrade =
+      pkgs.runCommand "release-upgrade-tests" {
+        nativeBuildInputs = [pkgs.python3 pkgs.openssh pkgs.bash];
+      } ''
+        mkdir -p tests scripts/ops pkgs/yomi-recover
+        cp ${../tests/test_release_upgrade.py} tests/test_release_upgrade.py
+        cp ${../scripts/ops/release-upgrade.py} scripts/ops/release-upgrade.py
+        cp ${../pkgs/yomi-recover/recover.py} pkgs/yomi-recover/recover.py
+        python3 -m unittest discover -s tests -p test_release_upgrade.py
+        touch "$out"
+      '';
     expose = import ../tests/expose.nix {inherit pkgs self;};
     expose-backup =
       pkgs.runCommand "expose-backup-tests" {
@@ -117,7 +118,7 @@ in
     # system.build so they build against the same python the service runs.
     diabetes = self.nixosConfigurations.inari.config.system.build.diabetes-tests;
     proton-mail-sorter = self.nixosConfigurations.inari.config.system.build.proton-mail-sorter-tests;
-    hermes-dispatcher = self.nixosConfigurations.inari.config.system.build.hermes-dispatcher-tests;
+    hermes-dispatcher = myPkgs.hermes-dispatcher.tests;
     hermes-tool-approvals = import ../tests/hermes-tool-approvals.nix {inherit pkgs;};
     hermes-sandbox = import ../tests/hermes-sandbox.nix {
       inherit pkgs;
