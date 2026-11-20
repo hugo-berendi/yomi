@@ -12,6 +12,7 @@
   web = import ./web.nix;
   nginx = import ./nginx.nix;
   filesystems = import ./filesystems.nix;
+  forgejo-ci-worker = import ./forgejo-ci-worker.nix;
   endpoint-checks = import ./endpoint-checks.nix;
   expose = import ./expose;
   iocaine = import ./iocaine.nix;

@@ -16,6 +16,11 @@ def main():
         failures += "\nPackage update workflow failed; inspect the run logs."
     if not failures.strip():
         return
+    if os.environ.get("YOMI_CI_HOST_LOCAL_SERVICES") == "0":
+        print(
+            "::warning::Package update needs manual repair; this worker has no local T3 launcher."
+        )
+        return
     payload = json.dumps(
         {"run_id": os.environ["GITHUB_RUN_ID"], "reason": failures[:12000]}
     )

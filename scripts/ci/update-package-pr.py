@@ -238,7 +238,13 @@ def announce_new(pr):
 
 
 def post_alert(event):
-    url = os.environ.get("ALERT_ROUTER_URL", "http://127.0.0.1:8508/alert")
+    url = os.environ.get("ALERT_ROUTER_URL")
+    if not url and os.environ.get("YOMI_CI_HOST_LOCAL_SERVICES") == "0":
+        print(
+            f"Update notification in job log: {event['title']} {event.get('url') or ''}"
+        )
+        return
+    url = url or "http://127.0.0.1:8508/alert"
     request = Request(
         url,
         data=json.dumps([event]).encode(),

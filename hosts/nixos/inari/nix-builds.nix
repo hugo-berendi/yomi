@@ -47,7 +47,6 @@ _: {
     MemorySwapMax = "2G";
   };
   systemd.services.nix-daemon.serviceConfig.Slice = "nix-builds.slice";
-  systemd.services.gitea-runner-default.serviceConfig.Slice = "nix-builds.slice";
 
   # /raid5pool itself is 1777 on disk -- world-writable with a sticky bit,
   # like /tmp -- leftover state from however the pool was first made. Nothing

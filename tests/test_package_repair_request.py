@@ -55,3 +55,10 @@ class RepairRequestTests(unittest.TestCase):
     def test_launcher_error_is_reported_as_failure(self):
         with self.assertRaisesRegex(RuntimeError, "offline"):
             self.invoke("update failed", {}, '{"error":"offline"}')
+
+    def test_dedicated_worker_does_not_contact_local_launcher(self):
+        _, factory = self.invoke(
+            "update failed",
+            {"YOMI_CI_HOST_LOCAL_SERVICES": "0"},
+        )
+        factory.assert_not_called()
