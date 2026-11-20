@@ -48,6 +48,13 @@ in {
     };
     settings.flags.enable_integration_api = true;
   };
+  # The pinned nixpkgs wrapper copies the release's read-only Next.js tree.
+  # Make the service-owned copy writable so the wrapper can replace it on restart.
+  systemd.services.pangolin.preStart = lib.mkAfter ''
+    if [ -d .next ] && [ ! -L .next ]; then
+      chmod -R u+w .next
+    fi
+  '';
   services.traefik.dynamicConfigOptions.http.routers = let
     localApi = lib.mkForce "Host(`api.${config.yomi.expose.domain}`) && (ClientIP(`127.0.0.1`) || ClientIP(`::1`))";
   in {
