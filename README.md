@@ -12,6 +12,7 @@ and a self-hosted homelab. It is based on
 | Host                                  | Role                                                   |
 | ------------------------------------- | ------------------------------------------------------ |
 | [amaterasu](./hosts/nixos/amaterasu/) | Framework 13 laptop                                    |
+| [ebisu](./hosts/nixos/ebisu/)         | Pangolin gateway VPS                                   |
 | [tsukuyomi](./hosts/nixos/tsukuyomi/) | Home PC, NixOS-WSL                                     |
 | [inari](./hosts/nixos/inari/)         | ZFS home server and container host                     |
 | [iso](./hosts/nixos/iso/)             | Installation and recovery ISO                          |
@@ -67,12 +68,16 @@ Google's recurring-event compatibility fix.
 
 ## Adding a host
 
-1. Create `hosts/nixos/<hostname>/default.nix` and import `../common`.
+1. Create `hosts/nixos/<hostname>/default.nix` and import the matching profile
+   from `hosts/nixos/common`. Desktop, server, and recovery profiles live in
+   `profiles/`. VPS and WSL hosts use `vps.nix` and `wsl.nix`.
 2. Add the hardware and filesystem configuration.
 3. Create `home/<hostname>.nix` when the host uses Home Manager.
 4. Register the host in `flake.nix` with `mkHost`.
-5. Add DNS records, back up the host's private keys with `just export-keys`, and
-   pin its verified public host key with `just import-host-key <hostname>`. The
+5. Add stable addresses and SSH aliases to `hosts/nixos/common/inventory.nix`
+   where applicable. Add DNS records and back up the host's private keys with
+   `just export-keys`. Pin its verified public host key with
+   `just import-host-key <hostname>`. The
    pilot's `keys/id_ed25519.pub` grants login; `keys/ssh_host_ed25519_key.pub`
    identifies the machine.
 6. Run `just nixos-rebuild dry-build <hostname>` and `just lint`.

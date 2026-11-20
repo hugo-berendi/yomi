@@ -235,6 +235,11 @@ manual recovery and TPM boot on the replacement, then verify mounts, secrets,
 networking and services. Run a new backup and restore check before declaring the
 migration complete.
 
+The recovery installer holds automatic upgrades. After the approved release
+includes the verified disk, root dataset and LAN interface, use `yomi-release
+status` to read the hold ID and `yomi-release release-hold --confirm <id>` to
+resume upgrades.
+
 ## Key changes after the migration
 
 Held until the replacement runs, because until then the migration archive and

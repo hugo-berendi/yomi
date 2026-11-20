@@ -25,6 +25,7 @@ More than one machine commits here, sometimes during a session. Expect to rebase
 | Host | Role | Notes |
 |------|------|-------|
 | `amaterasu` | Framework 13 laptop | BTRFS + impermanence, hyprland, desktop |
+| `ebisu` | Pangolin gateway VPS | Shared VPS profile with gateway-specific networking and backup |
 | `tsukuyomi` | Home PC (NixOS-WSL on Windows) | WSL profile shared with `wsl-work`; no impermanence |
 | `inari` | Home server | ZFS, ~40 services, Docker containers, router (nftables/hostapd/dnsmasq) |
 | `iso` | Installation ISO | Bootable installer |
@@ -95,7 +96,7 @@ Both update PRs merge on their own only when the job's `just lint`/`just check`,
 | Common | `modules/common/` | Both NixOS + HM | Options usable from both sides (`yomi.pilot`, `yomi.theming`, `yomi.location`) |
 | NixOS | `modules/nixos/` | NixOS only | System modules (`yomi.cloudflared`, `yomi.restic`, `yomi.ports`) |
 | HM | `modules/home-manager/` | Home-manager only | User modules (`yomi.monitors`, `yomi.persistence`) |
-| Shared host | `hosts/nixos/common/` | All hosts | Base: users, networking, boot, persistence; `wsl.nix` is the shared WSL profile |
+| Shared host | `hosts/nixos/common/` | All hosts | `base.nix` supplies common options and settings. Desktop, server, and recovery use `profiles/`. VPS and WSL use `vps.nix` and `wsl.nix`. |
 | Per-host | `hosts/nixos/<host>/` | Single host | Hardware, partitions, services |
 | Home features | `home/features/` | Per-host HM | cli, desktop, neovim, productivity, wayland |
 | Per-host home | `home/<host>.nix` | Single host | Imports `global.nix` + features |
@@ -115,9 +116,10 @@ Both update PRs merge on their own only when the job's `just lint`/`just check`,
 - `yomi.machine.*` — host capabilities (graphical, interactible, gaming)
 - `yomi.ports.*` — port registry, source of truth at `modules/nixos/ports.nix`
 - `yomi.cloudflared.at.<name>` — tunnel ingress (port, host, enableAnubis, enableIocaine)
+- `yomi.web.at.<name>` — HTTP endpoint used by nginx or Pangolin and Gatus monitoring
 - `yomi.nginx.at.<name>` — nginx vhost shorthand
-- `yomi.dns.records` — octodns records, also feeding `/etc/hosts`
-- `yomi.ssh.extraHostNames` — extra names a host's sshd answers to, pinned in every host's `knownHosts`
+- `yomi.dns.records` — OctoDNS records. Stable host addresses for `/etc/hosts` come from `hosts/nixos/common/inventory.nix`.
+- `yomi.ssh.extraHostNames` — aliases declared by each host and checked against `inventory.nix`, which supplies aliases for `knownHosts`
 - `yomi.persistence.at.{state,cache}.apps.<name>.directories` — impermanence paths
 - `systemd.services.<unit>.serviceConfig` — native, service-local sandbox settings (see below)
 - `yomi.restic.{repository,offsite}` — local and off-site backup sets

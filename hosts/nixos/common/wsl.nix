@@ -6,28 +6,11 @@
   ...
 }: {
   # {{{ Imports
-  # ./base.nix plus only the parts of ./profiles/fleet.nix that act here. The
-  # rest of that profile (desktop, greetd, flatpak, nixarr, OCI containers,
-  # syncthing, restic sets, the ACME and Wi-Fi secret paths) is gated on
-  # graphical/audio/enable switches that are off on WSL; dropping it left both
-  # WSL toplevel derivations unchanged apart from the flake's own source path.
   imports = [
     inputs.nixos-wsl.nixosModules.default
     ./base.nix
-    # Nested one level, as ./profiles/fleet.nix sits under ./default.nix:
-    # list definitions merge in module-tree order, and flattening this moved
-    # openssh's tmpfiles rules ahead of the pilot's.
-    {
-      imports = [
-        # ../../../common/themes sets stylix options.
-        inputs.stylix.nixosModules.stylix
-        ../../../common
-
-        ./cli/1password.nix
-        ./users/pilot.nix
-        ./services/beszel-agent.nix
-      ];
-    }
+    # Retain the module depth and the order of the pilot and SSH tmpfiles rules.
+    ./profiles/fleet.nix
   ];
   # }}}
 
@@ -46,9 +29,6 @@
   systemd.oomd.enable = lib.mkForce false;
   zramSwap.enable = lib.mkForce false;
   # }}}
-
-  # Same tty colours as ./profiles/fleet.nix gives interactible hosts.
-  stylix.targets.console.enable = true;
 
   # {{{ WSL configuration
   wsl.enable = true;
