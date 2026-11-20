@@ -101,6 +101,11 @@ in {
   # }}}
 
   # {{{ Storage
+  # Suwayomi serves its WebUI from the JVM temp directory for the lifetime
+  # of the process. Keep those files out of the age-based /tmp cleanup.
+  systemd.services.suwayomi-server.serviceConfig.RuntimeDirectory = "suwayomi";
+  systemd.services.suwayomi-server.environment.JAVA_TOOL_OPTIONS = "-Djava.io.tmpdir=/run/suwayomi";
+
   systemd.tmpfiles.rules = let
     dataDir = config.services.suwayomi-server.dataDir;
     user = {
