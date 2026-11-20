@@ -2,6 +2,7 @@
   config,
   lib,
   modulesPath,
+  pkgs,
   ...
 }: let
   ipv4 = "62.83.116.214";
@@ -39,6 +40,19 @@ in {
     edition = "enterprise";
     environmentFile = "/var/lib/yomi/pangolin.env";
     geoip.enable = true;
+  };
+  # Managed client DNS first shipped in 1.27.
+  services.pangolin = {
+    package = pkgs.callPackage ../../../pkgs/pangolin.nix {
+      inherit (config.yomi.expose.server) edition;
+    };
+    settings.flags.enable_integration_api = true;
+  };
+  services.traefik.dynamicConfigOptions.http.routers = let
+    localApi = lib.mkForce "Host(`api.${config.yomi.expose.domain}`) && (ClientIP(`127.0.0.1`) || ClientIP(`::1`))";
+  in {
+    int-api-router.rule = localApi;
+    int-api-router-redirect.rule = localApi;
   };
   yomi.dns.records = [
     {
