@@ -15,57 +15,69 @@
       ./nix-builds.nix
       ./auto-upgrade.nix
 
-      ../common/services/anubis.nix
-
-      ./services/llama-cpp
-      ./services/karakeep.nix
-      ./services/n8n
-      ./services/alerting
-      ./services/proton-mail-sorter
+      # Preserve the merge order of system packages, tmpfiles and backup paths.
       ./services/diabetes
       ./services/protonmail-bridge
       ./services/forgejo
-      ./services/paperless.nix
-      ./services/homepage.nix
-      ./services/expose.nix
-      ./services/msmtp.nix
-      ./services/microbin.nix
-      ./services/mealie.nix
       ./services/radicale
-      ./services/calsync.nix
       ./services/restic
       ./services/valheim.nix
-      ./services/immich.nix
-      ./services/searxng
       ./services/zfs.nix
-      ./services/adguard-home.nix
       ./services/comics.nix
       ./services/media
-      ./services/ntfy.nix
-      ./services/audiobookshelf.nix
-      ./services/gatus.nix
-      ./services/scrutiny.nix
-      ./services/healthchecks.nix
+      ./services/pelican
+      ./services/t3code.nix
+      ./services/changedetection.nix
+
+      # Network access, identity and discovery
+      ../common/services/anubis.nix
+      ./services/adguard-home.nix
+      ./services/expose.nix
+      ./services/octodns-ddns.nix
+      ./services/playit.nix
       ./services/pocket-id.nix
+
+      # Monitoring and notifications
+      ./services/alerting
+      ./services/ntfy.nix
+      ./services/msmtp.nix
+      ./services/gatus.nix
+      ./services/healthchecks.nix
+      ./services/scrutiny.nix
+      ./services/beszel.nix
       ./services/prometheus.nix
       ./services/grafana.nix
       ./services/loki.nix
       ./services/alloy.nix
-      ./services/playit.nix
-      ./services/windrose.nix
-      ./services/pelican
+
+      # Code, automation and AI
+      ./services/n8n
+      ./services/llama-cpp
+      ./services/cliproxyapi.nix
+      ./services/opencode.nix
+
+      # Personal and household applications
+      ./services/homepage.nix
+      ./services/hugo-berendi-de.nix
+      ./services/proton-mail-sorter
+      ./services/matrix
+      ./services/actual
+      ./services/paperless.nix
+      ./services/karakeep.nix
+      ./services/microbin.nix
+      ./services/mealie.nix
+      ./services/calsync.nix
       ./services/nextcloud.nix
       ./services/stirling-pdf.nix
+      ./services/searxng
+
+      # Media
+      ./services/immich.nix
+      ./services/audiobookshelf.nix
+
+      # Game servers
       ./services/vrising.nix
-      ./services/octodns-ddns.nix
-      ./services/beszel.nix
-      ./services/matrix
-      ./services/opencode.nix
-      ./services/t3code.nix
-      ./services/cliproxyapi.nix
-      ./services/changedetection.nix
-      ./services/actual
-      ./services/hugo-berendi-de.nix
+      ./services/windrose.nix
     ]
     # The wizard saves hardware choices alongside the restored checkout.
     ++ lib.optional (builtins.pathExists ./recovery-local.nix) ./recovery-local.nix;
