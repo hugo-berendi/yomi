@@ -1,9 +1,5 @@
-{
-  config,
-  outputs,
-  ...
-}: let
-  inherit (outputs.nixosConfigurations.inari.config.yomi.inari) lanIPv4;
+{config, ...}: let
+  inari = (import ../../common/inventory.nix).inari;
 in {
   # Backups of /persist/data and /persist/state, pushed over sftp to a
   # dedicated, chrooted account on inari (see hosts/nixos/inari/services/restic/default.nix).
@@ -20,7 +16,7 @@ in {
   # Inari's pinned host key even when connecting directly to its IPv4 address.
   programs.ssh.extraConfig = ''
     Host inari-restic
-      HostName ${lanIPv4}
+      HostName ${inari.ipv4}
       HostKeyAlias inari
       IdentityFile ${config.sops.secrets.amaterasu_restic_ssh_key.path}
   '';

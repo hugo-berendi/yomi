@@ -11,7 +11,8 @@
     };
     lanIPv4 = lib.mkOption {
       type = lib.types.str;
-      default = "192.168.178.200";
+      # Shared with the other hosts through hosts/nixos/common/inventory.nix.
+      default = (import ../../common/inventory.nix).inari.ipv4;
       description = "Static IPv4 address used by Inari's home network.";
     };
   };

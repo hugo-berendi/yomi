@@ -5,8 +5,8 @@
   pkgs,
   ...
 }: let
-  ipv4 = "62.83.116.214";
-  ipv6 = "2a03:4000:16:16e1:78f7:e3ff:fe9b:63c0";
+  # Shared with the other hosts through ../common/inventory.nix.
+  inherit ((import ../common/inventory.nix).ebisu) ipv4 ipv6;
   inherit (config.yomi.expose) publicHost;
 in {
   imports = [

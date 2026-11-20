@@ -2,11 +2,14 @@
 # fleet's desktop, user and monitoring collections. Hosts that want those add
 # ./profiles/fleet.nix (through ./default.nix) on top of this.
 {
+  config,
   inputs,
   lib,
   outputs,
   ...
 }: let
+  inventory = import ./inventory.nix;
+
   # {{{ Imports
   imports = [
     # Framework modules whose options the yomi modules below set, even when the
@@ -37,29 +40,42 @@ in {
   # Use DHCP/NetworkManager-provided DNS by default; AdGuardHome sets this on its host.
 
   # /etc/hosts
-  networking.extraHosts = let
-    allHostnames = lib.attrNames inputs.self.nixosConfigurations;
-    hosts = hostnames:
-      lib.concatStringsSep "\n" (
-        lib.flatten (
-          lib.mapAttrsToList
-          (ip: recordsList: map (record: "${ip} ${record.at}") recordsList)
-          (
-            lib.groupBy
-            (record: record.value)
-            (
-              lib.filter
-              (record: record.type == "A" && lib.elem record.at hostnames)
-              (lib.flatten (lib.forEach
-                hostnames
-                (hostname:
-                  inputs.self.nixosConfigurations.${hostname}.config.yomi.dns.records)))
-            )
-          )
-        )
-      );
-  in
-    hosts allHostnames;
+  # Every fleet host's address comes from ./inventory.nix instead of evaluating
+  # each sibling configuration for its yomi.dns.records.
+  networking.extraHosts = lib.pipe inventory [
+    (lib.filterAttrs (_: host: host ? ipv4))
+    (lib.mapAttrsToList (name: host: "${host.ipv4} ${name}"))
+    (lib.sort builtins.lessThan)
+    (lib.concatStringsSep "\n")
+  ];
+
+  # Other hosts used to read this host's own A records back; they now read the
+  # inventory, so a record that disagrees with it would go stale everywhere
+  # else without a word.
+  assertions = let
+    hostname = config.networking.hostName;
+    fleetRecords =
+      lib.filter (record: record.type == "A" && inventory ? ${record.at})
+      config.yomi.dns.records;
+    wrong = lib.filter (record: (inventory.${record.at}.ipv4 or null) != record.value) fleetRecords;
+    expected = inventory.${hostname}.ipv4 or null;
+  in [
+    {
+      assertion = wrong == [];
+      message = ''
+        yomi.dns.records has A records for fleet hosts that disagree with
+        hosts/nixos/common/inventory.nix: ${lib.concatMapStringsSep ", " (r: "${r.at} -> ${r.value}") wrong}.
+        Every other host's /etc/hosts reads the inventory; update it alongside.
+      '';
+    }
+    {
+      assertion = expected == null || lib.any (record: record.at == hostname) fleetRecords;
+      message = ''
+        hosts/nixos/common/inventory.nix gives ${hostname} the address ${toString expected},
+        but ${hostname} declares no A record for itself in yomi.dns.records.
+      '';
+    }
+  ];
 
   console.keyMap = lib.mkForce "de";
 

@@ -5,8 +5,9 @@
   lib,
   ...
 }: let
-  # Record containing all the hosts
-  hosts = outputs.nixosConfigurations;
+  # Only the names: attrNames does not evaluate any sibling configuration.
+  hostnames = builtins.attrNames outputs.nixosConfigurations;
+  inventory = import ../inventory.nix;
 
   # Name of the current hostname
   hostname = config.networking.hostName;
@@ -18,11 +19,12 @@
   # Function from hostname to relative path to public ssh key
   pubKey = host: ../../${host}/keys/ssh_host_ed25519_key.pub;
 
-  # Names a host answers to besides its hostname, declared by that host and
-  # read back here so every machine pins the same set. Without this, git
-  # traffic to ssh.git.<domain> -- which is a CNAME to inari and served by
-  # inari's own sshd -- is unpinned even though inari itself is pinned.
-  aliasesOf = host: hosts.${host}.config.yomi.ssh.extraHostNames;
+  # Names a host answers to besides its hostname, so every machine pins the
+  # same set. Without this, git traffic to ssh.git.<domain> -- which is a CNAME
+  # to inari and served by inari's own sshd -- is unpinned even though inari
+  # itself is pinned. Read from the inventory; each host's own
+  # yomi.ssh.extraHostNames is checked against it below.
+  aliasesOf = host: inventory.${host}.sshAliases or [];
 in {
   options.yomi.ssh.extraHostNames = lib.mkOption {
     type = lib.types.listOf lib.types.str;
@@ -30,7 +32,8 @@ in {
     example = ["ssh.git.example.com"];
     description = ''
       Additional hostnames that resolve to this machine and are served by its
-      sshd, so other hosts pin them to the same key.
+      sshd. Other hosts pin the names listed for this host in
+      hosts/nixos/common/inventory.nix; this must match that entry.
     '';
   };
 
@@ -71,7 +74,7 @@ in {
     # key, which no sshd will ever present, and the resulting mismatch is only
     # visible at connect time.
     warnings = let
-      unpinned = lib.filter (name: !builtins.pathExists (pubKey name)) (builtins.attrNames hosts);
+      unpinned = lib.filter (name: !builtins.pathExists (pubKey name)) hostnames;
     in
       lib.optional (unpinned != []) ''
         No ssh host key is pinned for: ${lib.concatStringsSep ", " unpinned}.
@@ -79,15 +82,28 @@ in {
         Capture the real key once the host is reachable: `just import-host-key <host>`.
       '';
 
+    # Every other host pins the inventory's aliases, so one declared only here
+    # would fall back to trust-on-first-use everywhere else.
+    assertions = [
+      {
+        assertion = lib.naturalSort config.yomi.ssh.extraHostNames == lib.naturalSort (aliasesOf hostname);
+        message = ''
+          yomi.ssh.extraHostNames on ${hostname} (${toString config.yomi.ssh.extraHostNames})
+          differs from its sshAliases in hosts/nixos/common/inventory.nix
+          (${toString (aliasesOf hostname)}). Other hosts pin the inventory; update it alongside.
+        '';
+      }
+    ];
+
     # Add each host in this repo to the knownHosts list
     programs.ssh = {
-      knownHosts = lib.pipe hosts [
-        # attrsetof host -> attrsetof { ... }
+      knownHosts = lib.pipe hostnames [
+        # string[] -> attrsetof { ... }
         (
-          builtins.mapAttrs
-          # string -> host -> { ... }
+          lib.flip lib.genAttrs
+          # string -> { ... }
           (
-            name: _: {
+            name: {
               publicKeyFile = pubKey name;
               extraHostNames = lib.optional (name == hostname) "localhost" ++ aliasesOf name;
             }
