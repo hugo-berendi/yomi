@@ -9,12 +9,12 @@
   # The API bundle must match the server it talks to: it carries its own copy
   # of the budget schema and migrations, and an older client would refuse or,
   # worse, downgrade a newer budget. Bump this together with actual-server.
-  apiVersion = "26.10.0";
+  apiVersion = "26.11.0";
   api = pkgs.runCommand "actual-app-api-${apiVersion}" {} ''
     mkdir -p $out
     tar -xzf ${pkgs.fetchurl {
       url = "https://registry.npmjs.org/@actual-app/api/-/api-${apiVersion}.tgz";
-      hash = "sha256-ruSWWj5Rb8r9nx3fombiViRKOSIoIY9IdLXwNbqn8og=";
+      hash = "sha256-X8z+vXrC1vmf+wnFryQlTV7deTDNcJyjMFm8xlS4G2c=";
     }} -C $out --strip-components=1
   '';
   # The bundle's only runtime dependency is better-sqlite3, a native module.
@@ -31,10 +31,12 @@
       budget-password = config.sops.secrets.actual_budget_password.path;
     };
 in {
-  warnings = lib.optional (server.version != apiVersion) ''
-    actual-bridge pins @actual-app/api ${apiVersion} but actual-server is ${server.version}.
-    Update apiVersion and its hash in hosts/nixos/inari/services/actual/bridge.nix.
-  '';
+  assertions = [
+    {
+      assertion = server.version == apiVersion;
+      message = "actual-bridge pins @actual-app/api ${apiVersion} but actual-server is ${server.version}. Update the API version and hash together with the server.";
+    }
+  ];
 
   # {{{ Secrets
   # The session token is a row in Actual's own sessions table, owned by the
