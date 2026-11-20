@@ -51,12 +51,20 @@ in
               path = source + "/" + filename
               machine.succeed("mkdir -p " + shlex.quote(path.rsplit("/", 1)[0]))
               machine.succeed("sqlite3 " + shlex.quote(path) + " 'CREATE TABLE fixture (id int); INSERT INTO fixture VALUES (37);'")
+          for filename in app.get("h2", []):
+              path = source + "/" + filename
+              machine.succeed("mkdir -p " + shlex.quote(path.rsplit("/", 1)[0]))
+              # This test checks ZFS staging. The restore test opens a real H2 database.
+              machine.succeed("printf 'H:2,synthetic H2 fixture' > " + shlex.quote(path))
           machine.succeed("chmod 0700 " + shlex.quote(source))
 
       for _ in range(2):
           machine.succeed("systemctl start restic-app-state.service", timeout=120)
-          for name in manifest:
-              machine.succeed("test -f /persist/state/var/backup/app-state/" + shlex.quote(name) + "/sentinel")
+          for name, app in manifest.items():
+              staged = "/persist/state/var/backup/app-state/" + name
+              machine.succeed("test -f " + shlex.quote(staged + "/sentinel"))
+              for filename in app.get("h2", []):
+                  machine.succeed("test \"$(cat " + shlex.quote(staged + "/" + filename) + ")\" = 'H:2,synthetic H2 fixture'")
           machine.fail("zfs list -t snapshot ${stateDataset}@yomi-app-state-backup")
           machine.fail("zfs list -t snapshot raid5pool@yomi-app-state-backup")
           machine.fail("findmnt -rn -t zfs | grep /run/restic-app-state/")
