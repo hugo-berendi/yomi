@@ -32,7 +32,7 @@
     }
     {
       name = "nginx HTTPS route";
-      command = ["${lib.getExe pkgs.curl}" "--silent" "--show-error" "--fail" "--noproxy" "*" "--max-time" "5" "--resolve" "${config.yomi.nginx.at.grafana.host}:443:127.0.0.1" "${config.yomi.nginx.at.grafana.url}/api/health"];
+      command = ["${lib.getExe pkgs.curl}" "--silent" "--show-error" "--fail" "--noproxy" "*" "--max-time" "5" "--resolve" "${config.yomi.web.at.grafana.host}:443:127.0.0.1" "${config.yomi.web.at.grafana.url}/api/health"];
     }
   ]);
   readiness = pkgs.writeShellScript "inari-deployment-health" ''

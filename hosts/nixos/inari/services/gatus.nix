@@ -39,7 +39,7 @@
     alerts = mailAlert name;
   };
 in {
-  yomi.nginx.at = (lib.genAttrs ["paperless" "immich" "lab" "n8n" "karakeep" "radarr" "sonarr" "bazarr" "prowlarr" "torrent" "music" "cal" "pdf" "grafana" "prometheus" "adguard" "monitoring" "budget"] (_: {monitor.enable = true;})) // {status.port = port;};
+  yomi.nginx.at = (lib.genAttrs ["paperless" "immich" "lab" "karakeep" "radarr" "sonarr" "bazarr" "prowlarr" "torrent" "music" "cal" "pdf" "prometheus" "adguard" "monitoring" "budget"] (_: {monitor.enable = true;})) // {status.port = port;};
   # {{{ Reverse proxy
   # }}}
   # {{{ Secrets

@@ -94,7 +94,7 @@ in {
 
     settings = {
       server = rec {
-        domain = config.yomi.nginx.at.grafana.host;
+        domain = config.yomi.web.at.grafana.host;
         root_url = "https://${domain}";
         http_port = port;
       };
@@ -522,7 +522,12 @@ in {
   };
   # }}}
   # {{{ Networking & persistence
-  yomi.nginx.at.grafana.port = port;
+  yomi.web.at.grafana = {
+    inherit port;
+    transport = "nginx";
+    authentication = "application";
+    monitor.enable = true;
+  };
 
   yomi.persistence.at.state.apps.grafana.directories = [
     {

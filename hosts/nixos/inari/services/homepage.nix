@@ -84,7 +84,7 @@ in {
           {
             Diabetes = {
               icon = "mdi-chart-line";
-              href = config.yomi.nginx.at.diabetes.url;
+              href = config.yomi.web.at.diabetes.url;
               description = "Glucose reports";
             };
           }
@@ -112,7 +112,7 @@ in {
           {
             N8N = {
               icon = "n8n.svg";
-              href = "https://n8n.hugo-berendi.de";
+              href = config.yomi.web.at.n8n.url;
               description = "Workflow automation";
             };
           }

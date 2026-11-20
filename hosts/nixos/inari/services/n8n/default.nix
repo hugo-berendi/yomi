@@ -107,8 +107,12 @@ in {
   # }}}
 
   config = {
-    yomi.nginx.at.n8n = {
+    # The editor has its own login; webhooks are refused at nginx below.
+    yomi.web.at.n8n = {
       port = config.yomi.ports.n8n;
+      transport = "nginx";
+      authentication = "application";
+      monitor.enable = true;
       # n8n listens on IPv4 loopback only (N8N_LISTEN_ADDRESS below), and
       # "localhost" would have nginx try ::1 first on every request.
       proxyAddress = "127.0.0.1";
@@ -119,7 +123,7 @@ in {
     # name that proxies to it, serve the editor only. Forms and MCP triggers
     # are unauthenticated the same way. Case-insensitive on purpose: n8n's
     # router matches /WEBHOOK/... too, and a plain prefix location would not.
-    services.nginx.virtualHosts.${config.yomi.nginx.at.n8n.host}.locations."~* ^/(webhook|webhook-test|webhook-waiting|form|form-test|form-waiting|mcp|mcp-test)(/|$)".return = "404";
+    services.nginx.virtualHosts.${config.yomi.web.at.n8n.host}.locations."~* ^/(webhook|webhook-test|webhook-waiting|form|form-test|form-waiting|mcp|mcp-test)(/|$)".return = "404";
 
     # {{{ Service API keys for workflows
     # The *arr values are the same secrets their services consume, so a
@@ -218,15 +222,15 @@ in {
       enable = true;
       environment = {
         DIABETES_URL = "http://127.0.0.1:${toString config.yomi.ports.diabetes}";
-        WEBHOOK_URL = config.yomi.nginx.at.n8n.url;
-        N8N_PORT = toString config.yomi.nginx.at.n8n.port;
+        WEBHOOK_URL = config.yomi.web.at.n8n.url;
+        N8N_PORT = toString config.yomi.web.at.n8n.port;
         N8N_HOST = "127.0.0.1";
         # N8N_HOST only names the host in generated URLs; the listener binds
         # to every address unless told otherwise. The Docker bridges are
         # accepted without a port filter, so their clients could otherwise
         # post to the unauthenticated webhooks.
         N8N_LISTEN_ADDRESS = "127.0.0.1";
-        N8N_EDITOR_BASE_URL = config.yomi.nginx.at.n8n.url;
+        N8N_EDITOR_BASE_URL = config.yomi.web.at.n8n.url;
         N8N_TEMPLATES_ENABLED = toString true;
         N8N_AI_ENABLED = toString true;
         # inari has no IPv6 default route, but Node 17+ returns DNS results in

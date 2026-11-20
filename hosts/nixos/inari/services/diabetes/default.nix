@@ -37,7 +37,7 @@
     MPLCONFIGDIR = "/var/lib/diabetes/matplotlib";
     # The running classifier serves Qwen3.5-9B through llama.cpp.
     AI_URL = "http://127.0.0.1:${toString config.yomi.ports.llama-cpp-classifier}/v1/chat/completions";
-    PUBLIC_URL = config.yomi.nginx.at.diabetes.url;
+    PUBLIC_URL = config.yomi.web.at.diabetes.url;
   };
 in {
   # {{{ Options
@@ -103,11 +103,14 @@ in {
         }
       ];
       # {{{ Private web service
-      yomi.nginx.at.diabetes = {
+      yomi.web.at.diabetes = {
         port = config.yomi.ports.diabetes;
-        clientMaxBodySize = "20m";
+        transport = "nginx";
+        authentication = "application";
       };
-      services.nginx.virtualHosts.${config.yomi.nginx.at.diabetes.host}.locations."/".extraConfig = ''
+      # Upload size and the long report timeout are nginx-only settings.
+      yomi.nginx.at.diabetes.clientMaxBodySize = "20m";
+      services.nginx.virtualHosts.${config.yomi.web.at.diabetes.host}.locations."/".extraConfig = ''
         proxy_read_timeout 910s;
       '';
       systemd.services.diabetes = {
