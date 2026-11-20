@@ -19,7 +19,7 @@
   }
   * { box-sizing: border-box; }
   body { margin: 0; }
-  main { max-width: 1100px; margin: auto; padding: clamp(20px, 4vw, 54px); }
+  main { max-width: 1000px; margin: auto; padding: clamp(14px, 4vw, 54px); }
   h1, h2, p { margin: 0; }
   h1 { font-size: clamp(30px, 5vw, 55px); line-height: 1.08; letter-spacing: -.035em; }
   h2 { font-size: 20px; margin-block-end: 12px; }
@@ -27,6 +27,36 @@
   #state, .hint, .node small, .meta { color: var(--muted-ink); }
   #state { font-size: .83rem; }
   section { margin-top: 28px; }
+  figure { margin: 0; }
+  .topology {
+    border: 1px solid var(--line); border-radius: 14px; padding: clamp(4px, 2vw, 20px);
+    background: var(--paper);
+    --zone: var(--secondary, #192e28);
+    --control: var(--chart-5, #d2b6ff);
+    --tunnel: var(--chart-1, #92d1ff);
+  }
+  .topology svg {
+    display: block; width: 100%; max-width: 530px; height: auto; margin: auto;
+    font-family: system-ui, sans-serif;
+  }
+  .topology text { fill: var(--ink); font-size: 16px; }
+  .topology .detail { fill: var(--muted-ink); font-size: 13px; }
+  .topology .host { font-weight: 700; }
+  .topology .zone { fill: var(--zone); stroke: var(--muted-ink); stroke-opacity: .55; }
+  .topology .box { fill: var(--paper); stroke: var(--muted-ink); }
+  .topology a:hover .box, .topology a:focus-visible .box { stroke: var(--route); stroke-width: 2; }
+  .topology .wire {
+    fill: none; stroke: var(--route); stroke-width: 1.6;
+    stroke-linejoin: round; marker-end: url(#arrow);
+  }
+  .topology .tunnel { stroke: var(--tunnel); stroke-dasharray: 6 4; }
+  .topology .control { stroke: var(--control); stroke-dasharray: 2 4; }
+  .topology .tunnel-label { fill: var(--tunnel); }
+  .topology .control-label { fill: var(--control); }
+  .topology .edge-label {
+    paint-order: stroke; stroke: var(--zone); stroke-width: 5; stroke-linejoin: round;
+  }
+  .topology [data-route][hidden] { display: none; }
   .paths { display: grid; gap: 2px; }
   .path {
     list-style: none; padding: 12px; margin: 0; display: flex;
@@ -68,11 +98,6 @@
   .up { color: var(--route); }
   .down { color: var(--down); }
   .hint { margin-top: 8px; font-size: .86rem; }
-  @media (max-width: 560px) {
-    #access .path { flex-direction: column; align-items: stretch; }
-    #access .edge { text-align: left; padding-left: 30px; position: relative; min-height: 25px; }
-    #access .edge::after { position: absolute; width: 24px; left: -3px; top: 5px; transform: rotate(90deg); }
-  }
 </style>
 <main>
   <header>
@@ -80,9 +105,78 @@
     <p id="state" role="status">Karte wird geladen …</p>
   </header>
   <section aria-labelledby="access-title">
-    <h2 id="access-title">Zugangswege</h2>
-    <div class="paths" id="access"></div>
-    <p class="hosts" id="hosts"></p>
+    <h2 id="access-title">Netzarchitektur</h2>
+    <figure class="topology" id="network-map" hidden>
+      <svg viewBox="0 0 440 616" role="group" aria-labelledby="diagram-title diagram-desc">
+        <title id="diagram-title">Zugangswege zu Inari</title>
+        <desc id="diagram-desc">Anfragen aus dem Internet erreichen Inari über Ebisu und einen WireGuard-Tunnel. Das Heimnetz erreicht die Webdienste direkt über nginx.</desc>
+        <defs>
+          <marker id="arrow" viewBox="0 0 8 8" markerWidth="6" markerHeight="6" refX="7" refY="4" orient="auto-start-reverse">
+            <path d="M0 0L8 4L0 8Z" fill="context-stroke"/>
+          </marker>
+        </defs>
+
+        <g data-route="gateway">
+          <rect class="zone" x="12" y="94" width="276" height="182" rx="9"/>
+          <text class="host" x="28" y="120">Ebisu</text>
+          <text class="detail" x="272" y="120" text-anchor="end">VPS</text>
+        </g>
+        <rect class="zone" x="12" y="350" width="416" height="254" rx="9"/>
+        <text class="host" x="28" y="377">Inari</text>
+        <text class="detail" x="412" y="575" text-anchor="end">Heimserver</text>
+
+        <g data-route="gateway">
+          <path class="wire" d="M82 54V138"/>
+          <text class="detail" x="94" y="78">HTTPS</text>
+          <path class="wire control" d="M137 158H165"/>
+          <path class="wire" d="M82 182V216"/>
+          <text class="detail" x="94" y="204">Proxy</text>
+          <path class="wire tunnel" d="M82 258V393"/>
+          <text class="detail tunnel-label" x="94" y="300">WireGuard</text>
+          <path class="wire control" d="M132 413H157V324H220V182"/>
+          <text class="detail control-label" x="232" y="312">WebSocket<tspan x="232" dy="16">via Traefik</tspan></text>
+          <rect class="box" x="24" y="14" width="116" height="40" rx="5"/>
+          <text x="82" y="39" text-anchor="middle">Internet</text>
+          <rect class="box" x="27" y="138" width="110" height="44" rx="5"/>
+          <text x="82" y="165" text-anchor="middle">Traefik</text>
+          <rect class="box" x="165" y="138" width="110" height="44" rx="5"/>
+          <text x="220" y="165" text-anchor="middle">Pangolin</text>
+          <rect class="box" x="27" y="216" width="110" height="42" rx="5"/>
+          <text x="82" y="242" text-anchor="middle">Gerbil</text>
+          <rect class="box" x="32" y="393" width="100" height="42" rx="5"/>
+          <text x="82" y="419" text-anchor="middle">Newt</text>
+        </g>
+        <g data-route="pangolin">
+          <path class="wire" d="M82 435V500H146"/>
+          <text class="detail" x="94" y="472">HTTP(S)</text>
+        </g>
+        <g data-route="lan">
+          <path class="wire" d="M353 54V393"/>
+          <text class="detail" x="365" y="78">HTTPS</text>
+          <path class="wire" d="M353 435V500H294"/>
+          <text class="detail" x="341" y="472" text-anchor="end">HTTP(S)</text>
+          <rect class="box" x="295" y="14" width="116" height="40" rx="5"/>
+          <text x="353" y="39" text-anchor="middle">Heimnetz</text>
+          <rect class="box" x="303" y="393" width="100" height="42" rx="5"/>
+          <text x="353" y="419" text-anchor="middle">nginx</text>
+        </g>
+        <g data-route="private">
+          <path class="wire tunnel" d="M65 435V550"/>
+          <rect class="box" x="27" y="550" width="138" height="41" rx="5"/>
+          <text x="96" y="575" text-anchor="middle">Private Ziele</text>
+          <rect class="box" x="156" y="14" width="128" height="40" rx="5"/>
+          <text x="220" y="39" text-anchor="middle">VPN-Client</text>
+          <path class="wire tunnel" d="M220 54V78H302V237H137"/>
+          <text class="detail tunnel-label edge-label" x="220" y="226" text-anchor="middle">Privater Zugang</text>
+        </g>
+        <a href="#services-title" data-route="web">
+          <rect class="box" x="146" y="474" width="148" height="54" rx="5"/>
+          <text x="220" y="497" text-anchor="middle">Webdienste</text>
+          <text class="detail" id="route-count" x="220" y="516" text-anchor="middle"></text>
+        </a>
+      </svg>
+      <figcaption class="hosts" id="hosts"></figcaption>
+    </figure>
   </section>
   <div class="flows" id="flows"></div>
   <section aria-labelledby="services-title">
@@ -128,18 +222,19 @@ function path(nodes, edges) {
 }
 
 function renderTopology() {
-  const access = element("access");
-  access.replaceChildren();
-  if (topology.services.some(service => service.access === "nginx")) {
-    access.append(path([["Heimnetz"], [topology.host, "nginx"], ["Webdienste", "nginx-Routen"]], ["HTTPS", "HTTP(S) im Backend"]));
+  const routes = {
+    gateway: topology.throughGateway,
+    lan: topology.services.some(service => service.access === "nginx"),
+    pangolin: topology.services.some(service => service.access === "Pangolin"),
+    private: topology.privateAccess,
+    web: topology.services.length > 0,
+  };
+  for (const part of document.querySelectorAll("[data-route]")) {
+    part.toggleAttribute("hidden", !routes[part.dataset.route]);
   }
-  if (topology.throughGateway) {
-    access.append(path([["Internet"], ["Ebisu", "Traefik · Pangolin"], [topology.host, "Newt"], ["Webdienste", "Pangolin-Routen"]], ["HTTPS", "Newt-Tunnel", "HTTP(S) im Backend"]));
-  }
-  if (topology.privateAccess) {
-    access.append(path([["Pangolin-Client"], ["Ebisu", "Pangolin · Gerbil"], [topology.host, "Newt"], ["Private Ziele", "z. B. nginx und SSH"]], ["Client-Verbindung", "Newt-Tunnel", "Private Weiterleitung"]));
-  }
+  element("route-count").textContent = topology.services.length + " Routen";
   element("hosts").textContent = "Konfigurierte Systeme · " + topology.hosts.join(" · ");
+  element("network-map").hidden = false;
 
   const flows = element("flows");
   flows.replaceChildren();
