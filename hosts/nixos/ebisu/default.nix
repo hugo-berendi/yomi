@@ -13,6 +13,7 @@ in {
     ../common/vps.nix
     "${modulesPath}/profiles/qemu-guest.nix"
     ./filesystems.nix
+    ./releases.nix
   ];
 
   networking.hostName = "ebisu";
