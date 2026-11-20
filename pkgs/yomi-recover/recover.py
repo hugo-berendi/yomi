@@ -10,12 +10,14 @@ import json
 import os
 from pathlib import Path
 import re
+import secrets
 import shlex
 import shutil
 import stat
 import subprocess
 import sys
 import tempfile
+import time
 
 
 FORMAT = 1
@@ -23,6 +25,8 @@ MIB = 1024 * 1024
 CHUNK = 1024 * MIB
 KEY = "/kagutsuchi/age/yomi-recovery.txt"
 ROOT = "zroot/recovered"
+# Read by scripts/ops/release-upgrade.py on the recovered host; keep the format in step.
+RELEASE_HOLD = "persist/state/var/lib/yomi-release/hold.json"
 
 
 class RecoveryError(Exception):
@@ -912,8 +916,39 @@ def overrides(repo, info, root, args):
     run("git", "-C", repo, "add", "hosts/nixos/inari/recovery-local.nix")
 
 
+def hold_releases(mountpoint, reason):
+    """Stop automatic upgrades on the recovered root until a human clears it.
+
+    Published releases are built from main, which lacks this disk's
+    recovery-local.nix and generated hardware configuration. An existing hold
+    keeps its id, so repeated runs give one confirmation code.
+    """
+    path = Path(mountpoint) / RELEASE_HOLD
+    path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    if path.exists():
+        hold = json.loads(path.read_text())
+    else:
+        hold = {
+            "format": 1,
+            "id": secrets.token_hex(4),
+            "reason": reason,
+            "createdAt": int(time.time()),
+        }
+        atomic_json(path, hold)
+    print(
+        f"Automatic upgrades are held on the recovered system. Commit its hardware "
+        f"configuration to main, then run: yomi-release release-hold --confirm {hold['id']}"
+    )
+    return hold
+
+
 def adapt_install(args, manifest, repo, info, root, mountpoint):
     mountpoint = Path(mountpoint)
+    hold_releases(
+        mountpoint,
+        "yomi-recover adapted this installation to new hardware; main lacks its "
+        "recovery-local.nix and hardware/generated.nix",
+    )
     boot = mountpoint / "boot"
     require(
         (boot / "zroot-recovery-key.age").is_file(),
@@ -1067,6 +1102,10 @@ def restore_zfs(args):
             manifest["artifacts"]["boot"],
             args.identity,
             Path(args.mountpoint) / "boot",
+        )
+        hold_releases(
+            args.mountpoint,
+            "yomi-recover restored this system from a backup bundle onto a new disk",
         )
         if not args.no_install:
             adapt_install(args, manifest, repo, info, ROOT, args.mountpoint)

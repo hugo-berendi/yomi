@@ -44,6 +44,16 @@ in
       python3 -m unittest discover -s tests -p test_deployment_health.py
       touch "$out"
     '';
+    release-upgrade = pkgs.runCommand "release-upgrade-tests" {
+      nativeBuildInputs = [pkgs.python3 pkgs.openssh pkgs.bash];
+    } ''
+      mkdir -p tests scripts/ops pkgs/yomi-recover
+      cp ${../tests/test_release_upgrade.py} tests/test_release_upgrade.py
+      cp ${../scripts/ops/release-upgrade.py} scripts/ops/release-upgrade.py
+      cp ${../pkgs/yomi-recover/recover.py} pkgs/yomi-recover/recover.py
+      python3 -m unittest discover -s tests -p test_release_upgrade.py
+      touch "$out"
+    '';
     expose = import ../tests/expose.nix {inherit pkgs self;};
     expose-backup =
       pkgs.runCommand "expose-backup-tests" {
