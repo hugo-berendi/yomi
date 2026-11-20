@@ -96,7 +96,8 @@
 in {
   services.nginx.virtualHosts.${config.yomi.nginx.at.lab.host}.locations = {
     "= /infrastruktur".return = "308 /infrastruktur/";
-    "= /infrastruktur/" = {
+    "= /infrastruktur/".extraConfig = "index /infrastruktur/index.html;";
+    "= /infrastruktur/index.html" = {
       alias = page;
       extraConfig = "default_type text/html;";
     };
