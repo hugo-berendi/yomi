@@ -6,7 +6,7 @@
   # {{{ Imports
   imports =
     [
-      ../common
+      ../common/profiles/server.nix
 
       ./networking
       ./filesystems

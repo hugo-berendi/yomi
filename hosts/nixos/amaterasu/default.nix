@@ -5,7 +5,7 @@
 }: {
   # {{{ Imports
   imports = [
-    ../common
+    ../common/profiles/desktop.nix
 
     ./hardware
     ./filesystems

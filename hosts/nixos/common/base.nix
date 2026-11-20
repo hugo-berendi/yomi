@@ -1,6 +1,7 @@
 # Settings every host shares, including a VPS that must not carry the home
-# fleet's desktop, user and monitoring collections. Hosts that want those add
-# ./profiles/fleet.nix (through ./default.nix) on top of this.
+# fleet's desktop, user and monitoring collections. Home hosts import a role
+# profile instead (./profiles/{desktop,server,recovery}.nix), which brings this
+# file and ./profiles/fleet.nix.
 {
   config,
   inputs,
