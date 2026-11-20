@@ -102,6 +102,10 @@ in
       inherit pkgs;
       rules = self.nixosConfigurations.inari.config.services.grafana.provision.alerting.rules.settings;
     };
+    actual-bridge = import ../tests/actual-bridge.nix {
+      inherit pkgs;
+      config = self.nixosConfigurations.inari.config;
+    };
     recovery = import ../tests/recovery.nix {
       inherit pkgs;
       config = self.nixosConfigurations.inari.config;
