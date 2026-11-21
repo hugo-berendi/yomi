@@ -13,11 +13,11 @@
 # the binary only needs its native dependencies patched in.
 stdenv.mkDerivation rec {
   pname = "sockseek";
-  version = "3.0.6";
+  version = "3.1.0";
 
   src = fetchurl {
     url = "https://github.com/fiso64/sockseek/releases/download/v${version}/sockseek_${version}_linux-x64.tar.gz";
-    hash = "sha256-kdfRT6EpOv6UzLApngED+Ed6VYIj9i9AJ/VxLku/Uho=";
+    hash = "sha256-GkTYt9PDNJetfhz3HIRcFigOIrF+1UncM2WO3mas4mQ=";
   };
 
   sourceRoot = ".";
