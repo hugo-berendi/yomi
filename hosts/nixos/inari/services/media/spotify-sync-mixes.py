@@ -1,16 +1,24 @@
-"""Write Navidrome smart playlists: mixes per artist and genre, and a few lists.
+"""Write Navidrome playlists: mixes per artist and genre, and a few lists.
 
 Navidrome imports every .nsp file in the playlists folder as a smart
 playlist and evaluates its rules itself, against its own play counts and
-dates. This only decides which rules to write:
+dates. For most playlists this only decides which rules to write:
 
 - A mix for each artist with at least ARTIST_MIN_SONGS songs, together with
   the RELATED artists closest to them; none for an artist without any, and
   none that would be nearly the same as a mix already made for a bigger
-  artist (01099, Gustav, Paul and Zachi are one crew, and one mix). Closeness comes from the library
-  itself: artists credited on the same song, artists in the same Spotify
-  playlists (a small playlist says more than the liked songs), and shared
-  genres.
+  artist (01099, Gustav, Paul and Zachi are one crew, and one mix).
+  Closeness comes from the library itself: artists credited on the same
+  song, artists in the same Spotify playlists (a small playlist says more
+  than the liked songs), and shared genres.
+
+  An artist mix is a plain .m3u, chosen here: at least every second song is
+  the artist's own, which no rule can say, and it changes once a week. Each
+  artist's songs are shuffled once, by a hash of artist and path, and every
+  week the mix takes the next ones in that order, so a mix only repeats a
+  song once it has gone through all of them, and is shuffled anew. A mix of
+  the smart-playlist kind was random on every refresh and could be mostly
+  the other artists.
 - A mix for each family of genres with at least GENRE_MIN_SONGS songs.
   beets' genres come in variants ("Hip Hop", "Hip-Hop"); a family lists every
   variant the library has, since Navidrome compares names exactly. The
@@ -30,7 +38,9 @@ genre.
 
 A file is only rewritten when its content changes, so Navidrome does not
 reimport it on every run. Files are never removed: Navidrome keeps the
-playlist of a deleted file, so a mix that drops out stays as it was.
+playlist of a deleted file, so a mix that drops out stays as it was. The
+one exception is the .nsp an artist mix had before it became an .m3u; its
+playlist stays in Navidrome until it is deleted there.
 
 beets 2.14 stores a path relative to its music directory, MUSIC_DIR here;
 the playlists name it in full.
@@ -41,9 +51,12 @@ Usage: MUSIC_DIR=... spotify-sync-mixes LIBRARY_DB PLAYLIST_DIR COVERS_JSON
 from __future__ import annotations
 
 import collections
+import datetime
+import hashlib
 import json
 import math
 import os
+import random
 import re
 import sqlite3
 import sys
@@ -57,6 +70,9 @@ GENRE_MIN_SONGS = 20
 MAX_OVERLAP = 0.5
 MIX_LENGTH = 50
 LIKED = "Lieblingssongs.m3u"
+# First line of an artist mix. Spotify playlists say which artists belong
+# together; a mix must not, or each one would confirm the next.
+MARK = "#EXTM3U\n# spotify-sync-mixes\n"
 
 # Navidrome's mappings.yaml: how a single ARTIST tag is split.
 ARTIST_SPLIT = re.compile(r" / | feat\. | feat | ft\. | ft |; ")
@@ -193,9 +209,14 @@ def playlists_together(lib: Library, folder: str) -> collections.Counter:
         if not name.endswith(".m3u") or name.startswith("."):
             continue
         with open(os.path.join(folder, name), encoding="utf-8") as f:
-            paths = [
-                line.strip() for line in f if line.strip() and not line.startswith("#")
-            ]
+            text = f.read()
+        if text.startswith(MARK):
+            continue
+        paths = [
+            line.strip()
+            for line in text.splitlines()
+            if line.strip() and not line.startswith("#")
+        ]
         present = {a for p in paths for a in lib.artists.get(p, [])}
         if len(present) < 2:
             continue
@@ -221,9 +242,61 @@ def folders(paths: list[str]) -> list[str]:
     return [f for f, _ in count.most_common(5)]
 
 
+def this_week(
+    artist: str, paths: list[str], count: int, week: int, step: int
+) -> list[str]:
+    """COUNT of the artist's songs in their order, starting STEP further on
+    each week."""
+    if not paths:
+        return []
+    order = sorted(
+        paths, key=lambda p: hashlib.sha1(f"{artist}\0{p}".encode()).digest()
+    )
+    start = week * step % len(order)
+    return [order[(start + i) % len(order)] for i in range(min(count, len(order)))]
+
+
+def interleave(own: list[str], others: list[str]) -> list[str]:
+    """The other songs spread evenly between the artist's own, never two of
+    them in a row: there are never more of them than of the own."""
+    songs = []
+    placed = 0
+    for i, song in enumerate(own, 1):
+        songs.append(song)
+        if placed < len(others) and placed * len(own) < i * len(others):
+            songs.append(others[placed])
+            placed += 1
+    return songs
+
+
+def mix_songs(lib: Library, artist: str, related: list[str], week: int) -> list[str]:
+    own = [p for a, _, p in lib.items if artist in a]
+    theirs = {
+        o: [p for a, _, p in lib.items if o in a and artist not in a] for o in related
+    }
+    # Round the related artists, a song each, until there are enough. Each
+    # starts this week where last week's mix stopped taking from them.
+    step = -(-(MIX_LENGTH // 2) // max(len(related), 1))
+    turns = {o: this_week(o, ps, len(ps), week, step) for o, ps in theirs.items()}
+    pool = []
+    for i in range(max(map(len, turns.values()), default=0)):
+        pool += [ps[i] for ps in turns.values() if i < len(ps)]
+    pool = list(dict.fromkeys(pool))
+    n_others = min(len(pool), MIX_LENGTH // 2)
+    n_own = min(len(own), MIX_LENGTH - n_others)
+    own = this_week(artist, own, n_own, week, n_own)
+    others = pool[: min(n_others, n_own)]
+    # An artist with few songs has all of them in every week's mix; the
+    # order still changes.
+    shuffle = random.Random(f"{artist}\0{week}").shuffle
+    shuffle(own)
+    shuffle(others)
+    return interleave(own, others)
+
+
 def artist_mixes(
-    lib: Library, together: collections.Counter, covers: dict[str, dict]
-) -> dict[str, dict]:
+    lib: Library, together: collections.Counter, covers: dict[str, dict], week: int
+) -> dict[str, list[str]]:
     mixes = {}
     made: list[set[str]] = []
     leaders = [
@@ -246,19 +319,12 @@ def artist_mixes(
         ):
             continue
         made.append(cast)
-        names = sorted(set().union(*(lib.names[a] for a in [artist, *related])))
-        comment = f"{artist} und {', '.join(related)}"
         covers[f"{artist} Mix"] = {
             "style": "artist",
             "artist": artist,
             "folders": folders([p for a, _, p in lib.items if artist in a]),
         }
-        mixes[f"{artist} Mix"] = {
-            "comment": comment,
-            "any": [{"is": {"artist": name}} for name in names],
-            "sort": "random",
-            "limit": MIX_LENGTH,
-        }
+        mixes[f"{artist} Mix"] = mix_songs(lib, artist, related, week)
     return mixes
 
 
@@ -317,10 +383,9 @@ def write_covers(path: str, covers: dict[str, dict]) -> None:
     os.replace(tmp, path)
 
 
-def write(folder: str, name: str, rules: dict) -> bool:
-    """Writes NAME.nsp unless it already says the same; True if it changed."""
-    content = json.dumps({"name": name, **rules}, ensure_ascii=False, indent=2) + "\n"
-    filename = re.sub(r'[/\\:*?"<>|]', "_", name) + ".nsp"
+def write(folder: str, name: str, content: str, suffix: str) -> bool:
+    """Writes NAME.SUFFIX unless it already says the same; True if it changed."""
+    filename = re.sub(r'[/\\:*?"<>|]', "_", name) + suffix
     path = os.path.join(folder, filename)
     try:
         with open(path, encoding="utf-8") as f:
@@ -341,19 +406,36 @@ def main() -> None:
     db, folder, covers_path = sys.argv[1:]
     lib = Library(db)
     covers = {name: {"style": "list"} for name in FIXED}
-    playlists = {
+    smart = {
         **FIXED,
         **genre_mixes(
             lib,
             split_names(os.environ.get("MIXES_LEAVE_OUT"), re.compile(";")),
             covers,
         ),
-        **artist_mixes(lib, playlists_together(lib, folder), covers),
     }
-    playlists["Lange nicht gehört"]["all"][0]["inPlaylist"]["path"] = os.path.join(
+    smart["Lange nicht gehört"]["all"][0]["inPlaylist"]["path"] = os.path.join(
         os.path.abspath(folder), LIKED
     )
-    changed = [name for name, rules in playlists.items() if write(folder, name, rules)]
+    # Mondays, like ordinal 1, 0001-01-01.
+    week = (datetime.date.today().toordinal() - 1) // 7
+    mixes = artist_mixes(lib, playlists_together(lib, folder), covers, week)
+    changed = [
+        name
+        for name, rules in smart.items()
+        if write(
+            folder,
+            name,
+            json.dumps({"name": name, **rules}, ensure_ascii=False, indent=2) + "\n",
+            ".nsp",
+        )
+    ]
+    for name, songs in mixes.items():
+        if write(folder, name, MARK + "".join(f"{p}\n" for p in songs), ".m3u"):
+            changed.append(name)
+        old = os.path.join(folder, re.sub(r'[/\\:*?"<>|]', "_", name) + ".nsp")
+        if os.path.exists(old):
+            os.remove(old)
     write_covers(covers_path, covers)
     if changed:
         print(f"{len(changed)} smart playlists written: {', '.join(changed)}")

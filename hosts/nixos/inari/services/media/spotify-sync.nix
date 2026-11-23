@@ -48,7 +48,7 @@
     flakeIgnore = ["E501"];
   } (builtins.readFile ./spotify-sync-covers.py);
 
-  # Writes the smart playlists: a mix per artist and genre, and a few lists.
+  # Writes the mixes per artist and genre, and a few lists.
   mixes = pkgs.writers.writePython3Bin "spotify-sync-mixes" {
     flakeIgnore = ["E501"];
   } (builtins.readFile ./spotify-sync-mixes.py);
