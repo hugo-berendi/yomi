@@ -2,7 +2,13 @@
   port = config.yomi.ports.opencode;
   pilot = config.yomi.pilot.name;
 in {
-  yomi.nginx.at.code.port = port;
+  # opencode runs without a server password: anyone on the LAN can drive an
+  # agent session as the pilot.
+  yomi.web.at.code = {
+    port = port;
+    transport = "nginx";
+    authentication = "none";
+  };
 
   users.users.${pilot}.linger = true;
 }

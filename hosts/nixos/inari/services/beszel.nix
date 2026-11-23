@@ -22,6 +22,11 @@ in {
   };
   # }}}
   # {{{ Networking
-  yomi.nginx.at.monitoring.port = port;
+  yomi.web.at.monitoring = {
+    port = port;
+    transport = "nginx";
+    authentication = "application";
+    monitor.enable = true;
+  };
   # }}}
 }

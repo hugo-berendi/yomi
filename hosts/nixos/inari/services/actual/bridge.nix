@@ -63,7 +63,7 @@ in {
   yomi.n8n.workflows.actual-budget.source = ../n8n/workflows/actual-budget.json;
   services.n8n.environment = {
     ACTUAL_BRIDGE_URL = "http://127.0.0.1:${toString config.yomi.ports.actual-bridge}";
-    ACTUAL_URL = config.yomi.nginx.at.budget.url;
+    ACTUAL_URL = config.yomi.web.at.budget.url;
   };
   sops.templates."n8n-services.env".content = lib.mkAfter ''
     ACTUAL_BRIDGE_API_KEY=${config.sops.placeholder.actual_bridge_api_key}

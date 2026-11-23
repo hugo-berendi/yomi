@@ -5,12 +5,17 @@
   };
   # }}}
   # {{{ reverse proxy
-  yomi.nginx.at.bazarr.port = config.yomi.ports.bazarr;
+  yomi.web.at.bazarr = {
+    port = config.yomi.ports.bazarr;
+    transport = "nginx";
+    authentication = "application";
+    monitor.enable = true;
+  };
   # }}}
   #{{{ settings
   nixarr.bazarr = {
     enable = true;
-    port = config.yomi.nginx.at.bazarr.port;
+    port = config.yomi.web.at.bazarr.port;
     vpn.enable = false;
   };
   # }}}

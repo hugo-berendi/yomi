@@ -83,8 +83,8 @@
       path = import ./infrastructure-dashboard.nix {
         inherit lib pkgs;
         hosts = builtins.attrNames outputs.nixosConfigurations;
-        statusUrl = config.yomi.nginx.at.status.url;
-        topologyUrl = "${config.yomi.nginx.at.lab.url}/infrastruktur/";
+        statusUrl = config.yomi.web.at.status.url;
+        topologyUrl = "${config.yomi.web.at.lab.url}/infrastruktur/";
       };
     }
     {

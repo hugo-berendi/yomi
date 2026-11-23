@@ -11,7 +11,11 @@ in {
   };
   # }}}
   # {{{ Reverse proxy
-  yomi.nginx.at.scrutiny.port = port;
+  yomi.web.at.scrutiny = {
+    port = port;
+    transport = "nginx";
+    authentication = "none";
+  };
   # }}}
   # {{{ Service
   services.scrutiny = {

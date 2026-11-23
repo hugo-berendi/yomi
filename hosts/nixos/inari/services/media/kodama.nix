@@ -14,14 +14,18 @@
 
   # {{{ Reverse proxy
   # Private access through Pangolin, like Navidrome.
-  yomi.nginx.at.wrapped.port = config.yomi.ports.kodama;
+  yomi.web.at.wrapped = {
+    port = config.yomi.ports.kodama;
+    transport = "nginx";
+    authentication = "none";
+  };
   # }}}
   # {{{ Service
   services.kodama = {
     enable = true;
     settings = {
       listen = "127.0.0.1:${toString config.yomi.ports.kodama}";
-      baseURL = "https://${config.yomi.nginx.at.wrapped.host}";
+      baseURL = "https://${config.yomi.web.at.wrapped.host}";
       language = "de";
       # Migadu accepts only the account's own address as sender (msmtp.nix).
       mail.from = "Kodama <no-reply@tengu.hugo-berendi.de>";

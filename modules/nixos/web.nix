@@ -33,6 +33,12 @@ in {
           type = lib.types.enum ["application" "gateway" "none"];
           description = "Who authenticates requests; none deliberately permits anonymous access.";
         };
+        clientMaxBodySize = lib.mkOption {
+          type = lib.types.nullOr lib.types.str;
+          default = null;
+          example = "50M";
+          description = "Largest request body nginx accepts (nginx transport only); null keeps nginx's 1M default.";
+        };
         enableAnubis = lib.mkEnableOption "Anubis protection on Pangolin";
         stagePangolin = lib.mkEnableOption "previewing this endpoint in the blueprint while the connector is disabled";
         pangolin = lib.mkOption {
@@ -72,8 +78,12 @@ in {
         assertion = !e.enableAnubis || e.transport == "pangolin";
         message = "Web ${e.host}: Anubis requires the Pangolin transport.";
       }
+      {
+        assertion = e.clientMaxBodySize == null || e.transport == "nginx";
+        message = "Web ${e.host}: clientMaxBodySize only applies to the nginx transport.";
+      }
     ]) (lib.attrValues endpoints);
-    yomi.nginx.at = lib.mapAttrs (_: common) (lib.filterAttrs (_: e: e.transport == "nginx") endpoints);
+    yomi.nginx.at = lib.mapAttrs (_: e: common e // {inherit (e) clientMaxBodySize;}) (lib.filterAttrs (_: e: e.transport == "nginx") endpoints);
     yomi.expose.at = lib.mapAttrs (_: e:
       common e
       // e.pangolin

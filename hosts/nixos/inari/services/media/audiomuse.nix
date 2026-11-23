@@ -57,7 +57,12 @@ in {
 
   # {{{ Reverse proxy
   # Private access through Pangolin, like Navidrome.
-  yomi.nginx.at.audiomuse.port = port;
+  # Reachable without a login from the LAN.
+  yomi.web.at.audiomuse = {
+    port = port;
+    transport = "nginx";
+    authentication = "none";
+  };
   # }}}
   # {{{ Containers
   # One network namespace, like a pod: the database's container owns it,

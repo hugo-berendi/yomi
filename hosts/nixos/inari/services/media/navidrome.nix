@@ -12,14 +12,19 @@ in {
   # }}}
   # {{{ Reverse proxy
   # The LAN and Pangolin's private alias share this Subsonic endpoint.
-  yomi.nginx.at.music.port = config.yomi.ports.navidrome;
+  yomi.web.at.music = {
+    port = config.yomi.ports.navidrome;
+    transport = "nginx";
+    authentication = "application";
+    monitor.enable = true;
+  };
   # }}}
   # {{{ Service
   services.navidrome = {
     enable = true;
     settings = {
       Address = "127.0.0.1";
-      Port = config.yomi.nginx.at.music.port;
+      Port = config.yomi.web.at.music.port;
       MusicFolder = musicDir;
       # The filesystem watcher picks up new downloads within seconds; the
       # hourly scan only catches what it misses.

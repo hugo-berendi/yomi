@@ -12,7 +12,12 @@ in {
     sopsFile = ../secrets.yaml;
   };
 
-  yomi.nginx.at.lab.port = port;
+  yomi.web.at.lab = {
+    port = port;
+    transport = "nginx";
+    authentication = "none";
+    monitor.enable = true;
+  };
 
   services.homepage-dashboard = {
     enable = true;
@@ -63,35 +68,35 @@ in {
           {
             Infrastrukturkarte = {
               icon = "mdi-sitemap";
-              href = "${config.yomi.nginx.at.lab.url}/infrastruktur/";
+              href = "${config.yomi.web.at.lab.url}/infrastruktur/";
               description = "Hosts, Dienste und Verbindungen";
             };
           }
           {
             Mealie = {
               icon = "mealie.svg";
-              href = config.yomi.nginx.at.mealie.url;
+              href = config.yomi.web.at.mealie.url;
               description = "Recipes and meal planning";
             };
           }
           {
             "Changedetection.io" = {
               icon = "changedetection-io.svg";
-              href = config.yomi.nginx.at.changedetection.url;
+              href = config.yomi.web.at.changedetection.url;
               description = "Website change monitoring";
             };
           }
           {
             "T3 Code" = {
               icon = "mdi-code-braces";
-              href = config.yomi.nginx.at.t3code.url;
+              href = config.yomi.web.at.t3code.url;
               description = "Coding agent workspace";
             };
           }
           {
             OpenCode = {
               icon = "mdi-console";
-              href = config.yomi.nginx.at.code.url;
+              href = config.yomi.web.at.code.url;
               description = "Coding agent workspace";
             };
           }
@@ -160,7 +165,7 @@ in {
           {
             "Actual Budget" = {
               icon = "actual-budget.svg";
-              href = config.yomi.nginx.at.budget.url;
+              href = config.yomi.web.at.budget.url;
               description = "Budgeting and bank sync";
             };
           }

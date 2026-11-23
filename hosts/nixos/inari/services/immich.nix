@@ -24,8 +24,11 @@ in {
   };
   # }}}
   # {{{ Reverse proxy
-  yomi.nginx.at.immich = {
+  yomi.web.at.immich = {
     port = config.yomi.ports.immich;
+    transport = "nginx";
+    authentication = "application";
+    monitor.enable = true;
     clientMaxBodySize = "50000M";
   };
   # Keep the existing hostname so published share links remain valid.
@@ -43,7 +46,7 @@ in {
     # `assets` from GET /albums/:id; 26.05's IPP 1.15.6 still reads it and
     # crashes on every album link. 3.x fetches them via the timeline API.
     package = upkgs.immich-public-proxy;
-    immichUrl = config.yomi.nginx.at.immich.url;
+    immichUrl = config.yomi.web.at.immich.url;
     port = config.yomi.ports.ipp;
   };
   # }}}

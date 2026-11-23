@@ -273,7 +273,7 @@
   });
   page = pkgs.writeText "yomi-topology.html" (builtins.readFile ./infrastructure-topology.html);
 in {
-  services.nginx.virtualHosts.${config.yomi.nginx.at.lab.host}.locations = {
+  services.nginx.virtualHosts.${config.yomi.web.at.lab.host}.locations = {
     "= /infrastruktur".return = "308 /infrastruktur/";
     "= /infrastruktur/".extraConfig = "index /infrastruktur/index.html;";
     "= /infrastruktur/index.html" = {

@@ -50,6 +50,10 @@ in {
     # Inari runs nftables with networking.firewall disabled, so allowedTCPPorts
     # here would do nothing. Reachability is governed by ../networking/nftables.nix.
 
-    yomi.nginx.at.windrose.port = rconPort;
+    yomi.web.at.windrose = {
+      port = rconPort;
+      transport = "nginx";
+      authentication = "application";
+    };
   };
 }

@@ -30,7 +30,7 @@
   services.prometheus = {
     enable = true;
     port = config.yomi.ports.prometheus;
-    webExternalUrl = config.yomi.nginx.at.prometheus.url;
+    webExternalUrl = config.yomi.web.at.prometheus.url;
     extraFlags = [
       "--storage.tsdb.retention.time=30d"
       "--storage.tsdb.retention.size=10GB"
@@ -147,7 +147,12 @@
   };
   # }}}
   # {{{ Networking & persistence
-  yomi.nginx.at.prometheus.port = config.services.prometheus.port;
+  yomi.web.at.prometheus = {
+    port = config.services.prometheus.port;
+    transport = "nginx";
+    authentication = "none";
+    monitor.enable = true;
+  };
 
   yomi.persistence.at.state.apps.prometheus.directories = [
     {

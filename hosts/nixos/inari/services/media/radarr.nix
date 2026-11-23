@@ -5,12 +5,19 @@
   };
   # }}}
   # {{{ reverse proxy
-  yomi.nginx.at.radarr.port = config.yomi.ports.radarr;
+  # Authentication is off: /initialize.json hands the API key to anyone on
+  # the LAN.
+  yomi.web.at.radarr = {
+    port = config.yomi.ports.radarr;
+    transport = "nginx";
+    authentication = "none";
+    monitor.enable = true;
+  };
   # }}}
   #{{{ settings
   nixarr.radarr = {
     enable = true;
-    port = config.yomi.nginx.at.radarr.port;
+    port = config.yomi.web.at.radarr.port;
     vpn.enable = false;
   };
   # }}}

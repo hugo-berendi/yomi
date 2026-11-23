@@ -147,7 +147,12 @@ in {
     "d ${dirOf triggerFile} 0700 radicale radicale - -"
     "f ${triggerFile} 0600 radicale radicale - -"
   ];
-  yomi.nginx.at.cal.port = port;
+  yomi.web.at.cal = {
+    port = port;
+    transport = "nginx";
+    authentication = "application";
+    monitor.enable = true;
+  };
 
   # ProtectSystem=strict leaves /run read-only for Radicale. The trigger file
   # is owned by radicale, which PrivateUsers= still maps to itself.

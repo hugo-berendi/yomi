@@ -5,7 +5,12 @@
   };
   # }}}
   # {{{ Reverse proxy
-  yomi.nginx.at.paperless.port = config.yomi.ports.paperless;
+  yomi.web.at.paperless = {
+    port = config.yomi.ports.paperless;
+    transport = "nginx";
+    authentication = "application";
+    monitor.enable = true;
+  };
   # }}}
   # {{{ Secrets
   sops.secrets.paperless_env = {

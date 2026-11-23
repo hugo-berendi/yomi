@@ -5,7 +5,11 @@
   };
   # }}}
   # {{{ Reverse proxy
-  yomi.nginx.at.mealie.port = config.yomi.ports.mealie;
+  yomi.web.at.mealie = {
+    port = config.yomi.ports.mealie;
+    transport = "nginx";
+    authentication = "application";
+  };
   # }}}
   # {{{ Secrets
   sops.templates."mealie.env".content = ''
@@ -22,7 +26,7 @@
     database.createLocally = true;
 
     settings = {
-      BASE_URL = config.yomi.nginx.at.mealie.url;
+      BASE_URL = config.yomi.web.at.mealie.url;
       DEFAULT_LOCALE = "en_US";
 
       # SMTP Configuration

@@ -27,7 +27,7 @@ in {
     oidc = {
       enable = true;
       issuer = config.yomi.web.at.pocket-id.url;
-      origin = config.yomi.nginx.at.t3code.url;
+      origin = config.yomi.web.at.t3code.url;
       # Pocket ID restricts this client to the t3code group.
       clientId = "2db66a5a-664a-4938-a2d1-15815ec7c1d2";
       clientSecretFile = config.sops.secrets.t3code_oidc_client_secret.path;
@@ -65,7 +65,12 @@ in {
       };
     };
   };
-  yomi.nginx.at.t3code.port = port;
+  # T3 Code signs users in through Pocket ID (services.t3code.oidc).
+  yomi.web.at.t3code = {
+    port = port;
+    transport = "nginx";
+    authentication = "application";
+  };
 
   home-manager.users.${pilot} = {config, ...}: {
     home.packages = [package] ++ forgeClis;
