@@ -5,15 +5,18 @@
 }: {
   options.yomi.ports = lib.mkOption {
     type = lib.types.lazyAttrsOf lib.types.port;
-    description = "Fixed port allocation for Yomi services";
+    description = "Fixed port allocation for Yomi services. Each service sets its own entries next to its definition.";
   };
 
   config.assertions = let
-    ports = builtins.attrValues config.yomi.ports;
+    byPort = lib.groupBy (name: toString config.yomi.ports.${name}) (lib.attrNames config.yomi.ports);
+    clashes = lib.filterAttrs (_: names: lib.length names > 1) byPort;
   in [
     {
-      assertion = builtins.length ports == builtins.length (lib.unique ports);
-      message = "Every yomi.ports entry must use a unique port number.";
+      assertion = clashes == {};
+      message =
+        "yomi.ports entries share a port number; give each its own: "
+        + lib.concatStringsSep "; " (lib.mapAttrsToList (port: names: "${port} (${lib.concatStringsSep ", " names})") clashes);
     }
   ];
 
