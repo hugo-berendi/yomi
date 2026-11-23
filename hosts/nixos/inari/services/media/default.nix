@@ -7,7 +7,7 @@
     ./radarr.nix
     ./qbittorrent.nix
     ./navidrome.nix
-    ./spotify-sync.nix
+    ./spotify-sync
     ./kodama.nix
     ./audiomuse.nix
     ./jellyseerr.nix
