@@ -3166,7 +3166,7 @@ attribute set of (submodule)
 ```
 
 *Declared by:*
- - [hosts/nixos/inari/services/n8n](../hosts/nixos/inari/services/n8n)
+ - [hosts/nixos/inari/services/n8n/workflows\.nix](../hosts/nixos/inari/services/n8n/workflows.nix)
 
 ## yomi\.n8n\.workflows\.\<name>\.enforce
 
@@ -3184,7 +3184,7 @@ true
 ```
 
 *Declared by:*
- - [hosts/nixos/inari/services/n8n](../hosts/nixos/inari/services/n8n)
+ - [hosts/nixos/inari/services/n8n/workflows\.nix](../hosts/nixos/inari/services/n8n/workflows.nix)
 
 ## yomi\.n8n\.workflows\.\<name>\.source
 
@@ -3194,7 +3194,7 @@ Workflow JSON as exported by n8n\. Must carry its ` id `\.
 absolute path
 
 *Declared by:*
- - [hosts/nixos/inari/services/n8n](../hosts/nixos/inari/services/n8n)
+ - [hosts/nixos/inari/services/n8n/workflows\.nix](../hosts/nixos/inari/services/n8n/workflows.nix)
 
 ## yomi\.network\.exposure
 
