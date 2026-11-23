@@ -421,6 +421,11 @@ dns-clear zoneid bearerfile="/run/secrets/cloudflare_dns_api_token":
   print("🚀 All done!")
 # }}}
 # {{{ Security
+[doc("Start a service on a host: one file in its services/, a free port, staged")]
+[group("nix")]
+new-service name host=hostname:
+  nix develop -c python3 scripts/ops/new-service.py {{name}} --host {{host}}
+
 [doc("List every file that sets an option, e.g. just where yomi.web.at.mealie.port")]
 [group("nix")]
 where option host=hostname:
