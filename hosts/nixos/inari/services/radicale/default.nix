@@ -148,7 +148,7 @@ in {
     "f ${triggerFile} 0600 radicale radicale - -"
   ];
   yomi.web.at.cal = {
-    port = port;
+    inherit port;
     transport = "nginx";
     authentication = "application";
     monitor.enable = true;

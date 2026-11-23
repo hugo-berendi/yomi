@@ -13,7 +13,7 @@ in {
   };
 
   yomi.web.at.lab = {
-    port = port;
+    inherit port;
     transport = "nginx";
     authentication = "none";
     monitor.enable = true;

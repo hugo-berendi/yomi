@@ -56,7 +56,7 @@ in {
   # {{{ Reverse proxy
   # Reachable without a login from the LAN.
   yomi.web.at.changedetection = {
-    port = port;
+    inherit port;
     transport = "nginx";
     authentication = "none";
   };

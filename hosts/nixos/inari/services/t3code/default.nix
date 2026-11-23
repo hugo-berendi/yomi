@@ -67,7 +67,7 @@ in {
   };
   # T3 Code signs users in through Pocket ID (services.t3code.oidc).
   yomi.web.at.t3code = {
-    port = port;
+    inherit port;
     transport = "nginx";
     authentication = "application";
   };

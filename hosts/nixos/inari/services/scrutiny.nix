@@ -12,7 +12,7 @@ in {
   # }}}
   # {{{ Reverse proxy
   yomi.web.at.scrutiny = {
-    port = port;
+    inherit port;
     transport = "nginx";
     authentication = "none";
   };

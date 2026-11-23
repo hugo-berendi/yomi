@@ -23,7 +23,7 @@ in {
   # }}}
   # {{{ Networking
   yomi.web.at.monitoring = {
-    port = port;
+    inherit port;
     transport = "nginx";
     authentication = "application";
     monitor.enable = true;

@@ -65,7 +65,7 @@ in {
   # }}}
   # A static Matrix client; the homeserver authenticates.
   yomi.web.at.sable = {
-    port = port;
+    inherit port;
     transport = "nginx";
     authentication = "none";
   };
