@@ -1,20 +1,12 @@
 {
   config,
-  lib,
   pkgs,
   ...
 }: let
   cfg = config.services.nextcloud;
   pocketIdUrl = config.yomi.web.at.pocket-id.url;
   cloud = config.yomi.web.at.cloud;
-  office = config.yomi.web.at.office;
-  occ = lib.getExe cfg.occ;
   wopiPort = config.yomi.ports.nextcloud-wopi;
-  wopiCallback = "https://${cloud.host}:${toString wopiPort}";
-  wopiHosts = pkgs.concatText "coolwsd-hosts" [
-    config.environment.etc.hosts.source
-    (pkgs.writeText "coolwsd-nextcloud-host" "\n127.0.0.1 ${cloud.host}\n")
-  ];
   colors = config.lib.stylix.colors;
   themeCss = pkgs.writeText "nextcloud-theme.css" ''
     :root, body {
@@ -32,43 +24,16 @@
       --color-primary-element-hover: #${colors.base0C};
     }
   '';
-
-  # Files dropped here in the web UI or the sync client are handed to paperless.
-  paperlessInbox = "Paperless";
-  consumeDir = config.services.paperless.consumptionDir;
-
-  # {{{ paperless hand-off
-  # Moving, not copying: paperless deletes nothing in Nextcloud, and a copy
-  # would leave every scan in both places. nextcloud owns the files, so the
-  # job runs as nextcloud and writes into the paperless consume directory
-  # through the paperless group; the follow-up scan drops the now-missing rows
-  # from Nextcloud's file cache.
-  paperlessHandoff = pkgs.writeShellApplication {
-    name = "nextcloud-to-paperless";
-    runtimeInputs = [pkgs.coreutils pkgs.findutils];
-    text = ''
-      shopt -s nullglob
-      for inbox in ${cfg.datadir}/data/*/files/${paperlessInbox}; do
-        user=$(basename "$(dirname "$(dirname "$inbox")")")
-        moved=0
-        for f in "$inbox"/*; do
-          [ -f "$f" ] || continue
-          # Skip files a sync client is still uploading.
-          [ -n "$(find "$f" -mmin -1 -print -quit)" ] && continue
-          mv -n -- "$f" "${consumeDir}/nextcloud-$user-$(basename "$f")" && moved=1
-        done
-        [ "$moved" = 1 ] && { ${occ} files:scan --path="$user/files/${paperlessInbox}" --quiet || true; }
-      done
-      exit 0
-    '';
-  };
-  # }}}
 in {
+  imports = [
+    ./collabora.nix
+    ./paperless.nix
+  ];
+
   # {{{ Ports
   yomi.ports = {
     nextcloud = 8444;
     nextcloud-wopi = 8446;
-    collabora = 9980;
   };
   # }}}
   # {{{ reverse proxy
@@ -85,16 +50,6 @@ in {
       path = "/status.php";
     };
   };
-  yomi.web.at.office = {
-    port = config.yomi.ports.collabora;
-    transport = "pangolin";
-    authentication = "application";
-    pangolin.healthCheck = {
-      enable = true;
-      path = "/hosting/capabilities";
-    };
-  };
-
   # The TLS gateway forwards to the module's loopback php-fpm vhost over HTTP.
   services.nginx.virtualHosts.${cloud.host} = {
     listen = [
@@ -116,15 +71,15 @@ in {
   # }}}
   # {{{ secrets
   sops.secrets.nextcloud_admin_password = {
-    sopsFile = ../secrets.yaml;
+    sopsFile = ../../secrets.yaml;
     owner = "nextcloud";
   };
   sops.secrets.nextcloud_oidc_client_id = {
-    sopsFile = ../secrets.yaml;
+    sopsFile = ../../secrets.yaml;
     owner = "nextcloud";
   };
   sops.secrets.nextcloud_oidc_client_secret = {
-    sopsFile = ../secrets.yaml;
+    sopsFile = ../../secrets.yaml;
     owner = "nextcloud";
   };
   # }}}
@@ -293,101 +248,7 @@ in {
     '';
   };
   # }}}
-  # {{{ collabora
-  # The browser loads the editor frame from the separate public office hostname.
-  services.collabora-online = {
-    enable = true;
-    port = config.yomi.ports.collabora;
-    settings = {
-      ssl.enable = false;
-      ssl.termination = true;
-      net = {
-        listen = "loopback";
-        post_allow.host = ["::1" "127\\.0\\.0\\.1"];
-      };
-      storage.wopi = {
-        "@allow" = true;
-        host = [(lib.escapeRegex cloud.host)];
-      };
-      server_name = office.host;
-    };
-  };
-
-  # Upstream sets no sandboxing for coolwsd, and it is public (office.*).
-  # It jails documents with unprivileged user and mount namespaces
-  # (mount_namespaces = true, upstream's default), not setcap'd helpers, so
-  # namespaces stay allowed: no RestrictNamespaces, no PrivateUsers. Its only
-  # writable state is StateDirectory /var/lib/cool. Not added, because each
-  # can break the kit processes: MemoryDenyWriteExecute (LibreOffice
-  # generates code), PrivateDevices and ProtectProc (the jails bind /dev and
-  # read /proc of their children). Unverified at runtime until the next switch.
-  systemd.services.coolwsd.serviceConfig = {
-    # Resolve only Collabora's Nextcloud callbacks to the loopback TLS listener.
-    BindReadOnlyPaths = ["${wopiHosts}:/etc/hosts"];
-    # The host's nscd would resolve names against its own hosts file.
-    InaccessiblePaths = ["/run/nscd"];
-    NoNewPrivileges = true;
-    ProtectSystem = "strict";
-    ProtectHome = true;
-    PrivateTmp = true;
-    ProtectKernelTunables = true;
-    ProtectKernelModules = true;
-    ProtectKernelLogs = true;
-    ProtectControlGroups = true;
-    ProtectClock = true;
-    RestrictRealtime = true;
-    RestrictSUIDSGID = true;
-    LockPersonality = true;
-    SystemCallArchitectures = "native";
-    RestrictAddressFamilies = ["AF_UNIX" "AF_INET" "AF_INET6" "AF_NETLINK"];
-  };
-
-  systemd.services.nextcloud-richdocuments-config = {
-    description = "Point Nextcloud Office at Collabora";
-    after = ["nextcloud-setup.service" "coolwsd.service"];
-    requires = ["nextcloud-setup.service"];
-    wantedBy = ["multi-user.target"];
-    path = [cfg.occ];
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-      User = "nextcloud";
-    };
-    script = ''
-      nextcloud-occ config:app:set richdocuments wopi_url --value='http://[::1]:${toString config.yomi.ports.collabora}'
-      nextcloud-occ config:app:set richdocuments public_wopi_url --value=${office.url}
-      nextcloud-occ config:app:set richdocuments wopi_callback_url --value=${wopiCallback}
-      nextcloud-occ config:app:set richdocuments wopi_allowlist --value="127.0.0.1,::1"
-    '';
-  };
-  # }}}
-  # {{{ paperless inbox
-  users.users.nextcloud.extraGroups = ["paperless"];
-  # The consume directory is private to paperless by default; the group needs
-  # write access so the hand-off job can drop files in.
-  systemd.tmpfiles.settings."10-nextcloud-paperless".${consumeDir}.d = {
-    mode = "0770";
-    user = config.services.paperless.user;
-    group = "paperless";
-  };
-
-  systemd.services.nextcloud-to-paperless = {
-    description = "Move Nextcloud '${paperlessInbox}' folder contents into paperless";
-    after = ["nextcloud-setup.service"];
-    serviceConfig = {
-      Type = "oneshot";
-      User = "nextcloud";
-      ExecStart = lib.getExe paperlessHandoff;
-    };
-    path = [pkgs.coreutils pkgs.findutils];
-  };
-  systemd.timers.nextcloud-to-paperless = {
-    wantedBy = ["timers.target"];
-    timerConfig = {
-      OnBootSec = "5min";
-      OnUnitActiveSec = "2min";
-    };
-  };
+  # {{{ data directory
   # The module only creates config/ and data/ under datadir. A datadir left
   # behind by ocis (owned by its deleted uid) makes tmpfiles refuse to touch
   # them as an "unsafe path transition", so own the directory itself.
