@@ -8,11 +8,10 @@
   ports = config.yomi.ports;
   n8nEnv = config.services.n8n.environment;
 
-  # Same eval-time key test as the ntfy token in n8n/default.nix: a missing
-  # sops key would fail the whole rebuild, so the heartbeat wires itself up
-  # once the ping URL has been added to secrets.yaml.
-  hasHeartbeat = builtins.match ".*[[:space:]]*alert_heartbeat_url:.*" (builtins.readFile ../../secrets.yaml) != null;
-  hasNtfyToken = builtins.match ".*[[:space:]]*n8n_ntfy_token:.*" (builtins.readFile ../../secrets.yaml) != null;
+  # The heartbeat wires itself up once its ping URL is in secrets.yaml.
+  hasSecret = import ../../lib/has-secret.nix;
+  hasHeartbeat = hasSecret "alert_heartbeat_url";
+  hasNtfyToken = hasSecret "n8n_ntfy_token";
 
   systemTargets =
     lib.concatMap (job: lib.concatMap (static: static.targets) job.static_configs)

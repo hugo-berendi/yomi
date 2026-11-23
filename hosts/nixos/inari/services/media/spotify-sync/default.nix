@@ -14,11 +14,9 @@
     "soulseek_username"
     "soulseek_password"
   ];
-  # Same eval-time test as alerting/default.nix: a missing sops key would fail
-  # the whole activation, so the sync only wires itself up once all of them
-  # have been added to secrets.yaml.
-  secretsYaml = builtins.readFile ../../../secrets.yaml;
-  hasSecrets = lib.all (name: builtins.match ".*[[:space:]]*${name}:.*" secretsYaml != null) secretNames;
+  # The sync wires itself up only once all of them are in secrets.yaml; see
+  # ../../../lib/has-secret.nix.
+  hasSecrets = lib.all (import ../../../lib/has-secret.nix) secretNames;
 
   # File name inside an album folder: track number when tagged, else the
   # Soulseek file name as the last resort.

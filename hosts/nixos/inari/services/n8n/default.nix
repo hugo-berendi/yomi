@@ -4,17 +4,9 @@
   pkgs,
   ...
 }: let
-  # sops-install-secrets validates its manifest at build time, so naming a
-  # key that does not exist in secrets.yaml fails the entire nixos-rebuild
-  # -- not just this service. That is a bad trade for a notification token:
-  # it means the host cannot apply any configuration at all until somebody
-  # with the age key is at a keyboard.
-  #
-  # The key names in a sops file are plaintext (only the values are
-  # encrypted), so whether it is present can be decided at eval time. The
-  # token wires itself up the moment it is added, and until then the spine
-  # runs without one and ntfy answers 403.
-  hasNtfyToken = builtins.match ".*[[:space:]]*n8n_ntfy_token:.*" (builtins.readFile ../../secrets.yaml) != null;
+  # The ntfy token wires itself up once it is in secrets.yaml; until then the
+  # alert spine runs without one and ntfy answers 403. See ../../lib/has-secret.nix.
+  hasNtfyToken = import ../../lib/has-secret.nix "n8n_ntfy_token";
 in {
   imports = [./workflows.nix];
 

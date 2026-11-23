@@ -21,7 +21,7 @@
   # actual-server already ships one built for its Node, so the bridge runs on
   # that same Node and borrows the server's node_modules.
   nodejs = upkgs.nodejs_24;
-  hasBudgetPassword = builtins.match ".*[[:space:]]*actual_budget_password:.*" (builtins.readFile ../../secrets.yaml) != null;
+  hasBudgetPassword = import ../../lib/has-secret.nix "actual_budget_password";
   credentials =
     {
       session-token = config.sops.secrets.actual_bridge_session_token.path;
