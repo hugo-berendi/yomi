@@ -19,7 +19,7 @@ The building blocks below them:
 | `home-manager.nix` | Home Manager for the pilot, with `features/default.nix` as the base |
 | `nix.nix` | nix settings and binary caches (`common/caches.nix`) |
 | `persistence.nix` | impermanence wiring shared by the hosts that use it |
-| `services/` | services several hosts run: openssh, restic, syncthing, greetd, anubis, oci |
+| `services/` | services several hosts run: openssh, restic, greetd, anubis, oci, beszel-agent, memory |
 | `users/` | the pilot and the login keys collected from `hosts/nixos/*/keys/` |
 | `inventory.nix` | facts other hosts need about inari and ebisu: addresses, SSH aliases |
 | `secrets.yaml` | secrets shared by the home fleet |

@@ -37,9 +37,6 @@
         "lp" # Printers
         "audio" # Audio devices
         "video" # Webcam and the like
-        "network" # wpa_supplicant
-        "syncthing" # syncthing!
-        "vboxusers"
 
         # Read the system journal without sudo. wheelNeedsPassword is on, so
         # every `journalctl -u <service>` otherwise needs a password, which

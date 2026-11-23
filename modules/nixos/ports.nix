@@ -28,7 +28,6 @@
     iocaine = lib.mkDefault 8420;
     meilisearch = lib.mkDefault 8434;
     opencode = lib.mkDefault 8487;
-    syncthing = lib.mkDefault 8480;
   };
   # }}}
 }

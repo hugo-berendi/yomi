@@ -29,7 +29,7 @@ file:
 
 `yomi.ports` maps names to port numbers. Each service sets its own entries;
 `modules/nixos/ports.nix` keeps only the ports more than one host reads
-(iocaine, meilisearch, opencode, syncthing). Evaluation fails when two
+(iocaine, meilisearch, opencode). Evaluation fails when two
 entries share a number, and the message names both.
 
 ## HTTP endpoints
