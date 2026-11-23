@@ -37,9 +37,9 @@ import email.utils
 import getpass
 import imaplib
 import json
-import smtplib
 import os
 import re
+import smtplib
 import sys
 import time
 import urllib.error
@@ -681,7 +681,7 @@ def main() -> int:  # noqa: PLR0912, PLR0915
     started = time.monotonic()
     for offset in range(0, len(todo), args.batch):
         chunk = todo[offset : offset + args.batch]
-        for uid, sender, subject, date, snippet in fetch_messages(
+        for uid, sender, subject, date, _snippet in fetch_messages(
             client, chunk, args.peek_bytes
         ):
             address = (email.utils.parseaddr(sender)[1] or sender).lower()

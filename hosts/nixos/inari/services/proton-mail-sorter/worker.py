@@ -1,28 +1,27 @@
 """Loopback-only worker for n8n; credentials stay outside workflow executions."""
 
 import argparse
-from collections import Counter
-from datetime import datetime, timezone
+import contextlib
 import hashlib
 import hmac
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import os
-from pathlib import Path
 import re
 import sqlite3
 import ssl
 import subprocess
 import threading
 import time
-from urllib.parse import urlsplit
 import uuid
-
-from imap_tools import MailBoxStartTls
-from imap_tools.utils import encode_folder
+from collections import Counter
+from datetime import datetime, timezone
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+from urllib.parse import urlsplit
 
 import classifier
-
+from imap_tools import MailBoxStartTls
+from imap_tools.utils import encode_folder
 
 # Cached for a message the model answered unusably; never a folder name.
 UNCLASSIFIED = ""
@@ -262,10 +261,8 @@ class Sorter:
                 del password
             return box
         except Exception:
-            try:
+            with contextlib.suppress(Exception):
                 box.logout()
-            except Exception:
-                pass
             raise
 
     def verdict(self, database, folder, validity, msg, digest):
@@ -653,10 +650,8 @@ class Sorter:
         finally:
             if database is not None:
                 database.close()
-            try:
+            with contextlib.suppress(Exception):
                 box.logout()
-            except Exception:
-                pass
 
 
 class Application:

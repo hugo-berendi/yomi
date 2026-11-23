@@ -1,11 +1,10 @@
 import importlib.util
 import json
-from pathlib import Path
 import subprocess
 import sys
 import tempfile
 import unittest
-
+from pathlib import Path
 
 SCRIPT = Path(__file__).resolve().parents[1] / "scripts/ci/update-gate.py"
 spec = importlib.util.spec_from_file_location("update_gate", SCRIPT)
@@ -225,6 +224,7 @@ class CliTests(unittest.TestCase):
             cwd=cwd,
             capture_output=True,
             text=True,
+            check=False,
         )
         return result.returncode, result.stdout
 

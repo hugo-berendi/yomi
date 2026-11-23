@@ -89,7 +89,8 @@ class VersionGuardPlugin(BeetsPlugin):
         super().__init__()
         self.register_listener("import_task_choice", self.check_choice)
 
-    def check_choice(self, session: ImportSession, task: ImportTask) -> None:
+    # beets passes listener arguments by name, so `session` keeps its name.
+    def check_choice(self, session: ImportSession, task: ImportTask) -> None:  # noqa: ARG002
         if not isinstance(task, SingletonImportTask):
             return
         match = task.match

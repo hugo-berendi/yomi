@@ -1,11 +1,9 @@
 import hashlib
+import importlib.util
 import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
-
-import importlib.util
-
 
 MODULE = Path(__file__).parents[1] / "hosts/nixos/inari/services/t3code/vm/provision.py"
 SPEC = importlib.util.spec_from_file_location("t3code_vm_provision", MODULE)

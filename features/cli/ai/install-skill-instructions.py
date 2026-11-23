@@ -1,8 +1,8 @@
 """Update skill instructions without replacing the user's global instructions."""
 
-from pathlib import Path
 import os
 import sys
+from pathlib import Path
 
 home = Path(sys.argv[1])
 policy = Path(sys.argv[2]).read_text().rstrip()

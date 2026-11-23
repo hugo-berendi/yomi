@@ -1,10 +1,10 @@
 import importlib.util
 import io
 import json
-from pathlib import Path
 import tempfile
-from types import SimpleNamespace
 import unittest
+from pathlib import Path
+from types import SimpleNamespace
 
 PATH = Path(__file__).parents[1] / "hosts/nixos/inari/services/t3code/repair/launch.py"
 SPEC = importlib.util.spec_from_file_location("repair", PATH)
@@ -134,7 +134,7 @@ class RepairTest(unittest.TestCase):
                     Path(argv[-1]).mkdir()
                 if "rev-parse" in argv:
                     return "a" * 40
-                if "t3" == argv[0] and offline:
+                if argv[0] == "t3" and offline:
                     raise RuntimeError("server is not ready")
                 if "start" in argv:
                     starts.append(argv)

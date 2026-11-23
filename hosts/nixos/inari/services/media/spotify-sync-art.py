@@ -97,7 +97,8 @@ def embedded(path: str) -> bytes | None:
     if getattr(audio, "pictures", None):  # FLAC
         return audio.pictures[0].data
     tags = audio.tags or {}
-    for key in tags.keys():
+    # mutagen's tag containers do not all iterate over their keys.
+    for key in tags.keys():  # noqa: SIM118
         if key.startswith("APIC"):  # ID3
             return tags[key].data
         if key == "covr":  # MP4

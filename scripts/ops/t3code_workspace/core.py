@@ -224,7 +224,9 @@ def _tar_info(name, data):
 
 def _read_archive(archive):
     try:
-        tar = tarfile.open(archive, "r")
+        # Opened outside `with` so a bad archive maps to WorkspaceError;
+        # the `with tar:` below closes it.
+        tar = tarfile.open(archive, "r")  # noqa: SIM115
     except (tarfile.TarError, OSError) as error:
         raise WorkspaceError(f"invalid workspace archive: {error}") from error
     with tar:
@@ -234,7 +236,7 @@ def _read_archive(archive):
             raise WorkspaceError("archive contains duplicate paths")
         if "manifest.json" not in names or "git.bundle" not in names:
             raise WorkspaceError("archive lacks manifest.json or git.bundle")
-        by_name = dict(zip(names, members))
+        by_name = dict(zip(names, members, strict=True))
         try:
             manifest = json.loads(tar.extractfile(by_name["manifest.json"]).read())
             tar.extractfile(by_name["git.bundle"]).read()
@@ -242,7 +244,7 @@ def _read_archive(archive):
             raise WorkspaceError(f"invalid archive metadata: {error}") from error
         if manifest.get("format") != 1 or not isinstance(manifest.get("entries"), list):
             raise WorkspaceError("unsupported workspace manifest")
-        for member, name in zip(members, names):
+        for member, name in zip(members, names, strict=True):
             if name in {"manifest.json", "git.bundle"}:
                 if not member.isfile():
                     raise WorkspaceError(
@@ -284,7 +286,7 @@ def receive(archive, root, run_id):
             with tarfile.open(archive, "r") as tar:
                 members = tar.getmembers()
                 names = [_relative(member.name) for member in members]
-                by_name = dict(zip(names, members))
+                by_name = dict(zip(names, members, strict=True))
                 manifest = json.loads(tar.extractfile(by_name["manifest.json"]).read())
                 bundle = staging / "git.bundle"
                 bundle.write_bytes(tar.extractfile(by_name["git.bundle"]).read())
@@ -311,7 +313,7 @@ def receive(archive, root, run_id):
                     if tracked and tracked not in snapshot_paths:
                         target = repo / tracked
                         target.unlink(missing_ok=True)
-                for member, name in zip(members, names):
+                for member, name in zip(members, names, strict=True):
                     if not name.startswith("tree/"):
                         continue
                     relative = Path(name[5:])

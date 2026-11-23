@@ -69,9 +69,11 @@ def load(db: str) -> Library:
         for title, *credits, path, length in rows:
             if not title or not path:
                 continue
-            path = os.path.join(os.environ["MUSIC_DIR"], os.fsdecode(path))
+            full_path = os.path.join(os.environ["MUSIC_DIR"], os.fsdecode(path))
             artists = names(credits)
-            songs.setdefault(norm(title), []).append((artists, path, length or 0.0))
+            songs.setdefault(norm(title), []).append(
+                (artists, full_path, length or 0.0)
+            )
     finally:
         con.close()
     return songs
@@ -92,9 +94,9 @@ def find(songs: Library, song: str, length: int) -> str | None:
             continue
         for artists, path, seconds in songs.get(title, []):
             diff = abs(seconds - length)
-            if artist in artists and diff <= LENGTH_SLACK and os.path.exists(path):
-                if best is None or diff < best[0]:
-                    best = (diff, path)
+            fits = artist in artists and diff <= LENGTH_SLACK and os.path.exists(path)
+            if fits and (best is None or diff < best[0]):
+                best = (diff, path)
     return best[1] if best else None
 
 

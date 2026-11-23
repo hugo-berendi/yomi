@@ -18,12 +18,12 @@ import json
 import os
 import sys
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 from urllib.error import URLError
 from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
-from datetime import datetime, timezone
 
 TIMEOUT = 8
 # Two runs two minutes apart: a service restart during a switch is not an outage.
@@ -54,7 +54,7 @@ def prom(base, query):
 # Each returns None when healthy, or a short German description of the fault.
 
 
-def check_router(env, now):
+def check_router(env, _now):
     status = fetch_json(f"{env['ALERT_ROUTER_URL'].rsplit('/', 1)[0]}/status")
     ntfy = status.get("ntfy") or {}
     if ntfy.get("failing"):
@@ -62,13 +62,13 @@ def check_router(env, now):
     return None
 
 
-def check_ntfy(env, now):
+def check_ntfy(env, _now):
     if not fetch_json(f"{env['NTFY_URL']}/v1/health").get("healthy"):
         return "ntfy meldet sich als nicht gesund."
     return None
 
 
-def check_prometheus(env, now):
+def check_prometheus(env, _now):
     fetch(f"{env['PROMETHEUS_URL']}/-/ready")
     age = prom(env["PROMETHEUS_URL"], 'time() - max(timestamp(up{job="inari-system"}))')
     if not age:
@@ -86,7 +86,7 @@ def check_prometheus(env, now):
     return None
 
 
-def check_grafana(env, now):
+def check_grafana(env, _now):
     if fetch_json(f"{env['GRAFANA_URL']}/api/health").get("database") != "ok":
         return "Grafana meldet ihre Datenbank als nicht in Ordnung; Alarmregeln werden nicht ausgewertet."
     return None
@@ -129,9 +129,8 @@ def check_gatus(env, now):
     return None
 
 
-def check_n8n(env, now):
+def check_n8n(env, _now):
     fetch(f"{env['N8N_URL']}/healthz")
-    return None
 
 
 CHECKS = {
@@ -260,21 +259,20 @@ def direct_fallback(env, state, router_down, now):
             )
             fallback["sent"] = now
             fallback["open"] = True
-    else:
-        if fallback.get("open"):
-            local = datetime.fromtimestamp(now, timezone.utc).astimezone(
-                ZoneInfo("Europe/Berlin")
+    elif fallback.get("open"):
+        local = datetime.fromtimestamp(now, timezone.utc).astimezone(
+            ZoneInfo("Europe/Berlin")
+        )
+        if 7 <= local.hour < 22:
+            post_ntfy(
+                env,
+                "[OK] inari/alert-router · Alarmrouter wieder erreichbar",
+                "Der Alarmrouter nimmt wieder Meldungen an.",
+                3,
             )
-            if 7 <= local.hour < 22:
-                post_ntfy(
-                    env,
-                    "[OK] inari/alert-router · Alarmrouter wieder erreichbar",
-                    "Der Alarmrouter nimmt wieder Meldungen an.",
-                    3,
-                )
-                fallback = {}
-        else:
             fallback = {}
+    else:
+        fallback = {}
     return fallback
 
 

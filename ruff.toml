@@ -1,2 +1,31 @@
 # Notebooks under docs/plans are scratch output, not maintained code.
 extend-exclude = ["*.ipynb"]
+
+[lint]
+# Beyond the defaults: import order (I), likely bugs (B), simpler forms
+# (SIM, C4, RET, PIE, UP), unused function arguments (ARG001/002) and
+# subprocess calls that do not say whether a failure matters (PLW1510).
+# Left out on purpose: line length (the formatter decides), magic numbers,
+# late imports in scripts, unused lambda arguments (test doubles must match the
+# signature they replace), complexity scores, micro-optimisations (PERF),
+# and commented-out code (ERA), which reads every `# }}}` fold marker as code.
+extend-select = [
+  "I",
+  "B",
+  "SIM",
+  "C4",
+  "RET",
+  "PIE",
+  "UP",
+  "ARG001",
+  "ARG002",
+  "PLW1510",
+  "PLW2901",
+  "PLR1711",
+  "PLR5501",
+]
+
+[lint.per-file-ignores]
+# Test doubles take the arguments of what they replace, often by name.
+"**/test_*.py" = ["ARG"]
+"tests/**" = ["ARG"]

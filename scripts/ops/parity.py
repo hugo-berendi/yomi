@@ -99,12 +99,13 @@ def graph(drv):
         )
         for pattern, replacement in SELF_SOURCE:
             text = pattern.sub(replacement, text)
-        value = json.loads(text)
+        normalised = json.loads(text)
         # Input sources are listed in store-path order, which the
         # placeholders above have just made meaningless.
-        if isinstance(value.get("inputs"), dict) and "srcs" in value["inputs"]:
-            value["inputs"]["srcs"] = sorted(value["inputs"]["srcs"])
-        by_name[name].append(json.dumps(value, sort_keys=True))
+        inputs = normalised.get("inputs")
+        if isinstance(inputs, dict) and "srcs" in inputs:
+            inputs["srcs"] = sorted(inputs["srcs"])
+        by_name[name].append(json.dumps(normalised, sort_keys=True))
     result = {name: sorted(values) for name, values in by_name.items()}
     cached.write_text(json.dumps(result))
     return result

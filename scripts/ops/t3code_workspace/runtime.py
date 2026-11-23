@@ -1,3 +1,4 @@
+import contextlib
 import json
 import os
 import re
@@ -54,10 +55,8 @@ def run(root, run_id, timeout, command):
                         exit_code = process.wait()
         finally:
             if process is not None:
-                try:
+                with contextlib.suppress(ProcessLookupError):
                     os.killpg(process.pid, signal.SIGKILL)
-                except ProcessLookupError:
-                    pass
             active.unlink(missing_ok=True)
         result = {
             "run_id": run_id,

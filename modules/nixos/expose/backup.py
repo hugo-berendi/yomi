@@ -2,9 +2,9 @@
 
 import argparse
 import os
-from pathlib import Path
 import shutil
 import sqlite3
+from pathlib import Path
 
 
 def snapshot(state: Path, credentials: Path, destination: Path) -> None:
@@ -31,11 +31,13 @@ def snapshot(state: Path, credentials: Path, destination: Path) -> None:
         )
         target = partial / "config/db/db.sqlite"
         target.parent.mkdir(mode=0o700)
-        with sqlite3.connect(database.as_uri() + "?mode=ro", uri=True) as src:
-            with sqlite3.connect(target) as dst:
-                src.backup(dst)
-                if dst.execute("PRAGMA integrity_check").fetchone() != ("ok",):
-                    raise RuntimeError("Pangolin backup integrity check failed")
+        with (
+            sqlite3.connect(database.as_uri() + "?mode=ro", uri=True) as src,
+            sqlite3.connect(target) as dst,
+        ):
+            src.backup(dst)
+            if dst.execute("PRAGMA integrity_check").fetchone() != ("ok",):
+                raise RuntimeError("Pangolin backup integrity check failed")
         shutil.copyfile(credentials, partial / "server.env")
         if destination.exists():
             destination.rename(previous)

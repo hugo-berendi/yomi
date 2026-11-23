@@ -10,12 +10,11 @@ that was just opened is announced the same way, merged or not.
 import argparse
 import json
 import os
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
-
 
 BRANCH = "update-packages"
 TITLE = "chore: update packages"

@@ -2,13 +2,13 @@
 
 import json
 import os
-from pathlib import Path
-import subprocess
 import socket
+import subprocess
 import sys
 import tempfile
 import threading
 import time
+from pathlib import Path
 
 from flask import request
 from werkzeug.serving import make_server
@@ -152,9 +152,10 @@ with tempfile.TemporaryDirectory(prefix="n8n-diabetes-") as temporary:
 
         # Exercise the enabled route using a fixed Monday-after-09:00 time and
         # a fake SMTP transport; the test cannot connect to a mail server.
+        from datetime import datetime
+
         import weekly
         from analysis import BERLIN
-        from datetime import datetime
 
         captured = []
 

@@ -3,13 +3,13 @@
 import copy
 import json
 import os
-from pathlib import Path
 import socket
 import subprocess
 import sys
 import tempfile
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 if len(sys.argv) != 2:
@@ -163,6 +163,7 @@ with tempfile.TemporaryDirectory(prefix="yomi-webuntis-runtime-") as temporary:
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             timeout=120,
+            check=False,
         )
         if result.returncode:
             raise RuntimeError(result.stdout[-4000:])

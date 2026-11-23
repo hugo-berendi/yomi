@@ -15,25 +15,29 @@ SPEC.loader.exec_module(health)
 
 class DeploymentHealthTests(unittest.TestCase):
     def test_http_success_with_failed_database_is_unhealthy(self):
-        with patch.object(
-            health, "urlopen", return_value=io.BytesIO(b'{"database":"error"}')
+        with (
+            patch.object(
+                health, "urlopen", return_value=io.BytesIO(b'{"database":"error"}')
+            ),
+            self.assertRaises(RuntimeError),
         ):
-            with self.assertRaises(RuntimeError):
-                health.probe(
-                    {
-                        "url": "http://127.0.0.1:3000/api/health",
-                        "json": {"database": "ok"},
-                    }
-                )
+            health.probe(
+                {
+                    "url": "http://127.0.0.1:3000/api/health",
+                    "json": {"database": "ok"},
+                }
+            )
 
     def test_required_command_failure_is_unhealthy(self):
-        with patch.object(
-            health.subprocess,
-            "run",
-            side_effect=health.subprocess.CalledProcessError(1, ["check"]),
+        with (
+            patch.object(
+                health.subprocess,
+                "run",
+                side_effect=health.subprocess.CalledProcessError(1, ["check"]),
+            ),
+            self.assertRaises(health.subprocess.CalledProcessError),
         ):
-            with self.assertRaises(health.subprocess.CalledProcessError):
-                health.probe({"command": ["check"]})
+            health.probe({"command": ["check"]})
 
     def test_warming_service_can_recover(self):
         with (

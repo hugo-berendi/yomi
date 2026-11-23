@@ -1,10 +1,9 @@
-import importlib.util
 import contextlib
-from pathlib import Path
+import importlib.util
 import subprocess
 import tempfile
 import unittest
-
+from pathlib import Path
 
 SCRIPT = Path(__file__).resolve().parents[1] / "scripts/ci/update-package-pr.py"
 spec = importlib.util.spec_from_file_location("update_package_pr", SCRIPT)
@@ -231,7 +230,7 @@ class DecideTests(unittest.TestCase):
             "title": "chore: update flake inputs",
             "html_url": "https://git/pr/7",
         }
-        verdict = dict(ci_ok=True, gate_ok=True, reasons=[], can_merge=True)
+        verdict = {"ci_ok": True, "gate_ok": True, "reasons": [], "can_merge": True}
         verdict.update(overrides)
         result = publisher.decide(api, pr, "a" * 40, notify=alerts.append, **verdict)
         merges = [e for e in api.events if e[0] == "POST" and e[1].endswith("/merge")]

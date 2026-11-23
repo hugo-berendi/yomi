@@ -1,8 +1,8 @@
 """The audit's migration snapshot must remain visible even after Nix GC."""
 
 import importlib.util
-from pathlib import Path
 import unittest
+from pathlib import Path
 
 spec = importlib.util.spec_from_file_location(
     "capacity",

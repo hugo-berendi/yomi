@@ -1,14 +1,14 @@
 """Stage selected directories from frozen ZFS snapshots for encrypted backup."""
 
 import json
-from contextlib import closing
 import os
-from pathlib import Path
 import shutil
 import sqlite3
 import stat
 import subprocess
 import sys
+from contextlib import closing
+from pathlib import Path
 
 
 def stage_state(manifest, destination):
@@ -77,16 +77,18 @@ def stage_state(manifest, destination):
                     # copy; it must never run against the live database.
                     clean = database.with_name(database.name + ".backup-tmp")
                     metadata = database.stat()
-                    with closing(
-                        sqlite3.connect(database.as_uri() + "?mode=rw", uri=True)
-                    ) as src:
-                        with closing(sqlite3.connect(clean)) as dst:
-                            src.backup(dst)
-                            result = dst.execute("PRAGMA integrity_check").fetchall()
-                            if result != [("ok",)]:
-                                raise RuntimeError(
-                                    f"SQLite integrity check failed for {name}"
-                                )
+                    with (
+                        closing(
+                            sqlite3.connect(database.as_uri() + "?mode=rw", uri=True)
+                        ) as src,
+                        closing(sqlite3.connect(clean)) as dst,
+                    ):
+                        src.backup(dst)
+                        result = dst.execute("PRAGMA integrity_check").fetchall()
+                        if result != [("ok",)]:
+                            raise RuntimeError(
+                                f"SQLite integrity check failed for {name}"
+                            )
                     clean.chmod(stat.S_IMODE(metadata.st_mode))
                     os.chown(clean, metadata.st_uid, metadata.st_gid)
                     clean.replace(database)

@@ -6,7 +6,6 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-
 MODULE = Path(__file__).parents[1] / "hosts/nixos/inari/services/t3code/vm/bootstrap.py"
 SPEC = importlib.util.spec_from_file_location("t3code_vm_bootstrap", MODULE)
 bootstrap = importlib.util.module_from_spec(SPEC)

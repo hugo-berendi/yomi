@@ -2,10 +2,10 @@
 
 import importlib.util
 import os
-from pathlib import Path
 import sqlite3
 import tempfile
 import unittest
+from pathlib import Path
 
 spec = importlib.util.spec_from_file_location(
     "expose_backup",

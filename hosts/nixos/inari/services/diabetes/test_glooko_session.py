@@ -1,9 +1,9 @@
 """Synthetic session and authentication recovery checks."""
 
 import json
-from pathlib import Path
 import tempfile
 import unittest
+from pathlib import Path
 
 from app import create_app, database, get_state, init_db
 from glooko_sync import AuthenticationRequired, save_credentials, sync
@@ -38,7 +38,7 @@ class SessionTests(unittest.TestCase):
                 self.assertIsNone(get_state(db, "glooko")["error_code"])
 
     def test_session_is_atomic_private_and_reusable(self):
-        from glooko_sync import save_browser_state, load_browser_state
+        from glooko_sync import load_browser_state, save_browser_state
 
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -74,7 +74,7 @@ class SessionTests(unittest.TestCase):
             self.assertFalse(session.exists())
 
     def test_session_keeps_glooko_subdomains_and_discards_third_parties(self):
-        from glooko_sync import save_browser_state, load_browser_state
+        from glooko_sync import load_browser_state, save_browser_state
 
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

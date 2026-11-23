@@ -4,9 +4,9 @@ import os
 import shlex
 import shutil
 import socket
-import time
 import subprocess
 import tempfile
+import time
 from pathlib import Path
 
 PHASE = "initialization"
@@ -43,8 +43,8 @@ def atomic_json(path, value):
 
 def credential_pairs(source_files, home="/home/agent"):
     pairs = []
-    for source in source_files:
-        source = Path(home) / source[2:] if source.startswith("~/") else Path(source)
+    for entry in source_files:
+        source = Path(home) / entry[2:] if entry.startswith("~/") else Path(entry)
         if not source.is_file():
             continue
         try:
@@ -201,7 +201,7 @@ def main():
         temporary.chmod(0o600)
         os.replace(temporary, connection / name)
     PHASE = "guest-ssh"
-    for attempt in range(90):
+    for _attempt in range(90):
         ready = run_remote(args.key, args.known_hosts, ["true"], check=False)
         if ready.returncode == 0:
             break
@@ -217,7 +217,7 @@ def main():
 
     PHASE = "guest-service"
     configure_guest(args.key, args.known_hosts, tools_changed)
-    for attempt in range(60):
+    for _attempt in range(60):
         try:
             with socket.create_connection(("10.231.0.2", 3773), timeout=2):
                 break
@@ -371,4 +371,4 @@ if __name__ == "__main__":
     except (subprocess.SubprocessError, OSError, ValueError, KeyError, RuntimeError):
         raise SystemExit(
             f"T3 VM bootstrap failed during {PHASE}; captured credential output suppressed"
-        )
+        ) from None

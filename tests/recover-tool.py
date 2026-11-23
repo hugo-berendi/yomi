@@ -5,13 +5,12 @@ Nothing here needs privileged operations.
 
 import importlib.util
 import io
-from pathlib import Path
 import subprocess
 import sys
 import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import patch
-
 
 spec = importlib.util.spec_from_file_location("recover", sys.argv.pop(1))
 recover = importlib.util.module_from_spec(spec)
@@ -88,15 +87,17 @@ class RecoveryTests(unittest.TestCase):
             "mountpoints": [],
             "children": [{"name": "/dev/fixture1", "mountpoints": []}],
         }
-        with patch.object(recover, "pool_devices", return_value={"/dev/fixture1"}):
-            with self.assertRaises(recover.RecoveryError):
-                recover.idle_disk(info)
+        with (
+            patch.object(recover, "pool_devices", return_value={"/dev/fixture1"}),
+            self.assertRaises(recover.RecoveryError),
+        ):
+            recover.idle_disk(info)
         with (
             patch.object(recover, "pool_devices", return_value=set()),
             patch.object(recover, "backing_devices", return_value={"/dev/fixture1"}),
+            self.assertRaises(recover.RecoveryError),
         ):
-            with self.assertRaises(recover.RecoveryError):
-                recover.idle_disk(info, self.directory)
+            recover.idle_disk(info, self.directory)
         mounted = {**info, "mountpoints": ["/"]}
         with self.assertRaises(recover.RecoveryError):
             recover.idle_disk(mounted)
@@ -113,10 +114,12 @@ class RecoveryTests(unittest.TestCase):
                 "test",
                 "wrong",
             )
-        with recover.lock(self.directory):
-            with self.assertRaises(recover.RecoveryError):
-                with recover.lock(self.directory):
-                    pass
+        with (
+            recover.lock(self.directory),
+            self.assertRaises(recover.RecoveryError),
+            recover.lock(self.directory),
+        ):
+            pass
 
 
 if __name__ == "__main__":

@@ -10,7 +10,6 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-
 GUEST = "agent@10.231.0.2"
 TOOL = "/opt/t3code-tools/bin/t3code-test-workspace"
 
@@ -35,6 +34,7 @@ def ssh(command, **kwargs):
             shlex.join(command),
         ],
         **kwargs,
+        check=False,
     )
 
 
@@ -62,7 +62,10 @@ def main():
             text=True,
         )
         links = subprocess.run(
-            ["t3", "environment", "list", "--json"], capture_output=True, text=True
+            ["t3", "environment", "list", "--json"],
+            capture_output=True,
+            text=True,
+            check=False,
         )
         state = Path.home() / ".local/state/t3code-vm/bootstrap.json"
         print(

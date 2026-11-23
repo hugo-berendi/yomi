@@ -39,7 +39,9 @@ def has_picture(path: str) -> bool:
     tags = audio.tags
     if tags is None:
         return False
-    return any(is_picture(key) for key in tags.keys())
+    # mutagen's tag containers do not all iterate over their keys (Vorbis
+    # comments yield pairs), so ask for the keys.
+    return any(is_picture(key) for key in tags.keys())  # noqa: SIM118
 
 
 def is_picture(key: str) -> bool:

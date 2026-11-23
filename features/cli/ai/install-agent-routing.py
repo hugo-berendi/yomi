@@ -1,8 +1,9 @@
 """Preserve unrelated user preferences while installing requested agent routing."""
 
 import os
-from pathlib import Path
 import sys
+from pathlib import Path
+
 import tomlkit
 
 home = Path(sys.argv[1])

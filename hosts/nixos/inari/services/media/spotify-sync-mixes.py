@@ -189,8 +189,8 @@ class Library:
                 for g in split_names(tag, GENRE_SPLIT)
             ]
             genres = list(dict.fromkeys(genres))
-            path = os.path.join(os.environ["MUSIC_DIR"], os.fsdecode(path))
-            self.artists[path] = names
+            full_path = os.path.join(os.environ["MUSIC_DIR"], os.fsdecode(path))
+            self.artists[full_path] = names
             for name in names:
                 self.songs[name] += 1
                 self.genres[name].update(genres)
@@ -199,7 +199,7 @@ class Library:
                     if a != b:
                         self.credited[a, b] += 1
             self.genre_songs.update(genres)
-            self.items.append((names, genres, path))
+            self.items.append((names, genres, full_path))
 
 
 def playlists_together(lib: Library, folder: str) -> collections.Counter:

@@ -201,7 +201,7 @@ def main() -> None:
     rows = []
     seen = set()
     per_artist: collections.Counter[str] = collections.Counter()
-    for n, name, album in sorted(
+    for _count, name, album in sorted(
         found.values(), key=lambda f: (f[0], f[2]["released"], f[2]["id"]), reverse=True
     ):
         if per_artist[name] >= PER_ARTIST:

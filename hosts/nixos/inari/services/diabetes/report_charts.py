@@ -4,8 +4,8 @@ import io
 import math
 from datetime import date, timedelta
 
-from matplotlib.figure import Figure
 from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.figure import Figure
 
 PAPER = "#f7f5ee"
 INK = "#183b3a"
@@ -23,8 +23,7 @@ def _save(figure):
 
 
 def _figure(height=2.15):
-    figure = Figure(figsize=(6, height), dpi=160, facecolor=PAPER, layout="constrained")
-    return figure
+    return Figure(figsize=(6, height), dpi=160, facecolor=PAPER, layout="constrained")
 
 
 def _axes_style(axis):
@@ -58,9 +57,7 @@ def _comparison(report):
             )
             continue
         left = 0
-        for value, color, label in zip(
-            vals, (LOW, RANGE, HIGH), ("Below", "In range", "Above")
-        ):
+        for value, color in zip(vals, (LOW, RANGE, HIGH), strict=True):
             amount = max(0, value or 0)
             axis.barh(
                 row,
@@ -75,7 +72,7 @@ def _comparison(report):
         axis.text(
             0,
             row - 0.29,
-            "Below {0} · In {1} · Above {2}".format(
+            "Below {} · In {} · Above {}".format(
                 *("—" if value is None else f"{value:.1f}%" for value in vals)
             ),
             ha="left",

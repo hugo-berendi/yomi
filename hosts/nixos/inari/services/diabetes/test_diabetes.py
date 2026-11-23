@@ -9,21 +9,21 @@ import sys
 import tempfile
 import time
 import unittest
+import zipfile
 from datetime import UTC, datetime
 from pathlib import Path
 from unittest.mock import patch
-import zipfile
 
 from analysis import comparison, parse_export, timestamp, week_bounds, weekly_summary
 from app import (
-    read_secret,
     DexcomReader,
     ai_review,
     build_report,
     create_app,
     database,
-    import_records,
     get_state,
+    import_records,
+    read_secret,
 )
 from glooko_sync import sync, sync_lock
 
@@ -242,14 +242,16 @@ class AnalysisTests(unittest.TestCase):
             {"fact_ids": ["invented"], "question_ids": []},
             {"fact_ids": ["coverage"], "question_ids": [], "dose": 2},
         ):
-            with patch(
-                "app.http_json",
-                return_value={
-                    "choices": [{"message": {"content": json.dumps(answer)}}]
-                },
+            with (
+                patch(
+                    "app.http_json",
+                    return_value={
+                        "choices": [{"message": {"content": json.dumps(answer)}}]
+                    },
+                ),
+                self.assertRaises(ValueError),
             ):
-                with self.assertRaises(ValueError):
-                    ai_review(report, "http://localhost")
+                ai_review(report, "http://localhost")
 
     def test_ai_accepts_fenced_json_but_still_validates_ids(self):
         answer = '```json\n{"fact_ids":["coverage"],"question_ids":["late"]}\n```'
@@ -366,8 +368,8 @@ class AppTests(unittest.TestCase):
         self.assertEqual(saved[0].stat().st_mode & 0o777, 0o600)
 
     def test_report_excludes_known_quarantined_history(self):
-        from quarantine import partition_records
         from analysis import week_bounds
+        from quarantine import partition_records
 
         now = datetime(2026, 10, 26, 12, tzinfo=UTC)
         start, _ = week_bounds(now)
@@ -497,6 +499,7 @@ class AppTests(unittest.TestCase):
             capture_output=True,
             text=True,
             timeout=20,
+            check=False,
         )
         self.assertEqual(result.returncode, 1)
         self.assertIn("stage=configuration", result.stdout)

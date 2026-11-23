@@ -1,13 +1,14 @@
 """Classifier shared with the reviewed Windows sorter; no mailbox side effects."""
 
-from datetime import datetime
-from email.header import decode_header, make_header
-from email.utils import getaddresses, parsedate_to_datetime
-from html.parser import HTMLParser
+import contextlib
 import json
 import re
 import urllib.error
 import urllib.request
+from datetime import datetime
+from email.header import decode_header, make_header
+from email.utils import getaddresses, parsedate_to_datetime
+from html.parser import HTMLParser
 from zoneinfo import ZoneInfo
 
 MODEL_CHAT_URL = "http://127.0.0.1:8496/v1/chat/completions"
@@ -222,7 +223,7 @@ class MailHTMLText(HTMLParser):
         self.parts = []
         self.ignored = []
 
-    def handle_starttag(self, tag, attrs):
+    def handle_starttag(self, tag, _attrs):
         if tag in {"script", "style", "head"}:
             self.ignored.append(tag)
         if not self.ignored and tag in {
@@ -252,10 +253,8 @@ class MailHTMLText(HTMLParser):
 def mail_header(msg, name, limit=1000):
     obj = getattr(msg, "obj", None)
     value = str(obj.get(name, "") or "") if obj is not None else ""
-    try:
+    with contextlib.suppress(LookupError, UnicodeError, ValueError):
         value = str(make_header(decode_header(value)))
-    except (LookupError, UnicodeError, ValueError):
-        pass
     return value[:limit]
 
 
@@ -342,7 +341,9 @@ def is_alias(msg):
     obj = getattr(msg, "obj", None)
     if obj is None or not hasattr(obj, "keys"):
         return False
-    if any(name.lower().startswith("x-simplelogin-") for name in obj.keys()):
+    # Anything with keys() is accepted above, not only a Message, so ask for
+    # the keys rather than relying on iteration.
+    if any(name.lower().startswith("x-simplelogin-") for name in obj.keys()):  # noqa: SIM118
         return True
     recipients = getaddresses(
         [

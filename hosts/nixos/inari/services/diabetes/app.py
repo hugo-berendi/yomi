@@ -1,36 +1,25 @@
 """Private Yomi diabetes journal, reports and optional read-only integrations."""
 
 import argparse
-from collections import defaultdict
 import contextlib
 import fcntl
-import hmac
 import hashlib
+import hmac
 import io
 import json
 import logging
 import os
-from pathlib import Path
 import re
 import secrets
 import sqlite3
 import tempfile
 import threading
 import time
-from datetime import UTC, datetime, timedelta
-from urllib.request import Request, urlopen
 import uuid
-
-from flask import (
-    Flask,
-    abort,
-    jsonify,
-    redirect,
-    render_template,
-    request,
-    session,
-    send_file,
-)
+from collections import defaultdict
+from datetime import UTC, datetime, timedelta
+from pathlib import Path
+from urllib.request import Request, urlopen
 
 from analysis import (
     BERLIN,
@@ -41,6 +30,16 @@ from analysis import (
     timestamp,
     week_bounds,
     weekly_history,
+)
+from flask import (
+    Flask,
+    abort,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    send_file,
+    session,
 )
 from memory import build_memory
 from quarantine import init_quarantine
@@ -75,10 +74,8 @@ def read_secret(path):
                 os.fsync(file.fileno())
             # link() refuses to overwrite, so a token another process just
             # published wins; os.replace would clobber it.
-            try:
+            with contextlib.suppress(FileExistsError):
                 os.link(temporary, path)
-            except FileExistsError:
-                pass
         finally:
             temporary.unlink(missing_ok=True)
     value = path.read_text().strip()
@@ -489,9 +486,12 @@ def create_app(root=None, config=None):
             if request.path.startswith("/api/"):
                 abort(401)
             return redirect("/login")
-        if request.method == "POST" and not full_access:
-            if not hmac.compare_digest(request.form.get("csrf", ""), session["csrf"]):
-                abort(403)
+        if (
+            request.method == "POST"
+            and not full_access
+            and not hmac.compare_digest(request.form.get("csrf", ""), session["csrf"])
+        ):
+            abort(403)
         return None
 
     @app.after_request
@@ -723,8 +723,8 @@ def create_app(root=None, config=None):
     @app.get("/plot.png")
     def plot():
         # Direct Figure objects avoid pyplot's shared global state in Waitress.
-        from matplotlib.figure import Figure
         from matplotlib.dates import DateFormatter
+        from matplotlib.figure import Figure
 
         with database(root) as db:
             row = db.execute(
@@ -815,6 +815,7 @@ if __name__ == "__main__":
     if args.command == "auth-glooko":
         import getpass
         import sys
+
         from glooko_sync import sync
 
         if not sys.stdin.isatty():
@@ -842,7 +843,7 @@ if __name__ == "__main__":
         print("Glooko: " + status)
         raise SystemExit(0 if status == "synced" else 1)
     elif args.command == "sync-glooko":
-        from glooko_sync import sync, SYNC_STAGES, FAILURE_KINDS
+        from glooko_sync import FAILURE_KINDS, SYNC_STAGES, sync
 
         status = sync(application.config["ROOT"])
         print(status)

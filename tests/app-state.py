@@ -1,12 +1,12 @@
 """Verify WAL recovery, ownership, retries and failed staging without live data."""
 
-from contextlib import closing
 import json
 import os
-from pathlib import Path
 import sqlite3
 import subprocess
 import sys
+from contextlib import closing
+from pathlib import Path
 
 helper, unit, production_manifest = sys.argv[1:]
 root = Path(os.environ["TMPDIR"]) / "app-state-test"
@@ -33,6 +33,7 @@ def run(success=True):
         [sys.executable, helper, str(manifest), str(destination)],
         capture_output=True,
         text=True,
+        check=False,
     )
     if success:
         if result.returncode:
@@ -294,20 +295,20 @@ assert not (destination / "suwayomi/bin").exists()
 assert not (destination / "suwayomi/settings/cookie_store.xml").exists()
 
 failed = subprocess.run(
-    [unit], env=env | {"YOMI_TEST_FAIL_SNAPSHOT": "1"}, capture_output=True
+    [unit], env=env | {"YOMI_TEST_FAIL_SNAPSHOT": "1"}, capture_output=True, check=False
 )
 assert failed.returncode != 0
 assert not list(markers.iterdir()), "A partial snapshot failure leaked a snapshot"
 assert not list(mounts.iterdir()), "A partial snapshot failure leaked a mount"
 failed = subprocess.run(
-    [unit], env=env | {"YOMI_TEST_FAIL_MOUNT": "1"}, capture_output=True
+    [unit], env=env | {"YOMI_TEST_FAIL_MOUNT": "1"}, capture_output=True, check=False
 )
 assert failed.returncode != 0
 assert not list(markers.iterdir()), "A partial mount failure leaked a snapshot"
 assert not list(mounts.iterdir()), "A partial mount failure leaked a mount"
 required_db = Path(sources["paperless"]["source"]) / "db.sqlite3"
 required_db.rename(required_db.with_name("missing.sqlite"))
-failed = subprocess.run([unit], env=env, capture_output=True)
+failed = subprocess.run([unit], env=env, capture_output=True, check=False)
 assert failed.returncode != 0
 assert not list(markers.iterdir()), "A staging failure leaked snapshots"
 assert not list(mounts.iterdir()), "A staging failure leaked snapshot mounts"

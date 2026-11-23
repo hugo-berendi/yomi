@@ -1,5 +1,6 @@
 """Weekly mail using the existing journal and a durable at-most-once outbox."""
 
+import contextlib
 import fcntl
 import json
 import os
@@ -96,10 +97,8 @@ def smtp_submit(message, config):
     finally:
         # A failed QUIT cannot turn an acknowledged DATA response into a failure.
         if client:
-            try:
+            with contextlib.suppress(OSError):
                 client.close()
-            except OSError:
-                pass
 
 
 def run_weekly(root, config=None, now=None, submit=smtp_submit, review=ai_review):

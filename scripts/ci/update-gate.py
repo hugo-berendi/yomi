@@ -14,7 +14,6 @@ import subprocess
 import sys
 from urllib.parse import urlparse
 
-
 MAX_BYTES = 5 * 1024 * 1024
 LOCK = "flake.lock"
 IMAGES = "hosts/nixos/inari/images.nix"
@@ -134,7 +133,7 @@ def check_attr_diff(path, old, new, accept):
     if len(removed) != len(added):
         return [f"{path}: {len(removed)} lines removed but {len(added)} added"], []
     reasons, summary = [], []
-    for before, after in zip(removed, added):
+    for before, after in zip(removed, added, strict=True):
         old_m, new_m = accept.pattern.match(before), accept.pattern.match(after)
         if not old_m or not new_m:
             bad = before if not old_m else after

@@ -38,6 +38,7 @@ def evaluate(host, call):
         ["nix", "eval", "--impure", "--json", "--accept-flake-config", "--expr", expr],
         capture_output=True,
         text=True,
+        check=False,
     )
     if result.returncode != 0:
         lines = [

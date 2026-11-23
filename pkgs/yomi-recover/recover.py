@@ -8,7 +8,6 @@ import fcntl
 import hashlib
 import json
 import os
-from pathlib import Path
 import re
 import secrets
 import shlex
@@ -18,7 +17,7 @@ import subprocess
 import sys
 import tempfile
 import time
-
+from pathlib import Path
 
 FORMAT = 1
 MIB = 1024 * 1024
@@ -584,6 +583,7 @@ def backup(args):
                 ["zfs", "list", "-H", "-t", "snapshot", snap],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
+                check=False,
             ).returncode:
                 run("zfs", "snapshot", "-r", snap)
             require(
@@ -591,6 +591,7 @@ def backup(args):
                     ["zfs", "list", "-H", "-t", "snapshot", f"{args.pool}@blank"],
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
+                    check=False,
                 ).returncode
                 == 0,
                 "Source lacks the @blank snapshot required by impermanence.",
@@ -736,9 +737,11 @@ def unpack_artifact(bundle, entry, identity, directory):
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=True)
     # Python's data filter rejects absolute paths, escaping links and devices.
-    with decrypt_stream(artifact_path(bundle, entry), identity) as reader:
-        with tarfile.open(fileobj=reader, mode="r|") as archive:
-            archive.extractall(directory, filter="data")
+    with (
+        decrypt_stream(artifact_path(bundle, entry), identity) as reader,
+        tarfile.open(fileobj=reader, mode="r|") as archive,
+    ):
+        archive.extractall(directory, filter="data")
 
 
 def checkout(args, manifest, directory):
@@ -838,7 +841,7 @@ def clear_stale_zfs_labels(info):
             run("zpool", "labelclear", "-f", node["name"])
 
 
-def mount_root(pool, root, identity, boot, mountpoint):
+def mount_root(root, identity, boot, mountpoint):
     mountpoint = Path(mountpoint)
     mountpoint.mkdir(parents=True, exist_ok=True)
     # Decrypted disk keys live only on the ISO's tmpfs, never on raid5pool.
@@ -869,6 +872,7 @@ def mount_root(pool, root, identity, boot, mountpoint):
             ["findmnt", "-n", "-o", "SOURCE", "--mountpoint", target],
             capture_output=True,
             text=True,
+            check=False,
         )
         if mounted.returncode == 0:
             require(
@@ -942,7 +946,7 @@ def hold_releases(mountpoint, reason):
     return hold
 
 
-def adapt_install(args, manifest, repo, info, root, mountpoint):
+def adapt_install(args, repo, info, root, mountpoint):
     mountpoint = Path(mountpoint)
     hold_releases(
         mountpoint,
@@ -1095,7 +1099,7 @@ def restore_zfs(args):
         require(len(esp) == 1, "Cannot identify the target ESP.")
         with tempfile.TemporaryDirectory(prefix="yomi-boot-", dir="/run") as boot:
             unpack_artifact(bundle, manifest["artifacts"]["boot"], args.identity, boot)
-            mount_root("zroot", ROOT, args.identity, boot, args.mountpoint)
+            mount_root(ROOT, args.identity, boot, args.mountpoint)
         run("mount", esp[0]["name"], Path(args.mountpoint) / "boot")
         unpack_artifact(
             bundle,
@@ -1108,7 +1112,7 @@ def restore_zfs(args):
             "yomi-recover restored this system from a backup bundle onto a new disk",
         )
         if not args.no_install:
-            adapt_install(args, manifest, repo, info, ROOT, args.mountpoint)
+            adapt_install(args, repo, info, ROOT, args.mountpoint)
         state["stage"] = "restored" if args.no_install else "installed"
         atomic_json(journal, state)
         print(
@@ -1181,6 +1185,7 @@ def continue_install(args):
             ["findmnt", "-n", "-o", "SOURCE", "--mountpoint", args.mountpoint],
             capture_output=True,
             text=True,
+            check=False,
         )
         if mounted.returncode == 0:
             require(
@@ -1203,11 +1208,11 @@ def continue_install(args):
             with tempfile.TemporaryDirectory(prefix="yomi-boot-", dir="/run") as boot:
                 run("mount", "-o", "ro", esp[0]["name"], boot)
                 try:
-                    mount_root("zroot", root, args.identity, boot, args.mountpoint)
+                    mount_root(root, args.identity, boot, args.mountpoint)
                 finally:
                     run("umount", boot)
             run("mount", esp[0]["name"], Path(args.mountpoint) / "boot")
-        adapt_install(args, manifest, repo, info, root, args.mountpoint)
+        adapt_install(args, repo, info, root, args.mountpoint)
         if journal.exists():
             state["stage"] = "installed"
             atomic_json(journal, state)
@@ -1245,6 +1250,7 @@ def import_raid(args):
             ["zfs", "list", "raid5pool/backups"],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
+            check=False,
         ).returncode
         == 0
     ):
@@ -1346,7 +1352,7 @@ def fresh_install(args):
         boot = mountpoint / "boot"
         with (boot / "zroot-recovery-key.age").open("wb") as destination:
             run("age", "-r", public_key, keys / "disk.key", stdout=destination)
-        adapt_install(args, None, repo, info, "zroot", mountpoint)
+        adapt_install(args, repo, info, "zroot", mountpoint)
 
 
 def release_target(args):
@@ -1380,6 +1386,7 @@ def release_target(args):
             ["findmnt", "-n", "-o", "SOURCE", "--mountpoint", path],
             capture_output=True,
             text=True,
+            check=False,
         )
         if mounted.returncode == 0:
             source = mounted.stdout.strip()
@@ -1452,7 +1459,7 @@ def mount_windows(args):
         "Mount Windows shares below /media, separate from the installation at /mnt.",
     )
     require(
-        subprocess.run(["mountpoint", "-q", mountpoint]).returncode != 0,
+        subprocess.run(["mountpoint", "-q", mountpoint], check=False).returncode != 0,
         "This mountpoint is already in use.",
     )
     password = getpass.getpass("Windows share password: ")
@@ -1570,7 +1577,7 @@ def parse(argv=None):
 
 
 def unlock_keys():
-    if subprocess.run(["mountpoint", "-q", "/kagutsuchi"]).returncode == 0:
+    if subprocess.run(["mountpoint", "-q", "/kagutsuchi"], check=False).returncode == 0:
         return
     run(
         "cryptsetup",
