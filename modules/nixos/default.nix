@@ -19,7 +19,7 @@
   ports = ./ports.nix;
   pounce = ./pounce.nix;
   protonvpn = ./protonvpn.nix;
-  steam-game-server = ./steam-game-server.nix;
+  steam-game-server = ./steam-game-server;
   vrising = ./vrising;
   windrose = ./windrose.nix;
   wireless = ./wireless;
