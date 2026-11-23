@@ -421,6 +421,11 @@ dns-clear zoneid bearerfile="/run/secrets/cloudflare_dns_api_token":
   print("🚀 All done!")
 # }}}
 # {{{ Security
+[doc("Compare what this working tree builds with a base revision, ignoring store hashes")]
+[group("nix")]
+parity *args:
+  nix develop -c python3 scripts/ops/parity.py {{args}}
+
 [doc("Report evaluated service sandbox settings; use --json to save a baseline or --baseline FILE to compare")]
 [group("security")]
 hardening-report host=hostname *args:
