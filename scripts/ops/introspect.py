@@ -40,7 +40,11 @@ def evaluate(host, call):
         text=True,
     )
     if result.returncode != 0:
-        lines = [line for line in result.stderr.splitlines() if "error" in line or line.startswith("       ")]
+        lines = [
+            line
+            for line in result.stderr.splitlines()
+            if "error" in line or line.startswith("       ")
+        ]
         sys.exit("\n".join(lines[-12:]) or result.stderr)
     return json.loads(result.stdout)
 
@@ -52,7 +56,9 @@ def short(value):
 
 def where(args):
     path = "[ " + " ".join(json.dumps(part) for part in args.option.split(".")) + " ]"
-    data = evaluate(args.host, f"q.where {{ inherit (system) options; path = {path}; }}")
+    data = evaluate(
+        args.host, f"q.where {{ inherit (system) options; path = {path}; }}"
+    )
     print(f"{data['option']}  (declared in {', '.join(data['declared']) or 'nixpkgs'})")
     if not data["definitions"]:
         print("  no definition on this host; the default applies")
@@ -79,35 +85,57 @@ def explain(args):
         ("ports", lambda: [f"{n} {p}" for n, p in data["ports"].items()]),
         (
             "http",
-            lambda: [
-                f"{n}: {e['url']}  {e['transport']}, auth {e['authentication']}"
-                + (", monitored" if e["monitor"] else "")
-                for n, e in data["web"].items()
-            ]
-            + [f"{n}: {url}  static files" for n, url in data["staticWeb"].items()],
+            lambda: (
+                [
+                    f"{n}: {e['url']}  {e['transport']}, auth {e['authentication']}"
+                    + (", monitored" if e["monitor"] else "")
+                    for n, e in data["web"].items()
+                ]
+                + [f"{n}: {url}  static files" for n, url in data["staticWeb"].items()]
+            ),
         ),
         (
             "lan",
             lambda: [
-                f"{n}: {g['port']}/{','.join(g['protocols'])} on {g['interface']}" for n, g in data["lan"].items()
+                f"{n}: {g['port']}/{','.join(g['protocols'])} on {g['interface']}"
+                for n, g in data["lan"].items()
             ],
         ),
         (
             "pangolin",
-            lambda: [f"private {n}: {short(r)}" for n, r in data["private"].items()]
-            + [f"tcp {n}: {r['port']} -> public {r['publicPort']}" for n, r in data["rawTcp"].items()]
-            + [f"udp {n}: {r['port']} -> public {r['publicPort']}" for n, r in data["rawUdp"].items()],
+            lambda: (
+                [f"private {n}: {short(r)}" for n, r in data["private"].items()]
+                + [
+                    f"tcp {n}: {r['port']} -> public {r['publicPort']}"
+                    for n, r in data["rawTcp"].items()
+                ]
+                + [
+                    f"udp {n}: {r['port']} -> public {r['publicPort']}"
+                    for n, r in data["rawUdp"].items()
+                ]
+            ),
         ),
         ("units", lambda: [", ".join(data["units"])] if data["units"] else []),
         ("timers", lambda: [", ".join(data["timers"])] if data["timers"] else []),
-        ("containers", lambda: [f"{n}: {image}" for n, image in data["containers"].items()]),
+        (
+            "containers",
+            lambda: [f"{n}: {image}" for n, image in data["containers"].items()],
+        ),
         ("secrets", lambda: [", ".join(data["secrets"])] if data["secrets"] else []),
         (
             "state",
-            lambda: [f"{n}: {', '.join(map(str, d))}" for n, d in data["state"].items()]
-            + [f"{n} (cache): {', '.join(map(str, d))}" for n, d in data["cache"].items()],
+            lambda: (
+                [f"{n}: {', '.join(map(str, d))}" for n, d in data["state"].items()]
+                + [
+                    f"{n} (cache): {', '.join(map(str, d))}"
+                    for n, d in data["cache"].items()
+                ]
+            ),
         ),
-        ("offsite", lambda: [", ".join(map(str, data["offsite"]))] if data["offsite"] else []),
+        (
+            "offsite",
+            lambda: [", ".join(map(str, data["offsite"]))] if data["offsite"] else [],
+        ),
         ("files", lambda: data["files"]),
     ]
     for title, render in sections:
@@ -119,7 +147,9 @@ def explain(args):
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     sub = parser.add_subparsers(dest="command", required=True)
     w = sub.add_parser("where", help="list the files that define an option")
     w.add_argument("option")

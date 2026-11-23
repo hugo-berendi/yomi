@@ -421,6 +421,16 @@ dns-clear zoneid bearerfile="/run/secrets/cloudflare_dns_api_token":
   print("🚀 All done!")
 # }}}
 # {{{ Security
+[doc("List every file that sets an option, e.g. just where yomi.web.at.mealie.port")]
+[group("nix")]
+where option host=hostname:
+  nix develop -c python3 scripts/ops/introspect.py where {{option}} --host {{host}}
+
+[doc("Show what one service brings to a host: ports, endpoints, units, secrets, state")]
+[group("nix")]
+explain service host=hostname:
+  nix develop -c python3 scripts/ops/introspect.py explain {{service}} --host {{host}}
+
 [doc("Compare what this working tree builds with a base revision, ignoring store hashes")]
 [group("nix")]
 parity *args:

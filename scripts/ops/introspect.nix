@@ -111,25 +111,25 @@ in {
       ["systemd" "services"]
       ["sops" "secrets"]
     ]));
-    get = path: name: f: lib.genAttrs (namesIn path) (n: f (lib.getAttrFromPath path config).${n});
+    get = path: f: lib.genAttrs (namesIn path) (n: f (lib.getAttrFromPath path config).${n});
   in {
     inherit files;
-    ports = get ["yomi" "ports"] "ports" (p: p);
-    web = get ["yomi" "web" "at"] "web" (e: {
+    ports = get ["yomi" "ports"] (p: p);
+    web = get ["yomi" "web" "at"] (e: {
       inherit (e) url transport authentication;
       monitor = e.monitor.enable;
     });
-    staticWeb = get ["yomi" "nginx" "at"] "nginx" (e: e.url);
-    lan = get ["yomi" "network" "exposure"] "lan" (g: {inherit (g) port protocols interface;});
-    private = get ["yomi" "expose" "private"] "private" (r: {inherit (r) mode alias destination tcpPorts udpPorts users roles;});
-    rawTcp = get ["yomi" "expose" "tcp"] "tcp" (r: {inherit (r) port publicPort;});
-    rawUdp = get ["yomi" "expose" "udp"] "udp" (r: {inherit (r) port publicPort;});
+    staticWeb = get ["yomi" "nginx" "at"] (e: e.url);
+    lan = get ["yomi" "network" "exposure"] (g: {inherit (g) port protocols interface;});
+    private = get ["yomi" "expose" "private"] (r: {inherit (r) mode alias destination tcpPorts udpPorts users roles;});
+    rawTcp = get ["yomi" "expose" "tcp"] (r: {inherit (r) port publicPort;});
+    rawUdp = get ["yomi" "expose" "udp"] (r: {inherit (r) port publicPort;});
     units = namesIn ["systemd" "services"];
     timers = namesIn ["systemd" "timers"];
-    containers = get ["virtualisation" "oci-containers" "containers"] "containers" (c: c.image);
+    containers = get ["virtualisation" "oci-containers" "containers"] (c: c.image);
     secrets = namesIn ["sops" "secrets"] ++ map (n: "template:${n}") (namesIn ["sops" "templates"]);
-    state = get ["yomi" "persistence" "at" "state" "apps"] "state" (a: map (d: d.directory or d) a.directories);
-    cache = get ["yomi" "persistence" "at" "cache" "apps"] "cache" (a: map (d: d.directory or d) a.directories);
+    state = get ["yomi" "persistence" "at" "state" "apps"] (a: map (d: d.directory or d) a.directories);
+    cache = get ["yomi" "persistence" "at" "cache" "apps"] (a: map (d: d.directory or d) a.directories);
     offsite = valuesIn ["yomi" "restic" "offsite" "paths"];
   };
 }
