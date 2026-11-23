@@ -5,6 +5,11 @@
 }: let
   port = config.yomi.ports.scrutiny;
 in {
+  # {{{ Ports
+  yomi.ports = {
+    scrutiny = 8495;
+  };
+  # }}}
   # {{{ Reverse proxy
   yomi.nginx.at.scrutiny.port = port;
   # }}}

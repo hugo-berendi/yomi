@@ -3,6 +3,11 @@
   inputs,
   ...
 }: {
+  # {{{ Ports
+  yomi.ports = {
+    kodama = 8520;
+  };
+  # }}}
   # Weekly, monthly and yearly reviews of what was played in Navidrome, plus
   # the Spotify history from before it; see the kodama repository.
   imports = [inputs.kodama.nixosModules.default];

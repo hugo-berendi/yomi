@@ -5,6 +5,11 @@
 }: let
   port = config.yomi.ports.ntfy;
 in {
+  # {{{ Ports
+  yomi.ports = {
+    ntfy = 8441;
+  };
+  # }}}
   # {{{ Reverse proxy
   yomi.web.at.ntfy = {
     inherit port;

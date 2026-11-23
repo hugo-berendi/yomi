@@ -64,6 +64,13 @@
   };
   # }}}
 in {
+  # {{{ Ports
+  yomi.ports = {
+    nextcloud = 8444;
+    nextcloud-wopi = 8446;
+    collabora = 9980;
+  };
+  # }}}
   # {{{ reverse proxy
   yomi.web.at.cloud = {
     port = config.yomi.ports.nextcloud;

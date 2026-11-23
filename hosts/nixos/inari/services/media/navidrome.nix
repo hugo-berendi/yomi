@@ -5,6 +5,11 @@
 }: let
   musicDir = "${config.nixarr.mediaDir}/library/music";
 in {
+  # {{{ Ports
+  yomi.ports = {
+    navidrome = 8519;
+  };
+  # }}}
   # {{{ Reverse proxy
   # The LAN and Pangolin's private alias share this Subsonic endpoint.
   yomi.nginx.at.music.port = config.yomi.ports.navidrome;

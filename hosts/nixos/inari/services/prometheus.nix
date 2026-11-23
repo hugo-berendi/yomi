@@ -3,6 +3,21 @@
   lib,
   ...
 }: {
+  # {{{ Ports
+  yomi.ports = {
+    prometheus = 8451;
+    prometheus-exportarr-bazarr = 8452;
+    prometheus-exportarr-prowlarr = 8454;
+    prometheus-exportarr-radarr = 8455;
+    prometheus-exportarr-sonarr = 8457;
+    prometheus-nginx-exporter = 8458;
+    prometheus-node-exporter = 8459;
+    prometheus-postgres-exporter = 8460;
+    prometheus-smartctl-exporter = 8461;
+    prometheus-systemd-exporter = 8462;
+    prometheus-zfs-exporter = 8463;
+  };
+  # }}}
   # {{{ Secrets
   sops.secrets = {
     radarr_api_key.sopsFile = ../secrets.yaml;

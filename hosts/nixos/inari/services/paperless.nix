@@ -1,4 +1,9 @@
 {config, ...}: {
+  # {{{ Ports
+  yomi.ports = {
+    paperless = 8445;
+  };
+  # }}}
   # {{{ Reverse proxy
   yomi.nginx.at.paperless.port = config.yomi.ports.paperless;
   # }}}

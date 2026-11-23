@@ -18,93 +18,14 @@
   ];
 
   # {{{ Allocation
+  # Only ports that more than one host or a shared module reads live here.
+  # Every other service declares its own port next to its definition, in
+  # hosts/nixos/<host>/services/; the assertion above still sees them all.
   config.yomi.ports = {
-    adguard = lib.mkDefault 8401;
-    adguard-dns = lib.mkDefault 8403;
-    bazarr = lib.mkDefault 8405;
-    beszel = lib.mkDefault 8406;
-    flaresolverr = lib.mkDefault 8408;
-    forgejo = lib.mkDefault 8409;
-    grafana = lib.mkDefault 8412;
-    homepage = lib.mkDefault 8415;
-    immich = lib.mkDefault 8416;
     iocaine = lib.mkDefault 8420;
-    ipp = lib.mkDefault 8421;
-    jellyfin = lib.mkDefault 8422;
-    jellyseerr = lib.mkDefault 8423;
-    karakeep = lib.mkDefault 8426;
-    karakeep-browser = lib.mkDefault 8427;
-    loki = lib.mkDefault 8431;
-    matrix-tuwunel = lib.mkDefault 8432;
-    matrix-tuwunel-proxy = lib.mkDefault 8433;
-    mealie = lib.mkDefault 8488;
     meilisearch = lib.mkDefault 8434;
-    microbin = lib.mkDefault 8435;
-    # Fixed by the game: clients default to 2456 and Valheim claims 2457 for
-    # its query port.
-    valheim = 2456;
-    valheim-query = 2457;
-    n8n = lib.mkDefault 8438;
-    ntfy = lib.mkDefault 8441;
     opencode = lib.mkDefault 8487;
-    nextcloud = lib.mkDefault 8444;
-    nextcloud-wopi = lib.mkDefault 8446;
-    collabora = lib.mkDefault 9980;
-    windrose-direct = lib.mkDefault 8489;
-    windrose-rcon = lib.mkDefault 8490;
-    llama-cpp-classifier = lib.mkDefault 8496;
-    changedetection = lib.mkDefault 8492;
-    paperless = lib.mkDefault 8445;
-    pelican-node1 = lib.mkDefault 8448;
-    pelican-panel = lib.mkDefault 8449;
-    pocket-id = lib.mkDefault 8450;
-    # Bridge's own defaults. It keeps its ports in its vault, not on the
-    # command line, so moving these also needs `change port` in its CLI.
-    protonmail-bridge-imap = 1143;
-    protonmail-bridge-smtp = 1025;
-    # Loopback hand-off between nginx and the stunnel STARTTLS clients.
-    proton-imap-relay = lib.mkDefault 8506;
-    proton-smtp-relay = lib.mkDefault 8507;
-    prometheus = lib.mkDefault 8451;
-    prometheus-exportarr-bazarr = lib.mkDefault 8452;
-    prometheus-exportarr-prowlarr = lib.mkDefault 8454;
-    prometheus-exportarr-radarr = lib.mkDefault 8455;
-    prometheus-exportarr-sonarr = lib.mkDefault 8457;
-    prometheus-nginx-exporter = lib.mkDefault 8458;
-    prometheus-node-exporter = lib.mkDefault 8459;
-    prometheus-postgres-exporter = lib.mkDefault 8460;
-    prometheus-smartctl-exporter = lib.mkDefault 8461;
-    prometheus-systemd-exporter = lib.mkDefault 8462;
-    prometheus-zfs-exporter = lib.mkDefault 8463;
-    prowlarr = lib.mkDefault 8465;
-    radarr = lib.mkDefault 8467;
-    radicale = lib.mkDefault 8468;
-    sable = lib.mkDefault 8472;
-    searxng = lib.mkDefault 8473;
-    sonarr = 8989;
-    stirling-pdf = lib.mkDefault 8478;
-    suwayomi = lib.mkDefault 8479;
     syncthing = lib.mkDefault 8480;
-    qbittorrent_peer = lib.mkDefault 8518;
-    qbittorrent_ui = lib.mkDefault 8516;
-    qui = lib.mkDefault 8517;
-    navidrome = lib.mkDefault 8519;
-    kodama = lib.mkDefault 8520;
-    audiomuse = lib.mkDefault 8521;
-    audiobookshelf = lib.mkDefault 8493;
-    gatus = lib.mkDefault 8494;
-    scrutiny = lib.mkDefault 8495;
-    healthchecks = lib.mkDefault 8497;
-    t3code = lib.mkDefault 8501;
-    cliproxyapi = lib.mkDefault 8502;
-    diabetes = lib.mkDefault 8503;
-    calsync = lib.mkDefault 8504;
-    proton-mail-sorter = lib.mkDefault 8505;
-    n8n-alert-router = lib.mkDefault 8508;
-    t3code-vm-tunnel = lib.mkDefault 8511;
-    actual = lib.mkDefault 8512;
-    actual-bridge = lib.mkDefault 8513;
-    hugo-berendi-de = lib.mkDefault 8514;
   };
   # }}}
 }

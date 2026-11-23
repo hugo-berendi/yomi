@@ -1,6 +1,11 @@
 {config, ...}: let
   port = config.yomi.ports.beszel;
 in {
+  # {{{ Ports
+  yomi.ports = {
+    beszel = 8406;
+  };
+  # }}}
   # {{{ Service
   services.beszel.hub = {
     enable = true;

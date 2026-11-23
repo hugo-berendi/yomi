@@ -3,6 +3,11 @@
   lib,
   ...
 }: {
+  # {{{ Ports
+  yomi.ports = {
+    stirling-pdf = 8478;
+  };
+  # }}}
   yomi.nginx.at.pdf.port = config.yomi.ports.stirling-pdf;
 
   # {{{ OCR languages

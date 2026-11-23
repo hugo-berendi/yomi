@@ -31,6 +31,11 @@
       budget-password = config.sops.secrets.actual_budget_password.path;
     };
 in {
+  # {{{ Ports
+  yomi.ports = {
+    actual-bridge = 8513;
+  };
+  # }}}
   assertions = [
     {
       assertion = server.version == apiVersion;

@@ -18,6 +18,11 @@
       ++ map (feature: lib.cmakeBool "GGML_${feature}" true) ["AVX" "AVX2" "FMA" "F16C" "BMI2"];
   });
 in {
+  # {{{ Ports
+  yomi.ports = {
+    llama-cpp-classifier = 8496;
+  };
+  # }}}
   # {{{ Service
   # A second llama.cpp beside the general model next door, for classification
   # work: the Proton mail sorter and the diabetes app's weekly review.

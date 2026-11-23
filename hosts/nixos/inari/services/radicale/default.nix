@@ -119,6 +119,11 @@
   };
   # }}}
 in {
+  # {{{ Ports
+  yomi.ports = {
+    radicale = 8468;
+  };
+  # }}}
   # {{{ Radicale
   services.radicale = {
     enable = true;

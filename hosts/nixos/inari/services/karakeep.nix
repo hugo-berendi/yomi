@@ -4,6 +4,12 @@
   upkgs,
   ...
 }: {
+  # {{{ Ports
+  yomi.ports = {
+    karakeep = 8426;
+    karakeep-browser = 8427;
+  };
+  # }}}
   yomi.nginx.at.karakeep.port = config.yomi.ports.karakeep;
 
   # 26.05 ships karakeep 0.32.0 built against nodejs 24, and its bundled

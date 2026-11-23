@@ -100,6 +100,12 @@ in {
   # }}}
 
   config = {
+    # {{{ Ports
+    yomi.ports = {
+      n8n = 8438;
+      n8n-alert-router = 8508;
+    };
+    # }}}
     # The editor has its own login; webhooks are refused at nginx below.
     yomi.web.at.n8n = {
       port = config.yomi.ports.n8n;

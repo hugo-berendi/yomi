@@ -19,6 +19,11 @@
     name = "pelican-caddyfile";
   };
 in {
+  # {{{ Ports
+  yomi.ports = {
+    pelican-panel = 8449;
+  };
+  # }}}
   yomi.web.at.pelican = {
     port = config.yomi.ports.pelican-panel;
     transport = "pangolin";

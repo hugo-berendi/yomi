@@ -56,6 +56,13 @@ in {
   # }}}
   config = lib.mkMerge [
     {
+      # {{{ Ports
+      yomi.ports = {
+        diabetes = 8503;
+      };
+      # }}}
+    }
+    {
       system.build.diabetes-glooko-login = loginHelper;
       system.build.diabetes-tests = app.tests.unit;
       # Keep the retired site's state mounted and backed up. Turning off the

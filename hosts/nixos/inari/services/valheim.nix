@@ -7,6 +7,14 @@
   queryPort = config.yomi.ports.valheim-query;
   dataDir = "/persist/data/valheim";
 in {
+  # {{{ Ports
+  yomi.ports = {
+    # Fixed by the game: clients default to 2456 and Valheim claims 2457 for
+    # its query port.
+    valheim = 2456;
+    valheim-query = 2457;
+  };
+  # }}}
   sops.secrets.valheim_server_password.sopsFile = ../secrets.yaml;
 
   sops.templates."valheim.env".content = ''

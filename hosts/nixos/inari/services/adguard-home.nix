@@ -3,6 +3,12 @@
   lib,
   ...
 }: {
+  # {{{ Ports
+  yomi.ports = {
+    adguard = 8401;
+    adguard-dns = 8403;
+  };
+  # }}}
   # {{{ Reverse proxy
   yomi.nginx.at.adguard.port = config.yomi.ports.adguard;
   # }}}

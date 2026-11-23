@@ -1,4 +1,9 @@
 {config, ...}: {
+  # {{{ Ports
+  yomi.ports = {
+    radarr = 8467;
+  };
+  # }}}
   # {{{ reverse proxy
   yomi.nginx.at.radarr.port = config.yomi.ports.radarr;
   # }}}

@@ -8,6 +8,11 @@
   port = config.yomi.nginx.at.suwayomi.port;
   webviewDisplay = ":99";
 in {
+  # {{{ Ports
+  yomi.ports = {
+    suwayomi = 8479;
+  };
+  # }}}
   yomi.nginx.at.suwayomi.port = config.yomi.ports.suwayomi;
 
   services.suwayomi-server = {

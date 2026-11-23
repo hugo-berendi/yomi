@@ -39,6 +39,11 @@
     extraOptions = ["--network=container:audiomuse-postgres"];
   };
 in {
+  # {{{ Ports
+  yomi.ports = {
+    audiomuse = 8521;
+  };
+  # }}}
   # AudioMuse-AI analyses every song in Navidrome by its sound (tempo,
   # energy, mood) and answers "more like this". Its Navidrome plugin feeds
   # that into Instant Mix and artist radio, which Symfonium uses with

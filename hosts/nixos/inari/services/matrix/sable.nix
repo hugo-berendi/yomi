@@ -58,6 +58,11 @@
     }
   );
 in {
+  # {{{ Ports
+  yomi.ports = {
+    sable = 8472;
+  };
+  # }}}
   yomi.nginx.at.sable.port = port;
 
   virtualisation.oci-containers.containers.sable = {

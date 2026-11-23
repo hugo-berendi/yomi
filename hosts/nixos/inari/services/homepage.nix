@@ -1,6 +1,11 @@
 {config, ...}: let
   port = config.yomi.ports.homepage;
 in {
+  # {{{ Ports
+  yomi.ports = {
+    homepage = 8415;
+  };
+  # }}}
   imports = [./infrastructure-topology.nix];
 
   sops.secrets.homepage_env = {

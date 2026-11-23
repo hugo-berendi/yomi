@@ -1,4 +1,11 @@
 {config, ...}: {
+  # {{{ Ports
+  yomi.ports = {
+    qbittorrent_peer = 8518;
+    qbittorrent_ui = 8516;
+    qui = 8517;
+  };
+  # }}}
   # {{{ Reverse proxy
   # torrent.<domain> serves qui, the web UI in front of qBittorrent. qui runs
   # on the host and has its own login; qBittorrent's own WebUI only listens

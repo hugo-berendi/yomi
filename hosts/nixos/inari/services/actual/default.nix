@@ -3,6 +3,11 @@
   upkgs,
   ...
 }: {
+  # {{{ Ports
+  yomi.ports = {
+    actual = 8512;
+  };
+  # }}}
   imports = [./bridge.nix];
 
   # {{{ Reverse proxy

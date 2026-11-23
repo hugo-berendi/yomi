@@ -15,6 +15,11 @@
     restartUnits = ["wings.service"];
   };
 in {
+  # {{{ Ports
+  yomi.ports = {
+    pelican-node1 = 8448;
+  };
+  # }}}
   sops.secrets = {
     pelican_wings_uuid = nodeSecret;
     pelican_wings_token_id = nodeSecret;

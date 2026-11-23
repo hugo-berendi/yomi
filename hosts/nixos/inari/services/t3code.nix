@@ -11,6 +11,11 @@
   forgeClis = [upkgs.forgejo-cli upkgs.tea];
   package = import ../../../../pkgs/t3code-tools.nix {inherit pkgs inputs;};
 in {
+  # {{{ Ports
+  yomi.ports = {
+    t3code = 8501;
+  };
+  # }}}
   imports = [inputs.t3code-nix.nixosModules.default ./t3code-vm ./t3code-repair.nix];
   services.t3code = {
     enable = true;

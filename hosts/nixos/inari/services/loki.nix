@@ -3,6 +3,11 @@
   lib,
   ...
 }: {
+  # {{{ Ports
+  yomi.ports = {
+    loki = 8431;
+  };
+  # }}}
   # {{{ Service
   services.loki = {
     enable = true;

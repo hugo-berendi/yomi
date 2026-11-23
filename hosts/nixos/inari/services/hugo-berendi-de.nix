@@ -5,6 +5,11 @@
 }: let
   endpoint = config.yomi.web.at.hugo-berendi-de;
 in {
+  # {{{ Ports
+  yomi.ports = {
+    hugo-berendi-de = 8514;
+  };
+  # }}}
   imports = [inputs.hugo-berendi-de.nixosModules.default];
 
   # {{{ Reverse proxy

@@ -92,6 +92,11 @@
     '';
   };
 in {
+  # {{{ Ports
+  yomi.ports = {
+    calsync = 8504;
+  };
+  # }}}
   yomi.web.at.calsync = {
     inherit port;
     transport = "pangolin";

@@ -49,6 +49,11 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
+    # {{{ Ports
+    yomi.ports = {
+      t3code-vm-tunnel = 8511;
+    };
+    # }}}
     systemd.services.t3code-vm-host-keys = {
       description = "Create persistent T3 VM SSH management keys";
       before = ["t3code-vm-provision.service"];

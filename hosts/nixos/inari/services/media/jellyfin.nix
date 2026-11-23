@@ -4,6 +4,11 @@
   pkgs,
   ...
 }: {
+  # {{{ Ports
+  yomi.ports = {
+    jellyfin = 8422;
+  };
+  # }}}
   # {{{ Reverse proxy
   yomi.web.at.media = {
     port = config.yomi.ports.jellyfin;

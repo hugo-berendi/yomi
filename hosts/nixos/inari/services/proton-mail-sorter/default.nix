@@ -110,6 +110,11 @@ in {
   # }}}
 
   config = lib.mkIf cfg.enable {
+    # {{{ Ports
+    yomi.ports = {
+      proton-mail-sorter = 8505;
+    };
+    # }}}
     assertions = [
       {
         assertion = cfg.bridgeCertificateFile != null || builtins.match "[0-9a-fA-F]{64}" cfg.bridgeCertificateSha256 != null;

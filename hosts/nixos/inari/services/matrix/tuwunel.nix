@@ -19,6 +19,12 @@
   };
   appserviceTokens = lib.concatMap (bridge: ["matrix_tuwunel_appservice_${bridge}_as_token" "matrix_tuwunel_appservice_${bridge}_hs_token"]) ["whatsapp" "signal" "discord"];
 in {
+  # {{{ Ports
+  yomi.ports = {
+    matrix-tuwunel = 8432;
+    matrix-tuwunel-proxy = 8433;
+  };
+  # }}}
   # {{{ Reverse proxy
   yomi.web.at.matrix = {
     port = config.yomi.ports.matrix-tuwunel-proxy;

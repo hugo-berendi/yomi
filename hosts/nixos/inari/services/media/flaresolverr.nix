@@ -1,4 +1,9 @@
 {config, ...}: {
+  # {{{ Ports
+  yomi.ports = {
+    flaresolverr = 8408;
+  };
+  # }}}
   virtualisation.oci-containers.containers.flaresolverr = {
     image = (import ../../images.nix).flaresolverr;
     autoStart = true;

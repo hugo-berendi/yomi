@@ -48,6 +48,11 @@
     done
   '';
 in {
+  # {{{ Ports
+  yomi.ports = {
+    changedetection = 8492;
+  };
+  # }}}
   # {{{ Reverse proxy
   yomi.nginx.at.changedetection.port = port;
   # }}}

@@ -94,6 +94,11 @@
   ];
   # }}}
 in {
+  # {{{ Ports
+  yomi.ports = {
+    grafana = 8412;
+  };
+  # }}}
   # {{{ Secrets
   sops.secrets.grafana_smtp_pass = sopsSettings;
   sops.secrets.grafana_discord_webhook = sopsSettings;

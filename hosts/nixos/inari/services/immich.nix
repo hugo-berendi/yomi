@@ -6,6 +6,12 @@
   # Legacy Immich variables take RGB triplets; immich-ui variables take CSS colors.
   rgb = color: "${config.lib.stylix.colors."${color}-rgb-r"} ${config.lib.stylix.colors."${color}-rgb-g"} ${config.lib.stylix.colors."${color}-rgb-b"}";
 in {
+  # {{{ Ports
+  yomi.ports = {
+    immich = 8416;
+    ipp = 8421;
+  };
+  # }}}
   # {{{ Secrets
   sops.secrets.immich_secrets = {
     sopsFile = ../secrets.yaml;

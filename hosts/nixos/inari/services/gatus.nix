@@ -39,6 +39,11 @@
     alerts = mailAlert name;
   };
 in {
+  # {{{ Ports
+  yomi.ports = {
+    gatus = 8494;
+  };
+  # }}}
   yomi.nginx.at = (lib.genAttrs ["paperless" "immich" "lab" "karakeep" "radarr" "sonarr" "bazarr" "prowlarr" "torrent" "music" "cal" "pdf" "prometheus" "adguard" "monitoring" "budget"] (_: {monitor.enable = true;})) // {status.port = port;};
   # {{{ Reverse proxy
   # }}}
