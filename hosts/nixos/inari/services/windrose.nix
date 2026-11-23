@@ -4,10 +4,21 @@
   dataDir = "/persist/data/windrose";
 in {
   config = {
-    # {{{ Ports
+    # {{{ Ports and reachability
     yomi.ports = {
       windrose-direct = 8489;
       windrose-rcon = 8490;
+    };
+    yomi.network.exposure = {
+      windrose-direct = {
+        interface = "br0";
+        protocols = ["tcp" "udp"];
+        service = "windrose";
+      };
+      windrose-rcon = {
+        interface = "br0";
+        service = "windrose";
+      };
     };
     # }}}
     yomi.expose.private.windrose-admin = {

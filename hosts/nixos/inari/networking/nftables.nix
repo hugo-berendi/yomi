@@ -27,36 +27,12 @@
   # meant to be decided here rather than accumulated from whatever a module
   # asked for -- a torrent client's peer port, for one, may be requested but
   # reaches the internet through the VPN namespace, not br0. So say so instead, and
-  # let whoever adds a service put the port in lanTcpServicePorts on purpose.
+  # let whoever adds a service grant LAN access on purpose, with a
+  # yomi.network.exposure entry in that service's own file.
   inertFirewallPorts =
     lib.filter (p: !lib.elem p (baseTcpPorts ++ lanTcpServicePorts)) config.networking.firewall.allowedTCPPorts
     ++ lib.filter (p: !lib.elem p (baseUdpPorts ++ lanUdpServicePorts)) config.networking.firewall.allowedUDPPorts;
 in {
-  yomi.network.exposure = {
-    beszel = {interface = "br0";};
-    pelican-node1 = {
-      interface = "br0";
-      service = "wings";
-    };
-    windrose-direct = {
-      interface = "br0";
-      protocols = ["tcp" "udp"];
-      service = "windrose";
-    };
-    windrose-rcon = {
-      interface = "br0";
-      service = "windrose";
-    };
-    valheim = {
-      interface = "br0";
-      protocols = ["udp"];
-    };
-    valheim-query = {
-      interface = "br0";
-      protocols = ["udp"];
-      service = "valheim";
-    };
-  };
   assertions = [
     {
       assertion = lib.all (entry: entry.scope == "lan" && entry.interface == "br0") grants;

@@ -15,9 +15,13 @@
     restartUnits = ["wings.service"];
   };
 in {
-  # {{{ Ports
+  # {{{ Ports and reachability
   yomi.ports = {
     pelican-node1 = 8448;
+  };
+  yomi.network.exposure.pelican-node1 = {
+    interface = "br0";
+    service = "wings";
   };
   # }}}
   sops.secrets = {
