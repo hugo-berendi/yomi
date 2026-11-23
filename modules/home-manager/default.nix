@@ -1,8 +1,8 @@
 # (https://nixos.wiki/wiki/Module).
 {
   # Personal things
-  monitors = import ./monitors.nix;
-  yomi-persistence = import ./persistence.nix;
+  monitors = ./monitors.nix;
+  yomi-persistence = ./persistence.nix;
 
   # Should upstream
 }
