@@ -2,13 +2,13 @@
 # desktop session, its greeter, Wi-Fi and the local restic sets.
 {
   imports = [
-    ../base.nix
+    ./base.nix
     ./fleet.nix
 
-    ../desktop
-    ../services/greetd
-    ../services/restic.nix
+    ../hosts/nixos/common/desktop
+    ./services/greetd
+    ./services/restic.nix
   ];
 
-  yomi.wireless.sopsFile = ../secrets.yaml;
+  yomi.wireless.sopsFile = ./secrets.yaml;
 }

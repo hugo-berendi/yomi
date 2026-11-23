@@ -9,7 +9,7 @@
   # in the justfile had nothing to accept. And the values have to be literal
   # lists, because nix refuses to force a thunk here ("setting
   # 'extra-substituters' is a thunk"), so this cannot `import`
-  # common/caches.nix the way hosts/nixos/common/nix.nix does.
+  # common/caches.nix the way profiles/nix.nix does.
   #
   # Keep in sync with common/caches.nix. That file is what configured hosts
   # actually use; this copy only matters where yomi's own nix.conf is not in

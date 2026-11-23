@@ -32,7 +32,7 @@ keys:
   - &pilot_yubikey age1yubikey1qf5f7jzwf4gne74982a05qrgw0w6983dxhtrjms5qt5ht0v5f9g5qpxnjsk
   - &recovery_offline age14x5ura52w96p3wprxwfka9s8cvyjd59gz9fx9j4gwhqymvq97gfswca00r
 creation_rules:
-  - path_regex: hosts/nixos/common/secrets.*\.yaml
+  - path_regex: profiles/secrets.*\.yaml
     key_groups:
       - age:
           - *pilot_user_key

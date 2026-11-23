@@ -17,7 +17,7 @@
     else "";
 
   # Function from hostname to relative path to public ssh key
-  pubKey = host: ../../${host}/keys/ssh_host_ed25519_key.pub;
+  pubKey = host: ../../hosts/nixos/${host}/keys/ssh_host_ed25519_key.pub;
 
   # Names a host answers to besides its hostname, so every machine pins the
   # same set. Without this, git traffic to ssh.git.<domain> -- which is a CNAME
@@ -33,7 +33,7 @@ in {
     description = ''
       Additional hostnames that resolve to this machine and are served by its
       sshd. Other hosts pin the names listed for this host in
-      hosts/nixos/common/inventory.nix; this must match that entry.
+      profiles/inventory.nix; this must match that entry.
     '';
   };
 
@@ -89,7 +89,7 @@ in {
         assertion = lib.naturalSort config.yomi.ssh.extraHostNames == lib.naturalSort (aliasesOf hostname);
         message = ''
           yomi.ssh.extraHostNames on ${hostname} (${toString config.yomi.ssh.extraHostNames})
-          differs from its sshAliases in hosts/nixos/common/inventory.nix
+          differs from its sshAliases in profiles/inventory.nix
           (${toString (aliasesOf hostname)}). Other hosts pin the inventory; update it alongside.
         '';
       }

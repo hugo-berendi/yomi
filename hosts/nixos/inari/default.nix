@@ -6,8 +6,8 @@
   # {{{ Imports
   imports =
     [
-      ../common/profiles/server.nix
-      ../common/services/anubis.nix
+      ../../../profiles/server.nix
+      ../../../profiles/services/anubis.nix
 
       ./networking
       ./filesystems

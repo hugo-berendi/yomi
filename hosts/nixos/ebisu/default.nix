@@ -5,12 +5,12 @@
   pkgs,
   ...
 }: let
-  # Shared with the other hosts through ../common/inventory.nix.
-  inherit ((import ../common/inventory.nix).ebisu) ipv4 ipv6;
+  # Shared with the other hosts through ../../../profiles/inventory.nix.
+  inherit ((import ../../../profiles/inventory.nix).ebisu) ipv4 ipv6;
   inherit (config.yomi.expose) publicHost;
 in {
   imports = [
-    ../common/vps.nix
+    ../../../profiles/vps.nix
     "${modulesPath}/profiles/qemu-guest.nix"
     ./filesystems.nix
     ./heartbeat.nix

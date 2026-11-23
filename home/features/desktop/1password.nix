@@ -26,7 +26,7 @@ _: {
   # ssh asks 1Password first and falls back to the IdentityFile list, so the
   # YubiKey's FIDO2 key keeps working whether or not 1Password holds a key.
   # A key stored in 1Password only opens a host once its public half is in
-  # hosts/nixos/common/users; that is a separate, deliberate change.
+  # profiles/users; that is a separate, deliberate change.
   programs.ssh.settings."*".IdentityAgent = "~/.1password/agent.sock";
   # }}}
 

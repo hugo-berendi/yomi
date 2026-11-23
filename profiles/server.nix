@@ -7,20 +7,20 @@
   # wrappers keep nixarr, oci and restic at the depth and position they had
   # beside ./fleet.nix's imports, so inari's units and lists stay as they were.
   imports = [
-    ../base.nix
+    ./base.nix
     {imports = [inputs.nixarr.nixosModules.default];}
     ./fleet.nix
     {
       imports = [
-        ../services/oci.nix
-        ../services/restic.nix
+        ./services/oci.nix
+        ./services/restic.nix
       ];
     }
   ];
   # }}}
 
   yomi.acme = {
-    sopsFile = ../secrets.yaml;
+    sopsFile = ./secrets.yaml;
     email = "acme@hugo-berendi.de";
   };
 }

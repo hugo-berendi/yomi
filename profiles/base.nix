@@ -1,7 +1,7 @@
 # Settings every host shares, including a VPS that must not carry the home
 # fleet's desktop, user and monitoring collections. Home hosts import a role
-# profile instead (./profiles/{desktop,server,recovery}.nix), which brings this
-# file and ./profiles/fleet.nix.
+# profile instead (./desktop.nix, ./server.nix, ./recovery.nix, ./wsl.nix),
+# which brings this file and ./fleet.nix.
 {
   config,
   inputs,
@@ -19,9 +19,9 @@
     inputs.sops-nix.nixosModules.sops
     inputs.playit-nixos-module.nixosModules.default
 
-    ../../../common/nixpkgs.nix
+    ../common/nixpkgs.nix
 
-    ./cli/fish.nix
+    ../hosts/nixos/common/cli/fish.nix
     ./nix.nix
     # Also brings the impermanence module, which yomi.persistence writes to.
     ./persistence.nix
@@ -65,14 +65,14 @@ in {
       assertion = wrong == [];
       message = ''
         yomi.dns.records has A records for fleet hosts that disagree with
-        hosts/nixos/common/inventory.nix: ${lib.concatMapStringsSep ", " (r: "${r.at} -> ${r.value}") wrong}.
+        profiles/inventory.nix: ${lib.concatMapStringsSep ", " (r: "${r.at} -> ${r.value}") wrong}.
         Every other host's /etc/hosts reads the inventory; update it alongside.
       '';
     }
     {
       assertion = expected == null || lib.any (record: record.at == hostname) fleetRecords;
       message = ''
-        hosts/nixos/common/inventory.nix gives ${hostname} the address ${toString expected},
+        profiles/inventory.nix gives ${hostname} the address ${toString expected},
         but ${hostname} declares no A record for itself in yomi.dns.records.
       '';
     }

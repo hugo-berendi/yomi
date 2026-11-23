@@ -10,7 +10,7 @@
     inputs.nixos-wsl.nixosModules.default
     ./base.nix
     # Retain the module depth and the order of the pilot and SSH tmpfiles rules.
-    ./profiles/fleet.nix
+    ./fleet.nix
   ];
   # }}}
 

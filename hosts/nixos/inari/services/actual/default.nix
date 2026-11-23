@@ -84,7 +84,7 @@
   # }}}
   # {{{ Storage
   # DynamicUser state lives in /var/lib/private/actual, which
-  # hosts/nixos/common/persistence.nix persists as a whole. The restic
+  # profiles/persistence.nix persists as a whole. The restic
   # app-state set takes a consistent copy of account.sqlite.
   # }}}
 }

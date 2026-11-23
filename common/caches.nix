@@ -1,4 +1,4 @@
-# Binary caches for every configured host, read by hosts/nixos/common/nix.nix.
+# Binary caches for every configured host, read by profiles/nix.nix.
 # Plain data rather than a module, so it can be imported outside the module
 # system.
 #

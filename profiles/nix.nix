@@ -33,7 +33,7 @@
     # }}}
     # {{{ Settings
     settings = let
-      caches = import ../../../common/caches.nix;
+      caches = import ../common/caches.nix;
     in {
       # `extra-` rather than plain `substituters`, so cache.nixos.org and its
       # key survive instead of being replaced by this list.

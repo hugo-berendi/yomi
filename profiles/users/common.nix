@@ -12,7 +12,7 @@
     # the same directory is the host key, not a login key, and is excluded
     # by the "id_" prefix.
     loginKeys = host: let
-      dir = ../../${host}/keys;
+      dir = ../../hosts/nixos/${host}/keys;
     in
       if builtins.pathExists dir
       then

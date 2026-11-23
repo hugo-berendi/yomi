@@ -3,7 +3,7 @@
 # needs a desktop, containers or a backup repository.
 {
   imports = [
-    ../base.nix
+    ./base.nix
     ./fleet.nix
   ];
 }
