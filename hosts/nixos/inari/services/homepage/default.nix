@@ -9,7 +9,7 @@ in {
   imports = [./infrastructure-topology.nix];
 
   sops.secrets.homepage_env = {
-    sopsFile = ../secrets.yaml;
+    sopsFile = ../../secrets.yaml;
   };
 
   yomi.web.at.lab = {

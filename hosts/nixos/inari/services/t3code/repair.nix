@@ -7,7 +7,7 @@
 }: let
   pilot = config.yomi.pilot.name;
   home = config.users.users.${pilot}.home;
-  package = import ../../../../pkgs/t3code-tools.nix {inherit pkgs inputs;};
+  package = import ../../../../../pkgs/t3code-tools.nix {inherit pkgs inputs;};
   startUserManager = pkgs.writeShellScript "t3code-repair-user-manager" ''
     uid=$(${pkgs.coreutils}/bin/id -u ${lib.escapeShellArg pilot})
     exec ${pkgs.systemd}/bin/systemctl start "user@$uid.service"
@@ -17,7 +17,7 @@
     export XDG_RUNTIME_DIR="/run/user/$(${pkgs.coreutils}/bin/id -u)"
     export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent"
     ${pkgs.systemd}/bin/systemctl --user start ssh-agent.service t3code-web.service
-    exec ${pkgs.python313}/bin/python3 ${./t3code-repair/launch.py} \
+    exec ${pkgs.python313}/bin/python3 ${./repair/launch.py} \
       --repository hugo-berendi/yomi \
       --remote forgejo@ssh.git.hugo-berendi.de:hugo-berendi/yomi.git \
       --t3code-remote forgejo@ssh.git.hugo-berendi.de:hugo-berendi/t3code-nix.git \

@@ -6,7 +6,7 @@ import unittest
 
 spec = importlib.util.spec_from_file_location(
     "capacity",
-    Path(__file__).resolve().parents[1] / "hosts/nixos/inari/services/zfs-capacity.py",
+    Path(__file__).resolve().parents[1] / "hosts/nixos/inari/services/zfs/capacity.py",
 )
 capacity = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(capacity)

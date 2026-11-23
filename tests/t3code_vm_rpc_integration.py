@@ -10,7 +10,7 @@ import time
 from pathlib import Path
 
 
-RPC = Path(__file__).parents[1] / "hosts/nixos/inari/services/t3code-vm/rpc.mjs"
+RPC = Path(__file__).parents[1] / "hosts/nixos/inari/services/t3code/vm/rpc.mjs"
 
 
 @contextlib.contextmanager

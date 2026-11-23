@@ -21,7 +21,7 @@
     lib.nameValuePair "https-${name}" (privateHost endpoint.host [443]))
   (lib.filterAttrs (_: endpoint: endpoint.enable) config.yomi.nginx.at);
 in {
-  imports = [./expose-vpn.nix];
+  imports = [./vpn.nix];
   # Default-route traffic must not inherit Newt's access to local services.
   services.newt.package = upkgs.fosrl-newt.overrideAttrs (old: {
     patches = (old.patches or []) ++ [./newt-public-exit.patch];
@@ -33,7 +33,7 @@ in {
   };
   yomi.expose.enable = true;
   sops.secrets.pangolin_newt_environment = lib.mkIf config.yomi.expose.enable {
-    sopsFile = ../secrets.yaml;
+    sopsFile = ../../secrets.yaml;
   };
   yomi.expose.environmentFile = lib.mkIf config.yomi.expose.enable config.sops.secrets.pangolin_newt_environment.path;
 

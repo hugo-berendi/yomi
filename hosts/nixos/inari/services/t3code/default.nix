@@ -9,14 +9,14 @@
   port = config.yomi.ports.t3code;
   # Forge CLIs t3code's Forgejo/Gitea integration looks for. tea needs 0.16+, stable has 0.14.
   forgeClis = [upkgs.forgejo-cli upkgs.tea];
-  package = import ../../../../pkgs/t3code-tools.nix {inherit pkgs inputs;};
+  package = import ../../../../../pkgs/t3code-tools.nix {inherit pkgs inputs;};
 in {
   # {{{ Ports
   yomi.ports = {
     t3code = 8501;
   };
   # }}}
-  imports = [inputs.t3code-nix.nixosModules.default ./t3code-vm ./t3code-repair.nix];
+  imports = [inputs.t3code-nix.nixosModules.default ./vm ./repair.nix];
   services.t3code = {
     enable = true;
     user = pilot;
@@ -34,7 +34,7 @@ in {
     };
   };
   sops.secrets.t3code_oidc_client_secret = {
-    sopsFile = ../secrets.yaml;
+    sopsFile = ../../secrets.yaml;
     owner = pilot;
   };
   yomi.t3codeVm = {

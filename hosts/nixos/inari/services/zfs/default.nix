@@ -4,7 +4,7 @@
   lib,
   ...
 }: {
-  imports = [./zfs-capacity.nix];
+  imports = [./capacity.nix];
   options.yomi.inari.tpmUnlock = lib.mkOption {
     type = lib.types.bool;
     default = true;

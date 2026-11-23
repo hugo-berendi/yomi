@@ -6,7 +6,7 @@ import tempfile
 from types import SimpleNamespace
 import unittest
 
-PATH = Path(__file__).parents[1] / "hosts/nixos/inari/services/t3code-repair/launch.py"
+PATH = Path(__file__).parents[1] / "hosts/nixos/inari/services/t3code/repair/launch.py"
 SPEC = importlib.util.spec_from_file_location("repair", PATH)
 repair = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(repair)

@@ -8,7 +8,7 @@
   port = config.yomi.ports.grafana;
   secret = name: "$__file{${config.sops.secrets.${name}.path}}";
   sopsSettings = {
-    sopsFile = ../secrets.yaml;
+    sopsFile = ../../secrets.yaml;
     owner = "grafana";
   };
 

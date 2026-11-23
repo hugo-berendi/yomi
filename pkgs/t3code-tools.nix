@@ -33,7 +33,7 @@
     ln -s ${inputs.skills}/skills "$out/share/agent-skills"
     cp ${../home/features/cli/ai/linux-test-policy.txt} "$out/share/linux-test-policy.txt"
     cp ${../home/features/cli/ai/install-skill-instructions.py} "$out/share/install-skill-instructions.py"
-    cp ${../hosts/nixos/inari/services/t3code-vm/rpc.mjs} "$out/share/rpc.mjs"
+    cp ${../hosts/nixos/inari/services/t3code/vm/rpc.mjs} "$out/share/rpc.mjs"
     cp ${pkgs.writeText "guest-skill-targets.json" (builtins.toJSON targets)} "$out/share/skill-targets.json"
   '';
 in

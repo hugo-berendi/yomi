@@ -22,17 +22,17 @@
       ./services/radicale
       ./services/restic
       ./services/valheim.nix
-      ./services/zfs.nix
+      ./services/zfs/default.nix
       ./services/comics.nix
       ./services/media
       ./services/pelican
-      ./services/t3code.nix
+      ./services/t3code/default.nix
       ./services/changedetection.nix
 
       # Network access, identity and discovery
       ../common/services/anubis.nix
       ./services/adguard-home.nix
-      ./services/expose.nix
+      ./services/expose/default.nix
       ./services/octodns-ddns.nix
       ./services/playit.nix
       ./services/pocket-id.nix
@@ -46,7 +46,7 @@
       ./services/scrutiny.nix
       ./services/beszel.nix
       ./services/prometheus.nix
-      ./services/grafana.nix
+      ./services/grafana/default.nix
       ./services/loki.nix
       ./services/alloy.nix
 
@@ -57,7 +57,7 @@
       ./services/opencode.nix
 
       # Personal and household applications
-      ./services/homepage.nix
+      ./services/homepage/default.nix
       ./services/hugo-berendi-de.nix
       ./services/proton-mail-sorter
       ./services/matrix

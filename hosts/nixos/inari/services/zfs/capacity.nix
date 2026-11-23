@@ -57,7 +57,7 @@ in {
     path = [pkgs.zfs];
     serviceConfig = {
       Type = "oneshot";
-      ExecStart = "${pkgs.python3}/bin/python3 ${./zfs-capacity.py}";
+      ExecStart = "${pkgs.python3}/bin/python3 ${./capacity.py}";
       TimeoutStartSec = "2m";
       ProtectSystem = "strict";
       ReadWritePaths = ["/var/lib/restic-metrics"];
