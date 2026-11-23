@@ -59,7 +59,7 @@ in {
   # }}}
   # {{{ n8n
   # Daily bank sync and categorisation; the JSON sits with the other
-  # workflows, see docs/n8n.md.
+  # workflows, see ../n8n/README.md.
   yomi.n8n.workflows.actual-budget.source = ../n8n/workflows/actual-budget.json;
   services.n8n.environment = {
     ACTUAL_BRIDGE_URL = "http://127.0.0.1:${toString config.yomi.ports.actual-bridge}";

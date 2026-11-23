@@ -73,7 +73,7 @@ The service-account token is in `proton-mail-sorter/secrets.yaml`, encrypted wit
 6. **Attach the n8n credential.** Create an HTTP Header Auth credential with header `Authorization` and value `Bearer <api-token>`, and attach it to the **Start private job** node of both workflows. It stays in n8n's encrypted store.
 7. **Run a preview.** Run the sorting workflow manually. HTTP 202 only means the job started. `journalctl -u proton-mail-sorter` shows the counters. The plan, with subjects, is in `/var/lib/private/proton-mail-sorter/plan-*.jsonl`. Keep it private.
 8. **Go live after review.** Set `apply = true` in `protonmail-bridge/default.nix`, switch, and activate the scheduled workflow in n8n.
-9. **Pull the credential ID back.** Use `just n8n-export` as described in `docs/n8n.md` to bring the real credential ID into the JSON. Only then consider `enforce = true`.
+9. **Pull the credential ID back.** Use `just n8n-export` as described in [the n8n README](../n8n/README.md) to bring the real credential ID into the JSON. Only then consider `enforce = true`.
 
 Other devices use `mail.hugo-berendi.de`: IMAP on 993 and SMTP on 465, both SSL/TLS, with the inari Bridge credentials. The name resolves to inari's tailscale address, so it works only on the tailnet.
 

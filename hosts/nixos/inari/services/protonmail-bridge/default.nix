@@ -84,7 +84,7 @@ in {
   # reach the mailbox and other devices get it over Pangolin without a
   # Bridge of their own.
   #
-  # One-time, after the first switch (see docs/proton-mail-sorter.md):
+  # One-time, after the first switch (see ../proton-mail-sorter/README.md):
   #   sudo protonmail-bridge-setup
   #     login     Proton password + 2FA
   #     info      the Bridge username/password that clients and the sorter use

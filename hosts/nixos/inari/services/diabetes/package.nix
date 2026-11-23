@@ -12,10 +12,11 @@
   python = python3.withPackages (p: [p.flask p.waitress p.pydexcom p.matplotlib p.playwright]);
   src = builtins.path {
     path = ./.;
-    # The Nix files live beside the sources; keep them out so the store path
-    # (and every unit embedding it) does not change when either is edited.
+    # The Nix files and the README live beside the sources; keep them out so
+    # the store path (and every unit embedding it) does not change when one
+    # of them is edited.
     filter = path: _:
-      !(builtins.elem (baseNameOf path) ["default.nix" "package.nix"]);
+      !(builtins.elem (baseNameOf path) ["default.nix" "package.nix" "README.md"]);
     name = "yomi-diabetes";
   };
   tests = runCommand "yomi-diabetes-tests" {} ''

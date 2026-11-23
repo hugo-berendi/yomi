@@ -8,9 +8,10 @@
   python = pkgs.python3.withPackages (p: [p.imap-tools]);
   source = builtins.path {
     path = ./.;
-    # default.nix lives beside the sources; keep it out so the store path (and
-    # every unit embedding it) does not change when the module is edited.
-    filter = path: _: baseNameOf path != "default.nix";
+    # default.nix and the README live beside the sources; keep them out so the
+    # store path (and every unit embedding it) does not change when either is
+    # edited.
+    filter = path: _: !(builtins.elem (baseNameOf path) ["default.nix" "README.md"]);
     name = "yomi-proton-mail-sorter";
   };
   settings = pkgs.writeText "proton-mail-sorter.json" (builtins.toJSON {
