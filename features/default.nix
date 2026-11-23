@@ -20,10 +20,10 @@
     inputs.nixcord.homeModules.nixcord
     # }}}
     # {{{ global configuration
-    ./features/cli
-    ./features/persistence.nix
+    ./cli
+    ./persistence.nix
     ../common/default.nix
-    ./features/neovim
+    ./neovim
     # }}}
   ];
 in {

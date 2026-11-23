@@ -4,14 +4,14 @@
   ...
 }: {
   imports = [
-    ./pipewire.nix
-    ./xdg-portal.nix
-    ./file-manager.nix
-    ./steam.nix
-    ./unicode.nix
-    ./quietboot.nix
-    ./hyprland.nix
-    ./helium.nix
+    ./audio/system.nix
+    ./xdg-portal/system.nix
+    ./file-manager/system.nix
+    ./gaming/system.nix
+    ./unicode/system.nix
+    ./quietboot/system.nix
+    ../wayland/hyprland/system.nix
+    ./browser/system.nix
   ];
 
   config = lib.mkMerge [

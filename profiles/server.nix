@@ -10,6 +10,7 @@
     ./base.nix
     {imports = [inputs.nixarr.nixosModules.default];}
     ./fleet.nix
+    ./home-manager.nix
     {
       imports = [
         ./services/oci.nix

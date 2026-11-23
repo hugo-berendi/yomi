@@ -9,9 +9,10 @@
   imports = [
     inputs.nixos-wsl.nixosModules.default
     ./base.nix
-    # Retain the module depth and the order of the pilot and SSH tmpfiles rules.
     ./fleet.nix
+    ./home-manager.nix
   ];
+  home-manager.users.${config.yomi.pilot.name}.imports = [../features/wsl.nix];
   # }}}
 
   system.stateVersion = "24.05";

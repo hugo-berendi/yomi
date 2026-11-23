@@ -50,14 +50,14 @@
       "mode": "644"
     },
     {
-      "path": "/home/hugob/projects/yomi/home/features/cli/ai/skills.nix",
-      "realPath": "/home/hugob/projects/yomi/home/features/cli/ai/skills.nix",
+      "path": "/home/hugob/projects/yomi/features/cli/ai/skills.nix",
+      "realPath": "/home/hugob/projects/yomi/features/cli/ai/skills.nix",
       "sha256": "a0a0dd8c5f8c35895c6bfa7647ea40af2ccfddfcaa6f98779c747d5e025a2acd",
       "mode": "644"
     },
     {
-      "path": "/home/hugob/projects/yomi/home/features/cli/ai/agent-reliability-policy.md",
-      "realPath": "/home/hugob/projects/yomi/home/features/cli/ai/agent-reliability-policy.md",
+      "path": "/home/hugob/projects/yomi/features/cli/ai/agent-reliability-policy.md",
+      "realPath": "/home/hugob/projects/yomi/features/cli/ai/agent-reliability-policy.md",
       "sha256": "51109c07aad772fa485241adbe567f5302a1017fd1ee80197967927ac5cbcd8e",
       "mode": "644"
     }

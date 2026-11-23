@@ -20,6 +20,7 @@
     ++ import ../../../lib/import-dir.nix ./services
     # The wizard saves hardware choices alongside the restored checkout.
     ++ lib.optional (builtins.pathExists ./recovery-local.nix) ./recovery-local.nix;
+  home-manager.users.${config.yomi.pilot.name}.imports = [./home.nix];
   # }}}
 
   system.stateVersion = "24.05";

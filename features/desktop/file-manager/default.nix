@@ -15,7 +15,7 @@
 in {
   # {{{ Packages
   # gvfs, sushi, "Open in Terminal" and xdg-terminal-exec are system-side:
-  # hosts/nixos/common/desktop/file-manager.nix.
+  # features/desktop/file-manager/system.nix.
   home.packages = with pkgs; [
     nautilus
     file-roller
@@ -93,7 +93,7 @@ in {
   # {{{ Look and feel
   # Nautilus is libadwaita: it takes its colours from the gtk-4.0 css the
   # stylix gtk target writes, and dark/light from the color-scheme set in
-  # ./default.nix, so no extra theming is needed here.
+  # ../default.nix, so no extra theming is needed here.
   dconf.settings = {
     "org/gnome/nautilus/preferences" = {
       default-folder-viewer = "list-view";

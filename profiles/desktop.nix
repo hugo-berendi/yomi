@@ -1,14 +1,18 @@
 # A graphical workstation (amaterasu): the shared fleet settings plus the
 # desktop session, its greeter, Wi-Fi and the local restic sets.
-{
+{config, ...}: {
   imports = [
     ./base.nix
     ./fleet.nix
 
-    ../hosts/nixos/common/desktop
+    ./home-manager.nix
+    ../features/desktop/system.nix
     ./services/greetd
     ./services/restic.nix
   ];
 
   yomi.wireless.sopsFile = ./secrets.yaml;
+
+  # Hyprland and, through it, the wayland and desktop applications.
+  home-manager.users.${config.yomi.pilot.name}.imports = [../features/wayland/hyprland];
 }

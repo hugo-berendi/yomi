@@ -55,7 +55,7 @@ in {
 
   # {{{ Lock when the key leaves
   # hypridle skips its idle lock while the key is inserted
-  # (home/features/wayland/hyprland/hypridle.nix), so taking the key with
+  # (features/wayland/hyprland/hypridle.nix), so taking the key with
   # you is how the session locks. loginctl lock-sessions sends the Lock
   # signal hypridle already answers with hyprlock.
   #

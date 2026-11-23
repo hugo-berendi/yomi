@@ -3,10 +3,6 @@
   lib,
   ...
 }: {
-  imports = [
-    ../global.nix
-  ];
-
   home = {
     sessionVariables = {
       BROWSER = "wslview";

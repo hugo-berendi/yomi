@@ -33,7 +33,7 @@
         Its primary key is offline on kagutsuchi; the signing, encryption and
         authentication subkeys live only on the YubiKey (serial 30636315), so
         signing works only where that card is plugged in. The public key is
-        home/features/cli/pilot.asc.
+        features/cli/pilot.asc.
 
         It replaces 67D63C5F40CC55DA (rsa4096, 2024), revoked on 2026-09-26.
         That ID sat here as "gpgKeygrip", though it was a key ID.

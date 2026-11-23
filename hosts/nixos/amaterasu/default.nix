@@ -1,4 +1,5 @@
 {
+  config,
   pkgs,
   upkgs,
   ...
@@ -14,6 +15,7 @@
     ./services/restic.nix
     ./yubikey.nix
   ];
+  home-manager.users.${config.yomi.pilot.name}.imports = [./home.nix];
   # }}}
 
   system.stateVersion = "24.05";

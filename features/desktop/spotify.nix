@@ -8,7 +8,7 @@
   colors = config.lib.stylix.colors;
 in {
   # {{{ Imports
-  imports = [./audio.nix];
+  imports = [./audio/default.nix];
   # }}}
   # {{{ Packages
   home.packages = [

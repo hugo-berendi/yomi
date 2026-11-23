@@ -29,7 +29,7 @@ More than one machine commits here, sometimes during a session. Expect to rebase
 | `tsukuyomi` | Home PC (NixOS-WSL on Windows) | WSL profile shared with `wsl-work`; no impermanence |
 | `inari` | Home server | ZFS, ~40 services, Docker containers, router (nftables/hostapd/dnsmasq) |
 | `iso` | Installation ISO | Bootable installer |
-| `wsl-work` | Work laptop (NixOS-WSL on Windows) | Same profile as `tsukuyomi`: `hosts/nixos/common/wsl.nix` + `home/profiles/wsl.nix` |
+| `wsl-work` | Work laptop (NixOS-WSL on Windows) | Same profile as `tsukuyomi`: `hosts/nixos/common/wsl.nix` + `features/wsl.nix` |
 
 ## Commands
 
@@ -98,7 +98,7 @@ Both update PRs merge on their own only when the job's `just lint`/`just check`,
 | HM | `modules/home-manager/` | Home-manager only | User modules (`yomi.monitors`, `yomi.persistence`) |
 | Shared host | `hosts/nixos/common/` | All hosts | `base.nix` supplies common options and settings. Desktop, server, and recovery use `profiles/`. VPS and WSL use `vps.nix` and `wsl.nix`. |
 | Per-host | `hosts/nixos/<host>/` | Single host | Hardware, partitions, services |
-| Home features | `home/features/` | Per-host HM | cli, desktop, neovim, productivity, wayland |
+| Home features | `features/` | Per-host HM | cli, desktop, neovim, productivity, wayland |
 | Per-host home | `home/<host>.nix` | Single host | Imports `global.nix` + features |
 
 ### Flake structure
@@ -234,7 +234,7 @@ Names vary between harnesses and some sessions offer none of these. Match agains
 
 Behavioral cases and source evidence live in `evals/agent-reliability/README.md`.
 The shared global policy is maintained in
-`home/features/cli/ai/agent-reliability-policy.md`; `skills.nix` installs it.
+`features/cli/ai/agent-reliability-policy.md`; `skills.nix` installs it.
 
 - Use `nix develop -c just ...` when `just` is absent from the harness PATH.
   Inspect a missing test wrapper's dependencies before retrying its implementation.

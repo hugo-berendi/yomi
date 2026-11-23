@@ -20,7 +20,7 @@
     ./hyfetch.nix
     ./nixtop.nix
     ./rbw.nix
-    ./1password.nix
+    ./1password/default.nix
     ./ai
     ./yomi-repo-sync.nix
     ./host-common.nix

@@ -5,8 +5,7 @@
   ...
 }: {
   imports = [
-    ./global.nix
-    ./features/desktop/wakatime
+    ../../../features/desktop/wakatime
   ];
   home = {
     packages = with pkgs; [
