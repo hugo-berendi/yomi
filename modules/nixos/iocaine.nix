@@ -33,6 +33,7 @@ in {
             words = lib.mkOption {
               type = lib.types.either lib.types.str lib.types.path;
               default = "${pkgs.miscfiles}/share/web2";
+              defaultText = lib.literalExpression "\"\${pkgs.miscfiles}/share/web2\"";
               description = "Path to word list for content generation";
             };
             markov = lib.mkOption {

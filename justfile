@@ -421,6 +421,11 @@ dns-clear zoneid bearerfile="/run/secrets/cloudflare_dns_api_token":
   print("🚀 All done!")
 # }}}
 # {{{ Security
+[doc("Regenerate docs/options.md from the option declarations")]
+[group("nix")]
+docs:
+  cp --no-preserve=mode "$(nix build --no-link --print-out-paths .#options-doc)" docs/options.md
+
 [doc("Start a service on a host: one file in its services/, a free port, staged")]
 [group("nix")]
 new-service name host=hostname:

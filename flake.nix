@@ -204,13 +204,16 @@
           octodnsConfig = ./dns/config/octodns.yaml;
           nixosConfigurations = builtins.removeAttrs self.nixosConfigurations ["iso"];
         };
+
+        # docs/options.md, generated from every yomi.* option declaration.
+        optionsDoc = import ./docs/options.nix {inherit pkgs self;};
       in {
         # Replaces flake-parts' default of nixpkgs.legacyPackages, which is
         # instantiated without any config, so packages.chatgpt could not be
         # evaluated at all.
         _module.args.pkgs = mkPkgs inputs.nixpkgs system;
 
-        packages = myPkgs // dnsPackages;
+        packages = myPkgs // dnsPackages // {options-doc = optionsDoc;};
 
         devShells = import ./devshells (
           {
@@ -219,7 +222,7 @@
           // specialArgs
         );
 
-        checks = import ./checks {inherit self pkgs myPkgs dnsPackages;};
+        checks = import ./checks {inherit self pkgs myPkgs dnsPackages optionsDoc;};
 
         formatter = pkgs.alejandra;
       };
