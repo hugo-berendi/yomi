@@ -95,8 +95,12 @@ in {
           repository = {
             DISABLE_STARS = true;
             DISABLED_REPO_UNITS = "";
+            # Every repo gets issues and pull requests from the start. With only
+            # repo.code, T3 Code's issue list got HTTP 404 from each new repo.
             DEFAULT_REPO_UNITS = lib.strings.concatStringsSep "," [
               "repo.code"
+              "repo.issues"
+              "repo.pulls"
             ];
           };
         };
