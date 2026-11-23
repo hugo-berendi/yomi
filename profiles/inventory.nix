@@ -2,9 +2,9 @@
 # maps its name to, and the extra names its sshd answers to (pinned in
 # everyone's knownHosts next to keys/ssh_host_ed25519_key.pub).
 #
-# This is plain data on purpose. base.nix and services/openssh.nix used to
-# evaluate every sibling nixosConfiguration to read these back, so building one
-# host evaluated all of them. Each host still declares its own view
+# This is plain data on purpose: reading these from the sibling
+# nixosConfigurations instead would make building one host evaluate all of
+# them. Each host still declares its own view
 # (yomi.dns.records, yomi.ssh.extraHostNames), and assertions in those two
 # files fail that host's build when it drifts from the entry here.
 let

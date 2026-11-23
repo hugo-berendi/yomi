@@ -48,20 +48,9 @@ in {
       upkgs.fluffychat
       # }}}
       qbittorrent
-      # upkgs.nerdfetch # for displaying pc/laptop stats
-
       lutris
-
       gtk3 # needed for gtk-launch
-
-      # {{{ Clis
       upkgs.forgejo-cli # fj; t3code's Forgejo integration needs 0.6+, which stable lacks
-      # sherlock # Search for usernames across different websites
-      # }}}
-      # {{{ Media playing/recording
-      # peek # GIF recorder
-      # obs-studio # video recorder
-      # }}}
     ];
   };
 

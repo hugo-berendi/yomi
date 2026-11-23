@@ -1,26 +1,11 @@
 {
   config,
   lib,
-  pkgs,
   ...
 }: {
   imports = [
     ../../../features/desktop/wakatime
   ];
-  home = {
-    packages = with pkgs; [
-      # upkgs.unityhub
-      # upkgs.nerdfetch # for displaying pc/laptop stats
-
-      # {{{ Clis
-      # sherlock # Search for usernames across different websites
-      # }}}
-      # {{{ Media playing/recording
-      # peek # GIF recorder
-      # obs-studio # video recorder
-      # }}}
-    ];
-  };
 
   # {{{ SSH identity
   # inari's own key, authorized on the forges only. It has no passphrase so

@@ -50,9 +50,9 @@ in {
     (lib.concatStringsSep "\n")
   ];
 
-  # Other hosts used to read this host's own A records back; they now read the
-  # inventory, so a record that disagrees with it would go stale everywhere
-  # else without a word.
+  # Other hosts take this host's address from the inventory, not from its A
+  # records, so a record that disagrees with it would go stale everywhere else
+  # without a word.
   assertions = let
     hostname = config.networking.hostName;
     fleetRecords =
