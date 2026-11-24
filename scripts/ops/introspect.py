@@ -9,7 +9,8 @@ where   lists every file that defines an option, with the value it sets.
         yomi.web.at.mealie.port.
 explain shows what one service contributes to a host: ports, HTTP endpoints,
         LAN grants, Pangolin resources, units, containers, secrets, state and
-        backups. SERVICE is a name under hosts/nixos/<host>/services/ or any
+        backups. SERVICE is a name under hosts/nixos/<host>/services/
+        (mealie, media, media/jellyfin) or any
         repository path.
 
 Both evaluate the working tree as the flake sees it (tracked files only).
@@ -68,14 +69,21 @@ def where(args):
 
 
 def explain(args):
-    target = args.service
-    if "/" not in target:
-        services = ROOT / "hosts/nixos" / args.host / "services"
-        candidates = [services / target, services / f"{target}.nix"]
-        found = next((c for c in candidates if c.exists()), None)
-        if found is None:
-            sys.exit(f"no service {target!r} in {services.relative_to(ROOT)}")
-        target = str(found.relative_to(ROOT))
+    services = ROOT / "hosts/nixos" / args.host / "services"
+    # A service name (mealie), a file inside a service directory
+    # (media/jellyfin), or a repository path.
+    candidates = [
+        services / args.service,
+        services / f"{args.service}.nix",
+        ROOT / args.service,
+    ]
+    found = next((c for c in candidates if c.exists()), None)
+    if found is None:
+        sys.exit(
+            f"no service {args.service!r} in {services.relative_to(ROOT)}"
+            " and no such path in the repository"
+        )
+    target = str(found.relative_to(ROOT))
     prefix = target.rstrip("/") + ("/" if (ROOT / target).is_dir() else "")
     data = evaluate(
         args.host,
