@@ -52,6 +52,42 @@ in {
           example = "50M";
           description = "Largest request body nginx accepts (nginx transport only); null keeps nginx's 1M default.";
         };
+        homepage = lib.mkOption {
+          default = null;
+          description = ''
+            Tile linking to this endpoint on the host's homepage dashboard
+            (`services.homepage-dashboard`); null leaves it off. The
+            dashboard sorts tiles by name within their group.
+          '';
+          type = lib.types.nullOr (lib.types.submodule {
+            options = {
+              group = lib.mkOption {
+                type = lib.types.str;
+                example = "Media";
+                description = "Dashboard group; the dashboard rejects a group it does not lay out.";
+              };
+              name = lib.mkOption {
+                type = lib.types.str;
+                example = "Jellyfin";
+                description = "Tile title.";
+              };
+              icon = lib.mkOption {
+                type = lib.types.str;
+                example = "jellyfin.svg";
+                description = "Icon name as homepage-dashboard understands it (`<name>.svg`, `mdi-<name>`, `si-<name>`).";
+              };
+              description = lib.mkOption {
+                type = lib.types.str;
+                description = "Line under the tile title.";
+              };
+              widget = lib.mkOption {
+                type = lib.types.nullOr (lib.types.attrsOf lib.types.anything);
+                default = null;
+                description = "homepage-dashboard service widget, passed through unchanged.";
+              };
+            };
+          });
+        };
         enableAnubis = lib.mkEnableOption "Anubis protection on Pangolin";
         stagePangolin = lib.mkEnableOption "previewing this endpoint in the blueprint while the connector is disabled";
         pangolin = lib.mkOption {
@@ -102,9 +138,14 @@ in {
     ]) (lib.attrValues endpoints);
     warnings = let
       unexplained = lib.attrNames (lib.filterAttrs (_: e: e.transport == "pangolin" && e.authentication == "none" && e.publicReason == null) endpoints);
+      tiles = lib.attrNames (lib.filterAttrs (_: e: e.homepage != null) endpoints);
     in
       lib.optional (unexplained != [])
-      "yomi.web.at: anyone on the internet can use ${lib.concatStringsSep ", " unexplained} without a login (Pangolin transport, authentication = \"none\"). Put a login in front, or say why with publicReason.";
+      "yomi.web.at: anyone on the internet can use ${lib.concatStringsSep ", " unexplained} without a login (Pangolin transport, authentication = \"none\"). Put a login in front, or say why with publicReason."
+      # The tiles are read by the host's dashboard configuration (inari's
+      # services/homepage); without a dashboard they would vanish silently.
+      ++ lib.optional (tiles != [] && !config.services.homepage-dashboard.enable)
+      "yomi.web.at: ${lib.concatStringsSep ", " tiles} ask for a homepage tile, but services.homepage-dashboard is not enabled on this host.";
     yomi.nginx.at = lib.mapAttrs (_: e: common e // {inherit (e) clientMaxBodySize;}) (lib.filterAttrs (_: e: e.transport == "nginx") endpoints);
     yomi.expose.at = lib.mapAttrs (_: e:
       common e

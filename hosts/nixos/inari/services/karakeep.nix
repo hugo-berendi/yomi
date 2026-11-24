@@ -14,6 +14,12 @@
     transport = "nginx";
     authentication = "application";
     monitor.enable = true;
+    homepage = {
+      group = "Tooling";
+      name = "Karakeep";
+      icon = "si-hoarder";
+      description = "Bookmark manager";
+    };
   };
 
   # 26.05 ships karakeep 0.32.0 built against nodejs 24, and its bundled

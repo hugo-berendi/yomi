@@ -29,6 +29,18 @@ in {
     authentication = "application";
     monitor.enable = true;
     clientMaxBodySize = "50000M";
+    homepage = {
+      group = "Tooling";
+      name = "Immich";
+      icon = "immich.svg";
+      description = "Photo management";
+      widget = {
+        type = "immich";
+        url = "http://127.0.0.1:${toString config.yomi.ports.immich}";
+        key = "{{HOMEPAGE_VAR_IMMICH_API_KEY}}";
+        version = 2;
+      };
+    };
   };
   # Keep the existing hostname so published share links remain valid.
   yomi.web.at.immich-share = {

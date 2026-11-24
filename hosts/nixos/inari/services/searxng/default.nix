@@ -25,6 +25,12 @@ in {
       enable = true;
       path = "/healthz";
     };
+    homepage = {
+      group = "Tooling";
+      name = "SearXNG";
+      icon = "searxng.svg";
+      description = "Search engine";
+    };
   };
   # {{{ Secrets
   sops.secrets.searxng_env = {

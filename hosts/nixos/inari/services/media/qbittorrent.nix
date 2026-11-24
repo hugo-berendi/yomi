@@ -15,6 +15,18 @@
     transport = "nginx";
     authentication = "application";
     monitor.enable = true;
+    homepage = {
+      group = "Media";
+      name = "qBittorrent";
+      icon = "qbittorrent.svg";
+      description = "Torrent client";
+      widget = {
+        # Straight to qBittorrent over the VPN bridge, which it trusts
+        # without a password; qui in front of it has its own login.
+        type = "qbittorrent";
+        url = "http://192.168.15.1:${toString config.yomi.ports.qbittorrent_ui}";
+      };
+    };
   };
   # }}}
   # {{{ Settings

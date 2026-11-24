@@ -49,6 +49,12 @@ in {
       enable = true;
       path = "/status.php";
     };
+    homepage = {
+      group = "Tooling";
+      name = "Nextcloud";
+      icon = "nextcloud.svg";
+      description = "Cloud storage";
+    };
   };
   # The TLS gateway forwards to the module's loopback php-fpm vhost over HTTP.
   services.nginx.virtualHosts.${cloud.host} = {

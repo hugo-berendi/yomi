@@ -118,6 +118,10 @@ in {
     web = get ["yomi" "web" "at"] (e: {
       inherit (e) url transport authentication;
       monitor = e.monitor.enable;
+      homepage =
+        if e.homepage == null
+        then null
+        else "${e.homepage.group}/${e.homepage.name}";
     });
     staticWeb = get ["yomi" "nginx" "at"] (e: e.url);
     lan = get ["yomi" "network" "exposure"] (g: {inherit (g) port protocols interface;});

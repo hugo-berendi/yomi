@@ -58,6 +58,12 @@ in {
   yomi.web.at.changedetection = {
     transport = "nginx";
     authentication = "none";
+    homepage = {
+      group = "Tooling";
+      name = "Changedetection.io";
+      icon = "changedetection-io.svg";
+      description = "Website change monitoring";
+    };
   };
   # }}}
   # {{{ Secrets

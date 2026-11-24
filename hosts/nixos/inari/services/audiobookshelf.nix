@@ -24,6 +24,12 @@ in {
         path = "/ping";
       };
     };
+    homepage = {
+      group = "Media";
+      name = "Audiobookshelf";
+      icon = "audiobookshelf.svg";
+      description = "Audiobook and podcast server";
+    };
   };
   # }}}
   # {{{ Service

@@ -45,6 +45,12 @@ in {
         authentication = "application";
         enableAnubis = true;
         monitor.enable = true;
+        homepage = {
+          group = "Tooling";
+          name = "Forgejo";
+          icon = "forgejo.svg";
+          description = "Git forge";
+        };
       };
       # }}}
       # {{{ DNS records

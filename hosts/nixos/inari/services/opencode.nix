@@ -8,6 +8,12 @@ in {
     inherit port;
     transport = "nginx";
     authentication = "none";
+    homepage = {
+      group = "Tooling";
+      name = "OpenCode";
+      icon = "mdi-console";
+      description = "Coding agent workspace";
+    };
   };
 
   users.users.${pilot}.linger = true;

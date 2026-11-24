@@ -1,5 +1,71 @@
-{config, ...}: let
+{
+  config,
+  lib,
+  ...
+}: let
   port = config.yomi.ports.homepage;
+
+  # {{{ Tiles
+  # Groups and their tiles per row. The page shows the groups by name
+  # (Entertainment, Media, Tooling): homepage follows settings.layout, and
+  # Nix writes an attribute set in name order.
+  groups = [
+    {
+      name = "Tooling";
+      columns = 3;
+    }
+    {
+      name = "Media";
+      columns = 4;
+    }
+    {
+      name = "Entertainment";
+      columns = 3;
+    }
+  ];
+  groupNames = map (g: g.name) groups;
+
+  # An endpoint declares its own tile with yomi.web.at.<name>.homepage, beside
+  # the rest of the service. Only tiles that are not an endpoint of their own
+  # are listed here.
+  extraTiles = [
+    {
+      group = "Tooling";
+      name = "Infrastrukturkarte";
+      icon = "mdi-sitemap";
+      href = "${config.yomi.web.at.lab.url}/infrastruktur/";
+      description = "Hosts, Dienste und Verbindungen";
+      widget = null;
+    }
+    {
+      group = "Tooling";
+      name = "SimpleLogin";
+      icon = "mdi-email-fast-outline";
+      href = "https://app.simplelogin.io";
+      description = "Email aliasing";
+      widget = null;
+    }
+  ];
+
+  tiles =
+    extraTiles
+    ++ lib.mapAttrsToList (_: e: {
+      inherit (e.homepage) group name icon description widget;
+      href = e.url;
+    }) (lib.filterAttrs (_: e: e.enable && e.homepage != null) config.yomi.web.at);
+  unknownGroups = lib.filter (t: !lib.elem t.group groupNames) tiles;
+
+  tile = t: {
+    ${t.name} =
+      {inherit (t) icon href description;}
+      // lib.optionalAttrs (t.widget != null) {inherit (t) widget;};
+  };
+  group = g: {
+    ${g.name} =
+      map tile (lib.sort (a: b: lib.toLower a.name < lib.toLower b.name)
+        (lib.filter (t: t.group == g.name) tiles));
+  };
+  # }}}
 in {
   # {{{ Ports
   yomi.ports = {
@@ -19,6 +85,13 @@ in {
     monitor.enable = true;
   };
 
+  assertions = [
+    {
+      assertion = unknownGroups == [];
+      message = "Homepage tiles ${lib.concatMapStringsSep ", " (t: "${t.name} (group ${t.group})") unknownGroups} name a group the dashboard does not lay out; use one of ${lib.concatStringsSep ", " groupNames}, or add the group to `groups` in services/homepage/default.nix.";
+    }
+  ];
+
   services.homepage-dashboard = {
     enable = true;
     listenPort = port;
@@ -28,20 +101,12 @@ in {
       title = "✨ The celestial citadel ✨";
       headerStyle = "clean";
       color = "slate";
-      layout = {
-        Tooling = {
+      layout = lib.listToAttrs (map (g:
+        lib.nameValuePair g.name {
           style = "row";
-          columns = 3;
-        };
-        Media = {
-          style = "row";
-          columns = 4;
-        };
-        Entertainment = {
-          style = "row";
-          columns = 3;
-        };
-      };
+          inherit (g) columns;
+        })
+      groups);
     };
 
     customCSS = with config.lib.stylix.colors.withHashtag; ''
@@ -62,203 +127,7 @@ in {
       }
     '';
 
-    services = [
-      {
-        Tooling = [
-          {
-            Infrastrukturkarte = {
-              icon = "mdi-sitemap";
-              href = "${config.yomi.web.at.lab.url}/infrastruktur/";
-              description = "Hosts, Dienste und Verbindungen";
-            };
-          }
-          {
-            Mealie = {
-              icon = "mealie.svg";
-              href = config.yomi.web.at.mealie.url;
-              description = "Recipes and meal planning";
-            };
-          }
-          {
-            "Changedetection.io" = {
-              icon = "changedetection-io.svg";
-              href = config.yomi.web.at.changedetection.url;
-              description = "Website change monitoring";
-            };
-          }
-          {
-            "T3 Code" = {
-              icon = "mdi-code-braces";
-              href = config.yomi.web.at.t3code.url;
-              description = "Coding agent workspace";
-            };
-          }
-          {
-            OpenCode = {
-              icon = "mdi-console";
-              href = config.yomi.web.at.code.url;
-              description = "Coding agent workspace";
-            };
-          }
-          {
-            Diabetes = {
-              icon = "mdi-chart-line";
-              href = config.yomi.web.at.diabetes.url;
-              description = "Glucose reports";
-            };
-          }
-          {
-            SearXNG = {
-              icon = "searxng.svg";
-              href = "https://search.hugo-berendi.de";
-              description = "Search engine";
-            };
-          }
-          {
-            Forgejo = {
-              icon = "forgejo.svg";
-              href = "https://git.hugo-berendi.de";
-              description = "Git forge";
-            };
-          }
-          {
-            Paperless = {
-              icon = "paperless.svg";
-              href = "https://paperless.hugo-berendi.de";
-              description = "Document management";
-            };
-          }
-          {
-            N8N = {
-              icon = "n8n.svg";
-              href = config.yomi.web.at.n8n.url;
-              description = "Workflow automation";
-            };
-          }
-          {
-            Nextcloud = {
-              icon = "nextcloud.svg";
-              href = "https://cloud.hugo-berendi.de";
-              description = "Cloud storage";
-            };
-          }
-          {
-            SimpleLogin = {
-              icon = "mdi-email-fast-outline";
-              href = "https://app.simplelogin.io";
-              description = "Email aliasing";
-            };
-          }
-          {
-            Immich = {
-              icon = "immich.svg";
-              href = "https://immich.hugo-berendi.de";
-              description = "Photo management";
-              widget = {
-                type = "immich";
-                url = "http://127.0.0.1:${toString config.yomi.ports.immich}";
-                key = "{{HOMEPAGE_VAR_IMMICH_API_KEY}}";
-                version = 2;
-              };
-            };
-          }
-          {
-            "Actual Budget" = {
-              icon = "actual-budget.svg";
-              href = config.yomi.web.at.budget.url;
-              description = "Budgeting and bank sync";
-            };
-          }
-          {
-            Karakeep = {
-              icon = "si-hoarder";
-              href = "https://karakeep.hugo-berendi.de";
-              description = "Bookmark manager";
-            };
-          }
-        ];
-      }
-      {
-        Media = [
-          {
-            Jellyfin = {
-              icon = "jellyfin.svg";
-              href = "https://media.hugo-berendi.de";
-              description = "Media server";
-              widget = {
-                type = "jellyfin";
-                url = "http://127.0.0.1:${toString config.yomi.ports.jellyfin}";
-                key = "{{HOMEPAGE_VAR_JELLYFIN_API_KEY}}";
-                enableBlocks = true;
-                enableNowPlaying = true;
-              };
-            };
-          }
-          {
-            Suwayomi = {
-              icon = "mdi-book-open-page-variant";
-              href = "https://suwayomi.hugo-berendi.de";
-              description = "Comic server";
-              widget = {
-                type = "suwayomi";
-                url = "http://127.0.0.1:${toString config.yomi.ports.suwayomi}";
-                fields = ["unread" "downloadedunread"];
-              };
-            };
-          }
-          {
-            Audiobookshelf = {
-              icon = "audiobookshelf.svg";
-              href = "https://audiobookshelf.hugo-berendi.de";
-              description = "Audiobook and podcast server";
-            };
-          }
-          {
-            Seerr = {
-              icon = "jellyseerr.svg";
-              href = "https://request-media.hugo-berendi.de";
-              description = "Media requests";
-              widget = {
-                type = "jellyseerr";
-                url = "http://127.0.0.1:${toString config.yomi.ports.jellyseerr}";
-                key = "{{HOMEPAGE_VAR_JELLYSEERR_API_KEY}}";
-              };
-            };
-          }
-          {
-            qBittorrent = {
-              icon = "qbittorrent.svg";
-              href = "https://torrent.hugo-berendi.de";
-              description = "Torrent client";
-              # Straight to qBittorrent over the VPN bridge, which it trusts
-              # without a password; qui in front of it has its own login.
-              widget = {
-                type = "qbittorrent";
-                url = "http://192.168.15.1:${toString config.yomi.ports.qbittorrent_ui}";
-              };
-            };
-          }
-        ];
-      }
-      {
-        Entertainment = [
-          {
-            Navidrome = {
-              icon = "navidrome.svg";
-              href = "https://music.hugo-berendi.de";
-              description = "Music server";
-            };
-          }
-          {
-            Sable = {
-              icon = "mdi-chat-processing-outline";
-              href = "https://sable.hugo-berendi.de";
-              description = "Matrix web client";
-            };
-          }
-        ];
-      }
-    ];
+    services = map group groups;
 
     bookmarks = [
       {

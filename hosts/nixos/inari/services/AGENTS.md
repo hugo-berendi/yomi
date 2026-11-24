@@ -20,6 +20,7 @@ Declare everything the service needs in its own file:
 | a port | `yomi.ports.<name> = 85xx;` | `new-service` picks a free one; a clash fails evaluation |
 | a web UI or API | `yomi.web.at.<name> = { transport; authentication; };` | `port` defaults to `yomi.ports.<name>`; see below |
 | a health check | `monitor.enable = true;` in that entry | Gatus picks it up |
+| a tile on the homepage dashboard | `homepage = { group; name; icon; description; };` in that entry | see below |
 | LAN access to a raw port | `yomi.network.exposure.<name>.interface = "br0";` | `br0` and `scope = "lan"` only |
 | access from outside the LAN | `yomi.expose.private.<name>` or `yomi.expose.tcp/udp.<name>` | Pangolin, through ebisu |
 | state that survives reboots | `yomi.persistence.at.state.apps.<name>.directories` | the root is wiped on boot |
@@ -43,6 +44,15 @@ Declare everything the service needs in its own file:
 - `clientMaxBodySize` for uploads above nginx's 1M default (nginx only).
 - Read URLs as `config.yomi.web.at.<name>.url`. Set `yomi.nginx.at` directly
   only to serve static files.
+- `homepage` puts a tile linking to the endpoint on the dashboard at
+  `lab.<domain>`. `group` is one of the groups laid out in
+  `homepage/default.nix` (Tooling, Media, Entertainment); tiles sort by name
+  within it. `icon` takes homepage-dashboard's names (`jellyfin.svg`,
+  `mdi-<name>`, `si-<name>`). An optional `widget` is passed through; use
+  `http://127.0.0.1:<port>` for its `url` and a `{{HOMEPAGE_VAR_<NAME>}}`
+  placeholder for an API key, whose value goes in the `homepage_env` secret.
+  A tile that is not an endpoint (an external site, a page below another
+  endpoint) goes in `extraTiles` in `homepage/default.nix`.
 
 See `docs/concepts.md` for the whole model and `docs/options.md` for every
 option.

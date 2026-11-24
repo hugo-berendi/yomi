@@ -17,6 +17,12 @@ in {
     transport = "nginx";
     authentication = "application";
     monitor.enable = true;
+    homepage = {
+      group = "Entertainment";
+      name = "Navidrome";
+      icon = "navidrome.svg";
+      description = "Music server";
+    };
   };
   # }}}
   # {{{ Service

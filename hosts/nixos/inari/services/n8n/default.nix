@@ -26,6 +26,12 @@ in {
       # n8n listens on IPv4 loopback only (N8N_LISTEN_ADDRESS below), and
       # "localhost" would have nginx try ::1 first on every request.
       proxyAddress = "127.0.0.1";
+      homepage = {
+        group = "Tooling";
+        name = "N8N";
+        icon = "n8n.svg";
+        description = "Workflow automation";
+      };
     };
     # Webhooks have no authentication of their own, and every caller is on
     # this host (Grafana, the workflows, the execution monitor) and talks to

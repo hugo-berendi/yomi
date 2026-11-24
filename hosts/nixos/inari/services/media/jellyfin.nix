@@ -25,6 +25,19 @@
         path = "/health";
       };
     };
+    homepage = {
+      group = "Media";
+      name = "Jellyfin";
+      icon = "jellyfin.svg";
+      description = "Media server";
+      widget = {
+        type = "jellyfin";
+        url = "http://127.0.0.1:${toString config.yomi.ports.jellyfin}";
+        key = "{{HOMEPAGE_VAR_JELLYFIN_API_KEY}}";
+        enableBlocks = true;
+        enableNowPlaying = true;
+      };
+    };
   };
   yomi.expose.private.media = {
     destination = "127.0.0.1";

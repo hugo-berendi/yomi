@@ -5524,6 +5524,98 @@ string
 *Declared by:*
  - [modules/nixos/web\.nix](../modules/nixos/web.nix)
 
+## yomi\.web\.at\.\<name>\.homepage
+
+Tile linking to this endpoint on the host’s homepage dashboard
+(` services.homepage-dashboard `); null leaves it off\. The
+dashboard sorts tiles by name within their group\.
+
+*Type:*
+null or (submodule)
+
+*Default:*
+
+```nix
+null
+```
+
+*Declared by:*
+ - [modules/nixos/web\.nix](../modules/nixos/web.nix)
+
+## yomi\.web\.at\.\<name>\.homepage\.description
+
+Line under the tile title\.
+
+*Type:*
+string
+
+*Declared by:*
+ - [modules/nixos/web\.nix](../modules/nixos/web.nix)
+
+## yomi\.web\.at\.\<name>\.homepage\.group
+
+Dashboard group; the dashboard rejects a group it does not lay out\.
+
+*Type:*
+string
+
+*Example:*
+
+```nix
+"Media"
+```
+
+*Declared by:*
+ - [modules/nixos/web\.nix](../modules/nixos/web.nix)
+
+## yomi\.web\.at\.\<name>\.homepage\.icon
+
+Icon name as homepage-dashboard understands it (` <name>.svg `, ` mdi-<name> `, ` si-<name> `)\.
+
+*Type:*
+string
+
+*Example:*
+
+```nix
+"jellyfin.svg"
+```
+
+*Declared by:*
+ - [modules/nixos/web\.nix](../modules/nixos/web.nix)
+
+## yomi\.web\.at\.\<name>\.homepage\.name
+
+Tile title\.
+
+*Type:*
+string
+
+*Example:*
+
+```nix
+"Jellyfin"
+```
+
+*Declared by:*
+ - [modules/nixos/web\.nix](../modules/nixos/web.nix)
+
+## yomi\.web\.at\.\<name>\.homepage\.widget
+
+homepage-dashboard service widget, passed through unchanged\.
+
+*Type:*
+null or (attribute set of anything)
+
+*Default:*
+
+```nix
+null
+```
+
+*Declared by:*
+ - [modules/nixos/web\.nix](../modules/nixos/web.nix)
+
 ## yomi\.web\.at\.\<name>\.host
 
 Hostname served by this endpoint\.

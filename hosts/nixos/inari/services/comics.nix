@@ -17,6 +17,17 @@ in {
   yomi.web.at.suwayomi = {
     transport = "nginx";
     authentication = "none";
+    homepage = {
+      group = "Media";
+      name = "Suwayomi";
+      icon = "mdi-book-open-page-variant";
+      description = "Comic server";
+      widget = {
+        type = "suwayomi";
+        url = "http://127.0.0.1:${toString config.yomi.ports.suwayomi}";
+        fields = ["unread" "downloadedunread"];
+      };
+    };
   };
 
   services.suwayomi-server = {

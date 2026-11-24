@@ -108,6 +108,12 @@ in {
         authentication = "application";
         # Exports from the meter and CGM apps exceed nginx's 1M default.
         clientMaxBodySize = "20m";
+        homepage = {
+          group = "Tooling";
+          name = "Diabetes";
+          icon = "mdi-chart-line";
+          description = "Glucose reports";
+        };
       };
       # The long report timeout is an nginx-only setting.
       services.nginx.virtualHosts.${config.yomi.web.at.diabetes.host}.locations."/".extraConfig = ''

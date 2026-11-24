@@ -26,6 +26,12 @@
     # (ACTUAL_UPLOAD_SYNC_ENCRYPTED_FILE_SYNC_SIZE_LIMIT_MB); a budget with a
     # few years of bank-synced transactions passes 1M quickly.
     clientMaxBodySize = "50M";
+    homepage = {
+      group = "Tooling";
+      name = "Actual Budget";
+      icon = "actual-budget.svg";
+      description = "Budgeting and bank sync";
+    };
   };
   # The client long-polls this while the user approves the login at the bank;
   # the server holds it for up to POLL_TIMEOUT_MS (300 s). nginx's default 60 s

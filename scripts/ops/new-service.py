@@ -30,6 +30,13 @@ TEMPLATE = """\
     # Who checks requests: application, gateway (Pangolin SSO) or none.
     authentication = "application";
     monitor.enable = true;
+    # A tile on the homepage dashboard; groups: Tooling, Media, Entertainment.
+    homepage = {{
+      group = "Tooling";
+      name = "{name}";
+      icon = "mdi-application";
+      description = "TODO";
+    }};
   }};
   # }}}}}}
   # {{{{{{ Service

@@ -69,6 +69,12 @@ in {
   yomi.web.at.t3code = {
     transport = "nginx";
     authentication = "application";
+    homepage = {
+      group = "Tooling";
+      name = "T3 Code";
+      icon = "mdi-code-braces";
+      description = "Coding agent workspace";
+    };
   };
 
   home-manager.users.${pilot} = {config, ...}: {

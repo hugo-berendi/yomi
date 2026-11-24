@@ -7,10 +7,10 @@ evaluated configuration instead of from grep.
 where   lists every file that defines an option, with the value it sets.
         The path may go below an attribute-set option, e.g.
         yomi.web.at.mealie.port.
-explain shows what one service contributes to a host: ports, HTTP endpoints,
-        LAN grants, Pangolin resources, units, containers, secrets, state and
-        backups. SERVICE is a name under hosts/nixos/<host>/services/
-        (mealie, media, media/jellyfin) or any
+explain shows what one service contributes to a host: ports, HTTP endpoints
+        and their homepage tiles, LAN grants, Pangolin resources, units,
+        containers, secrets, state and backups. SERVICE is a name under
+        hosts/nixos/<host>/services/ (mealie, media, media/jellyfin) or any
         repository path.
 
 Both evaluate the working tree as the flake sees it (tracked files only).
@@ -98,6 +98,7 @@ def explain(args):
                 [
                     f"{n}: {e['url']}  {e['transport']}, auth {e['authentication']}"
                     + (", monitored" if e["monitor"] else "")
+                    + (f", homepage tile {e['homepage']}" if e["homepage"] else "")
                     for n, e in data["web"].items()
                 ]
                 + [f"{n}: {url}  static files" for n, url in data["staticWeb"].items()]

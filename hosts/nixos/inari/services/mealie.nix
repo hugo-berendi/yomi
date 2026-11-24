@@ -8,6 +8,12 @@
   yomi.web.at.mealie = {
     transport = "nginx";
     authentication = "application";
+    homepage = {
+      group = "Tooling";
+      name = "Mealie";
+      icon = "mealie.svg";
+      description = "Recipes and meal planning";
+    };
   };
   # }}}
   # {{{ Secrets

@@ -45,6 +45,17 @@ in {
         path = "/api/v1/status";
       };
     };
+    homepage = {
+      group = "Media";
+      name = "Seerr";
+      icon = "jellyseerr.svg";
+      description = "Media requests";
+      widget = {
+        type = "jellyseerr";
+        url = "http://127.0.0.1:${toString config.yomi.ports.jellyseerr}";
+        key = "{{HOMEPAGE_VAR_JELLYSEERR_API_KEY}}";
+      };
+    };
   };
   # }}}
   #{{{ settings

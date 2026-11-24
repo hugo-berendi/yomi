@@ -9,6 +9,12 @@
     transport = "nginx";
     authentication = "application";
     monitor.enable = true;
+    homepage = {
+      group = "Tooling";
+      name = "Paperless";
+      icon = "paperless.svg";
+      description = "Document management";
+    };
   };
   # }}}
   # {{{ Secrets

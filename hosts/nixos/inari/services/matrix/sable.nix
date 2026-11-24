@@ -67,6 +67,12 @@ in {
   yomi.web.at.sable = {
     transport = "nginx";
     authentication = "none";
+    homepage = {
+      group = "Entertainment";
+      name = "Sable";
+      icon = "mdi-chat-processing-outline";
+      description = "Matrix web client";
+    };
   };
 
   virtualisation.oci-containers.containers.sable = {
