@@ -1,5 +1,5 @@
 # Packages and defaults every host with Home Manager shares, through
-# features/default.nix.
+# home/default.nix.
 {
   pkgs,
   upkgs,

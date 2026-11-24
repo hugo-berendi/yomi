@@ -63,14 +63,14 @@ creation_rules:
           - *shared_host_key
           - *pilot_yubikey
           - *recovery_offline
-  - path_regex: features/desktop/wakatime/secrets.yaml
+  - path_regex: home/features/desktop/wakatime/secrets.yaml
     key_groups:
       - age:
           - *pilot_user_key
           - *shared_host_key
           - *pilot_yubikey
           - *recovery_offline
-  - path_regex: features/productivity/secrets.yaml
+  - path_regex: home/features/productivity/secrets.yaml
     key_groups:
       - age:
           - *pilot_user_key
@@ -78,14 +78,14 @@ creation_rules:
           - *pilot_yubikey
           - *recovery_offline
   # No such file exists today; kept so that creating it encrypts correctly.
-  - path_regex: features/cli/secrets.yaml
+  - path_regex: home/features/cli/secrets.yaml
     key_groups:
       - age:
           - *pilot_user_key
           - *shared_host_key
           - *pilot_yubikey
           - *recovery_offline
-  - path_regex: features/cli/ai/secrets.yaml
+  - path_regex: home/features/cli/ai/secrets.yaml
     key_groups:
       - age:
           - *pilot_user_key

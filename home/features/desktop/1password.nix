@@ -1,6 +1,6 @@
 _: {
   # {{{ App
-  # The app comes from programs._1password-gui (features/cli/1password/system.nix);
+  # The app comes from programs._1password-gui (home/features/cli/1password/system.nix);
   # here it only starts with the session, minimised. It has to be running for
   # the SSH agent and for `op` to unlock through it.
   systemd.user.services."1password" = {

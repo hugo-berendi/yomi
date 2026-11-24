@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).parents[1]
-INSTALLER = ROOT / "features/cli/ai/install-skill-instructions.py"
+INSTALLER = ROOT / "home/features/cli/ai/install-skill-instructions.py"
 
 
 class AgentPolicyTests(unittest.TestCase):

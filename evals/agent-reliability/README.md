@@ -58,7 +58,7 @@ preference. The evals test future behavior, not whether every historical action
 violated instructions that existed at the time.
 
 The shared policy is
-[`features/cli/ai/agent-reliability-policy.md`](../../features/cli/ai/agent-reliability-policy.md).
+[`home/features/cli/ai/agent-reliability-policy.md`](../../home/features/cli/ai/agent-reliability-policy.md).
 `skills.nix` includes it in the existing managed skill instructions, so subsequent
 Home Manager activation retains it. The installed Codex and Claude global files
 were updated immediately, preserving their other managed blocks and permissions.
@@ -83,7 +83,7 @@ node evaluate.mjs self-test
 
 # Candidate inputs omit the rubric, findings and negative control.
 node evaluate.mjs export > /tmp/reliability-baseline.jsonl
-node evaluate.mjs export ../../features/cli/ai/agent-reliability-policy.md > /tmp/reliability-updated.jsonl
+node evaluate.mjs export ../../home/features/cli/ai/agent-reliability-policy.md > /tmp/reliability-updated.jsonl
 ```
 
 Run each exported scenario in a **fresh isolated candidate session** under the same
@@ -157,7 +157,7 @@ staged specifically so Git-backed flake evaluation can see the referenced file;
 at audit completion the remaining Yomi work was present as local changes/new files.
 
 The final unrestricted `git diff --check` encountered concurrent changes in
-`features/neovim/writing.nix` with spaces before tabs. That file was clean at
+`home/features/neovim/writing.nix` with spaces before tabs. That file was clean at
 the start of this audit and was not edited by it. Checks scoped to the audit's
 instruction/source files passed; the concurrent Neovim change was left intact.
 The optional chart preview could not render because T3's browser libraries are

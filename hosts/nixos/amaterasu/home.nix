@@ -7,18 +7,18 @@
   ...
 }: let
   agents = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
-  codex = import ../../../features/cli/ai/codex-package.nix {inherit inputs pkgs;};
-  claudeCode = import ../../../features/cli/ai/claude-code-package.nix {inherit inputs pkgs;};
+  codex = import ../../../home/features/cli/ai/codex-package.nix {inherit inputs pkgs;};
+  claudeCode = import ../../../home/features/cli/ai/claude-code-package.nix {inherit inputs pkgs;};
   t3code-desktop = agents.t3code-desktop.override {
-    t3code = import ../../../features/desktop/t3code-package.nix {
+    t3code = import ../../../home/features/desktop/t3code-package.nix {
       inherit inputs pkgs;
       providerPackages = [codex claudeCode agents.opencode agents.copilot-cli];
     };
   };
 in {
   imports = [
-    ../../../features/productivity
-    ../../../features/desktop/t3code.nix
+    ../../../home/features/productivity
+    ../../../home/features/desktop/t3code.nix
   ];
 
   # {{{ Fcitx5 keyboard configuration

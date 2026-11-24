@@ -3,7 +3,7 @@
   lib,
   ...
 }: {
-  # The system half of Nautilus (features/desktop/file-manager/default.nix holds
+  # The system half of Nautilus (home/features/desktop/file-manager/default.nix holds
   # the package, defaults and window rules). These pieces need system services
   # or system-wide environment, so they cannot live in home-manager.
   config = lib.mkIf config.yomi.machine.graphical {

@@ -9,7 +9,7 @@
   "policyInstaller": "existing test and temporary-home repeat install passed; preferences and permissions retained",
   "nixIntegration": "nix-instantiate --parse passed; no host evaluation/build or activation",
   "scopedDiffChecks": "passed",
-  "unrestrictedDiffCheck": "failed in concurrent features/neovim/writing.nix; left unchanged",
+  "unrestrictedDiffCheck": "failed in concurrent home/features/neovim/writing.nix; left unchanged",
   "modelBenchmark": "not run; no measured improvement claim",
   "chartPreview": "host browser libraries missing; html_render delivered chart",
   "redactionSpotCheck": "no matches for checked private-key/admin-token signatures; not a guarantee of complete redaction",

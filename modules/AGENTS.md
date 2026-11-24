@@ -14,7 +14,7 @@ module there. Every host imports all of them, so a module must do nothing
 until it is enabled or used.
 
 Options are also declared outside this directory when they belong to one
-place: by a feature (`yomi.sessionMenu` in `features/wayland/wlogout.nix`),
+place: by a feature (`yomi.sessionMenu` in `home/features/wayland/wlogout.nix`),
 a profile (`yomi.anubis`), or a host's own service (`yomi.diabetes`).
 
 ## Conventions

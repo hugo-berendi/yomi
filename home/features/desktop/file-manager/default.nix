@@ -15,7 +15,7 @@
 in {
   # {{{ Packages
   # gvfs, sushi, "Open in Terminal" and xdg-terminal-exec are system-side:
-  # features/desktop/file-manager/system.nix.
+  # home/features/desktop/file-manager/system.nix.
   home.packages = with pkgs; [
     nautilus
     file-roller

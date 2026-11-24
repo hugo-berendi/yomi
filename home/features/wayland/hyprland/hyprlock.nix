@@ -5,7 +5,7 @@
   osConfig,
   ...
 }: let
-  gravatar = pkgs.callPackage (import ../../../common/avatar.nix) {};
+  gravatar = pkgs.callPackage (import ../../../../common/avatar.nix) {};
   shell = config.yomi.shellTheme;
   hyprColor = config.yomi.theming.colors.hexToRgb;
   fingerprintEnabled = osConfig.services.fprintd.enable;

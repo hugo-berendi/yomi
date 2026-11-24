@@ -21,7 +21,7 @@
 
     ../common/nixpkgs.nix
 
-    ../features/cli/fish/system.nix
+    ../home/features/cli/fish/system.nix
     ./nix.nix
     # Also brings the impermanence module, which yomi.persistence writes to.
     ./persistence.nix

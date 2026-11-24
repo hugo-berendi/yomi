@@ -35,7 +35,7 @@ and a self-hosted homelab. It is based on
 | ------------------------------ | ---------------------------------------------------------- |
 | [`hosts/nixos`](./hosts/nixos) | One directory per machine; inari's services in `inari/services/` |
 | [`profiles`](./profiles)       | What a kind of machine gets: base, fleet, desktop, server, wsl, vps, recovery |
-| [`features`](./features)       | The pilot's programs and desktop; `system.nix` files are NixOS, the rest Home Manager |
+| [`home`](./home)               | The pilot's Home Manager configuration; programs and desktop in `features/`, where `system.nix` files are NixOS |
 | [`modules`](./modules)         | The `yomi.*` options and their implementation              |
 | [`common`](./common)           | Themes, fonts, browser data and caches for NixOS and Home Manager |
 | [`dns`](./dns)                 | Declarative DNS records and OctoDNS integration            |

@@ -22,6 +22,6 @@
   "hfjbmagddngcpeloejdejnfgbamkjaeg"
   "hjdoplcnndgiblooccencgcggcoihigg"
   "kgcjekpmcjjogibpjebkhaanilehneje"
-  # 1Password, paired with the desktop app (features/cli/1password/system.nix)
+  # 1Password, paired with the desktop app (home/features/cli/1password/system.nix)
   "aeblfdkhhhdcdjpifhhbdiojplfjncoa"
 ]

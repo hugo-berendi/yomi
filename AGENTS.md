@@ -1,7 +1,7 @@
 # Agent guide for Yomi
 
-One flake configures six machines: role profiles, the pilot's features,
-per-host services, sops-nix secrets and impermanence. This file is the map and
+One flake configures six machines: role profiles, the pilot's home
+configuration, per-host services, sops-nix secrets and impermanence. This file is the map and
 the rules. Each area has its own `AGENTS.md` with the details: read the one for
 the area you change before you edit it.
 
@@ -29,7 +29,7 @@ git log --oneline -10     # what landed since last time
 | add or change a service on inari | `hosts/nixos/inari/services/<name>.nix` or `<name>/` | `hosts/nixos/inari/services/AGENTS.md` |
 | change inari's network, disks or how it runs | `hosts/nixos/inari/` | `hosts/nixos/inari/AGENTS.md` |
 | change what every host, or every host of a kind, gets | `profiles/` | `profiles/AGENTS.md` |
-| change a program or desktop piece the pilot uses | `features/` | `features/AGENTS.md` |
+| change a program or desktop piece the pilot uses | `home/features/` | `home/AGENTS.md` |
 | define or change a `yomi.*` option | `modules/` | `modules/AGENTS.md` |
 | change one machine's hardware, disks or own settings | `hosts/nixos/<host>/` (`home.nix` for its Home Manager settings) | |
 | package something | `pkgs/` | |
@@ -188,7 +188,7 @@ this file. Names differ between harnesses: match the list you were given.
 ## Lessons from earlier sessions
 
 The cases and evidence are in `evals/agent-reliability/README.md`; the shared
-policy is `features/cli/ai/agent-reliability-policy.md`.
+policy is `home/features/cli/ai/agent-reliability-policy.md`.
 
 - Use `nix develop -c just …` when `just` is not on PATH. Inspect a missing
   test wrapper's dependencies before retrying it. Keep heavy tests in the

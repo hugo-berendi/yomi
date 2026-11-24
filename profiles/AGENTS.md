@@ -6,7 +6,7 @@ What a kind of machine gets. A host imports exactly one role profile:
 |---|---|---|
 | `desktop.nix` | amaterasu | base, fleet, Home Manager, the desktop session (both halves), greeter, local restic sets |
 | `server.nix` | inari | base, fleet, Home Manager, nixarr, OCI containers, local restic sets, ACME |
-| `wsl.nix` | tsukuyomi, wsl-work | NixOS-WSL, base, fleet, Home Manager with `features/wsl.nix`; no impermanence |
+| `wsl.nix` | tsukuyomi, wsl-work | NixOS-WSL, base, fleet, Home Manager with `home/wsl.nix`; no impermanence |
 | `recovery.nix` | iso | base and fleet only |
 | `vps.nix` | ebisu | base only: no desktop, users or monitoring of the home fleet |
 
@@ -16,7 +16,7 @@ The building blocks below them:
 |---|---|
 | `base.nix` | what every host has, the VPS included: nix settings, sops, impermanence, sshd, fish, `/etc/hosts` from the inventory |
 | `fleet.nix` | what the home machines share: stylix, the pilot user, the beszel agent, 1Password |
-| `home-manager.nix` | Home Manager for the pilot, with `features/default.nix` as the base |
+| `home-manager.nix` | Home Manager for the pilot, with `home/default.nix` as the base |
 | `nix.nix` | nix settings and binary caches (`common/caches.nix`) |
 | `persistence.nix` | impermanence wiring shared by the hosts that use it |
 | `services/` | services several hosts run: openssh, restic, greetd, anubis, oci, beszel-agent, memory |

@@ -8,7 +8,7 @@
   inherit (pkgs) lib;
   hosts = builtins.removeAttrs self.nixosConfigurations ["iso"];
 
-  # Options are declared in modules, profiles, features and some hosts, so
+  # Options are declared in modules, profiles, home and some hosts, so
   # take each host's yomi tree and keep the first declaration of each name.
   nixosYomi = lib.foldl' (acc: host: (host.options.yomi or {}) // acc) {} (builtins.attrValues hosts);
 

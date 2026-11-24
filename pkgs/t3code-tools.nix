@@ -3,8 +3,8 @@
   inputs,
 }: let
   agents = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
-  codex = import ../features/cli/ai/codex-package.nix {inherit inputs pkgs;};
-  claudeCode = import ../features/cli/ai/claude-code-package.nix {inherit inputs pkgs;};
+  codex = import ../home/features/cli/ai/codex-package.nix {inherit inputs pkgs;};
+  claudeCode = import ../home/features/cli/ai/claude-code-package.nix {inherit inputs pkgs;};
   providers = [codex claudeCode agents.opencode2 agents.copilot-cli];
   t3 = inputs.t3code-nix.packages.${pkgs.stdenv.hostPlatform.system}.default.override {
     providerPackages = providers;
@@ -31,8 +31,8 @@
       chmod +x "$out/bin/$tool"
     done
     ln -s ${inputs.skills}/skills "$out/share/agent-skills"
-    cp ${../features/cli/ai/linux-test-policy.txt} "$out/share/linux-test-policy.txt"
-    cp ${../features/cli/ai/install-skill-instructions.py} "$out/share/install-skill-instructions.py"
+    cp ${../home/features/cli/ai/linux-test-policy.txt} "$out/share/linux-test-policy.txt"
+    cp ${../home/features/cli/ai/install-skill-instructions.py} "$out/share/install-skill-instructions.py"
     cp ${../hosts/nixos/inari/services/t3code/vm/rpc.mjs} "$out/share/rpc.mjs"
     cp ${pkgs.writeText "guest-skill-targets.json" (builtins.toJSON targets)} "$out/share/skill-targets.json"
   '';

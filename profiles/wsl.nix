@@ -12,7 +12,7 @@
     ./fleet.nix
     ./home-manager.nix
   ];
-  home-manager.users.${config.yomi.pilot.name}.imports = [../features/wsl.nix];
+  home-manager.users.${config.yomi.pilot.name}.imports = [../home/wsl.nix];
   # }}}
 
   system.stateVersion = "24.05";

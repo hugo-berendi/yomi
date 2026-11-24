@@ -14,7 +14,7 @@
     inputs.stylix.nixosModules.stylix
     ../common
 
-    ../features/cli/1password/system.nix
+    ../home/features/cli/1password/system.nix
     ./users/pilot.nix
     ./services/beszel-agent.nix
   ];

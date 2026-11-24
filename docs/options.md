@@ -3888,7 +3888,7 @@ Fingerprint of the pilot’s OpenPGP key, which git and mail sign with\.
 Its primary key is offline on kagutsuchi; the signing, encryption and
 authentication subkeys live only on the YubiKey (serial 30636315), so
 signing works only where that card is plugged in\. The public key is
-features/cli/pilot\.asc\.
+home/features/cli/pilot\.asc\.
 
 It replaces 67D63C5F40CC55DA (rsa4096, 2024), revoked on 2026-09-26\.
 That ID sat here as “gpgKeygrip”, though it was a key ID\.
@@ -6149,7 +6149,7 @@ attribute set
 ```
 
 *Declared by:*
- - [features/cli/ai/mcp\.nix](../features/cli/ai/mcp.nix)
+ - [home/features/cli/ai/mcp\.nix](../home/features/cli/ai/mcp.nix)
 
 ## yomi\.ai\.mcpRemote
 
@@ -6165,7 +6165,7 @@ attribute set
 ```
 
 *Declared by:*
- - [features/cli/ai/mcp\.nix](../features/cli/ai/mcp.nix)
+ - [home/features/cli/ai/mcp\.nix](../home/features/cli/ai/mcp.nix)
 
 ## yomi\.monitors
 
@@ -6297,5 +6297,5 @@ Command that toggles the session menu, for keybinds and bar buttons
 string *(read only)*
 
 *Declared by:*
- - [features/wayland/wlogout\.nix](../features/wayland/wlogout.nix)
+ - [home/features/wayland/wlogout\.nix](../home/features/wayland/wlogout.nix)
 

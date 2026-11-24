@@ -4,7 +4,7 @@
   ...
 }: {
   imports = [
-    ../../../features/desktop/wakatime
+    ../../../home/features/desktop/wakatime
   ];
 
   # {{{ SSH identity
