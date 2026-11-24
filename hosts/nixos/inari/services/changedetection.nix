@@ -61,7 +61,7 @@ in {
     homepage = {
       group = "Tooling";
       name = "Changedetection.io";
-      icon = "changedetection-io.svg";
+      icon = "changedetection.svg";
       description = "Website change monitoring";
     };
   };

@@ -17,7 +17,7 @@
     homepage = {
       group = "Tooling";
       name = "Karakeep";
-      icon = "si-hoarder";
+      icon = "karakeep.svg";
       description = "Bookmark manager";
     };
   };
