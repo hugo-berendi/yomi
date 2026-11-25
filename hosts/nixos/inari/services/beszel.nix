@@ -68,13 +68,32 @@ in {
   };
   # }}}
   # {{{ Networking
+  # Pocket ID signs the browser in first (services/oauth2-proxy). Behind it,
+  # BESZEL_HUB_AUTO_LOGIN signs every request in as the pilot, so the
+  # sign-in is the only thing between the LAN and the hub's API.
   yomi.web.at.monitoring = {
     inherit port;
     transport = "nginx";
-    # BESZEL_HUB_AUTO_LOGIN signs every request in as the pilot, API calls
-    # included: an anonymous request reads and edits systems and alerts.
-    authentication = "none";
-    monitor.enable = true;
+    authentication = "proxy";
+    monitor = {
+      enable = true;
+      # The hub's own health check; it skips the sign-in below.
+      path = "/api/health";
+    };
+  };
+  # Paths that skip the sign-in. Agents bring their own token, which the hub
+  # checks before it accepts the WebSocket, and the health check says only
+  # that the API is up.
+  services.nginx.virtualHosts.${config.yomi.web.at.monitoring.host}.locations = {
+    "= /api/beszel/agent-connect" = {
+      proxyPass = "http://127.0.0.1:${toString port}";
+      proxyWebsockets = true;
+      extraConfig = "auth_request off;";
+    };
+    "= /api/health" = {
+      proxyPass = "http://127.0.0.1:${toString port}";
+      extraConfig = "auth_request off;";
+    };
   };
   # }}}
 }

@@ -33,6 +33,8 @@
   proxied = extend {yomi.web.at.web-fixture = fixture "nginx" // {authentication = "proxy";};};
   proxiedOverPangolin = extend {yomi.web.at.web-fixture = fixture "pangolin" // {authentication = "proxy";};};
   signsIn = c: name: lib.hasInfix "auth_request /oauth2/auth;" (c.services.nginx.virtualHosts.${c.yomi.web.at.${name}.host}.extraConfig or "");
+  skipsSignIn = vhost: path: lib.hasInfix "auth_request off;" (vhost.locations.${path}.extraConfig or "");
+  beszel = live.services.nginx.virtualHosts.${live.yomi.web.at.monitoring.host};
   checks = [
     (valid nginx && nginx.yomi.nginx.at.web-fixture.port == 19250 && !(nginx.yomi.expose.at ? web-fixture))
     (valid pangolin && pangolin.yomi.expose.at.web-fixture.port == 19250 && !(pangolin.yomi.nginx.at ? web-fixture))
@@ -64,6 +66,10 @@
     (!(disabled.yomi.expose.at ? web-fixture))
     (valid proxied && signsIn proxied "web-fixture" && !signsIn nginx "web-fixture")
     (!valid proxiedOverPangolin)
+    # Beszel: the hub behind the sign-in, its agents and health check past it.
+    (signsIn live "monitoring"
+      && !skipsSignIn beszel "/"
+      && lib.all (skipsSignIn beszel) ["= /api/beszel/agent-connect" "= /api/health" "/oauth2/" "= /oauth2/auth"])
   ];
 in
   assert lib.all (result: result) checks;
