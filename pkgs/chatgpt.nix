@@ -47,7 +47,7 @@
   writeShellApplication,
   xdg-utils,
 }: let
-  version = "26.1120.41243";
+  version = "26.1120.50957";
   launcher = import ./chatgpt-launcher.nix {
     inherit flock writeShellApplication;
   };
@@ -58,7 +58,7 @@ in
 
     src = fetchurl {
       url = "https://persistent.oaistatic.com/codex-app-prod/linux/deb/pool/main/c/chatgpt/chatgpt_${version}_amd64.deb";
-      hash = "sha256-O6oedFpaP1n5F+kvJbnt8ShKAwa3Xx8uNgp2bfOLiyM=";
+      hash = "sha256-6Ks435bWBw/V1FgqYGSQY3coJDu1Kentrhmz8KbmZNI=";
     };
 
     strictDeps = true;
