@@ -41,7 +41,9 @@ entries share a number, and the message names both.
   gateway and the newt connector on inari.
 - `authentication`: who checks requests. `application` means the service has
   its own login; `gateway` means Pangolin's SSO does (Pangolin transport
-  only); `none` deliberately allows anonymous access.
+  only); `none` deliberately allows anonymous access. A Pangolin endpoint with
+  `none` is open to the whole internet, so it draws a warning until
+  `publicReason` says why.
 
 `port` defaults to the `yomi.ports` entry of the same name. Other settings:
 `host` (default `<subdomain>.<domain>`), `subdomain`,

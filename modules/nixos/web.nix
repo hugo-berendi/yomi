@@ -35,6 +35,17 @@ in {
           type = lib.types.enum ["application" "gateway" "none"];
           description = "Who authenticates requests; none deliberately permits anonymous access.";
         };
+        publicReason = lib.mkOption {
+          type = lib.types.nullOr lib.types.str;
+          default = null;
+          example = "the personal website";
+          description = ''
+            Why this endpoint lets anyone on the internet in without a login.
+            A Pangolin endpoint with `authentication = "none"` draws a warning
+            until this says why; an nginx endpoint is private (LAN and
+            Pangolin private resources) and needs no reason.
+          '';
+        };
         clientMaxBodySize = lib.mkOption {
           type = lib.types.nullOr lib.types.str;
           default = null;
@@ -84,7 +95,16 @@ in {
         assertion = e.clientMaxBodySize == null || e.transport == "nginx";
         message = "Web ${e.host}: clientMaxBodySize only applies to the nginx transport.";
       }
+      {
+        assertion = e.publicReason == null || (e.transport == "pangolin" && e.authentication == "none");
+        message = "Web ${e.host}: publicReason only applies to a Pangolin endpoint with authentication = \"none\"; remove it.";
+      }
     ]) (lib.attrValues endpoints);
+    warnings = let
+      unexplained = lib.attrNames (lib.filterAttrs (_: e: e.transport == "pangolin" && e.authentication == "none" && e.publicReason == null) endpoints);
+    in
+      lib.optional (unexplained != [])
+      "yomi.web.at: anyone on the internet can use ${lib.concatStringsSep ", " unexplained} without a login (Pangolin transport, authentication = \"none\"). Put a login in front, or say why with publicReason.";
     yomi.nginx.at = lib.mapAttrs (_: e: common e // {inherit (e) clientMaxBodySize;}) (lib.filterAttrs (_: e: e.transport == "nginx") endpoints);
     yomi.expose.at = lib.mapAttrs (_: e:
       common e

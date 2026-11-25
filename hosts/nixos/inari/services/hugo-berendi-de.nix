@@ -19,6 +19,7 @@ in {
     subdomain = "";
     transport = "pangolin";
     authentication = "none";
+    publicReason = "the personal website, written for everyone";
     pangolin.allowedCountries = [];
   };
   # }}}

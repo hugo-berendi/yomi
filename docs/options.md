@@ -6027,6 +6027,31 @@ string
 *Declared by:*
  - [modules/nixos/web\.nix](../modules/nixos/web.nix)
 
+## yomi\.web\.at\.\<name>\.publicReason
+
+Why this endpoint lets anyone on the internet in without a login\.
+A Pangolin endpoint with ` authentication = "none" ` draws a warning
+until this says why; an nginx endpoint is private (LAN and
+Pangolin private resources) and needs no reason\.
+
+*Type:*
+null or string
+
+*Default:*
+
+```nix
+null
+```
+
+*Example:*
+
+```nix
+"the personal website"
+```
+
+*Declared by:*
+ - [modules/nixos/web\.nix](../modules/nixos/web.nix)
+
 ## yomi\.web\.at\.\<name>\.stagePangolin
 
 Whether to enable previewing this endpoint in the blueprint while the connector is disabled\.

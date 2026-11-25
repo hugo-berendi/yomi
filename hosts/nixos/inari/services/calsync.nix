@@ -100,6 +100,7 @@ in {
   yomi.web.at.calsync = {
     transport = "pangolin";
     authentication = "none";
+    publicReason = "the home, privacy and terms pages Google's OAuth review reads";
     pangolin.allowedCountries = [];
   };
 

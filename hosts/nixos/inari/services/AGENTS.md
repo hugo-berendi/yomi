@@ -36,6 +36,10 @@ Declare everything the service needs in its own file:
   true, not what you would like: the value is how a reader learns which
   services anyone on the LAN can use. Check it by requesting the service
   anonymously.
+- A Pangolin endpoint with `authentication = "none"` is open to the whole
+  internet and draws a warning until `publicReason` says why (the personal
+  website, calsync's legal pages). An nginx endpoint is private and needs no
+  reason.
 - `clientMaxBodySize` for uploads above nginx's 1M default (nginx only).
 - Read URLs as `config.yomi.web.at.<name>.url`. Set `yomi.nginx.at` directly
   only to serve static files.
