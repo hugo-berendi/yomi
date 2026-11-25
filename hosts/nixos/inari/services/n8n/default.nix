@@ -11,6 +11,7 @@ in {
   imports = [./workflows.nix];
 
   config = {
+    warnings = lib.optional (!hasNtfyToken) "n8n_ntfy_token is not in inari's secrets.yaml: n8n and the monitoring watchdog send alerts to ntfy without a token, and ntfy refuses them with 403.";
     # {{{ Ports
     yomi.ports = {
       n8n = 8438;

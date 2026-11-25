@@ -43,6 +43,8 @@ in {
     }
   ];
 
+  warnings = lib.optional (!hasBudgetPassword) "actual_budget_password is not in inari's secrets.yaml: the Actual bridge downloads the budget without a password, which fails for an end-to-end encrypted budget.";
+
   # {{{ Secrets
   # The session token is a row in Actual's own sessions table, owned by the
   # budget owner and never expiring; deleting that row revokes the bridge
