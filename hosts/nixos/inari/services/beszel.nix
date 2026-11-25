@@ -1,11 +1,10 @@
 {config, ...}: let
   port = config.yomi.ports.beszel;
 in {
-  # {{{ Ports and reachability
+  # {{{ Ports
   yomi.ports = {
     beszel = 8406;
   };
-  yomi.network.exposure.beszel.interface = "br0";
   # }}}
   # {{{ Service
   # The hub reaches inari's own agent over SSH at 127.0.0.1:45876. That
