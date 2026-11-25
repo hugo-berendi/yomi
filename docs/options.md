@@ -5447,10 +5447,13 @@ true
 
 ## yomi\.web\.at\.\<name>\.authentication
 
-Who authenticates requests; none deliberately permits anonymous access\.
+Who authenticates requests: the application itself, Pangolin’s SSO
+(` gateway `, Pangolin transport), the host’s oauth2-proxy in front of
+nginx (` proxy `, nginx transport), or nobody (` none `, deliberately
+anonymous)\.
 
 *Type:*
-one of “application”, “gateway”, “none”
+one of “application”, “gateway”, “proxy”, “none”
 
 *Declared by:*
  - [modules/nixos/web\.nix](../modules/nixos/web.nix)

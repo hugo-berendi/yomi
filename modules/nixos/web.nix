@@ -32,8 +32,13 @@ in {
           description = "Transport responsible for this endpoint's publication and DNS.";
         };
         authentication = lib.mkOption {
-          type = lib.types.enum ["application" "gateway" "none"];
-          description = "Who authenticates requests; none deliberately permits anonymous access.";
+          type = lib.types.enum ["application" "gateway" "proxy" "none"];
+          description = ''
+            Who authenticates requests: the application itself, Pangolin's SSO
+            (`gateway`, Pangolin transport), the host's oauth2-proxy in front of
+            nginx (`proxy`, nginx transport), or nobody (`none`, deliberately
+            anonymous).
+          '';
         };
         publicReason = lib.mkOption {
           type = lib.types.nullOr lib.types.str;
@@ -86,6 +91,10 @@ in {
       {
         assertion = e.authentication != "gateway" || e.transport == "pangolin";
         message = "Web ${e.host}: gateway authentication requires the Pangolin transport.";
+      }
+      {
+        assertion = e.authentication != "proxy" || (e.transport == "nginx" && config.services.oauth2-proxy.enable);
+        message = "Web ${e.host}: authentication = \"proxy\" needs the nginx transport and services.oauth2-proxy on this host (inari: services/oauth2-proxy).";
       }
       {
         assertion = !e.enableAnubis || e.transport == "pangolin";

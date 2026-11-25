@@ -33,7 +33,9 @@ Declare everything the service needs in its own file:
 - `transport = "nginx"` serves the LAN only. `"pangolin"` also publishes the
   service on the internet through ebisu.
 - `authentication` says who checks requests: `"application"` (its own
-  login), `"gateway"` (Pangolin SSO; Pangolin only) or `"none"`. Write what is
+  login), `"gateway"` (Pangolin SSO; Pangolin only), `"proxy"` (Pocket ID
+  through oauth2-proxy in front of nginx; nginx only, see
+  `oauth2-proxy/default.nix`) or `"none"`. Write what is
   true, not what you would like: the value is how a reader learns which
   services anyone on the LAN can use. Check it by requesting the service
   anonymously.

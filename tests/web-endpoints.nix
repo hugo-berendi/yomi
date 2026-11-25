@@ -29,6 +29,10 @@
     yomi.expose.enable = lib.mkForce false;
   };
   disabled = extend {yomi.web.at.web-fixture = fixture "pangolin" // {enable = false;};};
+  # authentication = "proxy": nginx asks oauth2-proxy first; Pangolin cannot.
+  proxied = extend {yomi.web.at.web-fixture = fixture "nginx" // {authentication = "proxy";};};
+  proxiedOverPangolin = extend {yomi.web.at.web-fixture = fixture "pangolin" // {authentication = "proxy";};};
+  signsIn = c: name: lib.hasInfix "auth_request /oauth2/auth;" (c.services.nginx.virtualHosts.${c.yomi.web.at.${name}.host}.extraConfig or "");
   checks = [
     (valid nginx && nginx.yomi.nginx.at.web-fixture.port == 19250 && !(nginx.yomi.expose.at ? web-fixture))
     (valid pangolin && pangolin.yomi.expose.at.web-fixture.port == 19250 && !(pangolin.yomi.nginx.at ? web-fixture))
@@ -58,7 +62,9 @@
       && live.services.immich.settings.server.externalDomain == "https://immich-share.hugo-berendi.de"
       && !(live.yomi.expose.at ? immich))
     (!(disabled.yomi.expose.at ? web-fixture))
+    (valid proxied && signsIn proxied "web-fixture" && !signsIn nginx "web-fixture")
+    (!valid proxiedOverPangolin)
   ];
 in
   assert lib.all (result: result) checks;
-    pkgs.writeText "web-endpoint-checks" "Passed transport selection, explicit auth, staged activation and gateway DNS checks."
+    pkgs.writeText "web-endpoint-checks" "Passed transport selection, explicit auth, proxy sign-in, staged activation and gateway DNS checks."

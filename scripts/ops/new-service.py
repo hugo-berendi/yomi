@@ -27,7 +27,8 @@ TEMPLATE = """\
   yomi.web.at.{name} = {{
     # nginx: LAN only. pangolin: also reachable from outside, through ebisu.
     transport = "nginx";
-    # Who checks requests: application, gateway (Pangolin SSO) or none.
+    # Who checks requests: application, gateway (Pangolin SSO), proxy
+    # (Pocket ID in front of nginx) or none.
     authentication = "application";
     monitor.enable = true;
     # A tile on the homepage dashboard; group is one of `groups` in

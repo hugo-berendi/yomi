@@ -42,7 +42,9 @@ entries share a number, and the message names both.
   gateway and the newt connector on inari.
 - `authentication`: who checks requests. `application` means the service has
   its own login; `gateway` means Pangolin's SSO does (Pangolin transport
-  only); `none` deliberately allows anonymous access. A Pangolin endpoint with
+  only); `proxy` means nginx sends the browser through Pocket ID first, with
+  oauth2-proxy (nginx transport only; inari's `services/oauth2-proxy`);
+  `none` deliberately allows anonymous access. A Pangolin endpoint with
   `none` is open to the whole internet, so it draws a warning until
   `publicReason` says why.
 
