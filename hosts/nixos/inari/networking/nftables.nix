@@ -75,9 +75,8 @@ in {
   warnings = lib.optional (inertFirewallPorts != []) ''
     networking.firewall is disabled on this host, so these ports opened via
     allowedTCPPorts/allowedUDPPorts reach nothing: ${lib.concatMapStringsSep ", " toString (lib.unique inertFirewallPorts)}.
-    A service setting openFirewall = true here has no effect. Add an explicit yomi.network.exposure grant in
-    hosts/nixos/inari/networking/nftables.nix
-    if it really should be reachable from the LAN.
+    A service setting openFirewall = true here has no effect. If it really should be reachable from
+    the LAN, grant it with yomi.network.exposure.<name> in the service's own file.
   '';
 
   networking = {
