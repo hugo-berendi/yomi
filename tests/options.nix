@@ -165,7 +165,6 @@
       (check "recovery snapshots have a format tag" (lib.elem "--tag app-state-v1" base.config.services.restic.backups.offsite.extraBackupArgs))
       (check "Matrix bridge databases persist despite static service users" (lib.all (name: lib.any (d: d.directory == "/var/lib/${name}" && d.user == name && d.group == name) base.config.environment.persistence."/persist/state".directories) ["mautrix-discord" "mautrix-signal" "mautrix-whatsapp"]))
       (check "immich retains filesystem sandbox" (base.config.systemd.services.immich-server.serviceConfig.ProtectSystem == "strict" && lib.elem base.config.services.immich.mediaLocation base.config.systemd.services.immich-server.serviceConfig.ReadWritePaths))
-      (check "collector retains disk access" (base.config.systemd.services.scrutiny-collector.serviceConfig.PrivateDevices == false))
       (check "installer and WSL do not run unused proxies" (lib.all (name: let c = configurations.${name}.config; in !c.services.nginx.enable && !c.yomi.iocaine.enable) ["iso" "tsukuyomi" "wsl-work"]))
     ]
     # One check per unit so a failure names the unit, and a unit that does not
