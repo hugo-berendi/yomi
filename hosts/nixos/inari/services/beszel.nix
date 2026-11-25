@@ -1,5 +1,39 @@
-{config, ...}: let
+{
+  config,
+  lib,
+  outputs,
+  pkgs,
+  ...
+}: let
   port = config.yomi.ports.beszel;
+  hub = config.services.beszel.hub;
+
+  # {{{ Systems
+  # Every host that runs the agent (profiles/services/beszel-agent.nix),
+  # except the installer image, which runs it only while it is booted.
+  # The hub syncs this list on every start: it creates a missing system and
+  # deletes one that is not listed, history included. A system matches by
+  # name, host and port, so changing any of them starts it from scratch.
+  fleet = lib.filterAttrs (name: host: name != "iso" && (host.config.yomi.beszel-agent.enable or false)) outputs.nixosConfigurations;
+  systems =
+    lib.mapAttrsToList (name: _: {
+      inherit name;
+      # The hub reaches inari's own agent over SSH. The others cannot be
+      # reached by name from here; their agents connect to the hub instead.
+      host =
+        if name == config.networking.hostName
+        then "127.0.0.1"
+        else name;
+      # The agent's default listen port.
+      port = 45876;
+      # The hub tells agents apart by token. Each host appends its name to the
+      # fleet's shared token, as its agent does.
+      token = "${config.sops.placeholder.beszel_agent_token}-${name}";
+      # Must name an existing Beszel user, or the hub refuses to start.
+      users = [config.yomi.pilot.email];
+    })
+    fleet;
+  # }}}
 in {
   # {{{ Ports
   yomi.ports = {
@@ -7,10 +41,6 @@ in {
   };
   # }}}
   # {{{ Service
-  # The hub reaches inari's own agent over SSH at 127.0.0.1:45876. That
-  # address is kept in the hub's database (system "inari"), not here: it was
-  # inari's Tailscale address until Tailscale was retired on 2026-11-20, and
-  # the hub showed inari as down until the address was changed on 2026-11-24.
   services.beszel.hub = {
     enable = true;
     host = "127.0.0.1";
@@ -18,10 +48,23 @@ in {
     dataDir = "/var/lib/beszel-hub";
     environment = {
       BESZEL_HUB_APP_URL = "https://monitoring.hugo-berendi.de";
-      BESZEL_HUB_AUTO_LOGIN = "personal@hugo-berendi.de";
+      BESZEL_HUB_AUTO_LOGIN = config.yomi.pilot.email;
       DISABLE_PASSWORD_AUTH = "true";
       USER_CREATION = "true";
     };
+  };
+
+  # The hub reads beszel_data/config.yml when it starts. It holds the
+  # tokens, so it comes from a sops template; the hub's dynamic user reads
+  # it as a credential and copies it into place.
+  sops.templates."beszel-hub-config.yml" = {
+    # YAML parsers read JSON.
+    content = builtins.toJSON {inherit systems;};
+    restartUnits = ["beszel-hub.service"];
+  };
+  systemd.services.beszel-hub.serviceConfig = {
+    LoadCredential = ["config.yml:${config.sops.templates."beszel-hub-config.yml".path}"];
+    ExecStartPre = lib.mkBefore ["${pkgs.coreutils}/bin/install -D -m 0600 %d/config.yml ${hub.dataDir}/beszel_data/config.yml"];
   };
   # }}}
   # {{{ Networking
