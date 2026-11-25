@@ -45,9 +45,10 @@ Declare everything the service needs in its own file:
 - Read URLs as `config.yomi.web.at.<name>.url`. Set `yomi.nginx.at` directly
   only to serve static files.
 - `homepage` puts a tile linking to the endpoint on the dashboard at
-  `lab.<domain>`. `group` is one of the groups laid out in
-  `homepage/default.nix` (Tooling, Media, Entertainment); tiles sort by name
-  within it. `icon` takes homepage-dashboard's names (`jellyfin.svg`,
+  `lab.<domain>`. `group` is one of the groups laid out in `groups` in
+  `homepage/default.nix`, and evaluation lists them when it is not; tiles
+  sort by name within it. The option is declared there too, so it exists
+  only on inari. `icon` takes homepage-dashboard's names (`jellyfin.svg`,
   `mdi-<name>`, `si-<name>`). An optional `widget` is passed through; use
   `http://127.0.0.1:<port>` for its `url` and a `{{HOMEPAGE_VAR_<NAME>}}`
   placeholder for an API key, whose value goes in the `homepage_env` secret.

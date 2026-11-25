@@ -30,7 +30,8 @@ TEMPLATE = """\
     # Who checks requests: application, gateway (Pangolin SSO) or none.
     authentication = "application";
     monitor.enable = true;
-    # A tile on the homepage dashboard; groups: Tooling, Media, Entertainment.
+    # A tile on the homepage dashboard; group is one of `groups` in
+    # services/homepage/default.nix.
     homepage = {{
       group = "Tooling";
       name = "{name}";

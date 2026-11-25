@@ -517,7 +517,7 @@ list of string matching the pattern \[A-Z]{2}
 *Default:*
 
 ```nix
-[ ]
+config.yomi.expose.allowedCountries
 ```
 
 *Declared by:*
@@ -5405,6 +5405,7 @@ attribute set of (submodule)
 
 *Declared by:*
  - [modules/nixos/web\.nix](../modules/nixos/web.nix)
+ - [hosts/nixos/inari/services/homepage](../hosts/nixos/inari/services/homepage)
 
 ## yomi\.web\.at\.\<name>\.enable
 
@@ -5526,9 +5527,8 @@ string
 
 ## yomi\.web\.at\.\<name>\.homepage
 
-Tile linking to this endpoint on the host’s homepage dashboard
-(` services.homepage-dashboard `); null leaves it off\. The
-dashboard sorts tiles by name within their group\.
+Tile linking to this endpoint on inari’s homepage dashboard; null
+leaves it off\. The dashboard sorts tiles by name within their group\.
 
 *Type:*
 null or (submodule)
@@ -5540,7 +5540,7 @@ null
 ```
 
 *Declared by:*
- - [modules/nixos/web\.nix](../modules/nixos/web.nix)
+ - [hosts/nixos/inari/services/homepage](../hosts/nixos/inari/services/homepage)
 
 ## yomi\.web\.at\.\<name>\.homepage\.description
 
@@ -5550,14 +5550,14 @@ Line under the tile title\.
 string
 
 *Declared by:*
- - [modules/nixos/web\.nix](../modules/nixos/web.nix)
+ - [hosts/nixos/inari/services/homepage](../hosts/nixos/inari/services/homepage)
 
 ## yomi\.web\.at\.\<name>\.homepage\.group
 
-Dashboard group; the dashboard rejects a group it does not lay out\.
+Dashboard group: one of the groups laid out in ` groups ` in services/homepage/default\.nix\.
 
 *Type:*
-string
+one of “Tooling”, “Media”, “Entertainment”
 
 *Example:*
 
@@ -5566,7 +5566,7 @@ string
 ```
 
 *Declared by:*
- - [modules/nixos/web\.nix](../modules/nixos/web.nix)
+ - [hosts/nixos/inari/services/homepage](../hosts/nixos/inari/services/homepage)
 
 ## yomi\.web\.at\.\<name>\.homepage\.icon
 
@@ -5582,7 +5582,7 @@ string
 ```
 
 *Declared by:*
- - [modules/nixos/web\.nix](../modules/nixos/web.nix)
+ - [hosts/nixos/inari/services/homepage](../hosts/nixos/inari/services/homepage)
 
 ## yomi\.web\.at\.\<name>\.homepage\.name
 
@@ -5598,7 +5598,7 @@ string
 ```
 
 *Declared by:*
- - [modules/nixos/web\.nix](../modules/nixos/web.nix)
+ - [hosts/nixos/inari/services/homepage](../hosts/nixos/inari/services/homepage)
 
 ## yomi\.web\.at\.\<name>\.homepage\.widget
 
@@ -5614,7 +5614,7 @@ null
 ```
 
 *Declared by:*
- - [modules/nixos/web\.nix](../modules/nixos/web.nix)
+ - [hosts/nixos/inari/services/homepage](../hosts/nixos/inari/services/homepage)
 
 ## yomi\.web\.at\.\<name>\.host
 
@@ -5831,7 +5831,7 @@ list of string matching the pattern \[A-Z]{2}
 *Default:*
 
 ```nix
-[ ]
+config.yomi.expose.allowedCountries
 ```
 
 *Declared by:*

@@ -7,6 +7,7 @@ in {
   allowedCountries = mkOption {
     type = types.listOf (types.strMatching "[A-Z]{2}");
     default = allowedCountries;
+    defaultText = lib.literalExpression "config.yomi.expose.allowedCountries";
     description = "Country allowlist; permitted countries pass to authentication, all other and unknown countries are denied.";
   };
   hostHeader = mkOption {

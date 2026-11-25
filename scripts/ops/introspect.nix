@@ -119,7 +119,7 @@ in {
       inherit (e) url transport authentication;
       monitor = e.monitor.enable;
       homepage =
-        if e.homepage == null
+        if (e.homepage or null) == null
         then null
         else "${e.homepage.group}/${e.homepage.name}";
     });

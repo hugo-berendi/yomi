@@ -57,12 +57,12 @@ blockedASNs,healthCheck,additionalTargets,…}`. `url` is read-only.
 `homepage = { group; name; icon; description; widget; }` puts a tile on
 inari's homepage dashboard (`lab.<domain>`) that links to the endpoint's
 `url`. The dashboard (`hosts/nixos/inari/services/homepage/default.nix`)
-collects every tile, sorts each group by name, and fails evaluation for a
-group it does not lay out. A `widget` is passed to homepage-dashboard
+declares the option, collects every tile and sorts each group by name;
+`group` must name a group it lays out. A `widget` is passed to homepage-dashboard
 unchanged; its API keys come from `{{HOMEPAGE_VAR_*}}` placeholders filled
 from the `homepage_env` secret. Tiles that are not an endpoint of their own,
-such as an external site, are listed in the dashboard's file. A tile on a
-host without a dashboard draws a warning.
+such as an external site, are listed in the dashboard's file. The option
+exists only on a host that runs the dashboard.
 
 `yomi.web.at` writes `yomi.nginx.at` or `yomi.expose.at`. Set
 `yomi.nginx.at` directly only to serve static files (`files`), as the two
