@@ -59,7 +59,6 @@ in {
   # Private access through Pangolin, like Navidrome.
   # Reachable without a login from the LAN.
   yomi.web.at.audiomuse = {
-    inherit port;
     transport = "nginx";
     authentication = "none";
   };

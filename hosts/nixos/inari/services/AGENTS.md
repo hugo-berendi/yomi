@@ -18,7 +18,7 @@ Declare everything the service needs in its own file:
 | Need | Write | Notes |
 |---|---|---|
 | a port | `yomi.ports.<name> = 85xx;` | `new-service` picks a free one; a clash fails evaluation |
-| a web UI or API | `yomi.web.at.<name> = { port; transport; authentication; };` | see below |
+| a web UI or API | `yomi.web.at.<name> = { transport; authentication; };` | `port` defaults to `yomi.ports.<name>`; see below |
 | a health check | `monitor.enable = true;` in that entry | Gatus picks it up |
 | LAN access to a raw port | `yomi.network.exposure.<name>.interface = "br0";` | `br0` and `scope = "lan"` only |
 | access from outside the LAN | `yomi.expose.private.<name>` or `yomi.expose.tcp/udp.<name>` | Pangolin, through ebisu |

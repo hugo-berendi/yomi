@@ -5981,10 +5981,16 @@ list of string
 
 ## yomi\.web\.at\.\<name>\.port
 
-HTTP application port\.
+HTTP application port; defaults to the registry entry of the same name\.
 
 *Type:*
 16 bit unsigned integer; between 0 and 65535 (both inclusive)
+
+*Default:*
+
+```nix
+config.yomi.ports.<name>
+```
 
 *Declared by:*
  - [modules/nixos/web\.nix](../modules/nixos/web.nix)

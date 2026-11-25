@@ -104,7 +104,6 @@ in {
       ];
       # {{{ Private web service
       yomi.web.at.diabetes = {
-        port = config.yomi.ports.diabetes;
         transport = "nginx";
         authentication = "application";
         # Exports from the meter and CGM apps exceed nginx's 1M default.

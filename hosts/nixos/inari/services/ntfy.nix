@@ -12,7 +12,6 @@ in {
   # }}}
   # {{{ Reverse proxy
   yomi.web.at.ntfy = {
-    inherit port;
     transport = "pangolin";
     authentication = "application";
     pangolin.healthCheck = {

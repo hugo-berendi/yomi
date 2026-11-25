@@ -20,13 +20,11 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 
 TEMPLATE = """\
 # {name}: TODO one line on what this is and who uses it.
-{{config, ...}}: let
-  port = config.yomi.ports.{name};
-in {{
+{{config, ...}}: {{
   # {{{{{{ Ports and reachability
   yomi.ports.{name} = {port};
+  # The endpoint's port defaults to yomi.ports.{name}.
   yomi.web.at.{name} = {{
-    inherit port;
     # nginx: LAN only. pangolin: also reachable from outside, through ebisu.
     transport = "nginx";
     # Who checks requests: application, gateway (Pangolin SSO) or none.
@@ -37,6 +35,8 @@ in {{
   # {{{{{{ Service
   services.{name} = {{
     enable = true;
+    # Use the module's own name for its listen port.
+    port = config.yomi.ports.{name};
   }};
   # }}}}}}
   # {{{{{{ State

@@ -11,7 +11,6 @@
   };
   # }}}
   yomi.web.at.karakeep = {
-    port = config.yomi.ports.karakeep;
     transport = "nginx";
     authentication = "application";
     monitor.enable = true;

@@ -6,7 +6,6 @@
   # }}}
   # {{{ Reverse proxy
   yomi.web.at.mealie = {
-    port = config.yomi.ports.mealie;
     transport = "nginx";
     authentication = "application";
   };

@@ -15,7 +15,6 @@ in {
   # }}}
   # {{{ Reverse proxy
   yomi.web.at.audiobookshelf = {
-    inherit port;
     transport = "pangolin";
     authentication = "application";
     pangolin = {

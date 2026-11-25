@@ -17,7 +17,6 @@ in {
   # and search engines reach it.
   yomi.web.at.hugo-berendi-de = {
     subdomain = "";
-    port = config.yomi.ports.hugo-berendi-de;
     transport = "pangolin";
     authentication = "none";
     pangolin.allowedCountries = [];

@@ -15,7 +15,6 @@ in {
   # }}}
   # Reachable without a login from the LAN.
   yomi.web.at.suwayomi = {
-    port = config.yomi.ports.suwayomi;
     transport = "nginx";
     authentication = "none";
   };

@@ -6,7 +6,6 @@
   # }}}
   # {{{ Reverse proxy
   yomi.web.at.paperless = {
-    port = config.yomi.ports.paperless;
     transport = "nginx";
     authentication = "application";
     monitor.enable = true;

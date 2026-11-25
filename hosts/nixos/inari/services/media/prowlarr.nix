@@ -6,7 +6,6 @@
   # }}}
   # {{{ reverse proxy
   yomi.web.at.prowlarr = {
-    port = config.yomi.ports.prowlarr;
     transport = "nginx";
     authentication = "application";
     monitor.enable = true;

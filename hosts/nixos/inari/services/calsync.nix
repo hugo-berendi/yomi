@@ -98,7 +98,6 @@ in {
   };
   # }}}
   yomi.web.at.calsync = {
-    inherit port;
     transport = "pangolin";
     authentication = "none";
     pangolin.allowedCountries = [];

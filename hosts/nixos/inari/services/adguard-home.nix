@@ -13,7 +13,6 @@
   # AdGuard Home answers its control API without a login: anyone on the LAN
   # can change DNS filtering.
   yomi.web.at.adguard = {
-    port = config.yomi.ports.adguard;
     transport = "nginx";
     authentication = "none";
     monitor.enable = true;

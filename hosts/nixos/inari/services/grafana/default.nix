@@ -198,7 +198,6 @@ in {
   # }}}
   # {{{ Networking & persistence
   yomi.web.at.grafana = {
-    inherit port;
     transport = "nginx";
     authentication = "application";
     monitor.enable = true;

@@ -6,7 +6,6 @@
   # }}}
   # {{{ reverse proxy
   yomi.web.at.bazarr = {
-    port = config.yomi.ports.bazarr;
     transport = "nginx";
     authentication = "application";
     monitor.enable = true;

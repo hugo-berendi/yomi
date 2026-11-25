@@ -1,4 +1,4 @@
-{config, ...}: {
+_: {
   # {{{ Ports
   yomi.ports = {
     sonarr = 8989;
@@ -8,7 +8,6 @@
   # Authentication is off: /initialize.json hands the API key to anyone on
   # the LAN.
   yomi.web.at.sonarr = {
-    port = config.yomi.ports.sonarr;
     transport = "nginx";
     authentication = "none";
     monitor.enable = true;

@@ -7,7 +7,6 @@
   # {{{ Reverse proxy
   # The identity provider must remain reachable before gateway login.
   yomi.web.at.pocket-id = {
-    port = config.yomi.ports.pocket-id;
     subdomain = "auth";
     transport = "pangolin";
     authentication = "application";

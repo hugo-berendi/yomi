@@ -13,7 +13,7 @@ in {
   options.yomi.web.at = lib.mkOption {
     default = {};
     description = "HTTP endpoints with one selected transport and explicit authentication ownership.";
-    type = lib.types.attrsOf (lib.types.submodule {
+    type = lib.types.attrsOf (lib.types.submodule ({name, ...}: {
       imports = [
         (import ./lib/endpoint.nix {
           inherit lib;
@@ -23,7 +23,9 @@ in {
       options = {
         port = lib.mkOption {
           type = lib.types.port;
-          description = "HTTP application port.";
+          default = config.yomi.ports.${name};
+          defaultText = lib.literalExpression "config.yomi.ports.<name>";
+          description = "HTTP application port; defaults to the registry entry of the same name.";
         };
         transport = lib.mkOption {
           type = lib.types.enum ["nginx" "pangolin"];
@@ -65,7 +67,7 @@ in {
           };
         };
       };
-    });
+    }));
   };
 
   config = {

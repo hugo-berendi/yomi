@@ -8,7 +8,6 @@
   # Authentication is off: /initialize.json hands the API key to anyone on
   # the LAN.
   yomi.web.at.radarr = {
-    port = config.yomi.ports.radarr;
     transport = "nginx";
     authentication = "none";
     monitor.enable = true;

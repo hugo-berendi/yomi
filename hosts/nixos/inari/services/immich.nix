@@ -25,7 +25,6 @@ in {
   # }}}
   # {{{ Reverse proxy
   yomi.web.at.immich = {
-    port = config.yomi.ports.immich;
     transport = "nginx";
     authentication = "application";
     monitor.enable = true;

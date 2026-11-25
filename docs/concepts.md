@@ -43,7 +43,8 @@ entries share a number, and the message names both.
   its own login; `gateway` means Pangolin's SSO does (Pangolin transport
   only); `none` deliberately allows anonymous access.
 
-Other settings: `host` (default `<subdomain>.<domain>`), `subdomain`, `port`,
+`port` defaults to the `yomi.ports` entry of the same name. Other settings:
+`host` (default `<subdomain>.<domain>`), `subdomain`,
 `protocol`, `proxyAddress`, `dns.{enable,zone,name}`,
 `monitor.{enable,name,group,path,interval,conditions}` for Gatus,
 `clientMaxBodySize` (nginx only), and for Pangolin `enableAnubis` and
