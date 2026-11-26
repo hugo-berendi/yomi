@@ -322,8 +322,8 @@ Two guards exist now, because neither alone was enough:
 
 ## Workflows that call a model
 
-Mail classification (the retired `inbox-organizer` workflow, see git history, and
-`backfill.py`) uses the small llama.cpp defined in
+Mail classification (the retired `inbox-organizer` workflow, see git history)
+used the small llama.cpp defined in
 `hosts/nixos/inari/services/llama-cpp/classifier.nix`, reached through
 `CLASSIFIER_URL` in `services.n8n.environment`. If you add another
 model-using workflow, read that module's comment first: it records which

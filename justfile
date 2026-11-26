@@ -494,19 +494,3 @@ security-audit host=hostname services="":
     fi
   fi
 # }}}
-
-[doc("Classify the existing mailbox the way the retired inbox-organizer workflow did")]
-[group("nix")]
-n8n-backfill *args:
-  #!/usr/bin/env bash
-  set -euo pipefail
-
-  # Read-only and resumable, so interrupting it is free. It prompts for the
-  # IMAP password rather than reading a secret: this walks a personal
-  # mailbox once, and a sops entry for it would be a permanent key to that
-  # mailbox living in a repository mirrored to a public forge.
-  #
-  # Start with `just n8n-backfill --estimate-only` to see how much work it is
-  # before committing an evening to it.
-  exec nix develop -c python3 \
-    hosts/nixos/inari/services/n8n/backfill.py {{args}}
