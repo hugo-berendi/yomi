@@ -20,6 +20,18 @@
     // {
       ".copilot/skills" = builtins.attrNames (pkgs.lib.filterAttrs (_: skill: pkgs.lib.elem "codex" skill.harnesses && pkgs.lib.elem "opencode" skill.harnesses) skills);
     };
+  # The guest's agents get the Linux test policy in every harness's global
+  # instructions, with the installer the pilot's Home Manager uses. The legacy
+  # markers are the blocks earlier guest setups wrote.
+  guestInstructions = pkgs.writeText "guest-instructions.json" (builtins.toJSON {
+    files = pkgs.lib.genAttrs [".codex/AGENTS.md" ".claude/CLAUDE.md" ".config/opencode/AGENTS.md" ".copilot/copilot-instructions.md" ".gemini/GEMINI.md"] (_: [
+      {
+        name = "linux-test";
+        text = builtins.readFile ../home/features/cli/ai/instructions/linux-test.md;
+      }
+    ]);
+    legacy = ["MANAGED SKILL USAGE" "LINUX TESTING"];
+  });
   helpers = pkgs.runCommand "t3code-test-helpers" {} ''
     mkdir -p "$out/bin" "$out/lib" "$out/share"
     cp -r ${../scripts/ops/t3code_workspace} "$out/lib/t3code_workspace"
@@ -31,8 +43,8 @@
       chmod +x "$out/bin/$tool"
     done
     ln -s ${inputs.skills}/skills "$out/share/agent-skills"
-    cp ${../home/features/cli/ai/linux-test-policy.txt} "$out/share/linux-test-policy.txt"
-    cp ${../home/features/cli/ai/install-skill-instructions.py} "$out/share/install-skill-instructions.py"
+    cp ${guestInstructions} "$out/share/guest-instructions.json"
+    cp ${../home/features/cli/ai/install-instructions.py} "$out/share/install-instructions.py"
     cp ${../hosts/nixos/inari/services/t3code/vm/rpc.mjs} "$out/share/rpc.mjs"
     cp ${pkgs.writeText "guest-skill-targets.json" (builtins.toJSON targets)} "$out/share/skill-targets.json"
   '';

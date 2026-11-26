@@ -99,6 +99,14 @@ in
       python3 tests/test_zfs_capacity.py
       touch $out
     '';
+    agent-instructions =
+      pkgs.runCommand "agent-instructions-tests" {
+        nativeBuildInputs = [pkgs.python3];
+        AGENT_INSTRUCTIONS_INSTALLER = ../home/features/cli/ai/install-instructions.py;
+      } ''
+        python3 ${../tests/test_agent_instructions.py}
+        touch $out
+      '';
     backup-monitoring = import ../tests/backup-monitoring.nix {
       inherit pkgs;
       rules = self.nixosConfigurations.inari.config.services.grafana.provision.alerting.rules.settings;

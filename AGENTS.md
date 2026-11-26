@@ -188,7 +188,7 @@ this file. Names differ between harnesses: match the list you were given.
 ## Lessons from earlier sessions
 
 The cases and evidence are in `evals/agent-reliability/README.md`; the shared
-policy is `home/features/cli/ai/agent-reliability-policy.md`.
+policy is `home/features/cli/ai/instructions/reliability.md`.
 
 - Use `nix develop -c just …` when `just` is not on PATH. Inspect a missing
   test wrapper's dependencies before retrying it. Keep heavy tests in the

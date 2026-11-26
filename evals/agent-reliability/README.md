@@ -58,12 +58,10 @@ preference. The evals test future behavior, not whether every historical action
 violated instructions that existed at the time.
 
 The shared policy is
-[`home/features/cli/ai/agent-reliability-policy.md`](../../home/features/cli/ai/agent-reliability-policy.md).
-`skills.nix` includes it in the existing managed skill instructions, so subsequent
-Home Manager activation retains it. The installed Codex and Claude global files
-were updated immediately, preserving their other managed blocks and permissions.
-The OpenCode global AGENTS file now points to this policy; its Nix-managed
-instructions also include it.
+[`home/features/cli/ai/instructions/reliability.md`](../../home/features/cli/ai/instructions/reliability.md).
+`instructions.nix` beside it writes it as the `reliability` block into every
+harness's global instruction file on each Home Manager activation, preserving
+the files' other text and permissions.
 
 Focused additions were made to all four user-owned project AGENTS files found:
 Yomi, website-astro, w-seminar, and carpool-planer. Yomi's CLAUDE.md is a symlink to
@@ -83,7 +81,7 @@ node evaluate.mjs self-test
 
 # Candidate inputs omit the rubric, findings and negative control.
 node evaluate.mjs export > /tmp/reliability-baseline.jsonl
-node evaluate.mjs export ../../home/features/cli/ai/agent-reliability-policy.md > /tmp/reliability-updated.jsonl
+node evaluate.mjs export ../../home/features/cli/ai/instructions/reliability.md > /tmp/reliability-updated.jsonl
 ```
 
 Run each exported scenario in a **fresh isolated candidate session** under the same

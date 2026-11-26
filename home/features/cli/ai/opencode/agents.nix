@@ -1,8 +1,10 @@
-{osConfig ? null, ...}: let
-  budgetInstructions =
-    if osConfig != null && osConfig.networking.hostName == "inari"
-    then builtins.readFile ../delegation-policy.md
-    else "";
+{
+  config,
+  lib,
+  ...
+}: let
+  delegation = config.yomi.ai.instructions.delegation;
+  budgetInstructions = lib.optionalString delegation.enable delegation.text;
 in {
   programs.opencode.settings = {
     # {{{ Agent Configuration

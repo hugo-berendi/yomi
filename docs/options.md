@@ -6261,6 +6261,118 @@ absolute path
 
 # Home Manager
 
+## yomi\.ai\.installInstructions
+
+Writes the enabled blocks; ` just ai-sync ` runs it without a switch\.
+
+*Type:*
+package *(read only)*
+
+*Default:*
+a script that writes the enabled blocks
+
+*Declared by:*
+ - [home/features/cli/ai/instructions\.nix](../home/features/cli/ai/instructions.nix)
+
+## yomi\.ai\.instructionFiles
+
+Each harness’s global instruction file, relative to the home directory\.
+
+*Type:*
+attribute set of string *(read only)*
+
+*Default:*
+
+```nix
+{
+  claude-code = ".claude/CLAUDE.md";
+  codex = ".codex/AGENTS.md";
+  copilot = ".copilot/copilot-instructions.md";
+  gemini = ".gemini/GEMINI.md";
+  opencode = ".config/opencode/AGENTS.md";
+}
+```
+
+*Declared by:*
+ - [home/features/cli/ai/instructions\.nix](../home/features/cli/ai/instructions.nix)
+
+## yomi\.ai\.instructions
+
+Blocks written into each harness’s global instruction file\.
+
+*Type:*
+attribute set of (submodule)
+
+*Default:*
+
+```nix
+{ }
+```
+
+*Declared by:*
+ - [home/features/cli/ai/instructions\.nix](../home/features/cli/ai/instructions.nix)
+
+## yomi\.ai\.instructions\.\<name>\.enable
+
+Whether to write this block\.
+
+*Type:*
+boolean
+
+*Default:*
+
+```nix
+true
+```
+
+*Declared by:*
+ - [home/features/cli/ai/instructions\.nix](../home/features/cli/ai/instructions.nix)
+
+## yomi\.ai\.instructions\.\<name>\.harnesses
+
+Harnesses whose instruction file gets the block\.
+
+*Type:*
+list of (one of “claude-code”, “codex”, “copilot”, “gemini”, “opencode”)
+
+*Default:*
+
+```nix
+[
+  "claude-code"
+  "codex"
+  "copilot"
+  "gemini"
+  "opencode"
+]
+```
+
+*Declared by:*
+ - [home/features/cli/ai/instructions\.nix](../home/features/cli/ai/instructions.nix)
+
+## yomi\.ai\.instructions\.\<name>\.source
+
+Markdown source of the block; may name models as ` @provider.role@ `\.
+
+*Type:*
+absolute path
+
+*Declared by:*
+ - [home/features/cli/ai/instructions\.nix](../home/features/cli/ai/instructions.nix)
+
+## yomi\.ai\.instructions\.\<name>\.text
+
+The block as written, with model names filled in\.
+
+*Type:*
+string *(read only)*
+
+*Default:*
+the rendered ` source `
+
+*Declared by:*
+ - [home/features/cli/ai/instructions\.nix](../home/features/cli/ai/instructions.nix)
+
 ## yomi\.ai\.mcp
 
 Shared MCP server configurations for AI coding assistants
@@ -6292,6 +6404,23 @@ attribute set
 
 *Declared by:*
  - [home/features/cli/ai/mcp\.nix](../home/features/cli/ai/mcp.nix)
+
+## yomi\.ai\.models
+
+Models by provider and role\. Instruction blocks name them as
+` @provider.role@ `; the subagent definitions and wrappers read them here\.
+
+*Type:*
+attribute set of attribute set of string
+
+*Default:*
+
+```nix
+{ }
+```
+
+*Declared by:*
+ - [home/features/cli/ai/instructions\.nix](../home/features/cli/ai/instructions.nix)
 
 ## yomi\.monitors
 

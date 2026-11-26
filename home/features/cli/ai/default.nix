@@ -11,6 +11,7 @@
     ./codex.nix
     ./efficient-agents.nix
     ./skills.nix
+    ./instructions.nix
   ];
   # }}}
   # {{{ Packages

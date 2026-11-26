@@ -6,6 +6,7 @@
   ...
 }: let
   foundryResource = import ./foundry.nix;
+  models = config.yomi.ai.models.claude;
   claudeCode = import ./claude-code-package.nix {inherit inputs pkgs;};
   foundry = pkgs.writeShellApplication {
     name = "claude-foundry";
@@ -24,12 +25,13 @@
       export ANTHROPIC_FOUNDRY_RESOURCE=${foundryResource.resource}
       ANTHROPIC_FOUNDRY_API_KEY="$(cat "$key_file")"
       export ANTHROPIC_FOUNDRY_API_KEY
-      export ANTHROPIC_MODEL=claude-opus-5-5
+      export ANTHROPIC_MODEL=${models.main}
       # Foundry deployment names, not Anthropic ids. Every alias must name a
       # deployment that exists, or subagents and background calls 404.
-      export ANTHROPIC_DEFAULT_OPUS_MODEL=claude-opus-5-5
-      export ANTHROPIC_DEFAULT_SONNET_MODEL=claude-sonnet-5-5
-      export ANTHROPIC_DEFAULT_HAIKU_MODEL=claude-haiku-5-5
+      # Foundry aliases go by family; yomi.ai.models names roles.
+      export ANTHROPIC_DEFAULT_OPUS_MODEL=${models.main}
+      export ANTHROPIC_DEFAULT_SONNET_MODEL=${models.review}
+      export ANTHROPIC_DEFAULT_HAIKU_MODEL=${models.cheap}
       export ANTHROPIC_SMALL_FAST_MODEL="$ANTHROPIC_DEFAULT_HAIKU_MODEL"
       exec ${lib.getExe claudeCode} "$@"
     '';

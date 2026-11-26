@@ -2,8 +2,8 @@
 
 Keep the user's current main model. Use cheaper subagents for genuinely separate, bounded tasks: finding relevant files, short documentation lookups, log triage, mechanical changes with a clear acceptance check, and targeted tests. Do a trivial one-step task or dependent sequence yourself; spawning extra agents is not automatically cheaper.
 
-- Codex: use the fast_task role or GPT-6 Luna at low reasoning for routine delegated work. The configured subagent default is gpt-6-luna. Do difficult diagnosis, architecture, security decisions and final review in the parent; explicitly choose a stronger model only for a substantial independent task.
-- Claude Code: use fast-task (Haiku) for routine work and quick-review (Sonnet) for a bounded review needing more reasoning. Do not send complex planning to Haiku. These workers explicitly select claude-haiku-5-5 and claude-sonnet-5-5 on the direct Claude provider.
+- Codex: use the fast_task role (@codex.cheap@ at @codex.cheapEffort@ reasoning) for routine delegated work; it is also the configured subagent default. Do difficult diagnosis, architecture, security decisions and final review in the parent; explicitly choose a stronger model only for a substantial independent task.
+- Claude Code: use fast-task (@claude.cheap@) for routine work and quick-review (@claude.review@) for a bounded review needing more reasoning. Do not send complex planning to fast-task.
 - Copilot CLI: use Auto for routine work when the provider is available. Do not silently substitute an expensive model if it is unavailable.
 - T3 Code: always delegate through the T3 orchestrator (`orchestrator_capabilities`, then `delegate_task`, tracked with `task_status`), never through a harness-native subagent tool. For cheap routine work select the Copilot provider and its Auto model; there is no local model on inari any more.
 - Give each child a small scope, relevant paths, constraints and an observable completion check. Send only necessary context. Start with one worker; use a second only for independent work that justifies its extra usage. Avoid nested delegation and duplicate investigations.

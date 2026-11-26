@@ -79,17 +79,7 @@ for directory, names in json.loads((share / 'skill-targets.json').read_text()).i
             link.unlink()
         if not link.exists():
             link.symlink_to(share / 'agent-skills' / name)
-subprocess.run(['python3', str(share / 'install-skill-instructions.py'), str(home), str(share / 'linux-test-policy.txt')], check=True)
-target = home / '.config/opencode/AGENTS.md'
-target.parent.mkdir(parents=True, exist_ok=True)
-policy = (share / 'linux-test-policy.txt').read_text()
-begin, end = '<!-- BEGIN LINUX TESTING -->', '<!-- END LINUX TESTING -->'
-old = target.read_text() if target.exists() else ''
-if begin in old:
-    first, rest = old.split(begin, 1)
-    _, last = rest.split(end, 1)
-    old = first + last
-target.write_text(old.rstrip() + '\\n\\n' + begin + '\\n' + policy + end + '\\n')
+subprocess.run(['python3', str(share / 'install-instructions.py'), str(home), str(share / 'guest-instructions.json')], check=True)
 """,
         ],
     )
