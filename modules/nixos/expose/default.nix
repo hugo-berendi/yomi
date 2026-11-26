@@ -9,7 +9,6 @@
   format = pkgs.formats.yaml {};
   enabled = lib.filterAttrs (_: e: e.enable);
   web = enabled cfg.at;
-  private = enabled cfg.private;
   raw = protocol:
     lib.mapAttrsToList (name: e: {
       inherit name protocol;
@@ -17,7 +16,8 @@
     }) (enabled cfg.${protocol});
   rawEntries = raw "tcp" ++ raw "udp";
   prefix = name: "${config.networking.hostName}-${name}";
-  inherit (import ./private-resources.nix {inherit lib;}) allowed privateResource privateAssertions;
+  # SSO without a user or role list would let every Pangolin account in.
+  allowed = e: e.users != [] || e.roles != [];
   backend = e: target:
     target
     // lib.optionalAttrs e.healthCheck.enable {
@@ -121,9 +121,6 @@
           ];
         })
       rawEntries);
-    "private-resources" = lib.mapAttrs' (name: e:
-      lib.nameValuePair (prefix "private-${name}") (privateResource name e))
-    private;
   };
 in {
   imports = [./endpoints.nix ./server.nix ./anubis.nix];
@@ -176,8 +173,8 @@ in {
 
   config = lib.mkMerge [
     {
-      # Stable's Newt 1.12 cannot implement the exit-node resources supported
-      # by Pangolin 1.24. Keep the NixOS service and use the pinned newer client.
+      # Stable's Newt 1.12 lags far behind the gateway's Pangolin (1.27).
+      # Keep the NixOS service and use unstable's client.
       services.newt.package = lib.mkDefault upkgs.fosrl-newt;
       system.build.exposeBlueprint = format.generate "${config.networking.hostName}-pangolin.yaml" cfg.blueprint;
       assertions =
@@ -189,15 +186,10 @@ in {
           assertion = (!e.enableAnubis || e.additionalTargets == []) && (e.allowAuthBypass || !lib.any (r: r.action == "allow") e.rules) && (e.allowedCountries == [] || lib.all (r: r.action == "deny") e.rules);
           message = "Expose ${e.host}: Anubis needs one backend; allow requires allowAuthBypass; country allowlists may only be combined with custom deny rules to prevent geography bypass.";
         }) (lib.attrValues web))
-        ++ lib.concatLists (lib.mapAttrsToList privateAssertions private)
         ++ [
           {
             assertion = lib.all (e: !lib.elem "Admin" e.roles) (lib.attrValues web);
             message = "Pangolin's Admin role is implicit and must not be listed in SSO roles.";
-          }
-          {
-            assertion = !lib.any (e: e.mode == "exit-node") (lib.attrValues private) || lib.versionAtLeast config.services.newt.package.version "1.18.0";
-            message = "Pangolin exit nodes require Newt 1.18.0 or newer.";
           }
         ];
     }

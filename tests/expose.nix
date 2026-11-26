@@ -56,32 +56,6 @@
         publicPort = 25566;
       };
       udp.game.port = 25566;
-      private = {
-        ssh = {
-          destination = "127.0.0.1";
-          alias = "ssh.ebisu.internal";
-          tcpPorts = [22];
-          users = ["owner@example.com"];
-        };
-        exit = {
-          mode = "exit-node";
-          users = ["owner@example.com"];
-        };
-        web-native = {
-          mode = "http";
-          fullDomain = "tool.hugo-berendi.de";
-          destination = "127.0.0.1";
-          destinationPort = 8080;
-          labels = ["Internal tools"];
-          users = ["owner@example.com"];
-        };
-        ai = {
-          mode = "inference";
-          fullDomain = "models.hugo-berendi.de";
-          machines = ["build-agent"];
-          aiProviders = [{provider = "local-models";}];
-        };
-      };
     };
   };
   gateway = site:
@@ -110,7 +84,6 @@
     }).config;
   blueprint = config.yomi.expose.blueprint;
   public = blueprint.public-resources;
-  private = blueprint.private-resources;
   server = (gateway fixture).config;
   rejects = configuration: lib.any (a: !a.assertion) configuration.config.assertions;
   checks = [
@@ -210,51 +183,6 @@
       assertion = !(public ? ebisu-web-disabled) && public.ebisu-tcp-game.proxy-port == 25566 && !(public.ebisu-tcp-game ? auth) && !((builtins.head public.ebisu-udp-game.targets) ? method);
     }
     {
-      name = "Private SSH grants only TCP 22 and exit nodes omit ignored port restrictions";
-      assertion = private.ebisu-private-ssh.alias == "ssh.ebisu.internal" && private.ebisu-private-ssh.tcp-ports == "22" && private.ebisu-private-ssh.udp-ports == "" && private.ebisu-private-ssh.disable-icmp && !(private.ebisu-private-exit ? destination) && !(private.ebisu-private-exit ? tcp-ports);
-    }
-    {
-      name = "Private HTTP and AI gateway use their native Pangolin blueprint fields";
-      assertion = let
-        http = private.ebisu-private-web-native;
-        ai = private.ebisu-private-ai;
-      in
-        http.mode
-        == "http"
-        && http.full-domain == "tool.hugo-berendi.de"
-        && http.destination-port == 8080
-        && http.scheme == "http"
-        && http.ssl
-        && http.labels == ["Internal tools"]
-        && !(http ? tcp-ports)
-        && ai.mode == "inference"
-        && ai.machines == ["build-agent"]
-        && (builtins.head ai.ai-providers).provider == "local-models"
-        && !(ai ? destination)
-        && !(ai ? tcp-ports);
-    }
-    {
-      name = "Forgejo keeps the OpenSSH target, alias, port and pilot access in SSH mode";
-      assertion = let
-        inari = self.nixosConfigurations.inari.config;
-        forgejo = inari.yomi.expose.blueprint.private-resources.inari-private-forgejo-ssh;
-      in
-        forgejo.mode
-        == "ssh"
-        && forgejo.auth-daemon
-        == {
-          mode = "site";
-          pam = "passthrough";
-        }
-        && forgejo.alias == inari.services.forgejo.settings.server.SSH_DOMAIN
-        && forgejo.destination == "127.0.0.1"
-        && forgejo.destination-port == 22
-        && forgejo.tcp-ports == "22"
-        && forgejo.udp-ports == ""
-        && forgejo.disable-icmp
-        && forgejo.users == [inari.yomi.pilot.email];
-    }
-    {
       name = "Same TCP/UDP port can coexist and both reach firewall and Traefik";
       assertion = lib.all (a: a.assertion) server.assertions && lib.elem 25566 server.networking.firewall.allowedTCPPorts && lib.elem 25566 server.networking.firewall.allowedUDPPorts && server.services.traefik.staticConfigOptions.entryPoints.tcp-25566.address == ":25566/tcp" && server.services.traefik.staticConfigOptions.entryPoints.udp-25566.address == ":25566/udp";
     }
@@ -264,28 +192,20 @@
     }
     {
       name = "Missing access lists are rejected";
-      assertion = rejects (extend {yomi.expose.at.unrestricted.port = 8080;}) && rejects (extend {yomi.expose.private.unrestricted.destination = "127.0.0.1";});
+      assertion = rejects (extend {yomi.expose.at.unrestricted.port = 8080;});
     }
     {
       name = "Activation uses a runtime credential file and DNS bypasses the Cloudflare proxy";
       assertion = lib.all (a: a.assertion) active.assertions && active.services.newt.enable && active.systemd.services.newt.serviceConfig.EnvironmentFile == "/run/secrets/newt.env" && lib.any (record: record.at == "web" && !record.enableCloudflareProxy) active.yomi.dns.records && active.networking.firewall.allowedTCPPorts == [22];
     }
     {
-      name = "Store credentials and misleading exit-node restrictions are rejected";
-      assertion =
-        rejects (extend {
-          yomi.expose = {
-            enable = true;
-            environmentFile = "/nix/store/secret.env";
-          };
-        })
-        && rejects (extend {
-          yomi.expose.private.exit = {
-            mode = "exit-node";
-            tcpPorts = [443];
-            users = ["owner@example.com"];
-          };
-        });
+      name = "Store credentials are rejected";
+      assertion = rejects (extend {
+        yomi.expose = {
+          enable = true;
+          environmentFile = "/nix/store/secret.env";
+        };
+      });
     }
     {
       name = "Duplicate raw listeners and reserved gateway ports are rejected";

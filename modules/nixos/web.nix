@@ -47,8 +47,8 @@ in {
           description = ''
             Why this endpoint lets anyone on the internet in without a login.
             A Pangolin endpoint with `authentication = "none"` draws a warning
-            until this says why; an nginx endpoint is private (LAN and
-            Pangolin private resources) and needs no reason.
+            until this says why; an nginx endpoint is private (the LAN and
+            NetBird devices) and needs no reason.
           '';
         };
         clientMaxBodySize = lib.mkOption {

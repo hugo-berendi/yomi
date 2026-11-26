@@ -90,12 +90,5 @@ in {
       default = {};
       description = "Unauthenticated public UDP port forwards, for example game and query ports.";
     };
-    private = mkOption {
-      default = {};
-      description = "Client-only resources; no public listener is created.";
-      type = types.attrsOf (types.submodule {
-        options = access // import ./private-options.nix {inherit lib;};
-      });
-    };
   };
 }
