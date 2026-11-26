@@ -1,7 +1,6 @@
 {
   config,
   pkgs,
-  upkgs,
   ...
 }: {
   # {{{ Imports
@@ -38,7 +37,6 @@
     pkgs.libfido2 # fido2-token, for diagnostics
     pkgs.yubikey-manager # ykman: OpenPGP PINs and touch policies, PIV
     pkgs.age-plugin-yubikey # sops' PIV recipient
-    (upkgs.callPackage ../../../pkgs/pangolin-cli-bin.nix {})
   ];
 
   # The OpenPGP and PIV applets are reached through pcscd, which ykman and

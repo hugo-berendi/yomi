@@ -39,12 +39,6 @@
       };
     };
   };
-  yomi.expose.private.media = {
-    destination = "127.0.0.1";
-    alias = "media.inari.internal";
-    tcpPorts = [config.yomi.ports.jellyfin];
-    users = [config.yomi.pilot.email];
-  };
   # }}}
   # {{{ Secrets
   sops.secrets.jellyfin_oidc_secret = {

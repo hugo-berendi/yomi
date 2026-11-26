@@ -21,12 +21,6 @@ in {
       };
     };
     # }}}
-    yomi.expose.private.windrose-admin = {
-      destination = "127.0.0.1";
-      alias = "windrose.inari.internal";
-      tcpPorts = [rconPort];
-      users = [config.yomi.pilot.email];
-    };
     virtualisation.oci-containers.containers.windrose = {
       image = (import ../images.nix).windrose;
       ports = ["${toString serverPort}:8489/tcp" "${toString serverPort}:8489/udp" "${toString rconPort}:${toString rconPort}/tcp"];

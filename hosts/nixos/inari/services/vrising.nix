@@ -3,16 +3,11 @@
   lib,
   ...
 }: {
-  # Game clients connect to Ebisu; RCON remains private.
+  # Game clients connect to Ebisu. RCON gets no grant, so it is reached
+  # through SSH: `ssh -L 25575:127.0.0.1:25575 inari.hugo-berendi.de`.
   yomi.expose.udp = lib.mkIf config.services.vrising.enable {
     vrising.port = config.services.vrising.gamePort;
     vrising-query.port = config.services.vrising.queryPort;
-  };
-  yomi.expose.private.vrising-rcon = lib.mkIf config.services.vrising.enable {
-    destination = "127.0.0.1";
-    alias = "rcon.inari.internal";
-    tcpPorts = [config.services.vrising.rconPort];
-    users = [config.yomi.pilot.email];
   };
 
   services.vrising = {

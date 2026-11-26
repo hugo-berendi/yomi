@@ -21,7 +21,7 @@ file:
 | an HTTP endpoint | `yomi.web.at.<name>` |
 | a tile on the homepage dashboard | `yomi.web.at.<name>.homepage` |
 | LAN access to a raw port | `yomi.network.exposure.<name>` |
-| a Pangolin private resource or raw TCP/UDP forward | `yomi.expose.private`, `yomi.expose.tcp`, `yomi.expose.udp` |
+| a raw public TCP/UDP forward through Pangolin | `yomi.expose.tcp`, `yomi.expose.udp` |
 | persisted state | `yomi.persistence.at.<location>.apps.<name>` |
 | off-site backup of data outside persistence | `yomi.restic.offsite.paths` |
 | secrets | `sops.secrets.*` with an explicit `sopsFile` |
@@ -98,11 +98,9 @@ NetBird server (`hosts/nixos/ebisu/netbird.nix`), inari is its routing peer
 same ports as `br0`. Routes, the exit node and access policies are set in
 NetBird's dashboard.
 
-Pangolin still provides private access too, until its private resources are
-removed: `yomi.expose.private.<name>` defines a client resource (`mode` host,
-cidr, http, ssh, inference or exit-node; `destination`, `alias`, `tcpPorts`,
-`udpPorts`, `users`, `roles`). `yomi.expose.tcp` / `yomi.expose.udp` forward a
-raw public port.
+Pangolin carries only public traffic: the Pangolin endpoints of
+`yomi.web.at`, and raw public ports forwarded with `yomi.expose.tcp` /
+`yomi.expose.udp`.
 
 ## Persistence and backups
 

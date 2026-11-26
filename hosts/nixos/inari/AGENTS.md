@@ -52,7 +52,7 @@ itself, inside a user service. Services live in `services/`; read
   defaults to the address in `profiles/inventory.nix`. Away from home,
   NetBird devices reach the same address through inari as routing peer
   (`services/netbird.nix`); its interface gets the LAN's ports in
-  `nftables.nix`. Pangolin's private resources still work as well.
+  `nftables.nix`. Pangolin carries only the public sites.
 
 ## State
 

@@ -28,8 +28,8 @@
   gatewayName = gatewayConfig.networking.hostName;
   publicWeb = throughGateway && enabled config.yomi.expose.at != {};
   publicRaw = throughGateway && config.yomi.expose.listeners != [];
-  privateResources = lib.attrValues (enabled config.yomi.expose.private);
-  privateModes = lib.unique (map (e: e.mode) privateResources);
+  # NetBird devices reach inari through ebisu's NetBird and get the LAN's ports.
+  netbird = config.services.netbird.enable && throughGateway && gatewayConfig.systemd.services ? netbird-server;
   lanWeb = config.yomi.nginx.enable && enabled config.yomi.nginx.at != {};
   listenerText = lib.concatMapStringsSep ", " (e: "${lib.toUpper e.protocol} ${toString e.port}") config.yomi.expose.listeners;
   rawNames = lib.concatStringsSep ", " (lib.attrNames (enabled config.yomi.expose.tcp // enabled config.yomi.expose.udp));
@@ -40,11 +40,11 @@
       label = "Internet";
       zone = "access";
     }
-    ++ lib.optional (throughGateway && privateResources != []) {
+    ++ lib.optional netbird {
       id = "client";
       label = "VPN-Client";
       zone = "access";
-      detail = "Pangolin-Client";
+      detail = "NetBird";
     }
     ++ lib.optional lanWeb {
       id = "lan";
@@ -69,6 +69,12 @@
         label = "Gerbil";
         zone = gatewayName;
         detail = "WireGuard-Endpunkt";
+      }
+      ++ lib.optional netbird {
+        id = "netbird";
+        label = "NetBird";
+        zone = gatewayName;
+        detail = "Anmeldung · Relay";
       }
     )
     ++ lib.optional config.services.newt.enable {
@@ -96,11 +102,11 @@
       zone = config.networking.hostName;
       detail = rawNames;
     }
-    ++ lib.optional (throughGateway && privateResources != []) {
-      id = "private";
-      label = "Private Ziele";
+    ++ lib.optional netbird {
+      id = "netbird-peer";
+      label = "NetBird";
       zone = config.networking.hostName;
-      detail = "${toString (builtins.length privateResources)} Ressourcen";
+      detail = "Routing-Peer · Exit Node";
     };
   graphEdges =
     [
@@ -134,15 +140,26 @@
       }
       {
         from = "client";
-        to = "gerbil";
-        label = "UDP 21820";
-        kind = "tunnel";
+        to = "netbird";
+        label = "Anmeldung · Relay TCP 443";
+        kind = "control";
       }
       {
         from = "client";
-        to = "pangolin";
-        label = "Anmeldung";
-        kind = "control";
+        to = "netbird-peer";
+        label = "WireGuard direkt";
+        kind = "tunnel";
+      }
+      {
+        from = "netbird";
+        to = "netbird-peer";
+        label = "Relay";
+        kind = "tunnel";
+      }
+      {
+        from = "netbird-peer";
+        to = "nginx";
+        label = "HTTPS 443";
       }
       {
         from = "lan";
@@ -165,12 +182,6 @@
         from = "newt";
         to = "raw";
         label = "TCP/UDP";
-      }
-      {
-        from = "newt";
-        to = "private";
-        label = lib.concatStringsSep " · " privateModes;
-        kind = "tunnel";
       }
     ];
   nodeIds = map (node: node.id) graphNodes;
