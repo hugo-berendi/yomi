@@ -24,6 +24,15 @@
   # are peers.
   netbird = config.services.netbird.enable;
   netbirdInterface = config.services.netbird.clients.default.interface;
+  # Plus DNS: NetBird hands its devices dnsmasq on inari's LAN address, and
+  # AdGuard behind it, as nameserver. The LAN itself keeps the FRITZ!Box's
+  # resolver; dnsmasq stays closed on br0.
+  netbirdTcpPorts = lib.concatMapStringsSep ", " toString (
+    lib.unique (baseTcpPorts ++ lanTcpServicePorts ++ [53])
+  );
+  netbirdUdpPorts = lib.concatMapStringsSep ", " toString (
+    lib.unique (baseUdpPorts ++ lanUdpServicePorts ++ [53])
+  );
 
   # networking.firewall is disabled below, so allowedTCPPorts and
   # allowedUDPPorts reach nothing: every `openFirewall = true` in modules/nixos
@@ -112,8 +121,8 @@ in {
             iifname "br0" ip6 nexthdr ipv6-icmp accept comment "Allow LAN IPv6 diagnostics"
             ${lib.optionalString netbird ''
             iifname "${netbirdInterface}" ct state { established, related } accept comment "Allow established NetBird traffic"
-            iifname "${netbirdInterface}" meta l4proto tcp th dport { ${lanTcpPorts} } accept comment "NetBird peers get the LAN's TCP services"
-            iifname "${netbirdInterface}" meta l4proto udp th dport { ${lanUdpPorts} } accept comment "NetBird peers get the LAN's UDP services"
+            iifname "${netbirdInterface}" meta l4proto tcp th dport { ${netbirdTcpPorts} } accept comment "NetBird peers get the LAN's TCP services and DNS"
+            iifname "${netbirdInterface}" meta l4proto udp th dport { ${netbirdUdpPorts} } accept comment "NetBird peers get the LAN's UDP services and DNS"
             iifname "${netbirdInterface}" ip protocol icmp accept comment "Allow NetBird IPv4 diagnostics"
           ''}
             iifname {"docker0", "br-pelican", "br-changedet", "veth*"} accept comment "Allow Docker to router"
@@ -162,8 +171,8 @@ in {
               type filter hook prerouting priority -150; policy accept;
               iifname != "${netbirdInterface}" accept
               ct state { established, related } accept
-              fib daddr type local meta l4proto tcp th dport { ${lanTcpPorts} } accept comment "NetBird peers get the LAN's TCP services"
-              fib daddr type local meta l4proto udp th dport { ${lanUdpPorts} } accept comment "NetBird peers get the LAN's UDP services"
+              fib daddr type local meta l4proto tcp th dport { ${netbirdTcpPorts} } accept comment "NetBird peers get the LAN's TCP services and DNS"
+              fib daddr type local meta l4proto udp th dport { ${netbirdUdpPorts} } accept comment "NetBird peers get the LAN's UDP services and DNS"
               fib daddr type local ip protocol icmp accept comment "Allow NetBird IPv4 diagnostics"
               fib daddr type local drop
               fib daddr oifname "br0" accept comment "NetBird peers to LAN and uplink"
