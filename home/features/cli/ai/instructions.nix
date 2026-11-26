@@ -136,6 +136,7 @@ in {
       };
       linux-test.source = ./instructions/linux-test.md;
       reliability.source = ./instructions/reliability.md;
+      pull-requests.source = ./instructions/pull-requests.md;
       # Enabled by ./efficient-agents.nix on the hosts that route subagents.
       delegation = {
         source = ./instructions/delegation.md;
