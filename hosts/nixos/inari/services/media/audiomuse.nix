@@ -39,6 +39,11 @@
     extraOptions = ["--network=container:audiomuse-postgres"];
   };
 in {
+  # {{{ Ports
+  yomi.ports = {
+    audiomuse = 8521;
+  };
+  # }}}
   # AudioMuse-AI analyses every song in Navidrome by its sound (tempo,
   # energy, mood) and answers "more like this". Its Navidrome plugin feeds
   # that into Instant Mix and artist radio, which Symfonium uses with
@@ -52,7 +57,11 @@ in {
 
   # {{{ Reverse proxy
   # Private access through Pangolin, like Navidrome.
-  yomi.nginx.at.audiomuse.port = port;
+  # Reachable without a login from the LAN.
+  yomi.web.at.audiomuse = {
+    transport = "nginx";
+    authentication = "none";
+  };
   # }}}
   # {{{ Containers
   # One network namespace, like a pod: the database's container owns it,

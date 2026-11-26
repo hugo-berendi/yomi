@@ -39,8 +39,19 @@
     alerts = mailAlert name;
   };
 in {
-  yomi.nginx.at = (lib.genAttrs ["paperless" "immich" "lab" "karakeep" "radarr" "sonarr" "bazarr" "prowlarr" "torrent" "music" "cal" "pdf" "prometheus" "adguard" "monitoring" "budget"] (_: {monitor.enable = true;})) // {status.port = port;};
+  # {{{ Ports
+  yomi.ports = {
+    gatus = 8494;
+  };
+  # }}}
   # {{{ Reverse proxy
+  # Which endpoints Gatus checks is decided by each service, with
+  # monitor.enable on its yomi.web.at entry.
+  yomi.web.at.status = {
+    inherit port;
+    transport = "nginx";
+    authentication = "none";
+  };
   # }}}
   # {{{ Secrets
   sops.secrets.gatus_env = {

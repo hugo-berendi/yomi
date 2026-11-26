@@ -62,7 +62,9 @@ in {
     };
 
     at = lib.mkOption {
-      description = "Per-subdomain nginx configuration";
+      # Services publish HTTP through yomi.web.at, which writes these entries.
+      # Set one directly only to serve static files (`files`).
+      description = "Per-subdomain nginx configuration, written by yomi.web.at; set directly only for static files.";
       default = {};
 
       type = lib.types.attrsOf (lib.types.submodule ({...}: {

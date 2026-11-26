@@ -1,5 +1,5 @@
 {config, ...}: let
-  inherit (import ../../common/inventory.nix) inari;
+  inherit (import ../../../../profiles/inventory.nix) inari;
 in {
   # Backups of /persist/data and /persist/state, pushed over sftp to a
   # dedicated, chrooted account on inari (see hosts/nixos/inari/services/restic/default.nix).

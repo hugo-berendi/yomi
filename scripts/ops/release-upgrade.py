@@ -15,13 +15,13 @@ import fcntl
 import hashlib
 import json
 import os
-from pathlib import Path
 import re
 import secrets
 import subprocess
 import sys
 import tempfile
 import time
+from pathlib import Path
 from urllib.request import urlopen
 
 FORMAT = 1
@@ -142,6 +142,7 @@ def verify_signature(document, signature, allowed_signers):
             input=document,
             capture_output=True,
             timeout=TIMEOUT["verify"],
+            check=False,
         )
     if result.returncode != 0:
         raise Rejected("Release signature does not verify against the pinned key")

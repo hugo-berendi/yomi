@@ -6,6 +6,11 @@
   port = config.yomi.ports.healthchecks;
   endpoint = config.yomi.web.at.ping;
 in {
+  # {{{ Ports
+  yomi.ports = {
+    healthchecks = 8497;
+  };
+  # }}}
   # {{{ Reverse proxy
   yomi.web.at.ping = {
     inherit port;

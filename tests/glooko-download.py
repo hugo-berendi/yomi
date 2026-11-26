@@ -2,13 +2,12 @@
 
 import importlib.util
 import os
-from pathlib import Path
 import sys
 import tempfile
+from pathlib import Path
 from unittest.mock import patch
 
 from playwright.sync_api import Browser, BrowserType
-
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_SOURCE = ROOT / "hosts/nixos/inari/services/diabetes"
@@ -21,7 +20,7 @@ sys.modules[spec.name] = glooko
 spec.loader.exec_module(glooko)
 
 CSV = b"Type,Timestamp,Glucose (mg/dL)\ncgm,2020-01-02T03:04:05Z,123\n"
-HTML = """<!doctype html><html><body>
+HTML = f"""<!doctype html><html><body>
 <a id="open">Export to CSV</a><div id="dialog" role="dialog" hidden>
 <h1>Als CSV exportieren</h1>
 <div id="range"> <span>2</span><span>Wochen</span></div>
@@ -32,17 +31,17 @@ let selectedDays = 14;
 const dialog = document.querySelector('#dialog'), range = document.querySelector('#range');
 document.querySelector('#open').onclick = () => dialog.hidden = false;
 range.onclick = () => document.querySelector('#menu').hidden = false;
-document.querySelector('#thirty').onclick = () => {
+document.querySelector('#thirty').onclick = () => {{
   selectedDays = 30; range.innerHTML = '<span>30</span><span>Tage</span>';
   document.querySelector('#menu').hidden = true;
-};
-document.querySelector('#export').onclick = () => {
+}};
+document.querySelector('#export').onclick = () => {{
   if (selectedDays !== 30) return;
-  const url = URL.createObjectURL(new Blob([%s], {type: 'text/csv'}));
+  const url = URL.createObjectURL(new Blob([{repr(CSV.decode())}], {{type: 'text/csv'}}));
   const link = document.createElement('a'); link.href = url; link.download = 'export.csv';
   link.click();
-};
-</script></body></html>""" % repr(CSV.decode())
+}};
+</script></body></html>"""
 
 LOGIN_HTML = HTML.replace(
     '<a id="open">',
@@ -114,7 +113,7 @@ def main():
             payload = glooko.download_export(credentials, root=root, allow_login=False)
             # Exercise the unattended sync entry point, not just a browser helper.
             # A normal expired session may log in once; a challenge must pause.
-            from app import init_db, database, get_state
+            from app import database, get_state, init_db
 
             scheduled = root / "scheduled"
             init_db(scheduled)

@@ -44,7 +44,7 @@ def timestamp(value, zone="UTC", date_order="day-first"):
         if result is None:
             raise ValueError(
                 "Unrecognized timestamp; use ISO 8601 or a supported date format"
-            )
+            ) from None
     if result.tzinfo is None:
         tz = ZoneInfo(zone)
         first, second = (
@@ -318,7 +318,9 @@ def weekly_summary(readings, boluses, start, end, low=70, high=180):
         else None
     )
     selected_boluses = [
-        dict(timestamp=t, units=v, carbs=c) for t, v, c in boluses if start <= t < end
+        {"timestamp": t, "units": v, "carbs": c}
+        for t, v, c in boluses
+        if start <= t < end
     ]
     # These are associations with high-episode starts, never meal detection.
     review = []

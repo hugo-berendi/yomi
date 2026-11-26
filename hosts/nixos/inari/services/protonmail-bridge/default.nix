@@ -67,13 +67,24 @@
     sslVersionMin = "TLSv1.2";
   };
 in {
+  # {{{ Ports
+  yomi.ports = {
+    # Bridge's own defaults. It keeps its ports in its vault, not on the
+    # command line, so moving these also needs `change port` in its CLI.
+    protonmail-bridge-imap = 1143;
+    protonmail-bridge-smtp = 1025;
+    # Loopback hand-off between nginx and the stunnel STARTTLS clients.
+    proton-imap-relay = 8506;
+    proton-smtp-relay = 8507;
+  };
+  # }}}
   # {{{ Service
   # Proton has no IMAP of its own. Bridge decrypts locally and serves IMAP and
   # SMTP on 127.0.0.1 with STARTTLS. It runs here so the Proton sorter can
   # reach the mailbox and other devices get it over Pangolin without a
   # Bridge of their own.
   #
-  # One-time, after the first switch (see docs/proton-mail-sorter.md):
+  # One-time, after the first switch (see ../proton-mail-sorter/README.md):
   #   sudo protonmail-bridge-setup
   #     login     Proton password + 2FA
   #     info      the Bridge username/password that clients and the sorter use

@@ -1,8 +1,7 @@
 import importlib.util
-from pathlib import Path
 import sqlite3
 import unittest
-
+from pathlib import Path
 
 MODULE_PATH = Path(__file__).with_name("quarantine.py")
 SPEC = importlib.util.spec_from_file_location("diabetes_quarantine", MODULE_PATH)

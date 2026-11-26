@@ -420,6 +420,32 @@ dns-clear zoneid bearerfile="/run/secrets/cloudflare_dns_api_token":
 
   print("🚀 All done!")
 # }}}
+# {{{ Repository tools
+[doc("Regenerate docs/options.md from the option declarations")]
+[group("nix")]
+docs:
+  cp --no-preserve=mode "$(nix build --no-link --print-out-paths .#options-doc)" docs/options.md
+
+[doc("Start a service on a host: one file in its services/, a free port, staged")]
+[group("nix")]
+new-service name host=hostname:
+  nix develop -c python3 scripts/ops/new-service.py {{name}} --host {{host}}
+
+[doc("List every file that sets an option, e.g. just where yomi.web.at.mealie.port")]
+[group("nix")]
+where option host=hostname:
+  nix develop -c python3 scripts/ops/introspect.py where {{option}} --host {{host}}
+
+[doc("Show what one service brings to a host: ports, endpoints, units, secrets, state")]
+[group("nix")]
+explain service host=hostname:
+  nix develop -c python3 scripts/ops/introspect.py explain {{service}} --host {{host}}
+
+[doc("Compare what this working tree builds with a base revision, ignoring store hashes")]
+[group("nix")]
+parity *args:
+  nix develop -c python3 scripts/ops/parity.py {{args}}
+# }}}
 # {{{ Security
 [doc("Report evaluated service sandbox settings; use --json to save a baseline or --baseline FILE to compare")]
 [group("security")]

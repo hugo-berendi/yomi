@@ -3,6 +3,11 @@
   upkgs,
   ...
 }: {
+  # {{{ Ports
+  yomi.ports = {
+    actual = 8512;
+  };
+  # }}}
   imports = [./bridge.nix];
 
   # {{{ Reverse proxy
@@ -11,8 +16,11 @@
   # runs in a secure context). The Enable Banking redirect
   # (https://budget.<domain>/enablebanking/auth_callback) is a browser
   # redirect, so it works as long as the browser itself can reach this host.
-  yomi.nginx.at.budget = {
+  yomi.web.at.budget = {
     port = config.yomi.ports.actual;
+    transport = "nginx";
+    authentication = "application";
+    monitor.enable = true;
     proxyAddress = "127.0.0.1";
     # nginx defaults to 1M. Actual accepts encrypted sync files up to 50 MB
     # (ACTUAL_UPLOAD_SYNC_ENCRYPTED_FILE_SYNC_SIZE_LIMIT_MB); a budget with a
@@ -22,7 +30,7 @@
   # The client long-polls this while the user approves the login at the bank;
   # the server holds it for up to POLL_TIMEOUT_MS (300 s). nginx's default 60 s
   # cut off every Sparkasse pushTAN approval with a 504.
-  services.nginx.virtualHosts.${config.yomi.nginx.at.budget.host}.locations."/enablebanking/poll-auth" = {
+  services.nginx.virtualHosts.${config.yomi.web.at.budget.host}.locations."/enablebanking/poll-auth" = {
     proxyPass = "http://127.0.0.1:${toString config.yomi.ports.actual}";
     extraConfig = "proxy_read_timeout 310s;";
   };
@@ -53,7 +61,7 @@
       openId = {
         discoveryURL = "${config.yomi.web.at.pocket-id.url}/.well-known/openid-configuration";
         client_id = "e73eccb5-a6ae-4db9-974e-4dc795cda925";
-        server_hostname = config.yomi.nginx.at.budget.url;
+        server_hostname = config.yomi.web.at.budget.url;
         authMethod = "openid";
       };
     };
@@ -76,7 +84,7 @@
   # }}}
   # {{{ Storage
   # DynamicUser state lives in /var/lib/private/actual, which
-  # hosts/nixos/common/persistence.nix persists as a whole. The restic
+  # profiles/persistence.nix persists as a whole. The restic
   # app-state set takes a consistent copy of account.sqlite.
   # }}}
 }

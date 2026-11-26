@@ -10,7 +10,7 @@
   imports = [
     "${modulesPath}/installer/cd-dvd/installation-cd-minimal.nix"
 
-    ../common/profiles/recovery.nix
+    ../../../profiles/recovery.nix
   ];
   # }}}
 

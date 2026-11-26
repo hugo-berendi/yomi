@@ -2,16 +2,17 @@
 """Report active n8n workflow execution failures without reading payloads."""
 
 import argparse
-from datetime import datetime, timezone
-from zoneinfo import ZoneInfo
-from pathlib import Path
-from urllib.parse import quote
+import contextlib
 import json
 import os
 import sqlite3
 import sys
+from datetime import datetime, timezone
+from pathlib import Path
 from urllib.error import URLError
+from urllib.parse import quote
 from urllib.request import Request, urlopen
+from zoneinfo import ZoneInfo
 
 FAILED = {"error", "crashed"}
 
@@ -193,10 +194,8 @@ def main(argv=None):
             post_event(args.webhook, event)
         handle_recovery(args.state, now)
     except (OSError, sqlite3.Error, URLError, RuntimeError, KeyError, ValueError):
-        try:
+        with contextlib.suppress(OSError, URLError, RuntimeError, KeyError, ValueError):
             handle_unavailable(args.state, now)
-        except (OSError, URLError, RuntimeError, KeyError, ValueError):
-            pass
         print("n8n execution monitor failed", file=sys.stderr)
         return 1
     return 0

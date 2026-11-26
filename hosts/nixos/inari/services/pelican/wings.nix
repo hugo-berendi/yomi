@@ -15,6 +15,15 @@
     restartUnits = ["wings.service"];
   };
 in {
+  # {{{ Ports and reachability
+  yomi.ports = {
+    pelican-node1 = 8448;
+  };
+  yomi.network.exposure.pelican-node1 = {
+    interface = "br0";
+    service = "wings";
+  };
+  # }}}
   sops.secrets = {
     pelican_wings_uuid = nodeSecret;
     pelican_wings_token_id = nodeSecret;
@@ -120,8 +129,11 @@ in {
     authentication = "application";
   };
 
-  yomi.nginx.at.wings-local = {
+  # The panel reaches wings over the LAN; wings checks its node token.
+  yomi.web.at.wings-local = {
     port = config.yomi.ports.pelican-node1;
+    transport = "nginx";
+    authentication = "application";
   };
 
   # networking.firewall is disabled on this host; see ../../networking/nftables.nix

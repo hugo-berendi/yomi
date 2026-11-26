@@ -1,3 +1,0 @@
-{
-  imports = [./profiles/wsl.nix];
-}

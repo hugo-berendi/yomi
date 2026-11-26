@@ -13,10 +13,10 @@ Run this on the host itself. Nothing is touched without `--apply`.
 import argparse
 import json
 import os
-from pathlib import Path
 import shutil
 import subprocess
 import sys
+from pathlib import Path
 
 
 def evaluate(host):
@@ -54,6 +54,7 @@ def evaluate(host):
         ],
         capture_output=True,
         text=True,
+        check=False,
     )
     if result.returncode:
         print(result.stderr, file=sys.stderr, end="")

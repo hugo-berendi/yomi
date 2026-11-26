@@ -2,12 +2,12 @@
 
 import json
 import os
-from pathlib import Path
 import shlex
 import sqlite3
 import subprocess
 import sys
 import time
+from pathlib import Path
 
 n8n, enforced, seeded = sys.argv[1:]
 root = Path(os.environ["TMPDIR"]) / "n8n-test"
@@ -25,7 +25,9 @@ env = os.environ | {
 
 
 def run(*command):
-    result = subprocess.run(command, env=env, capture_output=True, text=True)
+    result = subprocess.run(
+        command, env=env, capture_output=True, text=True, check=False
+    )
     if result.returncode:
         print(result.stdout, result.stderr)
         result.check_returncode()
@@ -44,7 +46,9 @@ stalled_import.chmod(0o755)
 command[2] = "0.2s"
 command[-1] = str(stalled_import)
 started = time.monotonic()
-result = subprocess.run(command, env=env, capture_output=True, text=True, timeout=5)
+result = subprocess.run(
+    command, env=env, capture_output=True, text=True, timeout=5, check=False
+)
 assert result.returncode in (137, -9), "A stuck CLI must be forcibly terminated"
 assert time.monotonic() - started < 5, "A stuck import must have a bounded runtime"
 assert not (root / ".yomi-workflow-enforced").exists(), (

@@ -5,6 +5,11 @@
 }: let
   vpn = config.vpnNamespaces.wg;
 in {
+  # {{{ Ports
+  yomi.ports = {
+    searxng = 8473;
+  };
+  # }}}
   imports = [./theme.nix];
 
   yomi.web.at.search = {

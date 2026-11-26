@@ -92,10 +92,15 @@
     '';
   };
 in {
+  # {{{ Ports
+  yomi.ports = {
+    calsync = 8504;
+  };
+  # }}}
   yomi.web.at.calsync = {
-    inherit port;
     transport = "pangolin";
     authentication = "none";
+    publicReason = "the home, privacy and terms pages Google's OAuth review reads";
     pangolin.allowedCountries = [];
   };
 

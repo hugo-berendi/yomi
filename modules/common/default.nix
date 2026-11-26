@@ -1,6 +1,6 @@
 # (https://nixos.wiki/wiki/Module).
 {
-  pilot = import ./pilot.nix;
-  theming = import ./theming;
-  terminal = import ./terminal.nix;
+  pilot = ./pilot.nix;
+  theming = ./theming;
+  terminal = ./terminal.nix;
 }

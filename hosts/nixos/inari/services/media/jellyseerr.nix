@@ -24,6 +24,11 @@
     };
   });
 in {
+  # {{{ Ports
+  yomi.ports = {
+    jellyseerr = 8423;
+  };
+  # }}}
   # {{{ reverse proxy
   yomi.web.at.request-media = {
     port = config.yomi.ports.jellyseerr;

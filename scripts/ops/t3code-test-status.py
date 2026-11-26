@@ -36,6 +36,7 @@ def main():
         text=True,
         capture_output=True,
         timeout=40,
+        check=False,
     )
     if response.returncode:
         raise SystemExit("Guest T3 health query failed; credential output suppressed")

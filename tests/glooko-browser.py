@@ -5,12 +5,11 @@ external service and uses only synthetic fixture credentials and OTP values.
 """
 
 import importlib.util
-from pathlib import Path
 import sys
+from pathlib import Path
 from unittest.mock import patch
 
 from playwright.sync_api import Locator, sync_playwright
-
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULE_PATH = ROOT / "hosts/nixos/inari/services/diabetes/glooko_sync.py"

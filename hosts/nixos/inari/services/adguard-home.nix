@@ -3,14 +3,26 @@
   lib,
   ...
 }: {
+  # {{{ Ports
+  yomi.ports = {
+    adguard = 8401;
+    adguard-dns = 8403;
+  };
+  # }}}
   # {{{ Reverse proxy
-  yomi.nginx.at.adguard.port = config.yomi.ports.adguard;
+  # AdGuard Home answers its control API without a login: anyone on the LAN
+  # can change DNS filtering.
+  yomi.web.at.adguard = {
+    transport = "nginx";
+    authentication = "none";
+    monitor.enable = true;
+  };
   # }}}
   # {{{ Service
   services.adguardhome = {
     enable = true;
     host = "0.0.0.0";
-    port = config.yomi.nginx.at.adguard.port;
+    port = config.yomi.web.at.adguard.port;
     settings = {
       dns = {
         bind_hosts = ["127.0.0.1" "::1"];

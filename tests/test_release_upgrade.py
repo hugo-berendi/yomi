@@ -9,12 +9,12 @@ import hashlib
 import importlib.util
 import json
 import os
-from pathlib import Path
 import shutil
 import subprocess
 import tempfile
 import time
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 ROOT = Path(__file__).parents[1]

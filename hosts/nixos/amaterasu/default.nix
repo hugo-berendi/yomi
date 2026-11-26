@@ -1,11 +1,12 @@
 {
+  config,
   pkgs,
   upkgs,
   ...
 }: {
   # {{{ Imports
   imports = [
-    ../common/profiles/desktop.nix
+    ../../../profiles/desktop.nix
 
     ./hardware
     ./filesystems
@@ -14,6 +15,7 @@
     ./services/restic.nix
     ./yubikey.nix
   ];
+  home-manager.users.${config.yomi.pilot.name}.imports = [./home.nix];
   # }}}
 
   system.stateVersion = "24.05";

@@ -1,5 +1,5 @@
-# Packages and defaults that amaterasu, inari and the WSL hosts each used to
-# list for themselves. Every host that imports home/global.nix gets them.
+# Packages and defaults every host with Home Manager shares, through
+# home/default.nix.
 {
   pkgs,
   upkgs,

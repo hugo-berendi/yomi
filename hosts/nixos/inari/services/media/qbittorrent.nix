@@ -1,15 +1,27 @@
 {config, ...}: {
+  # {{{ Ports
+  yomi.ports = {
+    qbittorrent_peer = 8518;
+    qbittorrent_ui = 8516;
+    qui = 8517;
+  };
+  # }}}
   # {{{ Reverse proxy
   # torrent.<domain> serves qui, the web UI in front of qBittorrent. qui runs
   # on the host and has its own login; qBittorrent's own WebUI only listens
   # inside the VPN namespace.
-  yomi.nginx.at.torrent.port = config.yomi.ports.qui;
+  yomi.web.at.torrent = {
+    port = config.yomi.ports.qui;
+    transport = "nginx";
+    authentication = "application";
+    monitor.enable = true;
+  };
   # }}}
   # {{{ Settings
   nixarr.qbittorrent = {
     enable = true;
     vpn.enable = true;
-    webuiPort = config.yomi.nginx.at.torrent.port;
+    webuiPort = config.yomi.web.at.torrent.port;
     qui.internalPort = config.yomi.ports.qbittorrent_ui;
     # Mullvad forwards no ports, so this only matters for outgoing
     # connections; it is registered to keep it out of every other service's way.

@@ -2,14 +2,13 @@
 
 import json
 import os
-from pathlib import Path
 import shutil
-import subprocess
 import stat
+import subprocess
 import sys
 import tempfile
 import unittest
-
+from pathlib import Path
 
 INSTALLER = Path(sys.argv.pop(1)).read_text()
 STUB = r"""
@@ -90,6 +89,7 @@ class InstallerTests(unittest.TestCase):
             capture_output=True,
             text=True,
             timeout=10,
+            check=False,
         )
         calls = (
             [json.loads(line) for line in self.log.read_text().splitlines()]

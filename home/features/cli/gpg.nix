@@ -7,7 +7,7 @@
     enable = true;
 
     # No SSH support: ssh authenticates with the YubiKey's FIDO2 resident key
-    # through plain ssh-agent (features/cli/ssh.nix, which asserts the two
+    # through plain ssh-agent (home/features/cli/ssh.nix, which asserts the two
     # agents are never both enabled). gpg-agent only serves the OpenPGP card
     # for signing and decryption.
 

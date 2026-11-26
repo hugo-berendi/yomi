@@ -6,7 +6,8 @@
   # {{{ Imports
   imports =
     [
-      ../common/profiles/server.nix
+      ../../../profiles/server.nix
+      ../../../profiles/services/anubis.nix
 
       ./networking
       ./filesystems
@@ -14,73 +15,12 @@
       ./memory-limits.nix
       ./nix-builds.nix
       ./auto-upgrade.nix
-
-      # Preserve the merge order of system packages, tmpfiles and backup paths.
-      ./services/diabetes
-      ./services/protonmail-bridge
-      ./services/forgejo
-      ./services/radicale
-      ./services/restic
-      ./services/valheim.nix
-      ./services/zfs.nix
-      ./services/comics.nix
-      ./services/media
-      ./services/pelican
-      ./services/t3code.nix
-      ./services/changedetection.nix
-
-      # Network access, identity and discovery
-      ../common/services/anubis.nix
-      ./services/adguard-home.nix
-      ./services/expose.nix
-      ./services/octodns-ddns.nix
-      ./services/playit.nix
-      ./services/pocket-id.nix
-
-      # Monitoring and notifications
-      ./services/alerting
-      ./services/ntfy.nix
-      ./services/msmtp.nix
-      ./services/gatus.nix
-      ./services/healthchecks.nix
-      ./services/scrutiny.nix
-      ./services/beszel.nix
-      ./services/prometheus.nix
-      ./services/grafana.nix
-      ./services/loki.nix
-      ./services/alloy.nix
-
-      # Code, automation and AI
-      ./services/n8n
-      ./services/llama-cpp
-      ./services/cliproxyapi.nix
-      ./services/opencode.nix
-
-      # Personal and household applications
-      ./services/homepage.nix
-      ./services/hugo-berendi-de.nix
-      ./services/proton-mail-sorter
-      ./services/matrix
-      ./services/actual
-      ./services/paperless.nix
-      ./services/karakeep.nix
-      ./services/microbin.nix
-      ./services/mealie.nix
-      ./services/calsync.nix
-      ./services/nextcloud.nix
-      ./services/stirling-pdf.nix
-      ./services/searxng
-
-      # Media
-      ./services/immich.nix
-      ./services/audiobookshelf.nix
-
-      # Game servers
-      ./services/vrising.nix
-      ./services/windrose.nix
     ]
+    # Every service in ./services, one file or directory each.
+    ++ import ../../../lib/import-dir.nix ./services
     # The wizard saves hardware choices alongside the restored checkout.
     ++ lib.optional (builtins.pathExists ./recovery-local.nix) ./recovery-local.nix;
+  home-manager.users.${config.yomi.pilot.name}.imports = [./home.nix];
   # }}}
 
   system.stateVersion = "24.05";

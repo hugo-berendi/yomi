@@ -3,6 +3,11 @@
   lib,
   ...
 }: {
+  # {{{ Ports
+  yomi.ports = {
+    microbin = 8435;
+  };
+  # }}}
   # {{{ Secrets
   sops.secrets.microbin_env.sopsFile = ../secrets.yaml;
   # }}}

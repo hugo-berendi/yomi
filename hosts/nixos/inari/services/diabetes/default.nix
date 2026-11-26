@@ -56,6 +56,13 @@ in {
   # }}}
   config = lib.mkMerge [
     {
+      # {{{ Ports
+      yomi.ports = {
+        diabetes = 8503;
+      };
+      # }}}
+    }
+    {
       system.build.diabetes-glooko-login = loginHelper;
       system.build.diabetes-tests = app.tests.unit;
       # Keep the retired site's state mounted and backed up. Turning off the
@@ -97,12 +104,12 @@ in {
       ];
       # {{{ Private web service
       yomi.web.at.diabetes = {
-        port = config.yomi.ports.diabetes;
         transport = "nginx";
         authentication = "application";
+        # Exports from the meter and CGM apps exceed nginx's 1M default.
+        clientMaxBodySize = "20m";
       };
-      # Upload size and the long report timeout are nginx-only settings.
-      yomi.nginx.at.diabetes.clientMaxBodySize = "20m";
+      # The long report timeout is an nginx-only setting.
       services.nginx.virtualHosts.${config.yomi.web.at.diabetes.host}.locations."/".extraConfig = ''
         proxy_read_timeout 910s;
       '';

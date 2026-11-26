@@ -4,6 +4,23 @@
   dataDir = "/persist/data/windrose";
 in {
   config = {
+    # {{{ Ports and reachability
+    yomi.ports = {
+      windrose-direct = 8489;
+      windrose-rcon = 8490;
+    };
+    yomi.network.exposure = {
+      windrose-direct = {
+        interface = "br0";
+        protocols = ["tcp" "udp"];
+        service = "windrose";
+      };
+      windrose-rcon = {
+        interface = "br0";
+        service = "windrose";
+      };
+    };
+    # }}}
     yomi.expose.private.windrose-admin = {
       destination = "127.0.0.1";
       alias = "windrose.inari.internal";
@@ -33,6 +50,10 @@ in {
     # Inari runs nftables with networking.firewall disabled, so allowedTCPPorts
     # here would do nothing. Reachability is governed by ../networking/nftables.nix.
 
-    yomi.nginx.at.windrose.port = rconPort;
+    yomi.web.at.windrose = {
+      port = rconPort;
+      transport = "nginx";
+      authentication = "application";
+    };
   };
 }

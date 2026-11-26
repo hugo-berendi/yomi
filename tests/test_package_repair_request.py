@@ -1,9 +1,9 @@
 import importlib.util
 import io
 import json
-from pathlib import Path
 import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 PATH = Path(__file__).parents[1] / "scripts/ci/request-package-repair.py"

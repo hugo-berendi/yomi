@@ -1,12 +1,12 @@
 """The audit's migration snapshot must remain visible even after Nix GC."""
 
 import importlib.util
-from pathlib import Path
 import unittest
+from pathlib import Path
 
 spec = importlib.util.spec_from_file_location(
     "capacity",
-    Path(__file__).resolve().parents[1] / "hosts/nixos/inari/services/zfs-capacity.py",
+    Path(__file__).resolve().parents[1] / "hosts/nixos/inari/services/zfs/capacity.py",
 )
 capacity = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(capacity)

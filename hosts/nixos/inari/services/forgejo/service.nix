@@ -24,6 +24,13 @@ in {
 
   config = lib.mkMerge [
     {
+      # {{{ Ports
+      yomi.ports = {
+        forgejo = 8409;
+      };
+      # }}}
+    }
+    {
       # {{{ Secrets
       sops.secrets.forgejo_mail_password = {
         sopsFile = ../../secrets.yaml;

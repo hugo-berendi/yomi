@@ -1,22 +1,21 @@
-import hashlib
 import contextlib
-from datetime import timezone
+import hashlib
 import io
-from http.client import HTTPConnection
 import json
 import os
-from pathlib import Path
 import subprocess
 import tempfile
 import threading
-from types import SimpleNamespace
 import unittest
 import urllib.error
+from datetime import timezone
+from http.client import HTTPConnection
+from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 import classifier
 import worker
-
 
 CERT = b"synthetic-bridge-certificate"
 
@@ -307,9 +306,9 @@ class WorkerTests(unittest.TestCase):
             patch.object(
                 classifier.urllib.request, "build_opener", return_value=opener(0)
             ),
+            self.assertRaises(ValueError),
         ):
-            with self.assertRaises(ValueError):
-                classifier.classify(msg)
+            classifier.classify(msg)
 
         # Any other HTTP error is the model server's problem and still aborts.
         with (
@@ -319,9 +318,9 @@ class WorkerTests(unittest.TestCase):
                 "build_opener",
                 return_value=opener(0, status=500),
             ),
+            self.assertRaises(urllib.error.HTTPError),
         ):
-            with self.assertRaises(urllib.error.HTTPError):
-                classifier.classify(msg)
+            classifier.classify(msg)
 
     def test_local_classifier_schema_and_twitch_boundary(self):
         msg = SimpleNamespace(
@@ -630,9 +629,15 @@ class WorkerTests(unittest.TestCase):
                 app = worker.Application(configuration(True), Path(state))
                 calls = []
 
-                def run(run_id, mark_read=False, labels=False):
+                def run(
+                    run_id,
+                    mark_read=False,
+                    labels=False,
+                    calls=calls,
+                    sorted_now=sorted_now,
+                ):
                     calls.append(
-                        ("read" if mark_read else "labels" if labels else "sort")
+                        "read" if mark_read else "labels" if labels else "sort"
                     )
                     planned = sorted_now if not (mark_read or labels) else 0
                     return {"planned": planned, "unclassified": 0}
@@ -711,7 +716,7 @@ class WorkerTests(unittest.TestCase):
                     configuration(True),
                     FakeSecrets(),
                     Path(state),
-                    lambda *a, **kw: box,
+                    lambda *a, box=box, **kw: box,
                 )
                 with patch.object(
                     classifier, "classify", side_effect=[unusable, V("Rechnungen")]
@@ -779,15 +784,17 @@ class WorkerTests(unittest.TestCase):
                 self.assertEqual(kwargs["env"]["OP_BIOMETRIC_UNLOCK_ENABLED"], "false")
                 self.assertTrue(kwargs["capture_output"])
             secrets = worker.Secrets(configuration())
-            with patch.object(
-                worker.subprocess,
-                "run",
-                side_effect=subprocess.TimeoutExpired(
-                    ["op"], 1, output="test-password"
+            with (
+                patch.object(
+                    worker.subprocess,
+                    "run",
+                    side_effect=subprocess.TimeoutExpired(
+                        ["op"], 1, output="test-password"
+                    ),
                 ),
+                self.assertRaisesRegex(RuntimeError, "^1Password read failed$"),
             ):
-                with self.assertRaisesRegex(RuntimeError, "^1Password read failed$"):
-                    secrets.get("passwordRef")
+                secrets.get("passwordRef")
 
     def test_http_auth_and_fixed_routes(self):
         app = SimpleNamespace(

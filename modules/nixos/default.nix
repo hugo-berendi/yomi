@@ -1,26 +1,26 @@
 # (https://nixos.wiki/wiki/Module).
 {
   dns = {imports = [../../dns/implementation/nixos-module.nix ../../dns/implementation/nixos-module-assertions.nix];};
-  restic = import ./restic.nix;
-  postgres = import ./postgres.nix;
-  meilisearch = import ./meilisearch.nix;
-  acme = import ./acme.nix;
-  machine = import ./machine.nix;
-  network-exposure = import ./network-exposure.nix;
-  persistence = import ./persistence.nix;
-  web = import ./web.nix;
-  nginx = import ./nginx.nix;
-  filesystems = import ./filesystems.nix;
-  forgejo-ci-worker = import ./forgejo-ci-worker.nix;
-  endpoint-checks = import ./endpoint-checks.nix;
-  expose = import ./expose;
-  iocaine = import ./iocaine.nix;
-  playit = import ./playit.nix;
-  ports = import ./ports.nix;
-  pounce = import ./pounce.nix;
-  protonvpn = import ./protonvpn.nix;
-  steam-game-server = import ./steam-game-server.nix;
-  vrising = import ./vrising;
-  windrose = import ./windrose.nix;
-  wireless = import ./wireless;
+  restic = ./restic.nix;
+  postgres = ./postgres.nix;
+  meilisearch = ./meilisearch.nix;
+  acme = ./acme.nix;
+  machine = ./machine.nix;
+  network-exposure = ./network-exposure.nix;
+  persistence = ./persistence.nix;
+  web = ./web.nix;
+  nginx = ./nginx.nix;
+  filesystems = ./filesystems.nix;
+  forgejo-ci-worker = ./forgejo-ci-worker.nix;
+  endpoint-checks = ./endpoint-checks.nix;
+  expose = ./expose;
+  iocaine = ./iocaine.nix;
+  playit = ./playit.nix;
+  ports = ./ports.nix;
+  pounce = ./pounce.nix;
+  protonvpn = ./protonvpn.nix;
+  steam-game-server = ./steam-game-server;
+  vrising = ./vrising;
+  windrose = ./windrose.nix;
+  wireless = ./wireless;
 }

@@ -3,6 +3,11 @@
   lib,
   ...
 }: {
+  # {{{ Ports
+  yomi.ports = {
+    loki = 8431;
+  };
+  # }}}
   # {{{ Service
   services.loki = {
     enable = true;
@@ -68,7 +73,12 @@
 
   # }}}
   # {{{ Networking & persistence
-  yomi.nginx.at.loki.port = config.services.loki.configuration.server.http_listen_port;
+  # auth_enabled = false above: Loki itself checks nobody.
+  yomi.web.at.loki = {
+    port = config.services.loki.configuration.server.http_listen_port;
+    transport = "nginx";
+    authentication = "none";
+  };
 
   yomi.persistence.at.state.apps.loki.directories = [
     {

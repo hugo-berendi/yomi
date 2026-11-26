@@ -21,7 +21,7 @@
   # actual-server already ships one built for its Node, so the bridge runs on
   # that same Node and borrows the server's node_modules.
   nodejs = upkgs.nodejs_24;
-  hasBudgetPassword = builtins.match ".*[[:space:]]*actual_budget_password:.*" (builtins.readFile ../../secrets.yaml) != null;
+  hasBudgetPassword = import ../../lib/has-secret.nix "actual_budget_password";
   credentials =
     {
       session-token = config.sops.secrets.actual_bridge_session_token.path;
@@ -31,12 +31,19 @@
       budget-password = config.sops.secrets.actual_budget_password.path;
     };
 in {
+  # {{{ Ports
+  yomi.ports = {
+    actual-bridge = 8513;
+  };
+  # }}}
   assertions = [
     {
       assertion = server.version == apiVersion;
       message = "actual-bridge pins @actual-app/api ${apiVersion} but actual-server is ${server.version}. Update the API version and hash together with the server.";
     }
   ];
+
+  warnings = lib.optional (!hasBudgetPassword) "actual_budget_password is not in inari's secrets.yaml: the Actual bridge downloads the budget without a password, which fails for an end-to-end encrypted budget.";
 
   # {{{ Secrets
   # The session token is a row in Actual's own sessions table, owned by the
@@ -54,11 +61,11 @@ in {
   # }}}
   # {{{ n8n
   # Daily bank sync and categorisation; the JSON sits with the other
-  # workflows, see docs/n8n.md.
+  # workflows, see ../n8n/README.md.
   yomi.n8n.workflows.actual-budget.source = ../n8n/workflows/actual-budget.json;
   services.n8n.environment = {
     ACTUAL_BRIDGE_URL = "http://127.0.0.1:${toString config.yomi.ports.actual-bridge}";
-    ACTUAL_URL = config.yomi.nginx.at.budget.url;
+    ACTUAL_URL = config.yomi.web.at.budget.url;
   };
   sops.templates."n8n-services.env".content = lib.mkAfter ''
     ACTUAL_BRIDGE_API_KEY=${config.sops.placeholder.actual_bridge_api_key}

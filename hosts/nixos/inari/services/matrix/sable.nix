@@ -58,7 +58,16 @@
     }
   );
 in {
-  yomi.nginx.at.sable.port = port;
+  # {{{ Ports
+  yomi.ports = {
+    sable = 8472;
+  };
+  # }}}
+  # A static Matrix client; the homeserver authenticates.
+  yomi.web.at.sable = {
+    transport = "nginx";
+    authentication = "none";
+  };
 
   virtualisation.oci-containers.containers.sable = {
     image = (import ../../images.nix).sable;

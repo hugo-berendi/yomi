@@ -77,6 +77,11 @@
     };
   };
 in {
+  # {{{ Ports
+  yomi.ports = {
+    cliproxyapi = 8502;
+  };
+  # }}}
   sops.secrets.cliproxyapi_management_key = {
     sopsFile = ../secrets.yaml;
     owner = pilot;

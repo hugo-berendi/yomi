@@ -5,10 +5,10 @@ import fcntl
 import hashlib
 import json
 import os
-from pathlib import Path
 import re
 import tempfile
 import time
+from pathlib import Path
 from urllib.parse import urlsplit
 
 from analysis import MAX_BYTES, parse_export
@@ -221,10 +221,8 @@ def authenticate_page(page, credentials, allow_login=False, code_prompt=None):
         # OneTrust can appear after the initial document load. Wait briefly for
         # it before submitting, rather than checking once during that race.
         reject = page.locator("#onetrust-reject-all-handler")
-        try:
+        with contextlib.suppress(Exception):
             reject.wait_for(state="visible", timeout=3000)
-        except Exception:
-            pass
         if reject.is_visible():
             reject.click()
         trusted_page(page)
@@ -313,7 +311,8 @@ EXPORT_PERIOD = re.compile(
 
 def select_export_range(page, dialog, progress=None):
     """Choose and verify 30 days without assuming a previous range or ASCII spaces."""
-    from playwright.sync_api import expect, TimeoutError as BrowserTimeout
+    from playwright.sync_api import TimeoutError as BrowserTimeout
+    from playwright.sync_api import expect
 
     mark = progress or (lambda stage: None)
     dialog.wait_for(state="visible")
@@ -464,12 +463,12 @@ def sync(
 ):
     # Imported here to avoid a module cycle when invoked from the web process.
     from app import (
-        database,
-        import_records,
-        build_report,
-        get_state,
-        put_state,
         VERIFIED_RECORDS,
+        build_report,
+        database,
+        get_state,
+        import_records,
+        put_state,
     )
 
     now = int(time.time() if now is None else now)

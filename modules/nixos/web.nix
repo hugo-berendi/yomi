@@ -13,7 +13,7 @@ in {
   options.yomi.web.at = lib.mkOption {
     default = {};
     description = "HTTP endpoints with one selected transport and explicit authentication ownership.";
-    type = lib.types.attrsOf (lib.types.submodule {
+    type = lib.types.attrsOf (lib.types.submodule ({name, ...}: {
       imports = [
         (import ./lib/endpoint.nix {
           inherit lib;
@@ -23,7 +23,9 @@ in {
       options = {
         port = lib.mkOption {
           type = lib.types.port;
-          description = "HTTP application port.";
+          default = config.yomi.ports.${name};
+          defaultText = lib.literalExpression "config.yomi.ports.<name>";
+          description = "HTTP application port; defaults to the registry entry of the same name.";
         };
         transport = lib.mkOption {
           type = lib.types.enum ["nginx" "pangolin"];
@@ -32,6 +34,23 @@ in {
         authentication = lib.mkOption {
           type = lib.types.enum ["application" "gateway" "none"];
           description = "Who authenticates requests; none deliberately permits anonymous access.";
+        };
+        publicReason = lib.mkOption {
+          type = lib.types.nullOr lib.types.str;
+          default = null;
+          example = "the personal website";
+          description = ''
+            Why this endpoint lets anyone on the internet in without a login.
+            A Pangolin endpoint with `authentication = "none"` draws a warning
+            until this says why; an nginx endpoint is private (LAN and
+            Pangolin private resources) and needs no reason.
+          '';
+        };
+        clientMaxBodySize = lib.mkOption {
+          type = lib.types.nullOr lib.types.str;
+          default = null;
+          example = "50M";
+          description = "Largest request body nginx accepts (nginx transport only); null keeps nginx's 1M default.";
         };
         enableAnubis = lib.mkEnableOption "Anubis protection on Pangolin";
         stagePangolin = lib.mkEnableOption "previewing this endpoint in the blueprint while the connector is disabled";
@@ -59,7 +78,7 @@ in {
           };
         };
       };
-    });
+    }));
   };
 
   config = {
@@ -72,8 +91,21 @@ in {
         assertion = !e.enableAnubis || e.transport == "pangolin";
         message = "Web ${e.host}: Anubis requires the Pangolin transport.";
       }
+      {
+        assertion = e.clientMaxBodySize == null || e.transport == "nginx";
+        message = "Web ${e.host}: clientMaxBodySize only applies to the nginx transport.";
+      }
+      {
+        assertion = e.publicReason == null || (e.transport == "pangolin" && e.authentication == "none");
+        message = "Web ${e.host}: publicReason only applies to a Pangolin endpoint with authentication = \"none\"; remove it.";
+      }
     ]) (lib.attrValues endpoints);
-    yomi.nginx.at = lib.mapAttrs (_: common) (lib.filterAttrs (_: e: e.transport == "nginx") endpoints);
+    warnings = let
+      unexplained = lib.attrNames (lib.filterAttrs (_: e: e.transport == "pangolin" && e.authentication == "none" && e.publicReason == null) endpoints);
+    in
+      lib.optional (unexplained != [])
+      "yomi.web.at: anyone on the internet can use ${lib.concatStringsSep ", " unexplained} without a login (Pangolin transport, authentication = \"none\"). Put a login in front, or say why with publicReason.";
+    yomi.nginx.at = lib.mapAttrs (_: e: common e // {inherit (e) clientMaxBodySize;}) (lib.filterAttrs (_: e: e.transport == "nginx") endpoints);
     yomi.expose.at = lib.mapAttrs (_: e:
       common e
       // e.pangolin

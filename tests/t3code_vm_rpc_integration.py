@@ -9,8 +9,7 @@ import tempfile
 import time
 from pathlib import Path
 
-
-RPC = Path(__file__).parents[1] / "hosts/nixos/inari/services/t3code-vm/rpc.mjs"
+RPC = Path(__file__).parents[1] / "hosts/nixos/inari/services/t3code/vm/rpc.mjs"
 
 
 @contextlib.contextmanager
@@ -52,7 +51,7 @@ def server():
                             break
                     except OSError:
                         if process.poll() is not None:
-                            raise RuntimeError("Temporary T3 exited")
+                            raise RuntimeError("Temporary T3 exited") from None
                         time.sleep(0.2)
                 else:
                     raise RuntimeError("Temporary T3 did not start")
@@ -73,6 +72,7 @@ def cli(instance, arguments):
         env=env,
         capture_output=True,
         text=True,
+        check=False,
     )
     if result.returncode:
         raise RuntimeError("Isolated T3 command failed; captured output suppressed")
@@ -93,6 +93,7 @@ def rpc(instance, token, operation, payload):
         capture_output=True,
         text=True,
         timeout=40,
+        check=False,
     )
     if result.returncode:
         reason = next(

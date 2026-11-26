@@ -5,10 +5,19 @@
   ...
 }: let
   comicDir = "/raid5pool/media/comics";
-  port = config.yomi.nginx.at.suwayomi.port;
+  port = config.yomi.web.at.suwayomi.port;
   webviewDisplay = ":99";
 in {
-  yomi.nginx.at.suwayomi.port = config.yomi.ports.suwayomi;
+  # {{{ Ports
+  yomi.ports = {
+    suwayomi = 8479;
+  };
+  # }}}
+  # Reachable without a login from the LAN.
+  yomi.web.at.suwayomi = {
+    transport = "nginx";
+    authentication = "none";
+  };
 
   services.suwayomi-server = {
     enable = true;

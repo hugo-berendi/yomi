@@ -3,7 +3,18 @@
   lib,
   ...
 }: {
-  yomi.nginx.at.pdf.port = config.yomi.ports.stirling-pdf;
+  # {{{ Ports
+  yomi.ports = {
+    stirling-pdf = 8478;
+  };
+  # }}}
+  # Reachable without a login from the LAN.
+  yomi.web.at.pdf = {
+    port = config.yomi.ports.stirling-pdf;
+    transport = "nginx";
+    authentication = "none";
+    monitor.enable = true;
+  };
 
   # {{{ OCR languages
   # The stirling-pdf module puts pkgs.tesseract and ocrmypdf on its path and
@@ -25,7 +36,7 @@
   services.stirling-pdf = {
     enable = true;
     environment = {
-      SERVER_PORT = config.yomi.nginx.at.pdf.port;
+      SERVER_PORT = config.yomi.web.at.pdf.port;
     };
   };
 

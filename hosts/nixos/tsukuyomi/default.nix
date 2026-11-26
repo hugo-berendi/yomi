@@ -1,6 +1,6 @@
 # Home PC. The hardware runs Windows; this is the NixOS-WSL instance on it.
 _: {
-  imports = [../common/wsl.nix];
+  imports = [../../../profiles/wsl.nix];
 
   networking.hostName = "tsukuyomi";
   # Carried over from the previous single `wsl` host, which lived on this PC.

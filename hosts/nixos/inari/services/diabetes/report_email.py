@@ -9,10 +9,9 @@ from email.utils import format_datetime
 from pathlib import Path
 from urllib.parse import urlsplit
 
-from jinja2 import Environment, FileSystemLoader, select_autoescape
-
 from analysis import BERLIN
 from app import QUESTIONS
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 from report_charts import charts
 
 
@@ -33,12 +32,12 @@ def presentation(report, selected, quality):
     start = current["label"]
     end = datetime.fromtimestamp(current["end"], BERLIN).date() - timedelta(days=1)
     tiles = [
-        dict(
-            label=label,
-            value=number(current.get(key), unit, digits),
-            delta=change(current, previous, key, delta_unit),
-            tone=tone,
-        )
+        {
+            "label": label,
+            "value": number(current.get(key), unit, digits),
+            "delta": change(current, previous, key, delta_unit),
+            "tone": tone,
+        }
         for key, label, unit, digits, delta_unit, tone in (
             ("in_percent", "Time in range", "%", 1, " pp", "teal"),
             ("below_percent", "Time below range", "%", 1, " pp", "coral"),
@@ -55,19 +54,19 @@ def presentation(report, selected, quality):
         )
         episode_label = "episode" if current["low_episodes"] == 1 else "episodes"
         highlights.append(
-            dict(
-                title="Low-glucose periods",
-                text=f"{current['low_episodes']} {episode_label} below {report['low']} mg/dL lasting at least 15 minutes; {prior_episodes} in the prior week. Counts depend on coverage.",
-                tone="coral",
-            )
+            {
+                "title": "Low-glucose periods",
+                "text": f"{current['low_episodes']} {episode_label} below {report['low']} mg/dL lasting at least 15 minutes; {prior_episodes} in the prior week. Counts depend on coverage.",
+                "tone": "coral",
+            }
         )
     if current["coverage"] < 90:
         highlights.append(
-            dict(
-                title="Gaps in this week's view",
-                text=f"{100 - current['coverage']:.1f}% of the week has no glucose coverage. Percentages describe observed time only.",
-                tone="ink",
-            )
+            {
+                "title": "Gaps in this week's view",
+                "text": f"{100 - current['coverage']:.1f}% of the week has no glucose coverage. Percentages describe observed time only.",
+                "tone": "ink",
+            }
         )
     pattern_candidates = []
     for kind, key in (("low", "below_minutes"), ("high", "above_minutes")):
@@ -79,19 +78,19 @@ def presentation(report, selected, quality):
         _, dates, _, kind, hour = max(pattern_candidates, key=lambda row: row[:3])
         at = hour["hour"]
         highlights.append(
-            dict(
-                title="A recurring hour to review",
-                text=f"{kind.capitalize()} readings during {at:02d}:00 to {(at + 1) % 24:02d}:00 on {dates} dates. {hour['observed_minutes']:.0f} observed minutes in that hour across the week. Uneven coverage can affect this pattern.",
-                tone="coral" if kind == "low" else "ink",
-            )
+            {
+                "title": "A recurring hour to review",
+                "text": f"{kind.capitalize()} readings during {at:02d}:00 to {(at + 1) % 24:02d}:00 on {dates} dates. {hour['observed_minutes']:.0f} observed minutes in that hour across the week. Uneven coverage can affect this pattern.",
+                "tone": "coral" if kind == "low" else "ink",
+            }
         )
     if not highlights:
         highlights.append(
-            dict(
-                title="No recurring hour met the review threshold",
-                text="No hourly high or low pattern was observed on at least three dates with 120 observed minutes in that hour across the week.",
-                tone="ink",
-            )
+            {
+                "title": "No recurring hour met the review threshold",
+                "text": "No hourly high or low pattern was observed on at least three dates with 120 observed minutes in that hour across the week.",
+                "tone": "ink",
+            }
         )
     memory = report.get("memory", {})
     trends = []
@@ -107,14 +106,14 @@ def presentation(report, selected, quality):
             continue
         evidence = card["evidence"]
         trends.append(
-            dict(
-                id=card["id"],
-                label=labels[card["id"]],
-                prior=number(evidence["prior_percent"], "%"),
-                recent=number(evidence["recent_percent"], "%"),
-                delta=f"{evidence['delta_percentage_points']:+.1f} pp",
-                eligible=f"{len(evidence['recent_weeks'])}/4 recent, {len(evidence['prior_weeks'])}/4 prior weeks eligible",
-            )
+            {
+                "id": card["id"],
+                "label": labels[card["id"]],
+                "prior": number(evidence["prior_percent"], "%"),
+                "recent": number(evidence["recent_percent"], "%"),
+                "delta": f"{evidence['delta_percentage_points']:+.1f} pp",
+                "eligible": f"{len(evidence['recent_weeks'])}/4 recent, {len(evidence['prior_weeks'])}/4 prior weeks eligible",
+            }
         )
     selected_ids = selected.get("fact_ids", []) if selected else []
     trends.sort(
@@ -168,11 +167,11 @@ def presentation(report, selected, quality):
             + ". Original exports are retained privately."
         )
     sources = [
-        dict(
-            label=label,
-            current=number(current.get(key), unit, digits),
-            previous=number(previous.get(key), unit, digits),
-        )
+        {
+            "label": label,
+            "current": number(current.get(key), unit, digits),
+            "previous": number(previous.get(key), unit, digits),
+        }
         for key, label, unit, digits in (
             ("recorded_bolus_units", "Recorded delivered bolus", " U", 1),
             ("recorded_carbs_g", "Carbs recorded with boluses", " g", 0),
@@ -197,26 +196,26 @@ def presentation(report, selected, quality):
         and not parts.query
         else ""
     )
-    return dict(
-        start=start,
-        end=str(end),
-        tiles=tiles,
-        highlights=highlights[:3],
-        trends=trends,
-        memory=memory,
-        notices=list(dict.fromkeys(notices)),
-        sources=sources,
-        questions=questions,
-        sync_attention=sync_attention,
-        timestamp_attention=timestamp_attention,
-        ai_available=bool(selected),
-        url=public_url,
-        low=report["low"],
-        high=report["high"],
-        above=number(current.get("above_percent"), "%"),
-        night=current["periods"]["night"],
-        cv=number(current.get("cv"), "%"),
-    )
+    return {
+        "start": start,
+        "end": str(end),
+        "tiles": tiles,
+        "highlights": highlights[:3],
+        "trends": trends,
+        "memory": memory,
+        "notices": list(dict.fromkeys(notices)),
+        "sources": sources,
+        "questions": questions,
+        "sync_attention": sync_attention,
+        "timestamp_attention": timestamp_attention,
+        "ai_available": bool(selected),
+        "url": public_url,
+        "low": report["low"],
+        "high": report["high"],
+        "above": number(current.get("above_percent"), "%"),
+        "night": current["periods"]["night"],
+        "cv": number(current.get("cv"), "%"),
+    }
 
 
 def render(report, config, now, selected=None, quality=None):

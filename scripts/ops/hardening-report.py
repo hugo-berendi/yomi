@@ -3,9 +3,9 @@
 import argparse
 import json
 import os
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 
 
 def main():
@@ -31,6 +31,7 @@ def main():
         capture_output=True,
         text=True,
         env=os.environ | {"YOMI_REPORT_HOST": args.host},
+        check=False,
     )
     if result.returncode:
         print(result.stderr, file=sys.stderr, end="")

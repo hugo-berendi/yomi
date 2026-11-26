@@ -4,7 +4,17 @@
   upkgs,
   ...
 }: {
-  yomi.nginx.at.karakeep.port = config.yomi.ports.karakeep;
+  # {{{ Ports
+  yomi.ports = {
+    karakeep = 8426;
+    karakeep-browser = 8427;
+  };
+  # }}}
+  yomi.web.at.karakeep = {
+    transport = "nginx";
+    authentication = "application";
+    monitor.enable = true;
+  };
 
   # 26.05 ships karakeep 0.32.0 built against nodejs 24, and its bundled
   # better-sqlite3 cannot survive that pairing: every start aborts a few
@@ -33,9 +43,9 @@
     environmentFile = config.sops.secrets.karakeep_env.path;
 
     extraEnvironment = {
-      PORT = toString config.yomi.nginx.at.karakeep.port;
+      PORT = toString config.yomi.web.at.karakeep.port;
       HOST = "127.0.0.1";
-      NEXTAUTH_URL = config.yomi.nginx.at.karakeep.url;
+      NEXTAUTH_URL = config.yomi.web.at.karakeep.url;
 
       # Disable signups if desired
       DISABLE_SIGNUPS = "false";

@@ -8,9 +8,13 @@
   # be downloaded again from its feed.
   podcastDir = "/raid5pool/media/podcasts";
 in {
+  # {{{ Ports
+  yomi.ports = {
+    audiobookshelf = 8493;
+  };
+  # }}}
   # {{{ Reverse proxy
   yomi.web.at.audiobookshelf = {
-    inherit port;
     transport = "pangolin";
     authentication = "application";
     pangolin = {

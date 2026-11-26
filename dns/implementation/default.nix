@@ -47,7 +47,7 @@ in
         #!${pkgs.bash}/bin/bash
         set -euo pipefail
 
-        cloudflare_token="$(${pkgs.sops}/bin/sops --decrypt --extract '["cloudflare_dns_api_token"]' ./hosts/nixos/common/secrets.yaml)" || {
+        cloudflare_token="$(${pkgs.sops}/bin/sops --decrypt --extract '["cloudflare_dns_api_token"]' ./profiles/secrets.yaml)" || {
           echo "failed to decrypt cloudflare_dns_api_token via sops" >&2
           exit 1
         }

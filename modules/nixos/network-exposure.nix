@@ -11,6 +11,7 @@
         port = lib.mkOption {
           type = lib.types.port;
           default = config.yomi.ports.${name};
+          defaultText = lib.literalExpression "config.yomi.ports.<name>";
           description = "Port to expose; defaults to the matching registry entry.";
         };
         protocols = lib.mkOption {

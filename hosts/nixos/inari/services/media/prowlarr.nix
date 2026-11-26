@@ -1,11 +1,20 @@
 {config, ...}: {
+  # {{{ Ports
+  yomi.ports = {
+    prowlarr = 8465;
+  };
+  # }}}
   # {{{ reverse proxy
-  yomi.nginx.at.prowlarr.port = config.yomi.ports.prowlarr;
+  yomi.web.at.prowlarr = {
+    transport = "nginx";
+    authentication = "application";
+    monitor.enable = true;
+  };
   # }}}
   #{{{ settings
   nixarr.prowlarr = {
     enable = true;
-    port = config.yomi.nginx.at.prowlarr.port;
+    port = config.yomi.web.at.prowlarr.port;
   };
   # }}}
 }

@@ -107,12 +107,10 @@ in {
     # {{{ Plugins
     plugins = let
       plugins = with pkgs.fishPlugins; [
-        # z # Jump to directories by typing "z <directory-name>"
         done # Trigger a notification when long commands finish execution
         puffer # Text expansion (i.e. expanding .... to ../../../)
         sponge # Remove failed commands and whatnot from history
         colored-man-pages
-        # wakatime-fish # track fish with wakatime
         pisces # auto open and close brackets
         grc # color some commands
       ];

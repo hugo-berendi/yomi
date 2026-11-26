@@ -3,7 +3,7 @@
 > [!IMPORTANT]
 > In the development of this config AI was used.
 
-Yomi is the declarative NixOS and Home Manager configuration for five machines
+Yomi is the declarative NixOS and Home Manager configuration for six machines
 and a self-hosted homelab. It is based on
 [everything-nix](https://github.com/prescientmoon/everything-nix).
 
@@ -25,27 +25,28 @@ and a self-hosted homelab. It is based on
 - Neovim configured through nvf
 - ZFS and Btrfs systems with impermanence
 - Secrets encrypted with sops-nix and age
-- Central service-port registry and declarative DNS
-- Self-hosted services behind nginx, Cloudflare Tunnel, or Tailscale
+- One file per self-hosted service: port, endpoint, access, state and backups together
+- Services behind nginx on the LAN or a Pangolin gateway, with declarative DNS
 - Automated system snapshots and Restic backups
 
 ## Repository layout
 
-| Location                       | Purpose                                         |
-| ------------------------------ | ----------------------------------------------- |
-| [`common`](./common)           | Themes, fonts, browser data, caches shared by NixOS and HM |
-| [`dns`](./dns)                 | Declarative DNS records and OctoDNS integration |
-| [`home`](./home)               | Home Manager configurations and features        |
-| [`hosts/nixos`](./hosts/nixos) | Host-specific NixOS configurations              |
-| [`modules`](./modules)         | Reusable Yomi modules and options               |
-| [`overlays`](./overlays)       | Nixpkgs overlays                                |
-| [`pkgs`](./pkgs)               | Custom packages                                 |
-| [`scripts`](./scripts)         | `ci/`, `ops/` and `recovery/` helpers           |
-| [`checks`](./checks)           | Flake checks (hosts and scenario tests)         |
-| [`tests`](./tests)             | Test fixtures and scripts used by the checks    |
-| [`lib`](./lib)                 | Flake helpers (`mk-host.nix`)                   |
-| [`devshells`](./devshells)     | Development shells                              |
-| [`docs`](./docs)               | Guides and plans, indexed in `docs/README.md`   |
+| Location                       | Purpose                                                    |
+| ------------------------------ | ---------------------------------------------------------- |
+| [`hosts/nixos`](./hosts/nixos) | One directory per machine; inari's services in `inari/services/` |
+| [`profiles`](./profiles)       | What a kind of machine gets: base, fleet, desktop, server, wsl, vps, recovery |
+| [`home`](./home)               | The pilot's Home Manager configuration; programs and desktop in `features/`, where `system.nix` files are NixOS |
+| [`modules`](./modules)         | The `yomi.*` options and their implementation              |
+| [`common`](./common)           | Themes, fonts, browser data and caches for NixOS and Home Manager |
+| [`dns`](./dns)                 | Declarative DNS records and OctoDNS integration            |
+| [`pkgs`](./pkgs)               | Custom packages                                            |
+| [`overlays`](./overlays)       | Nixpkgs overlays                                           |
+| [`checks`](./checks)           | Flake checks (hosts and scenario tests)                    |
+| [`tests`](./tests)             | Scenario tests and fixtures used by the checks             |
+| [`scripts`](./scripts)         | `ci/`, `ops/` and `recovery/` helpers                      |
+| [`lib`](./lib)                 | Flake helpers (`mk-host.nix`, `import-dir.nix`)            |
+| [`devshells`](./devshells)     | Development shells                                         |
+| [`docs`](./docs)               | Concepts, the generated option reference, runbooks         |
 
 ## Common commands
 
@@ -68,24 +69,31 @@ Google's recurring-event compatibility fix.
 
 ## Adding a host
 
-1. Create `hosts/nixos/<hostname>/default.nix` and import the matching profile
-   from `hosts/nixos/common`. Desktop, server, and recovery profiles live in
-   `profiles/`. VPS and WSL hosts use `vps.nix` and `wsl.nix`.
+1. Create `hosts/nixos/<hostname>/default.nix` and import one role profile
+   from `profiles/` (`desktop.nix`, `server.nix`, `wsl.nix`, `vps.nix` or
+   `recovery.nix`).
 2. Add the hardware and filesystem configuration.
-3. Create `home/<hostname>.nix` when the host uses Home Manager.
-4. Register the host in `flake.nix` with `mkHost`.
-5. Add stable addresses and SSH aliases to `hosts/nixos/common/inventory.nix`
-   where applicable. Add DNS records and back up the host's private keys with
-   `just export-keys`. Pin its verified public host key with
-   `just import-host-key <hostname>`. The
-   pilot's `keys/id_ed25519.pub` grants login; `keys/ssh_host_ed25519_key.pub`
-   identifies the machine.
+3. If the profile brings Home Manager, put the host's own settings in
+   `home.nix` and add `home-manager.users.<pilot>.imports = [./home.nix];`.
+4. Register the host in `flake.nix`.
+5. Add stable addresses and SSH aliases to `profiles/inventory.nix` where
+   other hosts need them. Add DNS records and back up the host's private keys
+   with `just export-keys`. Pin its verified public host key with
+   `just import-host-key <hostname>`. The pilot's `keys/id_ed25519.pub`
+   grants login; `keys/ssh_host_ed25519_key.pub` identifies the machine.
 6. Run `just nixos-rebuild dry-build <hostname>` and `just lint`.
+
+## Adding a service on inari
+
+Run `just new-service <name>`, fill in the file it creates in
+`hosts/nixos/inari/services/`, and check it with `just explain <name>`. See
+[the services guide](./hosts/nixos/inari/services/AGENTS.md) and
+[the concepts](./docs/concepts.md).
 
 ## Conventions
 
-Custom options live under `yomi.*`. Service ports are allocated in
-[`modules/nixos/ports.nix`](./modules/nixos/ports.nix),
-secrets remain encrypted in `secrets.yaml` files, and host-specific state is
-persisted explicitly. See [`AGENTS.md`](./AGENTS.md) for architecture details
-and contributor rules.
+Custom options live under `yomi.*` and are listed in
+[`docs/options.md`](./docs/options.md). Each service declares its own ports,
+secrets remain encrypted in `secrets.yaml` files, and state is persisted
+explicitly. See [`AGENTS.md`](./AGENTS.md) for the map and the contributor
+rules.

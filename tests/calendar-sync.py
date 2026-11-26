@@ -1,8 +1,8 @@
 """Exercise the packaged Google client's write path with synthetic events."""
 
 import asyncio
-from types import SimpleNamespace
 import sys
+from types import SimpleNamespace
 from unittest.mock import AsyncMock
 from urllib.parse import urljoin
 

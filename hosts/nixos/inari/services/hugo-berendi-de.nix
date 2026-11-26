@@ -5,6 +5,11 @@
 }: let
   endpoint = config.yomi.web.at.hugo-berendi-de;
 in {
+  # {{{ Ports
+  yomi.ports = {
+    hugo-berendi-de = 8514;
+  };
+  # }}}
   imports = [inputs.hugo-berendi-de.nixosModules.default];
 
   # {{{ Reverse proxy
@@ -12,9 +17,9 @@ in {
   # and search engines reach it.
   yomi.web.at.hugo-berendi-de = {
     subdomain = "";
-    port = config.yomi.ports.hugo-berendi-de;
     transport = "pangolin";
     authentication = "none";
+    publicReason = "the personal website, written for everyone";
     pangolin.allowedCountries = [];
   };
   # }}}

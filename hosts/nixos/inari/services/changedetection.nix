@@ -48,8 +48,17 @@
     done
   '';
 in {
+  # {{{ Ports
+  yomi.ports = {
+    changedetection = 8492;
+  };
+  # }}}
   # {{{ Reverse proxy
-  yomi.nginx.at.changedetection.port = port;
+  # Reachable without a login from the LAN.
+  yomi.web.at.changedetection = {
+    transport = "nginx";
+    authentication = "none";
+  };
   # }}}
   # {{{ Secrets
   sops.secrets.no_reply_smtp_password = {
@@ -106,7 +115,7 @@ in {
     volumes = ["${dataDir}:/datastore"];
     environment = {
       PORT = "5000";
-      BASE_URL = config.yomi.nginx.at.changedetection.url;
+      BASE_URL = config.yomi.web.at.changedetection.url;
       PLAYWRIGHT_DRIVER_URL = "ws://browser:3000";
     };
     log-driver = "journald";

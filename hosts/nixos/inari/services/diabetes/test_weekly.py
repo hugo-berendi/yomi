@@ -46,6 +46,7 @@ class WeeklyTests(unittest.TestCase):
 
     def test_hour_chart_weights_two_hour_cells_and_keeps_gaps_unknown(self):
         import math
+
         from report_charts import hour_values
 
         values = hour_values(
@@ -112,18 +113,19 @@ class WeeklyTests(unittest.TestCase):
     def test_ai_review_failure_is_logged_and_report_continues(self):
         import io
         from contextlib import redirect_stderr
+
         from analysis import comparison
         from weekly import run_weekly
 
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             init_db(root)
-            config = dict(
-                recipient="patient@example.invalid",
-                sender="report@example.invalid",
-                host="localhost",
-                port=587,
-            )
+            config = {
+                "recipient": "patient@example.invalid",
+                "sender": "report@example.invalid",
+                "host": "localhost",
+                "port": 587,
+            }
             now = datetime(2026, 10, 26, 8, tzinfo=UTC)
             report = comparison([], [], now) | {"comparable": True}
 
@@ -162,12 +164,12 @@ class WeeklyTests(unittest.TestCase):
                 messages.append(message)
                 raise TimeoutError("sensitive exception")
 
-            config = dict(
-                recipient="patient@example.invalid",
-                sender="report@example.invalid",
-                host="localhost",
-                port=587,
-            )
+            config = {
+                "recipient": "patient@example.invalid",
+                "sender": "report@example.invalid",
+                "host": "localhost",
+                "port": 587,
+            }
             now = datetime(2026, 10, 26, 8, tzinfo=UTC)
             with patch("weekly.sync", return_value="not configured"):
                 self.assertEqual(
@@ -221,16 +223,16 @@ class WeeklyTests(unittest.TestCase):
             )
 
     def test_rejected_delivery_backs_off_then_retries(self):
-        from weekly import run_weekly, Rejected
+        from weekly import Rejected, run_weekly
 
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             init_db(root)
-            config = dict(
-                recipient="patient@example.invalid",
-                sender="report@example.invalid",
-                host="localhost",
-            )
+            config = {
+                "recipient": "patient@example.invalid",
+                "sender": "report@example.invalid",
+                "host": "localhost",
+            }
             now = datetime(2026, 10, 26, 8, tzinfo=UTC)
             with patch("weekly.sync", return_value="not configured"):
                 result = run_weekly(
@@ -253,8 +255,8 @@ class WeeklyTests(unittest.TestCase):
                 self.assertEqual(result["status"], "submitted")
 
     def test_model_failure_still_submits(self):
-        from weekly import run_weekly
         from analysis import week_bounds
+        from weekly import run_weekly
 
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -274,11 +276,11 @@ class WeeklyTests(unittest.TestCase):
             with patch("weekly.sync", return_value="failed"):
                 result = run_weekly(
                     root,
-                    dict(
-                        recipient="patient@example.invalid",
-                        sender="report@example.invalid",
-                        host="localhost",
-                    ),
+                    {
+                        "recipient": "patient@example.invalid",
+                        "sender": "report@example.invalid",
+                        "host": "localhost",
+                    },
                     now,
                     submit=lambda m, c: messages.append(m),
                     review=failed_model,
@@ -295,11 +297,11 @@ class WeeklyTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             init_db(root)
-            config = dict(
-                recipient="patient@example.invalid",
-                sender="report@example.invalid",
-                host="localhost",
-            )
+            config = {
+                "recipient": "patient@example.invalid",
+                "sender": "report@example.invalid",
+                "host": "localhost",
+            }
             now = datetime(2026, 10, 26, 8, tzinfo=UTC)
             with patch("weekly.sync", return_value="failed"):
                 with self.assertRaises(SystemExit):
@@ -317,8 +319,8 @@ class WeeklyTests(unittest.TestCase):
                 )
 
     def test_authentication_challenge_is_distinct_and_preserves_history(self):
-        from glooko_sync import AuthenticationRequired, save_credentials, sync
         from app import get_state
+        from glooko_sync import AuthenticationRequired, save_credentials, sync
 
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -382,8 +384,9 @@ class WeeklyTests(unittest.TestCase):
             )
 
     def test_concurrent_backup_publication(self):
-        from app import snapshot_database
         from concurrent.futures import ThreadPoolExecutor
+
+        from app import snapshot_database
 
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
