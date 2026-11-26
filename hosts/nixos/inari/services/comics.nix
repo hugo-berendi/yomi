@@ -52,9 +52,14 @@ in {
         autoDownloadNewChapters = true;
         excludeEntryWithUnreadChapters = true;
 
-        extensionRepos = [
+        # The NixOS module rewrites server.conf on every start, so a store added
+        # in the WebUI is gone after the next restart: declare stores here.
+        # Suwayomi 2.4 renamed extensionRepos to extensionStores and dropped the
+        # legacy index.min.json entry while migrating the old key; the URLs below
+        # are the ones its addExtensionStore mutation stores.
+        extensionStores = [
           "https://github.com/keiyoushi/extensions/raw/repo/index.pb"
-          "https://raw.githubusercontent.com/suwayomi/tachiyomi-extension/repo/index.min.json"
+          "https://raw.githubusercontent.com/suwayomi/tachiyomi-extension/repo/repo.json"
         ];
 
         flareSolverrEnabled = true;
