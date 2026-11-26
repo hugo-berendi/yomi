@@ -14,6 +14,7 @@ in {
     "${modulesPath}/profiles/qemu-guest.nix"
     ./filesystems.nix
     ./heartbeat.nix
+    ./netbird.nix
     ./releases.nix
   ];
 

@@ -11,6 +11,7 @@
     ./hardware
     ./filesystems
     ./fingerprint.nix
+    ./netbird.nix
     ./printing.nix
     ./services/restic.nix
     ./yubikey.nix

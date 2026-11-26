@@ -50,7 +50,9 @@ itself, inside a user service. Services live in `services/`; read
   containers set `--stop-timeout` for that case.
 - LAN clients reach nginx and SSH directly at `yomi.inari.lanIPv4`, which
   defaults to the address in `profiles/inventory.nix`. Away from home,
-  Pangolin on ebisu provides the same names.
+  NetBird devices reach the same address through inari as routing peer
+  (`services/netbird.nix`); its interface gets the LAN's ports in
+  `nftables.nix`. Pangolin's private resources still work as well.
 
 ## State
 

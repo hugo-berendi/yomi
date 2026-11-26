@@ -49,7 +49,7 @@ the rest.
 |------|------|---------|
 | `amaterasu` | Framework 13 laptop: Btrfs, impermanence, Hyprland | `profiles/desktop.nix` |
 | `inari` | Home server and router: ZFS, impermanence, ~50 services, Docker, nftables and dnsmasq | `profiles/server.nix` |
-| `ebisu` | VPS running the Pangolin gateway | `profiles/vps.nix` |
+| `ebisu` | VPS running the Pangolin gateway and the NetBird server | `profiles/vps.nix` |
 | `tsukuyomi` | Home PC, NixOS-WSL on Windows; no impermanence | `profiles/wsl.nix` |
 | `wsl-work` | Work laptop, NixOS-WSL; same profile as tsukuyomi | `profiles/wsl.nix` |
 | `iso` | Installation and recovery image | `profiles/recovery.nix` |

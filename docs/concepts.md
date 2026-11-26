@@ -92,10 +92,17 @@ yomi.network.exposure.windrose-direct = {
 `br0` only and rejects anything else until a reviewed rule exists. Docker's
 published ports need separate review.
 
-Away from home, Pangolin provides access: `yomi.expose.private.<name>`
-defines a client resource (`mode` host, cidr, http, ssh, inference or exit-node;
-`destination`, `alias`, `tcpPorts`, `udpPorts`, `users`, `roles`), and
-`yomi.expose.tcp` / `yomi.expose.udp` forward a raw public port.
+Away from home, NetBird devices reach inari as the LAN does. ebisu runs the
+NetBird server (`hosts/nixos/ebisu/netbird.nix`), inari is its routing peer
+(`hosts/nixos/inari/services/netbird.nix`), and the NetBird interface gets the
+same ports as `br0`. Routes, the exit node and access policies are set in
+NetBird's dashboard.
+
+Pangolin still provides private access too, until its private resources are
+removed: `yomi.expose.private.<name>` defines a client resource (`mode` host,
+cidr, http, ssh, inference or exit-node; `destination`, `alias`, `tcpPorts`,
+`udpPorts`, `users`, `roles`). `yomi.expose.tcp` / `yomi.expose.udp` forward a
+raw public port.
 
 ## Persistence and backups
 

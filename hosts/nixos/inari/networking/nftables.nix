@@ -18,6 +18,13 @@
     lib.unique (baseUdpPorts ++ lanUdpServicePorts)
   );
 
+  # NetBird peers (services/netbird.nix) are devices signed in as the pilot
+  # through ebisu's NetBird, so they get what the LAN gets, enforced in the
+  # netbird-prerouting chain below. NetBird's policies decide which devices
+  # are peers.
+  netbird = config.services.netbird.enable;
+  netbirdInterface = config.services.netbird.clients.default.interface;
+
   # networking.firewall is disabled below, so allowedTCPPorts and
   # allowedUDPPorts reach nothing: every `openFirewall = true` in modules/nixos
   # (pounce, windrose, steam-game-server, vrising) opens exactly nothing here.
@@ -103,6 +110,12 @@ in {
             iifname "br0" meta l4proto udp th dport { ${lanUdpPorts} } accept comment "Allow registered LAN UDP services"
             iifname "br0" ip protocol icmp accept comment "Allow LAN IPv4 diagnostics"
             iifname "br0" ip6 nexthdr ipv6-icmp accept comment "Allow LAN IPv6 diagnostics"
+            ${lib.optionalString netbird ''
+            iifname "${netbirdInterface}" ct state { established, related } accept comment "Allow established NetBird traffic"
+            iifname "${netbirdInterface}" meta l4proto tcp th dport { ${lanTcpPorts} } accept comment "NetBird peers get the LAN's TCP services"
+            iifname "${netbirdInterface}" meta l4proto udp th dport { ${lanUdpPorts} } accept comment "NetBird peers get the LAN's UDP services"
+            iifname "${netbirdInterface}" ip protocol icmp accept comment "Allow NetBird IPv4 diagnostics"
+          ''}
             iifname {"docker0", "br-pelican", "br-changedet", "veth*"} accept comment "Allow Docker to router"
             iifname "wg-br" accept comment "Allow VPN namespace to router"
           }
@@ -122,6 +135,12 @@ in {
             iifname { "docker0", "br-pelican", "br-changedet" } oifname "br0" accept comment "Docker to uplink"
             iifname "br0" oifname { "docker0", "br-pelican", "br-changedet" } ct state { established, related } accept comment "Replies from uplink"
 
+            ${lib.optionalString netbird ''
+            # NetBird peers reach the home network through inari's routes and
+            # the internet through its exit node; NetBird masquerades both.
+            iifname "${netbirdInterface}" oifname "br0" accept comment "NetBird peers to LAN and uplink"
+            iifname "br0" oifname "${netbirdInterface}" ct state { established, related } accept comment "Replies to NetBird peers"
+          ''}
             # VPN namespace bridge access
             iifname "wg-br" oifname "br0" accept comment "VPN namespace to WAN"
             iifname "br0" oifname "wg-br" ct state { established, related } accept comment "WAN back to VPN namespace"
@@ -130,6 +149,27 @@ in {
           chain output {
             type filter hook output priority 0; policy accept;
           }
+          ${lib.optionalString netbird ''
+            # NetBird's client puts `iifname "${netbirdInterface}" accept` at the top of
+            # every other table's input and forward chains, this one's included,
+            # and restores it after reloads (client/firewall/nftables/
+            # router_linux.go, acceptExternalChainsRules). The rules for its
+            # interface in those chains therefore decide nothing, and without
+            # this chain NetBird's policies alone would. Prerouting is a hook it
+            # leaves alone: this runs after conntrack (-200) and before
+            # NetBird's DNAT (-100).
+            chain netbird-prerouting {
+              type filter hook prerouting priority -150; policy accept;
+              iifname != "${netbirdInterface}" accept
+              ct state { established, related } accept
+              fib daddr type local meta l4proto tcp th dport { ${lanTcpPorts} } accept comment "NetBird peers get the LAN's TCP services"
+              fib daddr type local meta l4proto udp th dport { ${lanUdpPorts} } accept comment "NetBird peers get the LAN's UDP services"
+              fib daddr type local ip protocol icmp accept comment "Allow NetBird IPv4 diagnostics"
+              fib daddr type local drop
+              fib daddr oifname "br0" accept comment "NetBird peers to LAN and uplink"
+              drop
+            }
+          ''}
         '';
       };
       tables.yomi-nat = {

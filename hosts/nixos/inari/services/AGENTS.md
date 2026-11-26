@@ -22,7 +22,7 @@ Declare everything the service needs in its own file:
 | a health check | `monitor.enable = true;` in that entry | Gatus picks it up |
 | a tile on the homepage dashboard | `homepage = { group; name; icon; description; };` in that entry | see below |
 | LAN access to a raw port | `yomi.network.exposure.<name>.interface = "br0";` | `br0` and `scope = "lan"` only |
-| access from outside the LAN | `yomi.expose.private.<name>` or `yomi.expose.tcp/udp.<name>` | Pangolin, through ebisu |
+| access from outside the LAN | nothing for NetBird devices, which get the LAN's ports; `yomi.expose.private.<name>` or `yomi.expose.tcp/udp.<name>` for Pangolin | NetBird and Pangolin both run on ebisu |
 | state that survives reboots | `yomi.persistence.at.state.apps.<name>.directories` | the root is wiped on boot |
 | data under `/raid5pool` backed up | `yomi.restic.offsite.paths` | the local sets do not cover it |
 | a secret | `sops.secrets.<key>.sopsFile = ../secrets.yaml;` | `../../secrets.yaml` from a subdirectory |
