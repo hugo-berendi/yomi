@@ -30,6 +30,7 @@ git log --oneline -10     # what landed since last time
 | change inari's network, disks or how it runs | `hosts/nixos/inari/` | `hosts/nixos/inari/AGENTS.md` |
 | change what every host, or every host of a kind, gets | `profiles/` | `profiles/AGENTS.md` |
 | change a program or desktop piece the pilot uses | `home/features/` | `home/AGENTS.md` |
+| change what agents are told, their models or skill links | `home/features/cli/ai/instructions/*.md`, `instructions.nix`, `skills.nix`; skills themselves live in `~/projects/ai-skills` | `just ai-explain` |
 | define or change a `yomi.*` option | `modules/` | `modules/AGENTS.md` |
 | change one machine's hardware, disks or own settings | `hosts/nixos/<host>/` (`home.nix` for its Home Manager settings) | |
 | package something | `pkgs/` | |
@@ -66,6 +67,8 @@ just check                          # nix flake check --keep-going
 just docs                           # regenerate docs/options.md after changing an option
 just where <option> [host]          # every file that sets an option, and what it sets
 just explain <service> [host]       # what a service brings: ports, endpoints, units, secrets, state
+just ai-explain [host]              # what each agent harness gets: instruction blocks, skills, models
+just ai-sync                        # rewrite this machine's agent instruction blocks without a switch
 just new-service <name> [host]      # a new service file with a free port, staged
 just parity [--base REV] [--new REV] [--host H]  # what changed in the built systems
 just hardening-report <host>        # evaluated sandbox settings and their sources
