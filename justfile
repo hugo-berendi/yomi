@@ -441,6 +441,16 @@ where option host=hostname:
 explain service host=hostname:
   nix develop -c python3 scripts/ops/introspect.py explain {{service}} --host {{host}}
 
+[doc("Show what each agent harness gets on a host: instruction blocks, skills, models")]
+[group("ai")]
+ai-explain host=hostname:
+  nix develop -c python3 scripts/ops/ai-explain.py {{host}}
+
+[doc("Rewrite this machine's agent instruction blocks from the working tree, without a switch")]
+[group("ai")]
+ai-sync:
+  "$(nix build --no-link --print-out-paths .#nixosConfigurations.{{hostname}}.config.home-manager.users.$(whoami).yomi.ai.installInstructions)/bin/yomi-ai-instructions"
+
 [doc("Update only the skills flake input")]
 [group("ai")]
 bump-skills:

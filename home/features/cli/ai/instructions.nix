@@ -1,6 +1,8 @@
 # The global instructions every agent harness reads, from one place: the
 # blocks in ./instructions/, which harness files they go into, and the models
 # they name. Change a rule in its .md file and a model in `yomi.ai.models`.
+# `just ai-sync` rewrites the blocks without a full switch; `just ai-explain`
+# shows what each harness gets.
 {
   config,
   lib,
