@@ -61,13 +61,20 @@ with tempfile.TemporaryDirectory(prefix="n8n-diabetes-") as temporary:
     workflow["active"] = False
     workflow_path = root / "workflow.json"
     workflow_path.write_text(json.dumps(workflow))
+    # Use the id the workflow references; any other id makes n8n refuse the
+    # execution with "does not have access to the credential".
+    (reference,) = [
+        node["credentials"]["httpHeaderAuth"]
+        for node in workflow["nodes"]
+        if "httpHeaderAuth" in node.get("credentials", {})
+    ]
     credential_path = root / "credential.json"
     credential_path.write_text(
         json.dumps(
             [
                 {
-                    "id": "CONFIGURE_DIABETES_ACCESS",
-                    "name": "Diabetes service · Authorization",
+                    "id": reference["id"],
+                    "name": reference["name"],
                     "type": "httpHeaderAuth",
                     "data": {"name": "Authorization", "value": f"Bearer {TOKEN}"},
                 }
