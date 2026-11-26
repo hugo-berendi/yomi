@@ -118,13 +118,17 @@
   ];
   # }}}
   # {{{ Lutris
-  # TODO: there might be more to cache in .cache/lutris
+  # Lutris 0.5.22 (lutris/settings.py) keeps the game library (pga.db),
+  # banners, cover art, runners and runtime under the data directory; the
+  # cache holds shaders, installer downloads and runtime version info.
   yomi.persistence.at.state.apps.lutris.directories = [
-    "${config.xdg.configHome}/lutris" # General config data
-    "${config.xdg.cacheHome}/lutris/banners" # Game banners
-    "${config.xdg.cacheHome}/lutris/coverart" # Game cover art
-
+    "${config.xdg.configHome}/lutris"
+    "${config.xdg.dataHome}/lutris"
     "media/games/lutris" # Lutris games
+  ];
+
+  yomi.persistence.at.cache.apps.lutris.directories = [
+    "${config.xdg.cacheHome}/lutris"
   ];
   # }}}
   # {{{ Wine
