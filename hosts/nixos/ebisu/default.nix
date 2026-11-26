@@ -54,7 +54,18 @@ in {
     package = pkgs.callPackage ../../../pkgs/pangolin.nix {
       inherit (config.yomi.expose.server) edition;
     };
-    settings.flags.enable_integration_api = true;
+    settings = {
+      flags.enable_integration_api = true;
+      # Clients and sites reach Gerbil here. The module's default, the
+      # dual-stack dashboard name, let a client on a dual-stack network punch
+      # Gerbil over IPv6, so Pangolin handed newt on inari an IPv6 endpoint
+      # that inari, which has no IPv6, cannot reach. On 2026-11-25 every
+      # client that connected fell back to the relay through ebisu within
+      # seconds, and one flipped between IPv4 and IPv6 every minute for
+      # three hours. Pangolin copies this into its exit node at every start
+      # (server/setup/copyInConfig.ts). Revisit once inari has IPv6.
+      gerbil.base_endpoint = ipv4;
+    };
   };
   # The pinned nixpkgs wrapper copies the release's read-only Next.js tree.
   # Make the service-owned copy writable so the wrapper can replace it on restart.
