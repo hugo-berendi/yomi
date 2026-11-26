@@ -107,6 +107,30 @@ in
         python3 ${../tests/test_agent_instructions.py}
         touch $out
       '';
+    # Glooko's login and export against intercepted pages in real Chromium,
+    # and the n8n workflows run by the installed n8n against local fakes.
+    # The scripts find the workflows and the diabetes app beside them in the
+    # repository, so they run from the flake source.
+  }
+  // (let
+    inherit (myPkgs.diabetes-app) python;
+    n8n = self.nixosConfigurations.inari.config.services.n8n.package;
+    script = name: argument:
+      pkgs.runCommand name {
+        # Without a font, text has no size and Playwright calls it invisible.
+        FONTCONFIG_FILE = pkgs.makeFontsConf {fontDirectories = [pkgs.dejavu_fonts];};
+      } ''
+        export HOME=$TMPDIR PYTHONDONTWRITEBYTECODE=1 MPLCONFIGDIR=$TMPDIR/matplotlib
+        ${python}/bin/python ${self}/tests/${name}.py ${argument}
+        touch $out
+      '';
+  in {
+    glooko-browser = script "glooko-browser" "${pkgs.chromium}/bin/chromium";
+    glooko-download = script "glooko-download" "${pkgs.chromium}/bin/chromium";
+    n8n-diabetes = script "n8n-diabetes" "${n8n}/bin/n8n";
+    n8n-webuntis = script "n8n-webuntis" "${n8n}/bin/n8n";
+  })
+  // {
     backup-monitoring = import ../tests/backup-monitoring.nix {
       inherit pkgs;
       rules = self.nixosConfigurations.inari.config.services.grafana.provision.alerting.rules.settings;
