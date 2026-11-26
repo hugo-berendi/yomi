@@ -15,6 +15,12 @@
   yomi.pilot.sshIdentity = ["~/.ssh/id_ed25519_inari" "~/.ssh/id_ed25519"];
   # }}}
 
+  # {{{ Agent skills
+  # Skills are written in this checkout; linking them from it makes an edit
+  # take effect without a bump and a switch.
+  yomi.ai.skillsCheckout = "${config.home.homeDirectory}/projects/ai-skills";
+  # }}}
+
   # {{{ SSH config as a real file
   # t3code runs in a bwrap user namespace that maps only the pilot's uid, so
   # every /nix/store file looks owned by nobody there. ssh refuses a

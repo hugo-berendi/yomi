@@ -441,6 +441,11 @@ where option host=hostname:
 explain service host=hostname:
   nix develop -c python3 scripts/ops/introspect.py explain {{service}} --host {{host}}
 
+[doc("Update only the skills flake input")]
+[group("ai")]
+bump-skills:
+  nix flake update skills
+
 [doc("Compare what this working tree builds with a base revision, ignoring store hashes")]
 [group("nix")]
 parity *args:

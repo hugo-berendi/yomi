@@ -6422,6 +6422,32 @@ attribute set of attribute set of string
 *Declared by:*
  - [home/features/cli/ai/instructions\.nix](../home/features/cli/ai/instructions.nix)
 
+## yomi\.ai\.skillsCheckout
+
+A local checkout of the skills repository to link skills from instead of
+the pinned flake input, so edits take effect at once\. Which skills exist
+and which harness gets them still comes from the pinned input: a new or
+renamed skill needs ` just bump-skills ` and a switch\. Uncommitted work in
+the checkout goes live too\.
+
+*Type:*
+null or string
+
+*Default:*
+
+```nix
+null
+```
+
+*Example:*
+
+```nix
+"/home/hugob/projects/ai-skills"
+```
+
+*Declared by:*
+ - [home/features/cli/ai/skills\.nix](../home/features/cli/ai/skills.nix)
+
 ## yomi\.monitors
 
 This option has no description\.
