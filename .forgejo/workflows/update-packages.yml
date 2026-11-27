@@ -69,8 +69,8 @@ jobs:
 
       - name: Update vimclip to latest master commit
         run: |
-          echo "::group::nix-update vimclip"
-          if nix run nixpkgs#nix-update -- --flake vimclip --version=branch=master; then
+          echo "::group::update vimclip"
+          if nix develop -c bash scripts/ci/update-vimclip.sh; then
             if nix build .#vimclip --no-link; then
               echo "vimclip updated and builds"
             else
@@ -79,7 +79,7 @@ jobs:
               git checkout -- pkgs/vimclip.nix
             fi
           else
-            echo "nix-update failed for vimclip, skipping" >&2
+            echo "vimclip update failed, skipping" >&2
             echo "vimclip update failed" >> "${{ steps.trusted.outputs.dir }}/failures"
             git checkout -- pkgs/vimclip.nix
           fi

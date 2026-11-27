@@ -20,5 +20,7 @@ pkgs.mkShell {
     pkgs.ruff
     pkgs.shellcheck
     pkgs.shfmt
+    pkgs.curl
+    pkgs.jq
   ];
 }
