@@ -15,8 +15,8 @@ in {
       Run the Actions runner on inari itself. Turn this off only after a
       dedicated worker (yomi.forgejoCiWorker on its own machine) has picked up
       jobs for the `native` label. Off removes the runner unit, its sops
-      secrets and templates, its persisted state directory and its nix trust
-      from the evaluated system. It does not delete the runner's registration
+      secrets and templates and its persisted state directory from the
+      evaluated system. It does not delete the runner's registration
       in Forgejo, nor the old state under /persist/state/var/lib/gitea-runner.
     '';
   };
@@ -135,11 +135,12 @@ in {
 
       users.groups.gitea-runner = {};
 
-      # The runner is trusted so nix honours the flake's extra-trusted-public-keys
-      # (a restricted setting) instead of warning that it is not a trusted user.
-      # Root's nix.conf already lists the same keys (common/caches.nix), which is
-      # why the dedicated worker does without this.
-      nix.settings.trusted-users = ["root" "hugob"] ++ lib.optional runnerEnabled "gitea-runner";
+      # The runner is not a trusted user: that would let any workflow push
+      # unsigned paths into the store, which is root on inari. Nix then ignores
+      # the flake's extra-trusted-public-keys with a warning, but root's nix.conf
+      # already lists the same caches and keys (common/caches.nix), as on the
+      # dedicated worker, whose module forbids the trust outright.
+      nix.settings.trusted-users = ["root" "hugob"];
     }
     (lib.mkIf runnerEnabled {
       services.gitea-actions-runner.instances.default = {
