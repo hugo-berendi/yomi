@@ -25,7 +25,8 @@ class DeploymentHealthTests(unittest.TestCase):
                 {
                     "url": "http://127.0.0.1:3000/api/health",
                     "json": {"database": "ok"},
-                }
+                },
+                5,
             )
 
     def test_required_command_failure_is_unhealthy(self):
@@ -37,22 +38,38 @@ class DeploymentHealthTests(unittest.TestCase):
             ),
             self.assertRaises(health.subprocess.CalledProcessError),
         ):
-            health.probe({"command": ["check"]})
+            health.probe({"command": ["check"]}, 5)
 
     def test_warming_service_can_recover(self):
         with (
             patch.object(health, "probe", side_effect=[OSError(), None]),
             patch.object(health.time, "sleep"),
-            patch.object(health.time, "monotonic", side_effect=[0, 1, 2]),
+            patch.object(health.time, "monotonic", side_effect=[0, 1, 2, 3]),
         ):
             self.assertTrue(health.wait_healthy([{"name": "application"}], 5, 1))
 
     def test_failure_after_deadline_rejects_deployment(self):
         with (
             patch.object(health, "probe", side_effect=OSError()),
-            patch.object(health.time, "monotonic", side_effect=[0, 6]),
+            patch.object(health.time, "monotonic", side_effect=[0, 1, 6]),
         ):
             self.assertFalse(health.wait_healthy([{"name": "application"}], 5, 1))
+
+    def test_no_probe_starts_after_deadline(self):
+        with (
+            patch.object(health, "probe") as probe,
+            patch.object(health.time, "monotonic", side_effect=[0, 6, 6]),
+        ):
+            self.assertFalse(health.wait_healthy([{"name": "application"}], 5, 1))
+        probe.assert_not_called()
+
+    def test_probe_timeout_ends_at_deadline(self):
+        with (
+            patch.object(health, "probe") as probe,
+            patch.object(health.time, "monotonic", side_effect=[0, 3]),
+        ):
+            self.assertTrue(health.wait_healthy([{"name": "application"}], 5, 1))
+        probe.assert_called_once_with({"name": "application"}, 2)
 
 
 if __name__ == "__main__":

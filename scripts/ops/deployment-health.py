@@ -9,11 +9,11 @@ from urllib.error import URLError
 from urllib.request import urlopen
 
 
-def probe(check):
+def probe(check, timeout):
     if "command" in check:
-        subprocess.run(check["command"], check=True, timeout=5, capture_output=True)
+        subprocess.run(check["command"], check=True, timeout=timeout, capture_output=True)
         return
-    with urlopen(check["url"], timeout=5) as response:
+    with urlopen(check["url"], timeout=timeout) as response:
         if "json" in check:
             actual = json.load(response)
             if not isinstance(actual, dict) or any(
@@ -27,8 +27,13 @@ def wait_healthy(checks, timeout, interval):
     while True:
         failures = []
         for check in checks:
+            # No probe runs past the deadline, so a late pass cannot count.
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                failures.append(f"{check['name']} (deadline)")
+                continue
             try:
-                probe(check)
+                probe(check, min(5, remaining))
             except (
                 OSError,
                 URLError,
