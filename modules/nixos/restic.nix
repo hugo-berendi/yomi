@@ -140,10 +140,11 @@ in {
         description = ''
           Secrets file providing b2_bucket, b2_account_id and b2_account_key.
 
-          This module lives in common/, so a relative path here would resolve
-          against common/ and miss the per-host file the credentials actually
-          belong in. backup_password stays in common/secrets.yaml because it is
-          genuinely shared.
+          A path is required because this module is shared by several hosts:
+          a relative path written here would resolve against modules/nixos/
+          and miss the per-host file the credentials belong in.
+          backup_password comes from yomi.restic.sopsFile instead
+          (profiles/secrets.yaml), because it is shared.
         '';
       };
 

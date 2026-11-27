@@ -155,7 +155,7 @@ not differ; a list of derivations is exactly what a switch would change.
 
 Forgejo Actions in `.forgejo/workflows/`:
 
-- `check-nixos-flake.yml` on push and PR: `just lint`, `just check`, and
+- `check-nixos-flake.yml` on every push and by hand: `just lint`, `just check`, and
   builds of amaterasu, inari, tsukuyomi and wsl-work.
 - `update-flake-inputs.yml`, daily 18:00 Berlin: `nix flake update` (all
   inputs Monday and Thursday, otherwise only `llm-agents` and `t3code-nix`)

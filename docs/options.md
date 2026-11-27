@@ -1773,8 +1773,8 @@ list of string
 Run the Actions runner on inari itself\. Turn this off only after a
 dedicated worker (yomi\.forgejoCiWorker on its own machine) has picked up
 jobs for the ` native ` label\. Off removes the runner unit, its sops
-secrets and templates, its persisted state directory and its nix trust
-from the evaluated system\. It does not delete the runner’s registration
+secrets and templates and its persisted state directory from the
+evaluated system\. It does not delete the runner’s registration
 in Forgejo, nor the old state under /persist/state/var/lib/gitea-runner\.
 
 *Type:*
@@ -4022,10 +4022,11 @@ list of string
 
 Secrets file providing b2_bucket, b2_account_id and b2_account_key\.
 
-This module lives in common/, so a relative path here would resolve
-against common/ and miss the per-host file the credentials actually
-belong in\. backup_password stays in common/secrets\.yaml because it is
-genuinely shared\.
+A path is required because this module is shared by several hosts:
+a relative path written here would resolve against modules/nixos/
+and miss the per-host file the credentials belong in\.
+backup_password comes from yomi\.restic\.sopsFile instead
+(profiles/secrets\.yaml), because it is shared\.
 
 *Type:*
 absolute path

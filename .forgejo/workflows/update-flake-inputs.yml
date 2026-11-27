@@ -1,9 +1,10 @@
 name: Update Flake Inputs
 on:
   # Daily at 18:00 Berlin (the Forgejo host's local time), so a merged bump is
-  # live after inari's 04:00 auto-upgrade. Only llm-agents moves on most days;
-  # the full update runs Monday and Thursday (see the update step). The writes
-  # land on the NVMe holding zroot, which is near its rated endurance.
+  # live after inari's 04:00 auto-upgrade. Only llm-agents and t3code-nix move
+  # on most days; the full update runs Monday and Thursday (see the update
+  # step). The writes land on the NVMe holding zroot, which is near its rated
+  # endurance.
   # update-packages runs 30 minutes later on the same runner.
   schedule:
     - cron: "0 18 * * *"
@@ -54,7 +55,8 @@ jobs:
           echo "sums=$(cd "$dir" && sha256sum ./*.py | sha256sum | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
       - name: Update flake inputs
         # llm-agents (claude-code, codex, opencode) has no nixpkgs follows and
-        # is prebuilt on cache.numtide.com, so bumping it alone is nearly free.
+        # is prebuilt on cache.numtide.com, so bumping it is nearly free;
+        # t3code-nix moves with it.
         # Everything else, nixpkgs above all, can move a stdenv and rebuild the
         # world, so it only moves on Monday and Thursday.
         run: |

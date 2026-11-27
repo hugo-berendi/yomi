@@ -13,7 +13,8 @@
   imports = [inputs.kodama.nixosModules.default];
 
   # {{{ Reverse proxy
-  # Private access through Pangolin, like Navidrome.
+  # Through nginx only: reachable without a login from the LAN and NetBird
+  # devices, not from the internet.
   yomi.web.at.wrapped = {
     port = config.yomi.ports.kodama;
     transport = "nginx";
