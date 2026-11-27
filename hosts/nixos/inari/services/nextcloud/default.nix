@@ -156,7 +156,7 @@ in {
     script = ''
       nextcloud-occ user_oidc:provider PocketID \
         --clientid="$(cat ${config.sops.secrets.nextcloud_oidc_client_id.path})" \
-        --clientsecret="$(cat ${config.sops.secrets.nextcloud_oidc_client_secret.path})" \
+        --clientsecret-file=${config.sops.secrets.nextcloud_oidc_client_secret.path} \
         --discoveryuri="${pocketIdUrl}/.well-known/openid-configuration" \
         --scope="openid email profile groups" \
         --unique-uid=0 \
