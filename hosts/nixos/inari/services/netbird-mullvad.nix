@@ -4,7 +4,7 @@
 # tunnel. Devices choose it, or inari's own exit, in the NetBird app.
 #
 # The namespace trusts its veth to the host: 192.168.0.0/16 and 172.16.0.0/12
-# route back over wg-br, and inari accepts everything from wg-br. NetBird's
+# route back over wg-br, and inari gives wg-br the LAN's ports. NetBird's
 # client also prepends accept rules for its interface to other tables'
 # input and forward chains (see networking/nftables.nix). So a prerouting
 # chain, a hook NetBird leaves alone, lets traffic from the exit's interface

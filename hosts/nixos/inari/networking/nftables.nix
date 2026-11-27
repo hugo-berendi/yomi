@@ -33,6 +33,8 @@
   netbirdUdpPorts = lib.concatMapStringsSep ", " toString (
     lib.unique (baseUdpPorts ++ lanUdpServicePorts ++ [53])
   );
+  # Docker's bridges and their veths, and the bridge to the `wg` namespace.
+  containerInterfaces = ''"docker0", "br-pelican", "br-changedet", "veth*", "wg-br"'';
 
   # networking.firewall is disabled below, so allowedTCPPorts and
   # allowedUDPPorts reach nothing: every `openFirewall = true` in modules/nixos
@@ -125,8 +127,16 @@ in {
             iifname "${netbirdInterface}" meta l4proto udp th dport { ${netbirdUdpPorts} } accept comment "NetBird peers get the LAN's UDP services and DNS"
             iifname "${netbirdInterface}" ip protocol icmp accept comment "Allow NetBird IPv4 diagnostics"
           ''}
-            iifname {"docker0", "br-pelican", "br-changedet", "veth*"} accept comment "Allow Docker to router"
-            iifname "wg-br" accept comment "Allow VPN namespace to router"
+            # Containers and the VPN namespace get what the LAN gets, plus DNS,
+            # not every port on the host. What they start themselves reaches
+            # granted ports: audiomuse goes through nginx to Navidrome, pelican's
+            # panel to wings on 8448. Everything else is the host talking to
+            # them, which the first rule answers.
+            iifname { ${containerInterfaces} } ct state { established, related } accept comment "Replies to the host"
+            iifname { ${containerInterfaces} } meta l4proto tcp th dport { ${netbirdTcpPorts} } accept comment "Containers get the LAN's TCP services and DNS"
+            iifname { ${containerInterfaces} } meta l4proto udp th dport { ${netbirdUdpPorts} } accept comment "Containers get the LAN's UDP services and DNS"
+            iifname { ${containerInterfaces} } ip protocol icmp accept comment "Allow container IPv4 diagnostics"
+            iifname { ${containerInterfaces} } ip6 nexthdr ipv6-icmp accept comment "Allow container IPv6 neighbour discovery"
           }
 
           chain forward {
