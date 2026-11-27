@@ -9,6 +9,8 @@
     vrising.port = config.services.vrising.gamePort;
     vrising-query.port = config.services.vrising.queryPort;
   };
+  # nftables owns inari's firewall, so opening the ports here reaches nothing.
+  services.steamGameServers.vrising.openFirewall = false;
 
   services.vrising = {
     enable = true;
