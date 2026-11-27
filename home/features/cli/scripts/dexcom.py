@@ -33,7 +33,7 @@ glucose_reading: pydexcom.GlucoseReading | None = dexcom.get_current_glucose_rea
 
 if glucose_reading is None:
     raise Exception("No glucose reading")
-map = mapping.get(glucose_reading.trend_arrow, "Unknown Icon")
+map = mapping.get(glucose_reading.trend_arrow, mapping["?"])
 icon = map[0]
 value = glucose_reading.value
 
