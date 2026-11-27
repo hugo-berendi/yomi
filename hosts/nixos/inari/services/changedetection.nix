@@ -42,10 +42,12 @@
             -d "$new_urls" \
             "$api"
         fi
-        break
+        exit 0
       fi
       sleep 2
     done
+    echo "changedetection's notification API did not answer; mail alerts are not set up" >&2
+    exit 1
   '';
 in {
   # {{{ Ports
