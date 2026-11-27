@@ -30,6 +30,10 @@ jobs:
         run: |
           if [[ -n "$BEFORE" && ! "$BEFORE" =~ ^0+$ ]] && git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
             range="$BEFORE..$AFTER"
+          elif git rev-parse --verify -q origin/main >/dev/null; then
+            # A new branch or a manual run: every commit main lacks, not
+            # only the tip.
+            range="origin/main..$AFTER"
           else
             range="-1"
           fi
