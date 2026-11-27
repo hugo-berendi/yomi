@@ -57,16 +57,17 @@
         reject_old_samples = true;
         reject_old_samples_max_age = "168h";
         allow_structured_metadata = false;
+        # 30 days, like Prometheus. Without it the chunks grow forever.
+        retention_period = "720h";
       };
 
-      table_manager = {
-        retention_deletes_enabled = false;
-        retention_period = "0s";
-      };
-
+      # The compactor deletes what is past retention_period; table_manager's
+      # retention does nothing with the tsdb shipper.
       compactor = {
         working_directory = "/var/lib/loki";
         compactor_ring.kvstore.store = "inmemory";
+        retention_enabled = true;
+        delete_request_store = "filesystem";
       };
     };
   };
