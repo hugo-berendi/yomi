@@ -36,6 +36,23 @@ remote_hash=$(jq -er 'if type == "array" then .[0].narHash else to_entries[0].va
 nar_hash=$(nix-store --query --hash "$toplevel")
 [[ $nar_hash =~ ^sha256:[0123456789abcdfghijklmnpqrsvwxyz]{52}$ ]]
 [[ $(nix hash convert --hash-algo sha256 --to sri "$nar_hash") == "$remote_hash" ]]
+# Inari realises the closure with max-jobs 0, so every path in it must be
+# substitutable: from this cache or one inari already uses (cachix does not
+# store again what cache.nixos.org has).
+read -ra caches < <(nix eval --no-write-lock-file --raw .#nixosConfigurations.inari.config.nix.settings \
+	--apply 's: toString (s.substituters ++ s.extra-substituters or [])' && echo)
+# shellcheck disable=SC2016 # expanded by the inner shell
+missing=$(nix-store --query --requisites "$toplevel" | xargs -P 16 -I{} sh -c '
+	path=$1
+	shift
+	info=$(basename "$path" | cut -c1-32).narinfo
+	for c in "$@"; do curl -sfo /dev/null "${c%/}/$info" && exit 0; done
+	echo "$path"
+' sh {} "$cache" "${caches[@]}")
+if [[ -n $missing ]]; then
+	printf 'Not in any substituter inari uses:\n%s\n' "$missing" >&2
+	exit 1
+fi
 
 temporary=$(mktemp -d -- "${output}.partial.XXXXXXXX")
 trap 'rm -rf -- "$temporary"' EXIT
