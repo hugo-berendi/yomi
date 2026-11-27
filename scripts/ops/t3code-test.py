@@ -14,7 +14,7 @@ GUEST = "agent@10.231.0.2"
 TOOL = "/opt/t3code-tools/bin/t3code-test-workspace"
 
 
-def ssh(command, **kwargs):
+def ssh(command, *, check=False, **kwargs):
     state = Path.home() / ".local/state/t3code-vm"
     return subprocess.run(
         [
@@ -34,7 +34,7 @@ def ssh(command, **kwargs):
             shlex.join(command),
         ],
         **kwargs,
-        check=False,
+        check=check,
     )
 
 

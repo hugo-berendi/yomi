@@ -15,7 +15,6 @@
     inputs.spicetify-nix.homeManagerModules.spicetify
     inputs.nix-index-database.homeModules.nix-index
     inputs.sops-nix.homeManagerModules.sops
-    inputs.hyprland.homeManagerModules.default
     inputs.nvf.homeManagerModules.default
     inputs.nixcord.homeModules.nixcord
     # }}}

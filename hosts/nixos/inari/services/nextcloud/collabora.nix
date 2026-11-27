@@ -5,6 +5,7 @@
   config,
   lib,
   pkgs,
+  upkgs,
   ...
 }: let
   cfg = config.services.nextcloud;
@@ -31,6 +32,8 @@ in {
   # The browser loads the editor frame from the separate public office hostname.
   services.collabora-online = {
     enable = true;
+    # Stable incorrectly applies LibreOffice 26.2 EOL metadata to Collabora 25.04.
+    package = upkgs.collabora-online;
     port = config.yomi.ports.collabora;
     settings = {
       ssl.enable = false;
