@@ -6,6 +6,8 @@
 }: let
   pilot = config.yomi.pilot.name;
   port = config.yomi.ports.cliproxyapi;
+  # Address, port and key path the client wrappers use.
+  proxy = import ../../../../../home/features/cli/ai/subscription-proxy.nix;
   # The pinned Go compiler is too old for this release. Use upstream's
   # plugin-enabled Linux build until nixpkgs supplies a recent enough Go.
   package = pkgs.stdenv.mkDerivation (finalAttrs: {
@@ -26,35 +28,31 @@
   });
   plugin = pkgs.cliproxyapi-copilot-plugin;
   managementKeyPath = config.sops.secrets.cliproxyapi_management_key.path;
-  # Gates a loopback-only endpoint against stray local processes, same trust
-  # level as t3code's own inlined per-session bearer tokens. Rotate by editing
-  # this string and switching.
-  #
-  # It is deliberately not in sops, and the reasoning is worth writing down
-  # because the repository is mirrored to a public forge. Both consumers need
-  # the literal value at build time: this server's config, and opencode's
-  # provider block below -- which is also how t3code reaches cliproxy, since
-  # t3code has no provider of its own for it and only sees cliproxy/gpt-4.1
-  # and friends as models under the opencode provider. Moving it to sops means
-  # rendering opencode's config at runtime, and the value would still sit
-  # world-readable in the nix store afterwards. The only thing that buys is
-  # keeping it out of the mirror, which is not worth restructuring how the
-  # agents are configured.
-  #
-  # If that trade stops being acceptable, the cheaper answer is to drop
-  # api-keys entirely and let filesystem and loopback be the boundary, rather
-  # than to hide a key that every local process can read anyway.
-  apiKey = "ac44eaaf0d9eab6ff1eb768ec279911712f1291014cdabf68f69bb89fdc04f74"; # gitleaks:allow (public by design, see above)
+  apiKeyPath = config.sops.secrets.cliproxyapi_api_key.path;
 
+  # v8 layout (config.example.yaml of the pinned release).
   configTemplate = (pkgs.formats.yaml {}).generate "cliproxyapi-config.yaml" {
-    host = "127.0.0.1";
-    inherit port;
-    auth-dir = "~/.cli-proxy-api";
-    api-keys = [apiKey];
-    remote-management = {
+    config-version = 8;
+    server = {
+      # All interfaces: loopback for opencode and the management poller, br0
+      # and NetBird for the other machines. nftables admits br0 only through
+      # the grant below and wt0 because it gets the LAN's ports; nothing else.
+      host = "";
+      inherit port;
+    };
+    access.api-keys = ["__CLIPROXYAPI_API_KEY__"];
+    management = {
       allow-remote = false;
       secret-key = "__CLIPROXYAPI_MANAGEMENT_KEY__";
     };
+    oauth.auth-dir = "~/.cli-proxy-api";
+    # The scheduler always picks from the highest "priority" (a field in each
+    # auth file) that has a ready credential, and only falls to a lower one
+    # while the higher are cooling down after a quota error
+    # (sdk/cliproxy/auth/scheduler.go, pickReadyLocked). The extra accounts
+    # carry priority 10, the main ones none (0), so the extras are spent
+    # first. fill-first keeps that order within a tier as well.
+    routing.strategy = "fill-first";
     plugins = {
       enabled = true;
       dir = "${plugin}";
@@ -79,18 +77,31 @@
 in {
   # {{{ Ports
   yomi.ports = {
-    cliproxyapi = 8502;
+    cliproxyapi = proxy.port;
   };
+  # The proxy spends paid subscriptions, so the key is what keeps the rest of
+  # the LAN out; it lives in sops and is never in the store.
+  yomi.network.exposure.cliproxyapi.interface = "br0";
   # }}}
-  sops.secrets.cliproxyapi_management_key = {
-    sopsFile = ../secrets.yaml;
-    owner = pilot;
+  sops.secrets = {
+    cliproxyapi_management_key = {
+      sopsFile = ../../secrets.yaml;
+      owner = pilot;
+    };
+    cliproxyapi_api_key = {
+      sopsFile = ./secrets.yaml;
+      owner = pilot;
+    };
   };
 
   home-manager.users.${pilot} = {config, ...}: {
     yomi.persistence.at.state.apps.cliproxyapi.directories = [
       "${config.home.homeDirectory}/.cli-proxy-api"
     ];
+
+    # Where the Claude Code and Codex wrappers look; other machines get a copy
+    # of the key at the same path by hand.
+    home.file.${proxy.keyFile}.source = config.lib.file.mkOutOfStoreSymlink apiKeyPath;
 
     # Surfaced through t3code's existing OpenCode provider driver, which
     # queries this same opencode instance's connected-provider inventory.
@@ -101,7 +112,8 @@ in {
       name = "GitHub Copilot (CLIProxyAPI)";
       options = {
         baseURL = "http://127.0.0.1:${toString port}/v1";
-        inherit apiKey;
+        # opencode reads the file when it loads its config.
+        apiKey = "{file:~/${proxy.keyFile}}";
       };
       models = {
         "gpt-4.1" = {};
@@ -112,7 +124,7 @@ in {
 
     systemd.user.services.cliproxyapi = {
       Unit = {
-        Description = "CLIProxyAPI (GitHub Copilot bridge for opencode)";
+        Description = "CLIProxyAPI (subscription and Copilot bridge for the coding agents)";
         After = ["network.target"];
       };
       Service = {
@@ -122,8 +134,10 @@ in {
           runtimeInputs = [pkgs.coreutils pkgs.gnused];
           text = ''
             management_key="$(cat ${managementKeyPath})"
+            api_key="$(cat ${apiKeyPath})"
             sed \
               -e "s/__CLIPROXYAPI_MANAGEMENT_KEY__/$management_key/" \
+              -e "s/__CLIPROXYAPI_API_KEY__/$api_key/" \
               ${configTemplate} > "$RUNTIME_DIRECTORY/config.yaml"
             chmod 600 "$RUNTIME_DIRECTORY/config.yaml"
           '';
