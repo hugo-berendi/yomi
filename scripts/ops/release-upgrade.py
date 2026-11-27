@@ -125,25 +125,30 @@ def verify_signature(document, signature, allowed_signers):
     with tempfile.TemporaryDirectory(prefix="yomi-release-") as directory:
         path = Path(directory) / "release.json.sig"
         path.write_bytes(signature)
-        result = subprocess.run(
-            [
-                "ssh-keygen",
-                "-Y",
-                "verify",
-                "-f",
-                str(allowed_signers),
-                "-I",
-                PRINCIPAL,
-                "-n",
-                NAMESPACE,
-                "-s",
-                str(path),
-            ],
-            input=document,
-            capture_output=True,
-            timeout=TIMEOUT["verify"],
-            check=False,
-        )
+        try:
+            result = subprocess.run(
+                [
+                    "ssh-keygen",
+                    "-Y",
+                    "verify",
+                    "-f",
+                    str(allowed_signers),
+                    "-I",
+                    PRINCIPAL,
+                    "-n",
+                    NAMESPACE,
+                    "-s",
+                    str(path),
+                ],
+                input=document,
+                capture_output=True,
+                timeout=TIMEOUT["verify"],
+                check=False,
+            )
+        except subprocess.TimeoutExpired as error:
+            raise Failed(f"verify exceeded {TIMEOUT['verify']}s") from error
+        except OSError as error:
+            raise Failed(f"verify failed: {error}") from error
     if result.returncode != 0:
         raise Rejected("Release signature does not verify against the pinned key")
 

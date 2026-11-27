@@ -255,6 +255,17 @@ class ReleaseTests(unittest.TestCase):
         with self.assertRaisesRegex(release.Rejected, "signature"):
             self.f.apply()
 
+    def test_signature_check_timeout_is_a_retryable_failure(self):
+        with (
+            patch.object(
+                release.subprocess,
+                "run",
+                side_effect=subprocess.TimeoutExpired("ssh-keygen", 1),
+            ),
+            self.assertRaisesRegex(release.Failed, "verify exceeded"),
+        ):
+            release.verify_signature(b"{}", b"sig", self.f.root / "signers")
+
     def test_closure_hash_must_match(self):
         self.f.publish(self.new)
         (self.f.root / "nar-hash").write_text("sha256:" + "1" * 52 + "\n")
