@@ -1,13 +1,16 @@
 {config, ...}: {
   # {{{ Secrets
+  # Readable by every user, because sendmail runs as whoever sends (kodama as
+  # its own user, ZED as root), and /etc/msmtprc points each at these files.
+  # Nobody but sops-nix writes them.
   sops.secrets = {
     msmtp_aliases = {
       sopsFile = ../secrets.yaml;
-      mode = "0606";
+      mode = "0444";
     };
     msmtp_password = {
       sopsFile = ../secrets.yaml;
-      mode = "0606";
+      mode = "0444";
     };
   };
   # }}}
