@@ -44,7 +44,7 @@
   });
 in {
   home.packages = [
-    claudeCode
+    (((import ./subscription-proxy.nix).wrap pkgs).claude claudeCode)
     foundry
   ];
 

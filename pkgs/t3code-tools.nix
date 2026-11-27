@@ -3,8 +3,11 @@
   inputs,
 }: let
   agents = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
-  codex = import ../home/features/cli/ai/codex-package.nix {inherit inputs pkgs;};
-  claudeCode = import ../home/features/cli/ai/claude-code-package.nix {inherit inputs pkgs;};
+  # Wrapped so T3 Code's sessions spend the subscriptions through CLIProxyAPI
+  # like the terminal does; the guest has no key file and stays direct.
+  proxy = (import ../home/features/cli/ai/subscription-proxy.nix).wrap pkgs;
+  codex = proxy.codex (import ../home/features/cli/ai/codex-package.nix {inherit inputs pkgs;});
+  claudeCode = proxy.claude (import ../home/features/cli/ai/claude-code-package.nix {inherit inputs pkgs;});
   providers = [codex claudeCode agents.opencode2 agents.copilot-cli];
   t3 = inputs.t3code-nix.packages.${pkgs.stdenv.hostPlatform.system}.default.override {
     providerPackages = providers;

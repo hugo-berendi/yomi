@@ -5,7 +5,7 @@
   ...
 }: {
   home.packages = [
-    (import ./codex-package.nix {inherit inputs pkgs;})
+    (((import ./subscription-proxy.nix).wrap pkgs).codex (import ./codex-package.nix {inherit inputs pkgs;}))
   ];
 
   yomi.persistence.at.state.apps.codex.directories = [
