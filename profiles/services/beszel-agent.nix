@@ -28,7 +28,8 @@ in {
 
     services.beszel.agent = {
       enable = true;
-      openFirewall = true;
+      # No inbound port: agents connect to the hub, and inari's hub reaches
+      # its own agent on 127.0.0.1.
       environmentFile = config.sops.templates."beszel-agent.env".path;
       environment = {
         HUB_URL = "https://monitoring.hugo-berendi.de";
