@@ -56,6 +56,17 @@ in
         python3 -m unittest discover -s tests -p test_release_upgrade.py
         touch "$out"
       '';
+    # Unit tests that load their script from the repository by path.
+    python-units = pkgs.runCommand "python-unit-tests" {nativeBuildInputs = [pkgs.python3 pkgs.gitMinimal];} ''
+      cd ${self}
+      PYTHONDONTWRITEBYTECODE=1 python3 -m unittest \
+        tests.test_package_repair_request \
+        tests.test_t3code_package_repair \
+        tests.test_t3code_test_workspace \
+        tests.test_t3code_vm_bootstrap \
+        tests.test_t3code_vm_provision
+      touch "$out"
+    '';
     expose = import ../tests/expose.nix {inherit pkgs self;};
     expose-backup =
       pkgs.runCommand "expose-backup-tests" {
