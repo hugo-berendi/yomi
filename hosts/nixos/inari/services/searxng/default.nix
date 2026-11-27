@@ -12,18 +12,16 @@ in {
   # }}}
   imports = [./theme.nix];
 
+  # LAN and NetBird devices only, without a login: as a public instance it let
+  # anyone on the internet search through the Mullvad exit.
   yomi.web.at.search = {
     port = config.yomi.ports.searxng;
     proxyAddress = vpn.namespaceAddress;
-    transport = "pangolin";
+    transport = "nginx";
     authentication = "none";
     monitor = {
       enable = true;
       name = "searxng";
-    };
-    pangolin.healthCheck = {
-      enable = true;
-      path = "/healthz";
     };
     homepage = {
       group = "Tooling";

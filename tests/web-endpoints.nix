@@ -51,7 +51,7 @@
       && expectedGatewayDns "media")
     (lib.all (name:
       !live.yomi.expose.at.${name}.sso
-      && expectedGatewayDns name) ["audiobookshelf" "request-media" "bin" "search" "ntfy" "immich-share" "cloud" "office"])
+      && expectedGatewayDns name) ["audiobookshelf" "request-media" "bin" "ntfy" "immich-share" "cloud" "office"])
     (monitoredUrls "jellyseerr" == ["https://request-media.hugo-berendi.de"])
     (monitoredUrls "microbin" == ["https://bin.hugo-berendi.de"])
     (monitoredUrls "searxng" == ["https://search.hugo-berendi.de"])
