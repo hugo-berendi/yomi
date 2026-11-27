@@ -60,6 +60,11 @@ QUESTIONS = {
 }
 
 
+def same(given, expected):
+    """Constant-time comparison; compare_digest raises on non-ASCII str."""
+    return hmac.compare_digest(given.encode(), expected.encode())
+
+
 def read_secret(path):
     if not path.exists():
         # Publish a complete file atomically: serve and tick race here, and a
@@ -471,12 +476,12 @@ def create_app(root=None, config=None):
     def authenticate():
         session.setdefault("csrf", secrets.token_urlsafe(32))
         token = request.headers.get("Authorization", "").removeprefix("Bearer ")
-        full_access = bool(token) and hmac.compare_digest(token, access_token)
+        full_access = bool(token) and same(token, access_token)
         read_access = (
             request.method == "GET"
             and request.path == "/api/glucose"
             and bool(token)
-            and hmac.compare_digest(token, read_token)
+            and same(token, read_token)
         )
         if request.path.startswith("/static/"):
             return None
@@ -489,7 +494,7 @@ def create_app(root=None, config=None):
         if (
             request.method == "POST"
             and not full_access
-            and not hmac.compare_digest(request.form.get("csrf", ""), session["csrf"])
+            and not same(request.form.get("csrf", ""), session["csrf"])
         ):
             abort(403)
         return None
@@ -515,7 +520,7 @@ def create_app(root=None, config=None):
         error = None
         if request.method == "POST":
             submitted = request.form.get("token", "")
-            if submitted and hmac.compare_digest(submitted, access_token):
+            if submitted and same(submitted, access_token):
                 session.clear()
                 session.update(authenticated=True, csrf=secrets.token_urlsafe(32))
                 session.permanent = True

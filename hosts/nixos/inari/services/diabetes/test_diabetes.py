@@ -585,6 +585,23 @@ class AppTests(unittest.TestCase):
         self.assertEqual(self.client.post("/api/tick", headers=read).status_code, 401)
         self.assertEqual(self.client.get("/report.json", headers=read).status_code, 302)
 
+    def test_non_ascii_tokens_are_refused_not_errors(self):
+        self.assertEqual(
+            self.client.get(
+                "/api/glucose", headers={"Authorization": "Bearer t\u00f6ken"}
+            ).status_code,
+            401,
+        )
+        with self.client.session_transaction() as session:
+            session["csrf"] = "expected"
+        login = {"token": "t\u00f6ken", "csrf": "expected"}
+        self.assertEqual(self.client.post("/login", data=login).status_code, 401)
+        with self.client.session_transaction() as session:
+            session["authenticated"] = True
+        self.assertEqual(
+            self.client.post("/settings", data={"csrf": "\u00e4"}).status_code, 403
+        )
+
     def test_session_posts_need_csrf(self):
         with self.client.session_transaction() as session:
             session["authenticated"] = True
