@@ -74,12 +74,20 @@ class ExecutionMonitorTests(unittest.TestCase):
         self.execution(4, "inactive", "error")
         self.execution(5, "manual", "error", mode="manual")
         events = self.events()
-        self.assertEqual(len(events), 1)
+        self.assertEqual(len(events), 2)
+        deactivated = next(e for e in events if e["fingerprint"] == "workflow:inactive")
+        self.assertTrue(deactivated["resolved"], "a deactivated workflow closes its alert")
+        events = [e for e in events if e is not deactivated]
         self.assertEqual(events[0]["fingerprint"], "workflow:broken")
         self.assertEqual(events[0]["severity"], "warning")
         self.assertFalse(events[0]["resolved"])
         self.assertIn("Payment workflow", events[0]["title"] + events[0]["message"])
         self.assertNotIn("error", json.dumps(events[0]).lower())
+
+    def test_inactive_workflow_without_failure_emits_nothing(self):
+        self.workflow("paused", "Paused", active=0)
+        self.execution(1, "paused", "success")
+        self.assertEqual(self.events(), [])
 
     def test_success_after_failure_emits_recovery(self):
         self.workflow("recover", "Scheduled job")
@@ -203,6 +211,23 @@ class ExecutionMonitorTests(unittest.TestCase):
         self.assertEqual(
             json.loads(state.read_text())["failures"], 4, "streak still counted"
         )
+
+    def test_retired_fallback_reports_database_failure_to_the_router(self):
+        state = self.path.with_name("receipt.json")
+        posted = []
+        monitor.post_event = lambda _url, event: posted.append(event)
+        monitor.post_ntfy = lambda *args: self.fail("no direct push")
+        with patch.dict(
+            "os.environ", {**self.NTFY_ENV, "DIRECT_NTFY_FALLBACK": "false"}
+        ):
+            for _ in range(3):
+                self.assertEqual(monitor.main(self.failing_args(state)), 1)
+            self.db.commit()
+            good = self.failing_args(state)
+            good[1] = str(self.path)
+            self.assertEqual(monitor.main(good), 0)
+        outages = [e for e in posted if e["fingerprint"] == "monitor:unavailable"]
+        self.assertEqual([e["resolved"] for e in outages], [False, True])
 
     def test_recovery_after_unnotified_outage_sends_nothing_and_resets_count(self):
         state = self.path.with_name("receipt.json")

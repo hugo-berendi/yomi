@@ -18,16 +18,20 @@ FAILED = {"error", "crashed"}
 
 
 def collect_events(database, editor_url):
-    """Return one generic failure or recovery event per active workflow."""
+    """Return one generic failure or recovery event per workflow.
+
+    A workflow deactivated after a failure gets a recovery event, so its alert
+    closes instead of repeating every day.
+    """
     uri = f"file:{database}?mode=ro"
     with sqlite3.connect(uri, uri=True, timeout=5) as db:
         db.row_factory = sqlite3.Row
         rows = db.execute(
-            """SELECT w.id AS workflow_id, w.name AS workflow_name,
+            """SELECT w.id AS workflow_id, w.name AS workflow_name, w.active,
                       e.status, e.mode, e.id AS execution_id
                FROM workflow_entity AS w
                JOIN execution_entity AS e ON e.workflowId = w.id
-               WHERE w.active = 1 AND e.deletedAt IS NULL
+               WHERE e.deletedAt IS NULL
                  AND e.stoppedAt IS NOT NULL AND e.status IN ('success', 'error', 'crashed')
                  AND e.mode NOT IN ('manual', 'error')
                  AND e.id = (
@@ -40,6 +44,15 @@ def collect_events(database, editor_url):
     events = []
     for row in rows:
         failed = row["status"] in FAILED
+        if not row["active"]:
+            if not failed:
+                continue
+            failed = False
+            outcome = ("deactivated", "was deactivated after a failure")
+        elif failed:
+            outcome = ("failed", "failed")
+        else:
+            outcome = ("recovered", "completed successfully after a failure")
         name = row["workflow_name"] or "Workflow"
         events.append(
             {
@@ -47,8 +60,8 @@ def collect_events(database, editor_url):
                 "host": "inari",
                 "service": "n8n",
                 "severity": "warning",
-                "title": f"n8n workflow {'failed' if failed else 'recovered'}: {name}",
-                "message": f"The scheduled workflow {name} {'failed' if failed else 'completed successfully after a failure'}. Review its execution in n8n: {editor_url.rstrip('/')}/workflow/{row['workflow_id']}",
+                "title": f"n8n workflow {outcome[0]}: {name}",
+                "message": f"The scheduled workflow {name} {outcome[1]}. Review its execution in n8n: {editor_url.rstrip('/')}/workflow/{row['workflow_id']}",
                 "fingerprint": f"workflow:{row['workflow_id']}",
                 "resolved": not failed,
             }
@@ -121,7 +134,16 @@ def read_state(path):
 FAILURES_BEFORE_ALERT = 3
 
 
-def handle_unavailable(path, now):
+UNAVAILABLE = {
+    "source": "automation",
+    "severity": "warning",
+    "title": "n8n execution monitor cannot check workflows",
+    "message": "The n8n execution monitor could not read its database.",
+    "fingerprint": "monitor:unavailable",
+}
+
+
+def handle_unavailable(path, now, webhook):
     state = read_state(path)
     failures = state.get("failures", 0) + 1
     last = state.get("last_failure_sent", 0)
@@ -133,9 +155,14 @@ def handle_unavailable(path, now):
     # Persist the count first so a failing ntfy send does not reset the streak.
     atomic_json(path, state)
     # The monitoring watchdog publishes straight to ntfy when the router is
-    # down. Once the legacy paths are retired, this one stays quiet so the
-    # same outage does not arrive twice.
+    # down. Once the legacy paths are retired, this one only tells the router,
+    # which covers a database failure the watchdog cannot see; if the router
+    # is down too, the watchdog reports that.
     if os.environ.get("DIRECT_NTFY_FALLBACK", "true") == "false":
+        if failures >= FAILURES_BEFORE_ALERT:
+            post_event(webhook, {**UNAVAILABLE, "resolved": False})
+            state["routed"] = True
+            atomic_json(path, state)
         return
     if failures >= FAILURES_BEFORE_ALERT and now.timestamp() - last >= 86400:
         send_ntfy(
@@ -148,8 +175,10 @@ def handle_unavailable(path, now):
         atomic_json(path, state)
 
 
-def handle_recovery(path, now):
+def handle_recovery(path, now, webhook):
     state = read_state(path)
+    if state.get("routed"):
+        post_event(webhook, {**UNAVAILABLE, "resolved": True})
     if not state.get("unavailable"):
         # Outage never reached a notification, so there is nothing to retract.
         if state:
@@ -192,10 +221,10 @@ def main(argv=None):
         )
         for event in collect_events(args.database, args.editor_url):
             post_event(args.webhook, event)
-        handle_recovery(args.state, now)
+        handle_recovery(args.state, now, args.webhook)
     except (OSError, sqlite3.Error, URLError, RuntimeError, KeyError, ValueError):
         with contextlib.suppress(OSError, URLError, RuntimeError, KeyError, ValueError):
-            handle_unavailable(args.state, now)
+            handle_unavailable(args.state, now, args.webhook)
         print("n8n execution monitor failed", file=sys.stderr)
         return 1
     return 0
