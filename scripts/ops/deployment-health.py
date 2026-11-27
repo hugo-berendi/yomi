@@ -11,7 +11,9 @@ from urllib.request import urlopen
 
 def probe(check, timeout):
     if "command" in check:
-        subprocess.run(check["command"], check=True, timeout=timeout, capture_output=True)
+        subprocess.run(
+            check["command"], check=True, timeout=timeout, capture_output=True
+        )
         return
     with urlopen(check["url"], timeout=timeout) as response:
         if "json" in check:

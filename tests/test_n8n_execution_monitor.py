@@ -76,7 +76,9 @@ class ExecutionMonitorTests(unittest.TestCase):
         events = self.events()
         self.assertEqual(len(events), 2)
         deactivated = next(e for e in events if e["fingerprint"] == "workflow:inactive")
-        self.assertTrue(deactivated["resolved"], "a deactivated workflow closes its alert")
+        self.assertTrue(
+            deactivated["resolved"], "a deactivated workflow closes its alert"
+        )
         events = [e for e in events if e is not deactivated]
         self.assertEqual(events[0]["fingerprint"], "workflow:broken")
         self.assertEqual(events[0]["severity"], "warning")
