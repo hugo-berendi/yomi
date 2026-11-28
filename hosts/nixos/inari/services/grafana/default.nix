@@ -35,7 +35,7 @@
   ];
   # }}}
 in {
-  imports = [./alert-rules.nix];
+  imports = [./alert-rules.nix ./sso.nix ./theme.nix];
 
   # {{{ Ports
   yomi.ports = {
