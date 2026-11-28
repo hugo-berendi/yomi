@@ -24,6 +24,11 @@ in {
       inherit (package) version meta;
       paths = [package];
       postBuild = ''
+        # Grafana rejects core plugin files that resolve outside the plugin directory.
+        plugins="$out/share/grafana/public/app/plugins"
+        rm -r -- "$plugins"
+        cp -a -- ${package}/share/grafana/public/app/plugins "$plugins"
+
         assets="$out/share/grafana/public/build"
         shopt -s nullglob
         styles=("$assets"/grafana.dark.*.css "$assets"/grafana.dark-react19.*.css)
