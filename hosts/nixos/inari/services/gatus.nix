@@ -53,6 +53,13 @@ in {
     authentication = "none";
   };
   # }}}
+  services.nginx.virtualHosts.${config.yomi.web.at.status.host}.locations."= /metrics".return = "404";
+  services.prometheus.scrapeConfigs = [
+    {
+      job_name = "gatus";
+      static_configs = [{targets = ["127.0.0.1:${toString port}"];}];
+    }
+  ];
   # {{{ Secrets
   sops.secrets.gatus_env = {
     sopsFile = ../secrets.yaml;
@@ -73,6 +80,7 @@ in {
     environmentFile = config.sops.secrets.gatus_env.path;
     settings = {
       web.port = port;
+      metrics = true;
 
       storage = {
         type = "sqlite";

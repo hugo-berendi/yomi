@@ -6,6 +6,7 @@
   ...
 }: let
   port = config.yomi.ports.beszel;
+  metricsPort = config.yomi.ports.beszel-metrics;
   hub = config.services.beszel.hub;
 
   # {{{ Systems
@@ -38,8 +39,30 @@ in {
   # {{{ Ports
   yomi.ports = {
     beszel = 8406;
+    beszel-metrics = 8523;
   };
   # }}}
+  services.prometheus.scrapeConfigs = [
+    {
+      job_name = "beszel";
+      static_configs = [{targets = ["127.0.0.1:${toString metricsPort}"];}];
+    }
+  ];
+
+  systemd.services.beszel-metrics = {
+    description = "Read-only Beszel metrics for Grafana";
+    wantedBy = ["multi-user.target"];
+    after = ["beszel-hub.service"];
+    serviceConfig = {
+      DynamicUser = true;
+      ProtectSystem = "strict";
+      ProtectHome = true;
+      NoNewPrivileges = true;
+      ExecStart = "${lib.getExe pkgs.python3} ${./metrics.py} ${toString port} ${toString metricsPort}";
+      Restart = "on-failure";
+    };
+  };
+
   # {{{ Service
   services.beszel.hub = {
     enable = true;

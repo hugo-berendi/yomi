@@ -18,7 +18,7 @@ in {
     sops.secrets.beszel_agent_token.sopsFile = ../secrets.yaml;
     sops.templates."beszel-agent.env" = {
       # The hub tells agents apart by token, so each host appends its name to
-      # the fleet's shared one; inari's services/beszel.nix lists the same.
+      # the fleet's shared one; inari's services/beszel/default.nix lists the same.
       content = ''
         KEY=${config.sops.placeholder.beszel_agent_key}
         TOKEN=${config.sops.placeholder.beszel_agent_token}-${config.networking.hostName}

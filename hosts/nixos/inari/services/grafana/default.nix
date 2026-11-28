@@ -18,14 +18,35 @@
     sha256 = "11hrll7fm626ikbva5md4gm0rca537vp4xsxa9sxl1pk15s6nk0q";
   };
 
+  overview = import ./overview-dashboards.nix {inherit config pkgs;};
   dashboardsDir = pkgs.linkFarm "inari-grafana-dashboards" [
+    {
+      name = "yomi-healthchecks.json";
+      path = overview.healthchecks;
+    }
+    {
+      name = "yomi-fleet.json";
+      path = overview.fleet;
+    }
+    {
+      name = "yomi-home.json";
+      path = overview.home;
+    }
+    {
+      name = "yomi-service-status.json";
+      path = overview.status;
+    }
+    {
+      name = "yomi-media.json";
+      path = overview.media;
+    }
     {
       name = "yomi-infrastructure.json";
       path = import ./infrastructure-dashboard.nix {
         inherit lib pkgs;
         hosts = builtins.attrNames outputs.nixosConfigurations;
         statusUrl = config.yomi.web.at.status.url;
-        topologyUrl = "${config.yomi.web.at.lab.url}/infrastruktur/";
+        topologyUrl = "${config.yomi.web.at.grafana.url}/d/yomi-topology";
       };
     }
     {
@@ -58,6 +79,7 @@ in {
       };
 
       security.secret_key = "$__file{${config.services.grafana.dataDir}/.secret_key}";
+      dashboards.default_home_dashboard_path = "${overview.home}";
 
       smtp = rec {
         enabled = true;
@@ -198,6 +220,12 @@ in {
   # }}}
   # {{{ Networking & persistence
   yomi.web.at.grafana = {
+    homepage = {
+      group = "Tooling";
+      name = "Grafana";
+      icon = "grafana.svg";
+      description = "Monitoring und Fachansichten";
+    };
     transport = "nginx";
     authentication = "application";
     monitor.enable = true;

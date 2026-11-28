@@ -210,9 +210,7 @@
     edges = lib.filter (edge: lib.elem edge.from nodeIds && lib.elem edge.to nodeIds) graphEdges;
   };
   # }}}
-  data = pkgs.writeText "yomi-topology.json" (builtins.toJSON {
-    host = config.networking.hostName;
-    hosts = builtins.attrNames outputs.nixosConfigurations;
+  topology = {
     inherit graph services;
     flows =
       [
@@ -281,23 +279,65 @@
         label = "Pangolin-Backup · HTTPS";
         scope = "Backups";
       };
-  });
-  page = pkgs.writeText "yomi-topology.html" (builtins.readFile ./infrastructure-topology.html);
+  };
+  table = columns: rows:
+    lib.concatStringsSep "\n" (
+      [
+        ("| " + lib.concatStringsSep " | " columns + " |")
+        ("| " + lib.concatMapStringsSep " | " (_: "---") columns + " |")
+      ]
+      ++ map (row: "| " + lib.concatStringsSep " | " row + " |") rows
+    );
+  nodeLabels = builtins.listToAttrs (map (node: {
+      name = node.id;
+      value = node.label;
+    })
+    graph.nodes);
+  panel = id: title: y: h: content: {
+    inherit id title;
+    type = "text";
+    gridPos = {
+      inherit y h;
+      x = 0;
+      w = 24;
+    };
+    options = {
+      mode = "markdown";
+      inherit content;
+    };
+  };
+  dashboard = (pkgs.formats.json {}).generate "yomi-topology.json" {
+    uid = "yomi-topology";
+    title = "Yomi · Infrastrukturkarte";
+    schemaVersion = 39;
+    panels = [
+      (panel 1 "Netzwerkpfade" 0 11 (table ["Quelle" "Ziel" "Verbindung"] (
+        map (edge: [nodeLabels.${edge.from} nodeLabels.${edge.to} edge.label]) topology.graph.edges
+      )))
+      (panel 2 "Datenflüsse" 11 10 (table ["Quelle" "Ziel" "Verbindung" "Bereich"] (
+        map (flow: [flow.from flow.to flow.label flow.scope]) topology.flows
+      )))
+      (panel 3 "Webdienste" 21 16 (table ["Dienst" "Zugriff" "Port"] (
+        map (service: ["[${service.host}](${service.url})" service.access (toString service.port)]) topology.services
+      )))
+    ];
+  };
+  url = "${config.yomi.web.at.grafana.url}/d/yomi-topology";
 in {
+  services.grafana.provision.dashboards.settings.providers = [
+    {
+      name = "yomi-topology";
+      type = "file";
+      options.path = pkgs.linkFarm "yomi-topology-dashboards" [
+        {
+          name = "topology.json";
+          path = dashboard;
+        }
+      ];
+    }
+  ];
   services.nginx.virtualHosts.${config.yomi.web.at.lab.host}.locations = {
-    "= /infrastruktur".return = "308 /infrastruktur/";
-    "= /infrastruktur/".extraConfig = "index /infrastruktur/index.html;";
-    "= /infrastruktur/index.html" = {
-      alias = page;
-      extraConfig = "default_type text/html;";
-    };
-    "= /infrastruktur/topology.json" = {
-      alias = data;
-      extraConfig = ''
-        default_type application/json;
-        add_header Cache-Control "no-cache";
-      '';
-    };
-    "= /infrastruktur/status.json".proxyPass = "http://127.0.0.1:${toString config.yomi.ports.gatus}/api/v1/endpoints/statuses";
+    "= /infrastruktur".return = "308 ${url}";
+    "= /infrastruktur/".return = "308 ${url}";
   };
 }

@@ -33,7 +33,7 @@
       group = "Tooling";
       name = "Infrastrukturkarte";
       icon = "mdi-sitemap";
-      href = "${config.yomi.web.at.lab.url}/infrastruktur/";
+      href = "${config.yomi.web.at.grafana.url}/d/yomi-topology";
       description = "Hosts, Dienste und Verbindungen";
       widget = null;
     }
