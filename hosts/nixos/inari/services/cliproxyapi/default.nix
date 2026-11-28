@@ -6,6 +6,11 @@
 }: let
   pilot = config.yomi.pilot.name;
   port = config.yomi.ports.cliproxyapi;
+  metricsPort = config.yomi.ports.cliproxyapi-metrics;
+  usageExporter = builtins.path {
+    path = ./usage.py;
+    name = "cliproxyapi-usage.py";
+  };
   # Address, port and key path the client wrappers use.
   proxy = import ../../../../../home/features/cli/ai/subscription-proxy.nix;
   # The pinned Go compiler is too old for this release. Use upstream's
@@ -46,6 +51,10 @@
       secret-key = "__CLIPROXYAPI_MANAGEMENT_KEY__";
     };
     oauth.auth-dir = "~/.cli-proxy-api";
+    observability.usage = {
+      usage-statistics-enabled = true;
+      redis-usage-queue-retention-seconds = 3600;
+    };
     # The scheduler always picks from the highest "priority" (a field in each
     # auth file) that has a ready credential, and only falls to a lower one
     # while the higher are cooling down after a quota error
@@ -78,7 +87,28 @@ in {
   # {{{ Ports
   yomi.ports = {
     cliproxyapi = proxy.port;
+    cliproxyapi-metrics = 8522;
   };
+  services.prometheus.scrapeConfigs = [
+    {
+      job_name = "cliproxyapi";
+      scrape_interval = "15s";
+      scrape_timeout = "10s";
+      static_configs = [{targets = ["127.0.0.1:${toString metricsPort}"];}];
+    }
+  ];
+  services.grafana.provision.dashboards.settings.providers = [
+    {
+      name = "cliproxyapi";
+      type = "file";
+      options.path = pkgs.linkFarm "cliproxyapi-dashboards" [
+        {
+          name = "usage.json";
+          path = import ./dashboard.nix {inherit pkgs;};
+        }
+      ];
+    }
+  ];
   # The proxy spends paid subscriptions, so the key is what keeps the rest of
   # the LAN out; it lives in sops and is never in the store.
   yomi.network.exposure.cliproxyapi.interface = "br0";
@@ -95,6 +125,18 @@ in {
   };
 
   home-manager.users.${pilot} = {config, ...}: {
+    systemd.user.services.cliproxyapi-usage = {
+      Unit = {
+        Description = "CLIProxyAPI account usage exporter";
+        After = ["cliproxyapi.service"];
+      };
+      Service = {
+        ExecStart = "${lib.getExe pkgs.python3} ${usageExporter} ${toString port} ${toString metricsPort} ${managementKeyPath}";
+        Restart = "on-failure";
+        RestartSec = 2;
+      };
+      Install.WantedBy = ["default.target"];
+    };
     yomi.persistence.at.state.apps.cliproxyapi.directories = [
       "${config.home.homeDirectory}/.cli-proxy-api"
     ];
