@@ -7,7 +7,7 @@
   stylix = {
     image = ./wallpapers/samurai-dark.jpg;
     base16Scheme = base16 "everforest-dark-soft";
-    opacity = transparency 1;
+    opacity = transparency 1.0;
     polarity = "dark";
     cursor = {
       package = pkgs.phinger-cursors;
