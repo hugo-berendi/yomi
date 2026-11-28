@@ -14,9 +14,12 @@
       resurrect # Save / restore tmux sessions
       {
         plugin = continuum; # Automatically restore tmux sessions
+        # No @continuum-boot: it writes a user tmux.service whose ExecStop runs
+        # `tmux kill-server`. fish already starts tmux, so when a switch
+        # started that unit, it found the server running, exited, and its stop
+        # killed every pane, including the one running the switch.
         extraConfig = ''
           set -g @continuum-restore 'on'
-          set -g @continuum-boot 'on'
         '';
       }
     ];
