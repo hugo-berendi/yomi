@@ -5,7 +5,7 @@
   ...
 }: {
   stylix = {
-    image = ./wallpapers/something-beautiful-in-nature.jpg;
+    image = ./wallpapers/samurai-dark.jpg;
     base16Scheme = base16 "everforest-dark-soft";
     opacity = transparency 0.5;
     polarity = "dark";
