@@ -73,6 +73,11 @@ in {
     requires = ["netbird-mullvad-exit.service"];
     after = ["netbird-mullvad-exit.service"];
   };
+  # The module's login oneshot polls `status` until Connected or NeedsLogin,
+  # with no start timeout. A client that cannot reach management reports
+  # neither, so the unit stayed activating for 19 hours and every switch
+  # waited on its start job. Fail instead and let the next switch retry.
+  systemd.services."${client.service.name}-login".serviceConfig.TimeoutStartSec = "2min";
 
   # Guard first, then forwarding and NAT through Mullvad. Runs again whenever
   # the namespace is rebuilt, since it is bound to wg.service.
