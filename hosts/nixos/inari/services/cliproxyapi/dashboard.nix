@@ -1,332 +1,299 @@
+# Grafana lays panels out by y, then x, and stacks them full width on a phone.
+# Each limit window is one table with a line per account (share used, reset
+# in local time), so the phone needs no horizontal scrolling; the rarely read
+# details sit in a collapsed row at the end.
 {pkgs}: let
   datasource = {
     type = "prometheus";
     uid = "prometheus";
   };
-  panel = {
-    id,
-    title,
-    metric,
-    unit,
-    type,
-    gridPos,
-    window ? null,
-  }: {
-    inherit id title datasource type gridPos;
-    description = "Nur über CLIProxyAPI erfasste Nutzung. Abo-Limits und direkte Nutzung beim Anbieter sind hier nicht enthalten.";
-    fieldConfig.defaults = {
-      inherit unit;
-      min = 0;
-      decimals = 0;
-      color.mode = "palette-classic-by-name";
+  pos = x: y: w: h: {inherit x y w h;};
+  target = expr: extra:
+    {
+      inherit datasource expr;
+      refId = "A";
+      legendFormat = "{{account}}";
+    }
+    // extra;
+  instant = expr:
+    target expr {
+      instant = true;
+      range = false;
     };
+  row = title: y: collapsed: panels: {
+    inherit title collapsed panels;
+    type = "row";
+    gridPos = pos 0 y 24 1;
+  };
+  # Name above the bar, the full width for the bar, the value at its end:
+  # the layout that keeps long account names readable on a phone.
+  bars = {
+    title,
+    description,
+    gridPos,
+    expr,
+    defaults,
+  }: {
+    inherit title description datasource gridPos;
+    type = "bargauge";
+    targets = [(instant expr)];
+    fieldConfig.defaults = {noValue = "–";} // defaults;
+    options = {
+      orientation = "horizontal";
+      displayMode = "basic";
+      namePlacement = "top";
+      valueMode = "color";
+      showUnfilled = true;
+      sizing = "manual";
+      minVizHeight = 26;
+      maxVizHeight = 30;
+      reduceOptions.calcs = ["lastNotNull"];
+    };
+  };
+  tokens = metric: window: title: gridPos:
+    bars {
+      inherit title gridPos;
+      description = "Nur über CLIProxyAPI erfasste Nutzung. Direkte Nutzung beim Anbieter fehlt.";
+      expr = "sort_desc(sum by (account) (increase(${metric}[${window}])))";
+      defaults = {
+        unit = "short";
+        min = 0;
+        color.mode = "palette-classic-by-name";
+      };
+    };
+  # One table per limit window: account, a gauge cell for the share used and
+  # the reset in local clock time, so each account reads as one line, also on
+  # a phone. The fullest account comes first.
+  limits = window: title: format: x: {
+    inherit title datasource;
+    description = "Vom Anbieter gemeldete Auslastung und Reset-Zeit in Ortszeit. Ein Konto fehlt, wenn der Anbieter dafür kein aktuelles Fenster meldet.";
+    type = "table";
+    gridPos = pos x 1 12 8;
     targets = [
+      ((instant ''max by (account) (cliproxyapi_quota_used_percent{window="${window}"})'') // {format = "table";})
+      ((instant ''max by (account) (1000 * cliproxyapi_quota_reset_timestamp_seconds{window="${window}"})'')
+        // {
+          format = "table";
+          refId = "B";
+        })
+    ];
+    transformations = [
       {
-        inherit datasource;
-        refId = "A";
-        legendFormat = "{{account}}";
-        instant = type == "bargauge";
-        range = type == "timeseries";
-        expr = "sum by (account) (increase(${metric}[${
-          if type == "bargauge"
-          then
-            (
-              if window == null
-              then "$__range"
-              else window
-            )
-          else "$__rate_interval"
-        }]))";
+        id = "merge";
+        options = {};
+      }
+      {
+        id = "organize";
+        options = {
+          excludeByName.Time = true;
+          renameByName = {
+            account = "Konto";
+            "Value #A" = "Auslastung";
+            "Value #B" = "Reset";
+          };
+        };
+      }
+      {
+        id = "sortBy";
+        options.sort = [
+          {
+            field = "Auslastung";
+            desc = true;
+          }
+        ];
       }
     ];
-    options =
-      if type == "bargauge"
-      then {
-        orientation = "horizontal";
-        displayMode = "basic";
-        reduceOptions.calcs = ["lastNotNull"];
-      }
-      else {
-        legend.placement = "bottom";
-        tooltip.mode = "multi";
+    fieldConfig = {
+      defaults.custom = {
+        align = "auto";
+        cellOptions.type = "auto";
       };
-  };
-  quota = id: x: window: title: {
-    inherit id title datasource;
-    type = "bargauge";
-    description = "Vom Anbieter gemeldetes Abo-Limit. Fehlende Balken bedeuten, dass der Anbieter für das Konto kein aktuelles Fenster liefert.";
-    gridPos = {
-      inherit x;
-      y = 0;
-      w = 12;
-      h = 7;
-    };
-    fieldConfig.defaults = {
-      unit = "percent";
-      min = 0;
-      max = 100;
-      thresholds.steps = [
+      overrides = [
         {
-          color = "green";
-          value = null;
+          # Long account names wrap instead of pushing the reset column off a
+          # phone screen.
+          matcher = {
+            id = "byName";
+            options = "Konto";
+          };
+          properties = [
+            {
+              id = "custom.wrapText";
+              value = true;
+            }
+          ];
         }
         {
-          color = "orange";
-          value = 80;
+          matcher = {
+            id = "byName";
+            options = "Auslastung";
+          };
+          properties = [
+            {
+              id = "unit";
+              value = "percent";
+            }
+            {
+              id = "decimals";
+              value = 0;
+            }
+            {
+              id = "min";
+              value = 0;
+            }
+            {
+              id = "max";
+              value = 100;
+            }
+            {
+              id = "custom.width";
+              value = 88;
+            }
+            {
+              id = "custom.cellOptions";
+              value = {
+                type = "gauge";
+                mode = "basic";
+                valueDisplayMode = "text";
+              };
+            }
+            {
+              id = "thresholds";
+              value = {
+                mode = "absolute";
+                steps = [
+                  {
+                    color = "green";
+                    value = null;
+                  }
+                  {
+                    color = "orange";
+                    value = 80;
+                  }
+                  {
+                    color = "red";
+                    value = 95;
+                  }
+                ];
+              };
+            }
+          ];
         }
         {
-          color = "red";
-          value = 95;
+          matcher = {
+            id = "byName";
+            options = "Reset";
+          };
+          properties = [
+            {
+              id = "unit";
+              value = "time:${format}";
+            }
+            {
+              id = "custom.align";
+              value = "right";
+            }
+            {
+              id = "custom.width";
+              value =
+                if format == "HH:mm"
+                then 52
+                else 104;
+            }
+          ];
         }
       ];
     };
     options = {
-      orientation = "horizontal";
-      displayMode = "basic";
-      reduceOptions.calcs = ["lastNotNull"];
+      showHeader = true;
+      cellHeight = "md";
+      footer.show = false;
     };
-    targets = [
-      {
-        inherit datasource;
-        refId = "A";
-        instant = true;
-        range = false;
-        legendFormat = "{{account}}";
-        expr = ''cliproxyapi_quota_used_percent{window="${window}"}'';
-      }
-    ];
   };
+  # Details depend on the dashboard's time range.
+  timeseries = metric: title: gridPos: {
+    inherit title datasource gridPos;
+    type = "timeseries";
+    targets = [(target "sum by (account) (increase(${metric}[$__rate_interval]))" {})];
+    fieldConfig.defaults = {
+      unit = "short";
+      min = 0;
+      color.mode = "palette-classic-by-name";
+      custom = {
+        fillOpacity = 10;
+        showPoints = "never";
+      };
+    };
+    options = {
+      legend = {
+        displayMode = "list";
+        placement = "bottom";
+      };
+      tooltip.mode = "multi";
+    };
+  };
+  details = [
+    (timeseries "cliproxyapi_tokens_total" "Tokens im Zeitverlauf" (pos 0 15 24 9))
+    (tokens "cliproxyapi_input_tokens_total" "$__range" "Eingabetokens · Zeitraum" (pos 0 24 8 7))
+    (tokens "cliproxyapi_output_tokens_total" "$__range" "Ausgabetokens · Zeitraum" (pos 8 24 8 7))
+    (tokens "cliproxyapi_cached_tokens_total" "$__range" "Cache-Tokens · Zeitraum" (pos 16 24 8 7))
+    (tokens "cliproxyapi_requests_total" "$__range" "Anfragen · Zeitraum" (pos 0 31 12 7))
+    (timeseries "cliproxyapi_failures_total" "Fehlgeschlagene Anfragen" (pos 12 31 12 7))
+    {
+      title = "Claude-Zusatzausgaben";
+      description = "Der von Anthropic gemeldete Zusatzverbrauch. Abo-Gebühren und API-Preis-Schätzungen sind nicht enthalten.";
+      inherit datasource;
+      type = "stat";
+      gridPos = pos 0 38 24 5;
+      targets = [
+        (target "max by (account, currency) (cliproxyapi_extra_spend)" {
+          instant = true;
+          range = false;
+          legendFormat = "{{account}} ({{currency}})";
+        })
+      ];
+      fieldConfig.defaults = {
+        decimals = 2;
+        noValue = "Nichts gemeldet";
+        color = {
+          mode = "fixed";
+          fixedColor = "text";
+        };
+      };
+      options = {
+        orientation = "horizontal";
+        textMode = "value_and_name";
+        wideLayout = true;
+        colorMode = "none";
+        graphMode = "none";
+        reduceOptions.calcs = ["lastNotNull"];
+      };
+    }
+  ];
+  panels = [
+    (row "Abo-Limits" 0 false [])
+    (limits "5h" "5 Stunden" "HH:mm" 0)
+    (limits "7d" "Woche" "DD.MM. HH:mm" 12)
+    (row "Verbrauch über den Proxy" 9 false [])
+    (tokens "cliproxyapi_tokens_total" "5h" "Tokens · letzte 5 Stunden" (pos 0 10 12 6))
+    (tokens "cliproxyapi_tokens_total" "7d" "Tokens · letzte 7 Tage" (pos 12 10 12 6))
+    (row "Details" 16 true details)
+  ];
+  # Provisioned dashboards need ids unique across nested rows too.
+  number = start: list: pkgs.lib.imap0 (i: p: p // {id = start + i;}) list;
 in
   (pkgs.formats.json {}).generate "cliproxyapi-usage.json" {
     uid = "cliproxyapi-usage";
     title = "CLIProxyAPI · Kontoverbrauch";
     tags = ["CLIProxyAPI"];
     schemaVersion = 39;
-    refresh = "30s";
+    refresh = "1m";
     time = {
       from = "now-24h";
       to = "now";
     };
-    panels = [
-      (quota 6 0 "5h" "Abo-Limit · 5 Stunden")
-      (quota 7 12 "7d" "Abo-Limit · Woche")
-      {
-        id = 8;
-        title = "Nächster Reset je Konto und Limit";
-        inherit datasource;
-        type = "table";
-        gridPos = {
-          x = 0;
-          y = 7;
-          w = 24;
-          h = 8;
-        };
-        targets = [
-          {
-            inherit datasource;
-            refId = "A";
-            instant = true;
-            range = false;
-            format = "table";
-            expr = "max by (account, window) (1000 * cliproxyapi_quota_reset_timestamp_seconds)";
-          }
-        ];
-        transformations = [
-          {
-            id = "organize";
-            options = {
-              excludeByName.Time = true;
-              renameByName = {
-                account = "Konto";
-                window = "Limit";
-                Value = "Reset";
-              };
-            };
-          }
-        ];
-        fieldConfig.overrides = [
-          {
-            matcher = {
-              id = "byName";
-              options = "Reset";
-            };
-            properties = [
-              {
-                id = "unit";
-                value = "dateTimeAsIso";
-              }
-            ];
-          }
-        ];
-      }
-      (panel {
-        id = 9;
-        title = "Tokens pro Konto · letzte 5 Stunden";
-        metric = "cliproxyapi_tokens_total";
-        unit = "short";
-        type = "bargauge";
-        window = "5h";
-        gridPos = {
-          x = 0;
-          y = 15;
-          w = 12;
-          h = 7;
-        };
-      })
-      (panel {
-        id = 10;
-        title = "Tokens pro Konto · letzte 7 Tage";
-        metric = "cliproxyapi_tokens_total";
-        unit = "short";
-        type = "bargauge";
-        window = "7d";
-        gridPos = {
-          x = 12;
-          y = 15;
-          w = 12;
-          h = 7;
-        };
-      })
-      (panel {
-        id = 1;
-        title = "Tokens pro Konto · gewählter Zeitraum";
-        metric = "cliproxyapi_tokens_total";
-        unit = "short";
-        type = "bargauge";
-        gridPos = {
-          x = 0;
-          y = 22;
-          w = 12;
-          h = 7;
-        };
-      })
-      (panel {
-        id = 2;
-        title = "Anfragen pro Konto · gewählter Zeitraum";
-        metric = "cliproxyapi_requests_total";
-        unit = "short";
-        type = "bargauge";
-        gridPos = {
-          x = 12;
-          y = 22;
-          w = 12;
-          h = 7;
-        };
-      })
-      (panel {
-        id = 3;
-        title = "Tokenverbrauch im Zeitverlauf";
-        metric = "cliproxyapi_tokens_total";
-        unit = "short";
-        type = "timeseries";
-        gridPos = {
-          x = 0;
-          y = 29;
-          w = 24;
-          h = 10;
-        };
-      })
-      (panel {
-        id = 4;
-        title = "Anfragen im Zeitverlauf";
-        metric = "cliproxyapi_requests_total";
-        unit = "short";
-        type = "timeseries";
-        gridPos = {
-          x = 0;
-          y = 39;
-          w = 12;
-          h = 9;
-        };
-      })
-      {
-        id = 14;
-        title = "Gemeldete Claude-Zusatzausgaben";
-        description = "Der von Anthropic gemeldete Zusatzverbrauch. Abo-Gebühren und API-Preis-Schätzungen sind nicht enthalten.";
-        inherit datasource;
-        type = "table";
-        gridPos = {
-          x = 0;
-          y = 55;
-          w = 24;
-          h = 6;
-        };
-        targets = [
-          {
-            inherit datasource;
-            refId = "A";
-            instant = true;
-            range = false;
-            format = "table";
-            expr = "max by (account, currency) (cliproxyapi_extra_spend)";
-          }
-        ];
-        transformations = [
-          {
-            id = "organize";
-            options = {
-              excludeByName.Time = true;
-              renameByName = {
-                account = "Konto";
-                currency = "Währung";
-                Value = "Zusatzverbrauch";
-              };
-            };
-          }
-        ];
-        fieldConfig.defaults.decimals = 2;
-      }
-      (panel {
-        id = 11;
-        title = "Eingabetokens pro Konto";
-        metric = "cliproxyapi_input_tokens_total";
-        unit = "short";
-        type = "bargauge";
-        gridPos = {
-          x = 0;
-          y = 48;
-          w = 8;
-          h = 7;
-        };
-      })
-      (panel {
-        id = 12;
-        title = "Ausgabetokens pro Konto";
-        metric = "cliproxyapi_output_tokens_total";
-        unit = "short";
-        type = "bargauge";
-        gridPos = {
-          x = 8;
-          y = 48;
-          w = 8;
-          h = 7;
-        };
-      })
-      (panel {
-        id = 13;
-        title = "Cache-Tokens pro Konto";
-        metric = "cliproxyapi_cached_tokens_total";
-        unit = "short";
-        type = "bargauge";
-        gridPos = {
-          x = 16;
-          y = 48;
-          w = 8;
-          h = 7;
-        };
-      })
-      (panel {
-        id = 5;
-        title = "Fehlgeschlagene Anfragen im Zeitverlauf";
-        metric = "cliproxyapi_failures_total";
-        unit = "short";
-        type = "timeseries";
-        gridPos = {
-          x = 12;
-          y = 39;
-          w = 12;
-          h = 9;
-        };
-      })
-    ];
+    panels = map (p:
+      if p.type == "row"
+      then p // {panels = number 100 p.panels;}
+      else p) (number 1 panels);
   }
