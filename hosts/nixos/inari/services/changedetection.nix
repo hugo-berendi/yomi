@@ -20,33 +20,34 @@
 
   setupNotifications = pkgs.writeShellScript "changedetection-setup-notifications" ''
     set -euo pipefail
-    url=$(${lib.getExe notificationUrl})
+    export notification_url
+    notification_url=$(${lib.getExe notificationUrl})
     api="http://127.0.0.1:${toString port}/api/v1/notifications"
-    curl="${lib.getExe pkgs.curl} -sf --max-time 15 --retry 3 --retry-delay 2"
+    jq=${lib.getExe pkgs.jq}
 
-    for i in $(seq 1 90); do
-      if $curl "http://127.0.0.1:${toString port}/" >/dev/null 2>&1; then
-        break
+    request() {
+      printf 'X-Api-Key: %s\n' "$token" |
+        ${lib.getExe pkgs.curl} --silent --show-error --fail --max-time 5 \
+          --header @- "$@" "$api"
+    }
+
+    for ((attempt = 0; attempt < 30; attempt++)); do
+      datastore="${dataDir}/changedetection.json"
+      if [ ! -e "$datastore" ]; then
+        datastore="${dataDir}/url-watches.json"
       fi
-      sleep 2
-    done
-
-    sleep 3
-
-    for i in $(seq 1 30); do
-      if current=$($curl "$api" | ${lib.getExe pkgs.jq} -r --arg url "$url" '.notification_urls // [] | index($url)'); then
-        if [ "$current" = "null" ]; then
-          new_urls=$($curl "$api" | ${lib.getExe pkgs.jq} --arg url "$url" '{notification_urls: ((.notification_urls // []) + [$url])}')
-          $curl -X POST \
-            -H "Content-Type: application/json" \
-            -d "$new_urls" \
-            "$api"
+      if token=$("$jq" -er '.settings.application.api_access_token // ""' "$datastore" 2>/dev/null) \
+        && current=$(request 2>/dev/null); then
+        present=$(printf '%s' "$current" | "$jq" -r '.notification_urls | index(env.notification_url) != null')
+        if [ "$present" = false ]; then
+          request --request POST --header "Content-Type: application/json" \
+            --data-binary @<("$jq" -nc '{notification_urls: [env.notification_url]}') >/dev/null
         fi
         exit 0
       fi
       sleep 2
     done
-    echo "changedetection's notification API did not answer; mail alerts are not set up" >&2
+    echo "changedetection notification API unavailable or API key rejected" >&2
     exit 1
   '';
 in {
@@ -165,11 +166,7 @@ in {
       RemainAfterExit = true;
       ExecStart = setupNotifications;
 
-      # The retry loops look bounded, but each curl carries --max-time 15
-      # --retry 3, so a single failing call takes over a minute and the whole
-      # script can run for an hour and a half. Because this unit is part of
-      # multi-user.target, that blocked every nixos-rebuild switch on the host
-      # until it was killed by hand.
+      # Keep activation bounded while the container initializes its datastore.
       TimeoutStartSec = "300";
     };
     wantedBy = ["multi-user.target"];
