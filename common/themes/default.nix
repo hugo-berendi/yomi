@@ -25,7 +25,7 @@
     cloudcore = theme ./cloudcore.nix;
   };
 
-  currentTheme = themes.rosepine-moon;
+  currentTheme = themes.cloudcore;
 in {
   # We apply the current theme here.
   # The rest is handled by the respective modules!
